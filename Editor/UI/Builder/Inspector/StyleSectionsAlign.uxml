@@ -1,0 +1,21 @@
+<UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:uib="Unity.UI.Builder">
+    <!-- Align Content -->
+    <uib:BuilderStyleRow binding-path="align-content">
+        <uie:EnumField label="Align Content" tooltip="align-content" />
+    </uib:BuilderStyleRow>
+
+    <!-- Align Items -->
+    <uib:BuilderStyleRow binding-path="align-items">
+        <uie:EnumField label="Align Items" tooltip="align-items" />
+    </uib:BuilderStyleRow>
+
+    <!-- Align Self -->
+    <uib:BuilderStyleRow binding-path="align-self">
+        <uie:EnumField label="Align Self" tooltip="align-self" />
+    </uib:BuilderStyleRow>
+
+    <!-- Justify Content -->
+    <uib:BuilderStyleRow binding-path="justify-content">
+        <uie:EnumField label="Justify Content" tooltip="justify-content" />
+    </uib:BuilderStyleRow>
+</UXML>

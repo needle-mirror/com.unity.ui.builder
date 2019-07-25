@@ -1,0 +1,20 @@
+{
+  "name": "com.unity.ui.builder",
+  "displayName": "UI Builder",
+  "version": "0.5.7-preview",
+  "unity": "2019.2",
+  "type": "tool",
+  "description": "UI Builder lets you visually create and edit UI using UIElements, UXML, and USS.",
+  "repository": {
+    "type": "git",
+    "url": "git@github.cds.internal.unity3d.com:unity/com.unity.ui.builder.git",
+    "revision": "9cb17ebd0f2c88e6f3bbf15c6d65f30a65ab0cd7"
+  },
+  "samples": [
+    {
+      "displayName": "OptionsPanel",
+      "description": "Simple options panel.",
+      "path": "Samples~/OptionsPanel"
+    }
+  ]
+}

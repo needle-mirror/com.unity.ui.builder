@@ -1,0 +1,38 @@
+<UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:uib="Unity.UI.Builder">
+    <uib:TwoPaneSplitView fixed-pane-index="0" fixed-pane-initial-size="300" orientation="horizontal">
+        <VisualElement name="left-column" class="unity-builder__pane" >
+            <uib:TwoPaneSplitView fixed-pane-index="0" fixed-pane-initial-size="300" orientation="vertical">
+                <uib:BuilderPane name="explorer" title="Explorer" />
+                <uib:BuilderPane name="library" title="Library" class="unity-builder-pane__splitter-obstructed" />
+            </uib:TwoPaneSplitView>
+        </VisualElement>
+        <uib:TwoPaneSplitView fixed-pane-index="1" fixed-pane-initial-size="300" orientation="horizontal">
+            <VisualElement name="middle-column" class="unity-builder__pane" >
+                <uib:TwoPaneSplitView fixed-pane-index="1" fixed-pane-initial-size="100" orientation="vertical">
+                    <uib:BuilderPane name="viewport" title="Viewport" />
+                    <VisualElement name="code-preview-pane" class="unity-builder__pane" >
+                        <uib:TwoPaneSplitView fixed-pane-index="1" fixed-pane-initial-size="300" orientation="horizontal">
+                            <uib:BuilderPane name="uxml-preview" title="UXML Preview" class="unity-builder-pane__splitter-obstructed" />
+                            <uib:BuilderPane name="uss-preview" title="USS Preview" class="unity-builder-pane__splitter-obstructed" />
+                        </uib:TwoPaneSplitView>
+                    </VisualElement>
+                </uib:TwoPaneSplitView>
+            </VisualElement>
+            <uib:BuilderPane name="inspector" title="Inspector" />
+        </uib:TwoPaneSplitView>
+    </uib:TwoPaneSplitView>
+    <uib:BuilderTooltipPreview name="tooltip-preview" />
+    <uib:ModalPopup name="save-dialog" title="New UI Documents">
+        <VisualElement class="unity-builder__save-dialog-container">
+            <Label text="UXML Path" />
+            <TextField name="save-dialog-uxml-path" />
+            <Label text="USS Path" />
+            <TextField name="save-dialog-uss-path" />
+        </VisualElement>
+        <VisualElement name="save-dialog-validation-box" class="unity-builder__save-dialog-validation-container" />
+        <VisualElement class="unity-builder__save-dialog-gutter">
+            <Button name="save-dialog-save-button" text="Save" />
+            <Button name="save-dialog-cancel-button" text="Cancel" />
+        </VisualElement>
+    </uib:ModalPopup>
+</UXML>

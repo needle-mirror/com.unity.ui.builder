@@ -1,0 +1,29 @@
+<UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:uib="Unity.UI.Builder">
+    <VisualElement name="toolbar" class="unity-builder-viewport__toolbar" />
+    <VisualElement name="viewport-wrapper" class="unity-builder-viewport__viewport-wrapper">
+        <VisualElement name="viewport" class="unity-builder-viewport__viewport">
+            <uib:BuilderCanvas name="canvas" view-data-key="unity-buidler-viewport__canvas" class="unity-builder-viewport__canvas">
+                <VisualElement name="shared-styles-and-document" class="unity-builder-viewport__shared-styles-and-document">
+                    <VisualElement name="__unity-selector-container-element" class="unity-builder-viewport__shared-styles">
+
+                    </VisualElement>
+                    <VisualElement name="document" class="unity-builder-viewport__document">
+
+                    </VisualElement>
+                </VisualElement>
+                <VisualElement name="pick-overlay" class="unity-builder-viewport__pick-overlay">
+                    <uib:BuilderParentTracker name="parent-tracker" />
+                    <uib:BuilderAnchorer name="anchorer" />
+                    <uib:BuilderResizer name="resizer" />
+                    <uib:BuilderMover name="mover" />
+                </VisualElement>
+                <uib:OverlayPainterHelperElement
+                    name="highlight-overlay"
+                    class="unity-builder-viewport__highlight-overlay"
+                    picking-mode="Ignore">
+
+                </uib:OverlayPainterHelperElement>
+            </uib:BuilderCanvas>
+        </VisualElement>
+    </VisualElement>
+</UXML>

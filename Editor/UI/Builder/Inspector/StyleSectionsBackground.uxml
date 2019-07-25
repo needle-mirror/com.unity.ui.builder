@@ -1,0 +1,41 @@
+<UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:uib="Unity.UI.Builder">
+    <!-- Background Color -->
+    <uib:BuilderStyleRow binding-path="background-color">
+        <uie:ColorField label="Color" tooltip="background-color" />
+    </uib:BuilderStyleRow>
+
+    <!-- Background Image -->
+    <uib:BuilderStyleRow binding-path="background-image">
+        <uie:ObjectField label="Image" tooltip="background-image" />
+    </uib:BuilderStyleRow>
+
+    <!-- Unity Background Image Tint Color -->
+    <uib:BuilderStyleRow binding-path="-unity-background-image-tint-color">
+        <uie:ColorField label="Image Tint" tooltip="-unity-background-image-tint-color" />
+    </uib:BuilderStyleRow>
+
+    <!-- Unity Background Scale Mode -->
+    <uib:BuilderStyleRow binding-path="-unity-background-scale-mode">
+        <uie:EnumField label="Scale Mode" tooltip="-unity-background-scale-mode" />
+    </uib:BuilderStyleRow>
+
+    <!-- Unity Slice Left -->
+    <uib:BuilderStyleRow binding-path="-unity-slice-left">
+        <uie:IntegerField label="Slice Left" tooltip="-unity-slice-left" />
+    </uib:BuilderStyleRow>
+
+    <!-- Unity Slice Top -->
+    <uib:BuilderStyleRow binding-path="-unity-slice-top">
+        <uie:IntegerField label="Slice Top" tooltip="-unity-slice-top" />
+    </uib:BuilderStyleRow>
+
+    <!-- Unity Slice Right -->
+    <uib:BuilderStyleRow binding-path="-unity-slice-right">
+        <uie:IntegerField label="Slice Right" tooltip="-unity-slice-right" />
+    </uib:BuilderStyleRow>
+
+    <!-- Unity Slice Bottom -->
+    <uib:BuilderStyleRow binding-path="-unity-slice-bottom">
+        <uie:IntegerField label="Slice Bottom" tooltip="-unity-slice-bottom" />
+    </uib:BuilderStyleRow>
+</UXML>

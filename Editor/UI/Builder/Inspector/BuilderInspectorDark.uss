@@ -1,0 +1,20 @@
+/*****************************************************************************/
+/* Inspector                                                                 */
+/*****************************************************************************/
+
+.unity-builder-inspector__category-foldout > .unity-toggle {
+    border-color: rgb(117, 117, 117);
+    background-color: rgb(78, 78, 78);
+}
+
+.unity-builder-inspector__selector-example-code {
+    color: rgb(153, 153, 153);
+}
+
+/*****************************************************************************/
+/* BuilderStyleRow                                                           */
+/*****************************************************************************/
+
+.unity-builder-inspector__style--override .unity-builder-inspector-blue-override-box {
+    background-color: rgb(223, 223, 223);
+}
