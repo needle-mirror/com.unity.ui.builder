@@ -3,6 +3,7 @@ using UnityEngine.UIElements;
 using System;
 using System.Reflection;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor.UIElements;
 using Object = UnityEngine.Object;
 
@@ -147,6 +148,113 @@ namespace Unity.UI.Builder
             {
                 m_StyleFields[styleName].Add(fieldElement);
             }
+        }
+
+        public void BindDoubleFieldRow(BuilderStyleRow styleRow)
+        {
+            var styleFields = styleRow.Query<BindableElement>().ToList()
+                .Where(element => !string.IsNullOrEmpty(element.bindingPath)).ToList();
+            if (styleFields.Count > 0)
+            {
+                var headerLabel = styleRow.Q<Label>(classes: "unity-builder-double-field-label");
+                headerLabel.AddManipulator(new ContextualMenuManipulator(action =>
+                {
+                    (action.target as VisualElement).userData = styleFields;
+                    BuildStyleFieldContextualMenu(action);
+                }));
+            }
+        }
+
+        public void BindStyleField(BuilderStyleRow styleRow, PersistedFoldoutWithField foldoutElement)
+        {
+            var intFields = foldoutElement.Query<IntegerField>().ToList();
+
+            foreach (var field in intFields)
+            {
+                field.SetProperty(BuilderConstants.PersistedFoldoutWithFieldPropertyName, foldoutElement);
+                field.RegisterValueChangedCallback((evt) =>
+                {
+                    var row = field.GetProperty(BuilderConstants.InspectorLinkedStyleRowVEPropertyName) as BuilderStyleRow;
+                    if (row != null && !string.IsNullOrEmpty(row.bindingPath))
+                        foldoutElement.UpdateFromChildField(row.bindingPath, field.value.ToString());
+
+                    foldoutElement.header.AddToClassList(s_LocalStyleOverrideClassName);
+                });
+
+                BuilderStyleRow.ReAssignTooltipToChild(field);
+            }
+            foldoutElement.header.SetProperty(BuilderConstants.PersistedFoldoutWithFieldPropertyName, foldoutElement);
+            foldoutElement.headerInputField.RegisterValueChangedCallback(PersistedFoldoutWithFieldOnValueChange);
+
+            foldoutElement.headerInputField.AddManipulator(
+                new ContextualMenuManipulator((e) =>
+                {
+                    e.target = foldoutElement.header;
+                    BuildStyleFieldContextualMenu(e);
+                }));
+
+            foldoutElement.header.AddManipulator(
+                new ContextualMenuManipulator(BuildStyleFieldContextualMenu));
+        }
+
+        void PersistedFoldoutWithFieldOnValueChange(ChangeEvent<string> evt)
+        {
+            var target = evt.target as TextField;
+            var foldoutElement = target.GetFirstAncestorOfType<PersistedFoldoutWithField>();
+
+            if (!string.IsNullOrEmpty(evt.newValue))
+            {
+                if (foldoutElement.IsValidInput(evt.newValue))
+                {
+                    foldoutElement.header.AddToClassList(s_LocalStyleOverrideClassName);
+                    foldoutElement.headerInputField.value = foldoutElement.GetFormattedInputString();
+                    for (int i = 0; i < foldoutElement.bindingPathArray.Length; i++)
+                    {
+                        var styleProperty = GetStylePropertyByStyleName(foldoutElement.bindingPathArray[i]);
+
+#if UNITY_2019_3_OR_NEWER
+                            if (BuilderConstants.SpecialSnowflakeLengthSytles.Contains(foldoutElement.bindingPathArray[i]))
+                            {
+                                var newValue = 0;
+                                // TryParse to check if fieldValue is not a style string like "auto"
+                                if (Int32.TryParse(foldoutElement.fieldValues[i], out newValue))
+                                {
+                                    var dimension = new Dimension();
+                                    dimension.unit = Dimension.Unit.Pixel;
+                                    dimension.value = newValue;
+
+                                    if (styleProperty.values.Length == 0)
+                                        styleSheet.AddValue(styleProperty, dimension);
+                                    else // TODO: Assume only one value.
+                                        styleSheet.SetValue(styleProperty.values[0], dimension);
+                                }
+                            }
+                            else
+#endif
+                        {
+                            var newValue = 0;
+                            // TryParse to check if fieldValue is not a style string like "auto"
+                            if (Int32.TryParse(foldoutElement.fieldValues[i], out newValue))
+                            {
+                                var convertedFloat = (float)newValue;
+
+                                if (styleProperty.values.Length == 0)
+                                    styleSheet.AddValue(styleProperty, convertedFloat);
+                                else // TODO: Assume only one value.
+                                    styleSheet.SetValue(styleProperty.values[0], convertedFloat);
+                            }
+                        }
+
+                        NotifyStyleChanges();
+                    }
+
+                    StylingChanged(foldoutElement.bindingPathArray.ToList());
+                }
+                else
+                    foldoutElement.headerInputField.SetValueWithoutNotify(foldoutElement.lastValidInput);
+            }
+
+            evt.StopPropagation();
         }
 
         public void RefreshStyleField(string styleName, VisualElement fieldElement)
@@ -309,6 +417,58 @@ namespace Unity.UI.Builder
             }
         }
 
+        public void RefreshStyleField(PersistedFoldoutWithField foldoutElement)
+        {
+            var isDirty = false;
+
+            foreach (var path in foldoutElement.bindingPathArray)
+            {
+                var styleProperty = GetStyleProperty(currentRule, path);
+
+                var field = FindStylePropertyInfo(path);
+                if (field == null)
+                    continue;
+
+                var val = field.GetValue(currentVisualElement.computedStyle, null);
+                if (val is StyleFloat)
+                {
+                    var style = (StyleFloat)val;
+                    var value = style.value;
+
+                    if (styleProperty != null)
+                    {
+                        isDirty = true;
+                        value = styleSheet.GetFloat(styleProperty.values[0]);
+                    }
+
+                    foldoutElement.UpdateFromChildField(path, value.ToString());
+                }
+                else if (val is StyleLength)
+                {
+                    var style = (StyleLength)val;
+                    var value = (int)style.value.value;
+
+                    if (styleProperty != null)
+                    {
+                        isDirty = true;
+
+#if UNITY_2019_3_OR_NEWER
+                        value = (int)styleSheet.GetDimension(styleProperty.values[0]).value;
+#else
+                        value = styleSheet.GetInt(styleProperty.values[0]);
+#endif
+                    }
+
+                    foldoutElement.UpdateFromChildField(path, value.ToString());
+                }
+            }
+
+            if (isDirty)
+                foldoutElement.header.AddToClassList(s_LocalStyleOverrideClassName);
+            else
+                foldoutElement.header.RemoveFromClassList(s_LocalStyleOverrideClassName);
+        }
+
         private void BuildStyleFieldContextualMenu(ContextualMenuPopulateEvent evt)
         {
             evt.menu.AppendAction(
@@ -320,6 +480,20 @@ namespace Unity.UI.Builder
 
         private void UnsetStyleProperty(DropdownMenuAction action)
         {
+            var listToUnset = (action.userData as VisualElement).userData;
+            if (listToUnset != null && listToUnset is List<BindableElement>)
+            {
+                foreach (var bindableElement in listToUnset as List<BindableElement>)
+                {
+                    var beStyleName = bindableElement.GetProperty(BuilderConstants.InspectorStylePropertyNameVEPropertyName) as string;
+                    schedule.Execute(() => RefreshStyleField(beStyleName, bindableElement));
+                    styleSheet.RemoveProperty(currentRule, beStyleName);
+                }
+
+                NotifyStyleChanges();
+                return;
+            }
+
             var fieldElement = action.userData as VisualElement;
             var styleName = fieldElement.GetProperty(BuilderConstants.InspectorStylePropertyNameVEPropertyName) as string;
 
@@ -329,6 +503,27 @@ namespace Unity.UI.Builder
             schedule.Execute(() => RefreshStyleField(styleName, fieldElement));
 
             styleSheet.RemoveProperty(currentRule, styleName);
+
+            var foldout = fieldElement.GetProperty(BuilderConstants.PersistedFoldoutWithFieldPropertyName) as PersistedFoldoutWithField;
+            if (foldout != null)
+            {
+                // Check if the unset element was the header field.
+                if (fieldElement.ClassListContains(BuilderConstants.PersistedFoldoutWithFieldHeaderClassName))
+                {
+                    foreach (var path in foldout.bindingPathArray)
+                    {
+                        foreach (var linkedField in m_StyleFields[path])
+                            schedule.Execute(() => RefreshStyleField(path, linkedField));
+                        styleSheet.RemoveProperty(currentRule, path);
+                    }
+
+                    schedule.Execute(() => RefreshStyleField(foldout));
+                }
+                else
+                    // The unset element was a child of a PersistedFoldoutWithField
+                    schedule.Execute(() => RefreshStyleField(foldout));
+            }
+
             NotifyStyleChanges();
         }
 

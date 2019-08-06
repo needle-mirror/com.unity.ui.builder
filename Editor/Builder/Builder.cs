@@ -36,6 +36,11 @@ namespace Unity.UI.Builder
             }
         }
 
+        public BuilderCommandHandler commandHandler
+        {
+            get { return m_CommandHandler; }
+        }
+
         public static Builder GetWindowAndInit()
         {
             var window = GetWindow<Builder>();
@@ -81,13 +86,14 @@ namespace Unity.UI.Builder
             // Create the rest of the panes.
             var classDragger = new BuilderClassDragger(this, root, m_Selection, m_Viewport, m_Viewport.parentTracker);
             var hierarchyDragger = new BuilderHierarchyDragger(this, root, m_Selection, m_Viewport, m_Viewport.parentTracker);
-            var explorer = new BuilderExplorer(m_Viewport, m_Selection, classDragger, hierarchyDragger);
+            var contextMenuManipulator = new BuilderContextMenuManipulator(this, m_Selection);
+            var explorer = new BuilderExplorer(m_Viewport, m_Selection, classDragger, hierarchyDragger, contextMenuManipulator);
             var libraryDragger = new BuilderLibraryDragger(this, root, m_Selection, m_Viewport, m_Viewport.parentTracker, explorer.container, tooltipPreview);
-            var library = new BuilderLibrary(this, m_Viewport, m_Selection, libraryDragger, tooltipPreview);
+            m_Toolbar = new BuilderToolbar(this, m_Selection, dialog, m_Viewport, explorer, tooltipPreview);
+            var library = new BuilderLibrary(this, m_Viewport, m_Toolbar, m_Selection, libraryDragger, tooltipPreview);
             m_UxmlPreview = new BuilderUxmlPreview(this, m_Viewport, m_Selection);
             m_UssPreview = new BuilderUssPreview(this);
             var inspector = new BuilderInspector(this, m_Selection);
-            m_Toolbar = new BuilderToolbar(this, m_Selection, dialog, m_Viewport, explorer, tooltipPreview);
             root.Q("viewport").Add(m_Viewport);
             m_Viewport.toolbar.Add(m_Toolbar);
             root.Q("library").Add(library);
@@ -147,9 +153,6 @@ namespace Unity.UI.Builder
                 return false;
 
             var builder = GetWindowAndInit();
-
-            if (!builder.m_Toolbar.CheckForUnsavedChanges())
-                return true;
 
             builder.m_Toolbar.LoadDocument(asset);
 

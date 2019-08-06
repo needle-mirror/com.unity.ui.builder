@@ -99,7 +99,7 @@ namespace Unity.UI.Builder
                     var assetPath = AssetDatabase.GetAssetPath(assetRef);
                     if (assetPath.StartsWith("Assets") || assetPath.StartsWith("Packages"))
                         assetPath = "/" + assetPath;
-                    str = $"url('{assetPath}')";
+                    str = assetRef == null ? "none" : $"url('{assetPath}')";
                     break;
                 default:
                     throw new ArgumentException("Unhandled type " + handle.valueType);

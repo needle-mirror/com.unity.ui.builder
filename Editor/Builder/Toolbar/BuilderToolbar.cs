@@ -22,7 +22,9 @@ namespace Unity.UI.Builder
         private ToolbarMenu m_CanvasThemeMenu;
 
         private TextField m_SaveDialogUxmlPathField;
+        private Button m_SaveDialogUxmlLocationButton;
         private TextField m_SaveDialogUssPathField;
+        private Button m_SaveDialogUssLocationButton;
         private Button m_SaveDialogSaveButton;
         private Button m_SaveDialogCancelButton;
         private Label m_SaveDialogTitleLabel;
@@ -62,7 +64,9 @@ namespace Unity.UI.Builder
 
             // Query the UI
             m_SaveDialogUxmlPathField = m_SaveDialog.Q<TextField>("save-dialog-uxml-path");
+            m_SaveDialogUxmlLocationButton = m_SaveDialog.Q<Button>("save-dialog-uxml-location-button");
             m_SaveDialogUssPathField = m_SaveDialog.Q<TextField>("save-dialog-uss-path");
+            m_SaveDialogUssLocationButton = m_SaveDialog.Q<Button>("save-dialog-uss-location-button");
             m_SaveDialogSaveButton = m_SaveDialog.Q<Button>("save-dialog-save-button");
             m_SaveDialogCancelButton = m_SaveDialog.Q<Button>("save-dialog-cancel-button");
             m_SaveDialogTitleLabel = m_SaveDialog.Q<Label>("title");
@@ -72,9 +76,12 @@ namespace Unity.UI.Builder
 
             m_SaveDialogSaveButton.clickable.clicked += SaveDocument;
             m_SaveDialogCancelButton.clickable.clicked += m_SaveDialog.Hide;
+            m_SaveDialogUxmlLocationButton.clickable.clicked += OnUxmlLocationButtonClick;
+            m_SaveDialogUssLocationButton.clickable.clicked += OnUssLocationButtonClick;
 
             var saveDialogValidationBoxContainer = m_SaveDialog.Q("save-dialog-validation-box");
             m_SaveDialogValidationBox = new IMGUIContainer(DrawSaveDialogValidationMessage);
+            m_SaveDialogValidationBox.style.overflow = Overflow.Hidden;
             saveDialogValidationBoxContainer.Add(m_SaveDialogValidationBox);
 
             var template = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
@@ -180,6 +187,33 @@ namespace Unity.UI.Builder
             ValidateSaveDialogPath(evt.newValue);
         }
 
+        private void OpenSaveFileDialog(string title, TextField field, string extension)
+        {
+            var newPath = EditorUtility.SaveFilePanel(
+                "Choose USS File Location",
+                Path.GetDirectoryName(field.value),
+                Path.GetFileName(field.value),
+                extension);
+
+            if (string.IsNullOrWhiteSpace(newPath))
+                return;
+
+            var appPathLength = Application.dataPath.Length - 6; // - "Assets".Length
+            newPath = newPath.Substring(appPathLength);
+
+            field.value = newPath;
+        }
+
+        private void OnUxmlLocationButtonClick()
+        {
+            OpenSaveFileDialog("Choose UXML File Location", m_SaveDialogUxmlPathField, "uxml");
+        }
+
+        private void OnUssLocationButtonClick()
+        {
+            OpenSaveFileDialog("Choose USS File Location", m_SaveDialogUssPathField, "uss");
+        }
+
         private void NewDocument()
         {
             if (!CheckForUnsavedChanges())
@@ -207,7 +241,7 @@ namespace Unity.UI.Builder
             var testAsset = BuilderConstants.UIBuilderPackagePath +
                 "/Builder/SampleDocument/BuilderSampleCanvas.uxml";
             var originalAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(testAsset);
-            LoadDocument(originalAsset);
+            LoadDocumentInternal(originalAsset);
         }
 
         private void ResetViewData()
@@ -396,10 +430,20 @@ namespace Unity.UI.Builder
                 return;
             }
 
-            LoadDocument(visualTreeAsset);
+            LoadDocumentInternal(visualTreeAsset);
         }
 
-        public void LoadDocument(VisualTreeAsset visualTreeAsset)
+        public bool LoadDocument(VisualTreeAsset visualTreeAsset)
+        {
+            if (!CheckForUnsavedChanges())
+                return false;
+
+            LoadDocumentInternal(visualTreeAsset);
+
+            return true;
+        }
+
+        private void LoadDocumentInternal(VisualTreeAsset visualTreeAsset)
         {
             m_DocumentField.SetValueWithoutNotify(visualTreeAsset);
 

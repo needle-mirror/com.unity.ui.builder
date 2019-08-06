@@ -31,6 +31,11 @@ namespace Unity.UI.Builder
         public static readonly string InspectorStylePropertyNameVEPropertyName = "__unity-ui-builder-style-property-name";
         public static readonly string InspectorComputedStylePropertyInfoVEPropertyName = "__unity-ui-builder-computed-style-property-info";
 
+        // Inspector Style Property and Class Names
+        public static readonly string BuilderStyleRowBlueOverrideBoxClassName = "unity-builder-inspector-blue-override-box";
+        public static readonly string PersistedFoldoutWithFieldPropertyName = "unity-foldout-with-field";
+        public static readonly string PersistedFoldoutWithFieldHeaderClassName = PersistedFoldoutWithFieldPropertyName + "__header";
+
         // Explorer Links VE Property Names
         public static readonly string ExplorerItemElementLinkVEPropertyName = "__unity-ui-builder-explorer-item-link";
 
@@ -88,10 +93,10 @@ namespace Unity.UI.Builder
         public static readonly string SaveDialogInvalidPathMessage = "Can only save in the 'Assets/' or 'Packages/' folders.";
 
         // Explorer
+        public static readonly string ExplorerHeaderRowClassName = "unity-builder-explorer__header";
         public static readonly string ExplorerItemReorderZoneClassName = "unity-builder-explorer__reorder-zone";
         public static readonly string ExplorerItemReorderZoneAboveClassName = "unity-builder-explorer__reorder-zone-above";
         public static readonly string ExplorerItemReorderZoneBelowClassName = "unity-builder-explorer__reorder-zone-below";
-        public static readonly string ExplorerItemReorderHoverBarClassName = "unity-builder-explorer__reorder-hover-bar";
 
         // UXML
         public static readonly string UxmlHeader = "<UXML xmlns=\"UnityEngine.UIElements\" xmlns:uie=\"UnityEditor.UIElements\">\n";

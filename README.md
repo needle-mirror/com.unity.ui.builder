@@ -15,14 +15,13 @@ Unity versions supported:
 - **2019.2**: 2019.2.0b4 or newer
 - **2019.3**: 2019.3.0a10 or newer
 
-This package has not yet been publisher or added to the Package Manager UI. To install:
+This package has not yet been added to the Package Manager UI. To install:
 1. Open your project's `Packages/manifest.json`
 1. Add:
     ```
     {
-      "registry": "https://staging-packages.unity.com",
       "dependencies": {
-        "com.unity.ui.builder": "0.5.6-preview"
+        "com.unity.ui.builder": "0.5.7-preview",
         ...
       }
     }

@@ -24,43 +24,67 @@
         <uie:ColorField label="Color Bottom" tooltip="border-bottom-color" />
     </uib:BuilderStyleRow>
 
-    <!-- Border Left Width -->
-    <uib:BuilderStyleRow binding-path="border-left-width">
-        <uie:IntegerField label="Width Left" tooltip="border-left-width" />
+    <!-- Border Width -->
+    <uib:BuilderStyleRow name="inspector-style-section-foldout-border-width">
+        <uib:PersistedFoldoutWithField
+            text="Width"
+            tooltip="border-width"
+            binding-path="border-left-width border-right-width border-top-width border-bottom-width"
+            view-data-key="builder-inspector-style-section-foldout-border-width"
+            class="unity-sub-foldout"
+            value="false">
+
+            <!-- Border Left Width -->
+            <uib:BuilderStyleRow binding-path="border-left-width">
+                <uie:IntegerField label="Left" tooltip="border-left-width" />
+            </uib:BuilderStyleRow>
+
+            <!-- Border Right Width -->
+            <uib:BuilderStyleRow binding-path="border-right-width">
+                <uie:IntegerField label="Right" tooltip="border-right-width" />
+            </uib:BuilderStyleRow>
+
+            <!-- Border Top Width -->
+            <uib:BuilderStyleRow binding-path="border-top-width">
+                <uie:IntegerField label="Top" tooltip="border-top-width" />
+            </uib:BuilderStyleRow>
+
+            <!-- Border Bottom Width -->
+            <uib:BuilderStyleRow binding-path="border-bottom-width">
+                <uie:IntegerField label="Bottom" tooltip="border-bottom-width" />
+            </uib:BuilderStyleRow>
+        </uib:PersistedFoldoutWithField>
     </uib:BuilderStyleRow>
 
-    <!-- Border Right Width -->
-    <uib:BuilderStyleRow binding-path="border-right-width">
-        <uie:IntegerField label="Width Right" tooltip="border-right-width" />
-    </uib:BuilderStyleRow>
+    <!-- Border Radius -->
+    <uib:BuilderStyleRow name="inspector-style-section-foldout-border-radius">
+        <uib:PersistedFoldoutWithField
+            text="Radius"
+            tooltip="border-radius"
+            binding-path="border-top-left-radius border-bottom-left-radius border-top-right-radius border-bottom-right-radius"
+            view-data-key="builder-inspector-style-section-foldout-border-radius"
+            class="unity-sub-foldout"
+            value="false">
 
-    <!-- Border Top Width -->
-    <uib:BuilderStyleRow binding-path="border-top-width">
-        <uie:IntegerField label="Width Top" tooltip="border-top-width" />
-    </uib:BuilderStyleRow>
+            <!-- Border Top-Left Radius -->
+            <uib:BuilderStyleRow binding-path="border-top-left-radius">
+                <uie:IntegerField label="Top-Left" tooltip="border-top-left-radius" />
+            </uib:BuilderStyleRow>
 
-    <!-- Border Bottom Width -->
-    <uib:BuilderStyleRow binding-path="border-bottom-width">
-        <uie:IntegerField label="Width Bottom" tooltip="border-bottom-width" />
-    </uib:BuilderStyleRow>
+            <!-- Border Bottom-Left Radius -->
+            <uib:BuilderStyleRow binding-path="border-bottom-left-radius">
+                <uie:IntegerField label="Bottom-Left" tooltip="border-bottom-left-radius" />
+            </uib:BuilderStyleRow>
 
-    <!-- Border Top-Left Radius -->
-    <uib:BuilderStyleRow binding-path="border-top-left-radius">
-        <uie:IntegerField label="Radius Top-Left" tooltip="border-top-left-radius" />
-    </uib:BuilderStyleRow>
+            <!-- Border Top-Right Radius -->
+            <uib:BuilderStyleRow binding-path="border-top-right-radius">
+                <uie:IntegerField label="Top-Right" tooltip="border-top-right-radius" />
+            </uib:BuilderStyleRow>
 
-    <!-- Border Bottom-Left Radius -->
-    <uib:BuilderStyleRow binding-path="border-bottom-left-radius">
-        <uie:IntegerField label="Radius Bottom-Left" tooltip="border-bottom-left-radius" />
-    </uib:BuilderStyleRow>
-
-    <!-- Border Top-Right Radius -->
-    <uib:BuilderStyleRow binding-path="border-top-right-radius">
-        <uie:IntegerField label="Radius Top-Right" tooltip="border-top-right-radius" />
-    </uib:BuilderStyleRow>
-
-    <!-- Border Bottom-Right Radius -->
-    <uib:BuilderStyleRow binding-path="border-bottom-right-radius">
-        <uie:IntegerField label="Radius Bottom-Right" tooltip="border-bottom-right-radius" />
+            <!-- Border Bottom-Right Radius -->
+            <uib:BuilderStyleRow binding-path="border-bottom-right-radius">
+                <uie:IntegerField label="Bottom-Right" tooltip="border-bottom-right-radius" />
+            </uib:BuilderStyleRow>
+        </uib:PersistedFoldoutWithField>
     </uib:BuilderStyleRow>
 </UXML>

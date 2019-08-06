@@ -37,12 +37,14 @@ UI Builder lets you visually create and edit UI using UIElements, UXML, and USS.
 1. Selecting an element inside a template instance or C# type selects the parent instance or C# element.
 1. Dragging element onto a template instance or C# type element in the Viewport reparents it to the parent instance or C# element.
 1. Dragging element onto a template instance or C# type element in the Hierarchy does nothing.
+1. Right-clicking anywhere in the Hierarchy will open the Copy/Paste/Duplicate/Delete context menu.
 
 ## Library
 
 1. Displays built-in elements under a **Unity** heading.
-1. Displays project defined factory elements and UXML files (with .uxml extension) under a **Project** heading.
+1. Displays project defined factory elements and UXML files (with .uxml extension) under a **Project** heading. This includes assets inside both the `Assets/` and `Packages/` folders.
 1. Can double click to create new element instance in the root.
+1. Items that have corresponding .uxml assets will have an "Open" button visible that will open the asset for editing in the UI Builder.
 1. Can click-drag onto a Viewport element to create new instance as a child.
 1. Can click-drag onto a Hierarchy element to create new instance as a child, or between elements to create as a sibling.
 1. Can create (double-click or drag) template instances from other uxml files.
@@ -68,6 +70,7 @@ UI Builder lets you visually create and edit UI using UIElements, UXML, and USS.
 1. Entering paths that do not start with "Assets/" or "Packages/" will show an invalid path message and the Save button will be disabled.
 1. Updating the UXML Path field will automatically update the USS Path field to match, until the USS Path field is changed manually.
 1. Entering file names without extensions will still add the correct extensions when creating the assets.
+1. The "..." button beside each path field should bring up the system Save File Dialog.
 
 ### Canvas
 

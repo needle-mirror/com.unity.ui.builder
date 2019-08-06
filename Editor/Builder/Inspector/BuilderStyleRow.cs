@@ -30,7 +30,7 @@ namespace Unity.UI.Builder
         {
             // Hack for lack of better options (I still want to set the tooltips in UXML!).
             var label = field.Q<Label>();
-            if (label != null)
+            if (label != null && !string.IsNullOrEmpty(field.tooltip))
             {
                 var tooltipTemp = field.tooltip;
                 field.tooltip = null;

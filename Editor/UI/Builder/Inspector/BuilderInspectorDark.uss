@@ -2,13 +2,17 @@
 /* Inspector                                                                 */
 /*****************************************************************************/
 
-.unity-builder-inspector__category-foldout > .unity-toggle {
+.unity-builder-inspector__category-foldout > .unity-foldout__header > .unity-toggle {
     border-color: rgb(117, 117, 117);
     background-color: rgb(78, 78, 78);
 }
 
 .unity-builder-inspector__selector-example-code {
     color: rgb(153, 153, 153);
+}
+
+.unity-builder-inspector__style-category-foldout > .unity-foldout__header {
+    background-color: rgb(34, 34, 34);
 }
 
 /*****************************************************************************/

@@ -36,6 +36,10 @@
     background-color: rgb(64, 80, 221);
 }
 
+.unity-builder__toolbar-setting-menu {
+    background-image: url("/Packages/com.unity.ui.builder/Icons/Dark/d__Menu.png");
+}
+
 /*****************************************************************************/
 /* Viewport                                                                  */
 /*****************************************************************************/

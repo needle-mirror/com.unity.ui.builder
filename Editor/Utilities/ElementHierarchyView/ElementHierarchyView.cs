@@ -12,6 +12,7 @@ namespace Unity.UI.Builder
     internal class ElementHierarchyView : VisualElement
     {
         public bool hierarchyHasChanged { get; set; }
+        public BuilderExplorer.BuilderElementInfoVisibilityState elementInfoVisibilityState { get; set; }
 
         private VisualTreeAsset m_ClassPillTemplate;
 
@@ -47,6 +48,7 @@ namespace Unity.UI.Builder
 
         private BuilderClassDragger m_ClassDragger;
         private BuilderHierarchyDragger m_HierarchyDragger;
+        private BuilderContextMenuManipulator m_ContextMenuManipulator;
         private StringBuilder m_SelectorStrBuilder;
 
         public VisualElement container
@@ -57,11 +59,13 @@ namespace Unity.UI.Builder
         public ElementHierarchyView(
             BuilderClassDragger classDragger,
             BuilderHierarchyDragger hierarchyDragger,
+            BuilderContextMenuManipulator contextMenuManipulator,
             Action<VisualElement> selectElementCallback,
             OverlayPainterHelperElement helperElement = null)
         {
             m_ClassDragger = classDragger;
             m_HierarchyDragger = hierarchyDragger;
+            m_ContextMenuManipulator = contextMenuManipulator;
 
             m_SelectorStrBuilder = new StringBuilder();
 
@@ -104,6 +108,8 @@ namespace Unity.UI.Builder
             m_TreeView.onSelectionChanged += OnSelectionChange;
 
             m_Container.Add(m_TreeView);
+
+            m_ContextMenuManipulator.RegisterCallbacksOnTarget(m_Container);
         }
 
         public void DrawOverlay()
@@ -131,8 +137,8 @@ namespace Unity.UI.Builder
 
             // Pre-emptive cleanup.
             var row = element.parent.parent;
-            row.RemoveFromClassList("unity-builder-explorer__header");
-            row.RemoveFromClassList("unity-builder-explorer--hidden");
+            row.RemoveFromClassList(BuilderConstants.ExplorerHeaderRowClassName);
+            row.userData = target;
 
             // Shared Styles
             if (BuilderSharedStyles.IsSelectorsContainerElement(target))
@@ -140,7 +146,7 @@ namespace Unity.UI.Builder
                 var ssLabel = new Label("Shared Styles");
                 ssLabel.AddToClassList("unity-builder-explorer-tree-item-label");
                 ssLabel.AddToClassList("unity-debugger-tree-item-type");
-                row.AddToClassList("unity-builder-explorer__header");
+                row.AddToClassList(BuilderConstants.ExplorerHeaderRowClassName);
                 labelCont.Add(ssLabel);
                 return;
             }
@@ -193,7 +199,7 @@ namespace Unity.UI.Builder
                 var ssLabel = new Label("Hierarchy");
                 ssLabel.AddToClassList("unity-builder-explorer-tree-item-label");
                 ssLabel.AddToClassList("unity-debugger-tree-item-type");
-                row.AddToClassList("unity-builder-explorer__header");
+                row.AddToClassList(BuilderConstants.ExplorerHeaderRowClassName);
                 labelCont.Add(ssLabel);
                 return;
             }
@@ -205,17 +211,23 @@ namespace Unity.UI.Builder
             // Register drag-and-drop events for reparenting.
             m_HierarchyDragger.RegisterCallbacksOnTarget(element);
 
+            // Register right-click events for context menu actions.
+            m_ContextMenuManipulator.RegisterCallbacksOnTarget(element);
+
             // Allow reparenting.
             element.SetProperty(BuilderConstants.ExplorerItemElementLinkVEPropertyName, target);
 
-            if (string.IsNullOrEmpty(target.name))
+            if (string.IsNullOrEmpty(target.name) ||
+                elementInfoVisibilityState.HasFlag(BuilderExplorer.BuilderElementInfoVisibilityState.TypeName))
             {
-                var label = new Label(target.typeName);
-                label.AddToClassList("unity-builder-explorer-tree-item-label");
-                label.AddToClassList("unity-debugger-tree-item-type");
-                labelCont.Add(label);
+                var typeLabel = new Label(target.typeName);
+                typeLabel.AddToClassList("unity-builder-explorer-tree-item-label");
+                typeLabel.AddToClassList("unity-debugger-tree-item-type");
+                labelCont.Add(typeLabel);
+
             }
-            else if (!string.IsNullOrEmpty(target.name))
+
+            if (!string.IsNullOrEmpty(target.name))
             {
                 var nameLabel = new Label("#" + target.name);
                 nameLabel.AddToClassList("unity-builder-explorer-tree-item-label");
@@ -223,21 +235,22 @@ namespace Unity.UI.Builder
                 nameLabel.AddToClassList("unity-debugger-tree-item-name-label");
                 labelCont.Add(nameLabel);
             }
-            // TODO: Will re-enable when we have the Hierarchy settings in place.
-            /*else if (target.classList.Count != 0)
+            if (target.classList.Count > 0 && elementInfoVisibilityState.HasFlag(BuilderExplorer.BuilderElementInfoVisibilityState.ClassList))
             {
-                var ussClass = target.classList[0];
+                foreach (var ussClass in target.GetClasses())
+                {
+                    var classLabelCont = new VisualElement();
+                    classLabelCont.AddToClassList("unity-builder-explorer-tree-item-label-cont");
+                    element.Add(classLabelCont);
 
-                var classLabelCont = new VisualElement();
-                classLabelCont.AddToClassList("unity-builder-explorer-tree-item-label-cont");
-                element.Add(classLabelCont);
+                    var classLabel = new Label("." + ussClass);
+                    classLabel.AddToClassList("unity-builder-explorer-tree-item-label");
+                    classLabel.AddToClassList("unity-debugger-tree-item-classlist");
+                    classLabel.AddToClassList("unity-debugger-tree-item-classlist-label");
 
-                var classLabel = new Label("." + ussClass);
-                classLabel.AddToClassList("unity-builder-explorer-tree-item-label");
-                classLabel.AddToClassList("unity-debugger-tree-item-classlist");
-                classLabel.AddToClassList("unity-debugger-tree-item-classlist-label");
-                classLabelCont.Add(classLabel);
-            }*/
+                    classLabelCont.Add(classLabel);
+                }
+            }
 
             // Show name of uxml file if this element is a TemplateContainer.
             var path = target.GetProperty(BuilderConstants.LibraryItemLinkedTemplateContainerPathVEPropertyName) as string;

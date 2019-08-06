@@ -2,18 +2,22 @@
 /* Inspector                                                                 */
 /*****************************************************************************/
 
-.unity-builder-inspector__category-foldout > .unity-toggle {
+.unity-builder-inspector__category-foldout > .unity-foldout__header > .unity-toggle {
     border-color: rgb(117, 117, 117);
     background-color: rgb(146, 146, 146);
 }
 
 /* In 2019.3, N*, all labels are washed out. Not sure why. This is a the fix. */
-.unity-builder-inspector__category-foldout > .unity-toggle .unity-label {
+.unity-builder-inspector__category-foldout > .unity-foldout__header > .unity-toggle .unity-label {
     color: rgb(1, 1, 1);
 }
 
 .unity-builder-inspector__selector-example-code {
     color: rgb(80, 80, 80);
+}
+
+.unity-builder-inspector__style-category-foldout > .unity-foldout__header {
+    background-color: rgb(238, 238, 238);
 }
 
 /*****************************************************************************/

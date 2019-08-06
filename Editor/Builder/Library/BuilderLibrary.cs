@@ -20,12 +20,14 @@ namespace Unity.UI.Builder
 
         private readonly string k_TreeItemClassName = "unity-builder-library__tree-item";
         private readonly string k_TreeItemLabelClassName = "unity-builder-library__tree-item-label";
-        private readonly string k_TreeItemExampleContainerClassName = "unity-builder-library__tree-item-example";
+
+        private readonly string k_OpenButtonClassName = "unity-builder-library__tree-item-open-button";
 
         private static List<string> s_NameSpacesToAvoid = new List<string>() { "Unity", "UnityEngine", "UnityEditor" };
 
         Builder m_Builder;
-        VisualElement m_Canvas;
+        VisualElement m_DocumentElement;
+        BuilderToolbar m_Toolbar;
         BuilderSelection m_Selection;
         BuilderLibraryDragger m_Dragger;
 
@@ -40,6 +42,8 @@ namespace Unity.UI.Builder
             public string name => data;
 
             public bool isHeader { get; set; }
+
+            public VisualTreeAsset sourceAsset { get; set; }
 
             public Func<VisualElement> makeVisualElement { get; private set; }
 
@@ -231,6 +235,7 @@ namespace Unity.UI.Builder
         private void ImportUxmlFromProject(LibraryTreeItem projectCategory)
         {
             var filter = new SearchFilter();
+            filter.searchArea = SearchFilter.SearchArea.AllAssets;
             filter.classNames = new string[] { "VisualTreeAsset" };
             var assets = AssetDatabase.FindAllAssets(filter);
 
@@ -259,6 +264,7 @@ namespace Unity.UI.Builder
                     {
                         return inVta.AddTemplateInstance(inParent, assetPath) as VisualElementAsset;
                     });
+                newItem.sourceAsset = vta;
 
                 if (categoryStack.Count == 0)
                     projectCategory.AddChild(newItem);
@@ -294,12 +300,13 @@ namespace Unity.UI.Builder
         }
 
         public BuilderLibrary(
-            Builder builder, BuilderViewport viewport,
+            Builder builder, BuilderViewport viewport, BuilderToolbar toolbar,
             BuilderSelection selection, BuilderLibraryDragger dragger,
             BuilderTooltipPreview tooltipPreview)
         {
             m_Builder = builder;
-            m_Canvas = viewport.documentElement;
+            m_DocumentElement = viewport.documentElement;
+            m_Toolbar = toolbar;
             m_Selection = selection;
             m_Dragger = dragger;
             m_TooltipPreview = tooltipPreview;
@@ -412,77 +419,6 @@ namespace Unity.UI.Builder
             ImportUxmlFromProject(fromProjectCategory);
             ImportFactoriesFromSource(fromProjectCategory);
 
-            Func<VisualElement> makeItem = () =>
-            {
-                var box = new VisualElement();
-                box.AddToClassList(k_TreeItemClassName);
-                m_Dragger.RegisterCallbacksOnTarget(box);
-
-                box.RegisterCallback<MouseEnterEvent>(ItemMouseEnter);
-                box.RegisterCallback<MouseLeaveEvent>(ItemMouseLeave);
-
-                var label = new Label();
-                label.AddToClassList(k_TreeItemLabelClassName);
-
-                var exampleContainer = new VisualElement();
-                exampleContainer.name = "example-container";
-                exampleContainer.AddToClassList(k_TreeItemExampleContainerClassName);
-
-                box.Add(label);
-                box.Add(exampleContainer);
-
-                return box;
-            };
-
-            Action<VisualElement, ITreeViewItem> bindItem = (element, item) =>
-            {
-                var builderItem = item as LibraryTreeItem;
-
-                // Pre-emptive cleanup.
-                var row = element.parent.parent;
-                row.RemoveFromClassList("unity-builder-explorer__header");
-                if (builderItem.isHeader)
-                    row.AddToClassList("unity-builder-explorer__header");
-
-                // Set label.
-                var label = element.ElementAt(0) as Label;
-                label.text = builderItem.data;
-
-                var exampleContainer = element.ElementAt(1);
-                exampleContainer.Clear();
-
-                //var example = builderItem.makeItem();
-                //exampleContainer.Add(example);
-
-                element.userData = item;
-                element.SetProperty(BuilderConstants.LibraryItemLinkedManipulatorVEPropertyName, builderItem);
-            };
-
-            Action<ITreeViewItem> onItemChosen = (selectedItem) =>
-            {
-                if (selectedItem == null)
-                    return;
-
-                var item = selectedItem as LibraryTreeItem;
-
-                var newElement = item.makeVisualElement();
-                m_Canvas.Add(newElement);
-
-                if (item.makeElementAsset == null)
-                    BuilderAssetUtilities.AddElementToAsset(m_Builder.document, newElement);
-                else
-                    BuilderAssetUtilities.AddElementToAsset(
-                        m_Builder.document, newElement, item.makeElementAsset);
-
-                // TODO: ListView bug. Does not refresh selection pseudo states after a
-                // call to Refresh().
-                m_Selection.NotifyOfHierarchyChange(null);
-                this.schedule.Execute(() =>
-                {
-                    m_Selection.Select(null, newElement);
-                }).ExecuteLater(200);
-            };
-
             var treeView = new TreeView() { name = k_TreeViewName };
             treeView.AddToClassList(k_TreeViewClassName);
             Add(treeView);
@@ -490,9 +426,9 @@ namespace Unity.UI.Builder
             treeView.viewDataKey = "samples-tree";
             treeView.itemHeight = 20;
             treeView.rootItems = items;
-            treeView.makeItem = makeItem;
-            treeView.bindItem = bindItem;
-            treeView.onItemChosen += onItemChosen;
+            treeView.makeItem = MakeItem;
+            treeView.bindItem = BindItem;
+            treeView.onItemChosen += OnItemChosen;
             treeView.Refresh();
 
             // Make sure the Hierarchy View gets focus when the pane gets focused.
@@ -501,6 +437,90 @@ namespace Unity.UI.Builder
             // Auto-expand all items on load.
             foreach (var item in treeView.rootItems)
                 treeView.ExpandItem(item.id);
+        }
+
+        VisualElement MakeItem()
+        {
+            var box = new VisualElement();
+            box.AddToClassList(k_TreeItemClassName);
+            m_Dragger.RegisterCallbacksOnTarget(box);
+
+            box.RegisterCallback<MouseEnterEvent>(ItemMouseEnter);
+            box.RegisterCallback<MouseLeaveEvent>(ItemMouseLeave);
+
+            var label = new Label();
+            label.AddToClassList(k_TreeItemLabelClassName);
+
+            box.Add(label);
+
+            var openButton = new Button() { name = k_OpenButtonClassName, text = "Open" };
+            openButton.AddToClassList(BuilderConstants.HiddenStyleClassName);
+            openButton.clickable.clickedWithEventInfo += OnOpenButtonClick;
+            box.Add(openButton);
+
+            return box;
+        }
+
+        void BindItem(VisualElement element, ITreeViewItem item)
+        {
+            var builderItem = item as LibraryTreeItem;
+
+            // Pre-emptive cleanup.
+            var row = element.parent.parent;
+            row.RemoveFromClassList(BuilderConstants.ExplorerHeaderRowClassName);
+            if (builderItem.isHeader)
+                row.AddToClassList(BuilderConstants.ExplorerHeaderRowClassName);
+
+            // Set label.
+            var label = element.ElementAt(0) as Label;
+            label.text = builderItem.data;
+
+            // Set open button visibility.
+            var openButton = element.Q<Button>(k_OpenButtonClassName);
+            openButton.userData = item;
+            if (builderItem.sourceAsset == null)
+                openButton.AddToClassList(BuilderConstants.HiddenStyleClassName);
+            else
+                openButton.RemoveFromClassList(BuilderConstants.HiddenStyleClassName);
+
+            element.userData = item;
+            element.SetProperty(BuilderConstants.LibraryItemLinkedManipulatorVEPropertyName, builderItem);
+        }
+
+        void OnItemChosen(ITreeViewItem selectedItem)
+        {
+            if (selectedItem == null)
+                return;
+
+            var item = selectedItem as LibraryTreeItem;
+
+            var newElement = item.makeVisualElement();
+            m_DocumentElement.Add(newElement);
+
+            if (item.makeElementAsset == null)
+                BuilderAssetUtilities.AddElementToAsset(m_Builder.document, newElement);
+            else
+                BuilderAssetUtilities.AddElementToAsset(
+                    m_Builder.document, newElement, item.makeElementAsset);
+
+            // TODO: ListView bug. Does not refresh selection pseudo states after a
+            // call to Refresh().
+            m_Selection.NotifyOfHierarchyChange(null);
+            this.schedule.Execute(() =>
+            {
+                m_Selection.Select(null, newElement);
+            }).ExecuteLater(200);
+        }
+
+        void OnOpenButtonClick(EventBase evt)
+        {
+            var element = evt.target as VisualElement;
+            var item = element.userData as LibraryTreeItem;
+
+            if (item.sourceAsset == null)
+                return;
+
+            m_Toolbar.LoadDocument(item.sourceAsset);
         }
     }
 }

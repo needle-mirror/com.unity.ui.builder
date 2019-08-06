@@ -23,9 +23,18 @@ namespace Unity.UI.Builder
                 var bindingPath = styleRow.bindingPath;
                 var styleFields = styleRow.Query<BindableElement>().ToList();
 
+                if (styleRow.ClassListContains("unity-builder-double-field-row"))
+                {
+                    BindDoubleFieldRow(styleRow);
+                }
+
                 foreach (var styleField in styleFields)
                 {
-                    if (!string.IsNullOrEmpty(styleField.bindingPath))
+                    if (styleField is PersistedFoldoutWithField)
+                    {
+                        BindStyleField(styleRow, styleField as PersistedFoldoutWithField);
+                    }
+                    else if (!string.IsNullOrEmpty(styleField.bindingPath))
                     {
                         BindStyleField(styleRow, styleField.bindingPath, styleField);
                     }
@@ -50,8 +59,12 @@ namespace Unity.UI.Builder
                 var styleFields = styleRow.Query<BindableElement>().ToList();
 
                 foreach (var styleField in styleFields)
-                { 
-                    if (!string.IsNullOrEmpty(styleField.bindingPath))
+                {
+                    if (styleField is PersistedFoldoutWithField)
+                    {
+                        RefreshStyleField(styleField as PersistedFoldoutWithField);
+                    }
+                    else if (!string.IsNullOrEmpty(styleField.bindingPath))
                     {
                         RefreshStyleField(styleField.bindingPath, styleField);
                     }

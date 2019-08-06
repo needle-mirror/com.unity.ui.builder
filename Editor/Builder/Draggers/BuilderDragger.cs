@@ -17,6 +17,7 @@ namespace Unity.UI.Builder
 
         Vector2 m_Start;
         bool m_Active;
+        private bool m_CanDrag;
 
         Builder m_Builder;
         VisualElement m_Root;
@@ -52,6 +53,7 @@ namespace Unity.UI.Builder
             activators.Add(new ManipulatorActivationFilter { button = MouseButton.LeftMouse });
 
             m_Active = false;
+            m_CanDrag = false;
 
             m_DraggedElement = CreateDraggedElement();
             m_DraggedElement.AddToClassList(s_DraggerPreviewClassName);
@@ -299,6 +301,15 @@ namespace Unity.UI.Builder
 
         private void OnMouseDown(MouseDownEvent evt)
         {
+            if (evt.button != (int) MouseButton.LeftMouse)
+            {
+                m_CanDrag = false;
+                evt.StopPropagation();
+                evt.PreventDefault();
+
+                return;
+            }
+
             var target = evt.currentTarget as VisualElement;
             var stopEvent = StopEventOnMouseDown();
 
@@ -316,6 +327,7 @@ namespace Unity.UI.Builder
             if (CanStartManipulation(evt))
             {
                 m_Start = evt.mousePosition;
+                m_CanDrag = true;
                 target.CaptureMouse();
             }
         }
@@ -324,7 +336,7 @@ namespace Unity.UI.Builder
         {
             var target = evt.currentTarget as VisualElement;
 
-            if (!target.HasMouseCapture())
+            if (!target.HasMouseCapture() || !m_CanDrag)
                 return;
 
             if (!m_Active)
@@ -364,6 +376,14 @@ namespace Unity.UI.Builder
 
         private void OnMouseUp(MouseUpEvent evt)
         {
+            if (evt.button != (int) MouseButton.LeftMouse)
+            {
+                evt.StopPropagation();
+                evt.PreventDefault();
+
+                return;
+            }
+
             var target = evt.currentTarget as VisualElement;
 
             if (!CanStopManipulation(evt))

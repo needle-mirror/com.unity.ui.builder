@@ -8,7 +8,7 @@
         </VisualElement>
         <uib:TwoPaneSplitView fixed-pane-index="1" fixed-pane-initial-size="300" orientation="horizontal">
             <VisualElement name="middle-column" class="unity-builder__pane" >
-                <uib:TwoPaneSplitView fixed-pane-index="1" fixed-pane-initial-size="100" orientation="vertical">
+                <uib:TwoPaneSplitView fixed-pane-index="1" fixed-pane-initial-size="40" orientation="vertical">
                     <uib:BuilderPane name="viewport" title="Viewport" />
                     <VisualElement name="code-preview-pane" class="unity-builder__pane" >
                         <uib:TwoPaneSplitView fixed-pane-index="1" fixed-pane-initial-size="300" orientation="horizontal">
@@ -25,9 +25,15 @@
     <uib:ModalPopup name="save-dialog" title="New UI Documents">
         <VisualElement class="unity-builder__save-dialog-container">
             <Label text="UXML Path" />
-            <TextField name="save-dialog-uxml-path" />
+            <VisualElement class="unity-builder__save-dialog-path-field">
+                <TextField name="save-dialog-uxml-path" />
+                <Button name="save-dialog-uxml-location-button" text="..." />
+            </VisualElement>
             <Label text="USS Path" />
-            <TextField name="save-dialog-uss-path" />
+            <VisualElement class="unity-builder__save-dialog-path-field">
+                <TextField name="save-dialog-uss-path" />
+                <Button name="save-dialog-uss-location-button" text="..." />
+            </VisualElement>
         </VisualElement>
         <VisualElement name="save-dialog-validation-box" class="unity-builder__save-dialog-validation-container" />
         <VisualElement class="unity-builder__save-dialog-gutter">

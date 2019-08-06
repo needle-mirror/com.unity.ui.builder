@@ -24,8 +24,18 @@ namespace Unity.UI.Builder
             }
         }
 
-        Toggle m_Toggle;
-        VisualElement m_Container;
+        private VisualElement m_Header;
+        private Toggle m_Toggle;
+        private VisualElement m_OverrideBox;
+        private VisualElement m_Container;
+
+        public VisualElement header
+        {
+            get
+            {
+                return m_Header;
+            }
+        }
 
         public override VisualElement contentContainer
         {
@@ -48,7 +58,7 @@ namespace Unity.UI.Builder
         }
 
         [SerializeField]
-        private bool m_Value;
+        protected bool m_Value;
 
         public bool value
         {
@@ -70,7 +80,6 @@ namespace Unity.UI.Builder
                 }
             }
         }
-
         public void SetValueWithoutNotify(bool newValue)
         {
             m_Value = newValue;
@@ -80,6 +89,7 @@ namespace Unity.UI.Builder
 
         public static readonly string ussClassName = "unity-foldout";
         public static readonly string toggleUssClassName = ussClassName + "__toggle";
+        public static readonly string headerUssClassName = ussClassName + "__header";
         public static readonly string contentUssClassName = ussClassName + "__content";
 
         internal override void OnViewDataReady()
@@ -98,6 +108,18 @@ namespace Unity.UI.Builder
             m_Value = true;
 
             AddToClassList(ussClassName);
+            
+            m_Header = new VisualElement()
+            {
+                name = "unity-header",
+            };
+            m_Header.AddToClassList(headerUssClassName);
+            hierarchy.Add(m_Header);
+
+            m_OverrideBox = new VisualElement() { };
+
+            m_OverrideBox.AddToClassList(BuilderConstants.BuilderStyleRowBlueOverrideBoxClassName);
+            header.hierarchy.Add(m_OverrideBox);
 
             m_Toggle = new Toggle
             {
@@ -109,7 +131,7 @@ namespace Unity.UI.Builder
                 evt.StopPropagation();
             });
             m_Toggle.AddToClassList(toggleUssClassName);
-            hierarchy.Add(m_Toggle);
+            m_Header.hierarchy.Add(m_Toggle);
 
             m_Container = new VisualElement()
             {
@@ -117,6 +139,18 @@ namespace Unity.UI.Builder
             };
             m_Container.AddToClassList(contentUssClassName);
             hierarchy.Add(m_Container);
+        }
+
+        protected void ReAssignTooltipToHeaderLabel()
+        {
+            var toggleInput = m_Toggle.Q<VisualElement>(classes: "unity-toggle__input");
+
+            if (toggleInput != null && !string.IsNullOrEmpty(tooltip))
+            {
+                var tooltipTemp = tooltip;
+                tooltip = null;
+                toggleInput.tooltip = tooltipTemp;
+            }
         }
     }
 }

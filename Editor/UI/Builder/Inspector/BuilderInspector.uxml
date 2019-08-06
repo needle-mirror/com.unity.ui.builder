@@ -21,7 +21,7 @@
         <Label
             name="nothing-selected-label"
             class="unity-builder-inspector__nothing-selected-label"
-            text="Nothing selected. :(" />
+            text="Nothing selected. :)" />
 
         <!-- Element In Template Instance Selected Label -->
         <Label
@@ -124,6 +124,7 @@
                 name="inspector-style-section-foldout-display"
                 text="Display"
                 view-data-key="builder-inspector-style-section-foldout-display"
+                class="unity-builder-inspector__style-category-foldout"
                 value="false">
                 <Instance template="DisplaySection" name="display-section" />
             </uib:PersistedFoldout>
@@ -133,6 +134,7 @@
                 name="inspector-style-section-foldout-position"
                 text="Position"
                 view-data-key="builder-inspector-style-section-foldout-position"
+                class="unity-builder-inspector__style-category-foldout"
                 value="false">
                 <Instance template="PositionSection" name="position-section" />
             </uib:PersistedFoldout>
@@ -142,6 +144,7 @@
                 name="inspector-style-section-foldout-flex"
                 text="Flex"
                 view-data-key="builder-inspector-style-section-foldout-flex"
+                class="unity-builder-inspector__style-category-foldout"
                 value="false">
                 <Instance template="FlexSection" name="flex-section" />
             </uib:PersistedFoldout>
@@ -151,6 +154,7 @@
                 name="inspector-style-section-foldout-align"
                 text="Align"
                 view-data-key="builder-inspector-style-section-foldout-align"
+                class="unity-builder-inspector__style-category-foldout"
                 value="false">
                 <Instance template="AlignSection" name="align-section" />
             </uib:PersistedFoldout>
@@ -160,6 +164,7 @@
                 name="inspector-style-section-foldout-size"
                 text="Size"
                 view-data-key="builder-inspector-style-section-foldout-size"
+                class="unity-builder-inspector__style-category-foldout"
                 value="false">
                 <Instance template="SizeSection" name="size-section" />
             </uib:PersistedFoldout>
@@ -169,6 +174,7 @@
                 name="inspector-style-section-foldout-margin-padding"
                 text="Margin &amp; Padding"
                 view-data-key="builder-inspector-style-section-foldout-margin-padding"
+                class="unity-builder-inspector__style-category-foldout"
                 value="false">
                 <Instance template="MarginPaddingSection" name="margin-padding-section" />
             </uib:PersistedFoldout>
@@ -178,6 +184,7 @@
                 name="inspector-style-section-foldout-text"
                 text="Text"
                 view-data-key="builder-inspector-style-section-foldout-text"
+                class="unity-builder-inspector__style-category-foldout"
                 value="false">
                 <Instance template="TextSection" name="text-section" />
             </uib:PersistedFoldout>
@@ -187,6 +194,7 @@
                 name="inspector-style-section-foldout-background"
                 text="Background"
                 view-data-key="builder-inspector-style-section-foldout-background"
+                class="unity-builder-inspector__style-category-foldout"
                 value="false">
                 <Instance template="BackgroundSection" name="background-section" />
             </uib:PersistedFoldout>
@@ -196,6 +204,7 @@
                 name="inspector-style-section-foldout-border"
                 text="Border"
                 view-data-key="builder-inspector-style-section-foldout-border"
+                class="unity-builder-inspector__style-category-foldout"
                 value="false">
                 <Instance template="BorderSection" name="border-section" />
             </uib:PersistedFoldout>
@@ -205,6 +214,7 @@
                 name="inspector-style-section-foldout-cursor"
                 text="Cursor"
                 view-data-key="builder-inspector-style-section-foldout-cursor"
+                class="unity-builder-inspector__style-category-foldout"
                 value="false">
                 <Instance template="CursorSection" name="cursor-section" />
             </uib:PersistedFoldout>

@@ -6,7 +6,8 @@
     margin-top: 0px;
 }
 
-.unity-foldout > Toggle {
+.unity-foldout > .unity-foldout__header > Toggle {
+    flex-grow: 1;
     margin-top: 0px;
 }
 
@@ -30,8 +31,12 @@
     padding: 0px;
 }
 
-.unity-builder-inspector__category-foldout > .unity-toggle {
-    padding-left: 2px;
+.unity-builder-inspector__category-foldout > .unity-foldout__header > .unity-builder-inspector-blue-override-box {
+    display: none;
+}
+
+.unity-builder-inspector__category-foldout > .unity-foldout__header > .unity-toggle {
+    padding-left: 6px;
     padding-right: 2px;
     border-top-width: 1px;
     border-bottom-width: 1px;
@@ -39,8 +44,12 @@
     margin-right: 0px;
 }
 
-.unity-builder-inspector__category-foldout > PersistedFoldout > .unity-toggle {
+.unity-builder-inspector__category-foldout > PersistedFoldout > .unity-foldout__header > .unity-toggle {
     margin-left: 2px;
+}
+
+.unity-foldout__header {
+    flex-direction: row;
 }
 
 .unity-builder-inspector__style--override {
@@ -81,6 +90,10 @@
 
 .unity-builder-inspector-blue-override-box {
     width: 4px;
+}
+
+.unity-builder-inspector__style-category-foldout {
+    padding-top: 2px;
 }
 
 /*****************************************************************************/
@@ -126,6 +139,35 @@
 }
 
 .unity-sub-foldout .unity-builder-double-field-label {
-    margin-left: 15px;
-    width: 120px;
+    margin-left: 17px;
+    margin-right: -14px;
+}
+
+.unity-sub-foldout.unity-foldout-with-field .unity-base-field__label {
+     margin-right: -16px;
+ }
+
+/*****************************************************************************/
+/* Persisted Foldout With Field                                              */
+/*****************************************************************************/
+
+.unity-foldout-with-field {
+    margin-left: -16px;
+}
+
+.unity-foldout-with-field .unity-builder-style-row__content-container {
+    margin-left: 28px;
+}
+
+.unity-foldout-with-field .unity-foldout-with-field__textfield {
+    flex-grow: 1;
+}
+
+.unity-foldout-with-field .unity-foldout__toggle {
+    width: 129px;
+    margin-right: 3px;
+}
+
+.unity-foldout-with-field > .unity-foldout__header > Toggle {
+    flex-grow: 0;
 }

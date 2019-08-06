@@ -1,7 +1,10 @@
+using System;
 using UnityEngine.UIElements;
 using System.Linq;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEditor.UIElements;
+using UnityEngine;
 
 namespace Unity.UI.Builder
 {
@@ -14,6 +17,15 @@ namespace Unity.UI.Builder
         const string k_DefaultDarkStyleSheetPath = "StyleSheets/UIElementsDebugger/UIElementsDebuggerDark.uss";
         const string k_DefaultLightStyleSheetPath = "StyleSheets/UIElementsDebugger/UIElementsDebuggerLight.uss";
 
+        [Flags]
+        internal enum BuilderElementInfoVisibilityState
+        {
+            TypeName = 1 << 0,
+            ClassList = 1 << 1,
+
+            All = ~0
+        }
+
         VisualElement m_SharedStylesAndDocumentElement;
         VisualElement m_DocumentElement;
         ElementHierarchyView m_ElementHierarchyView;
@@ -22,6 +34,10 @@ namespace Unity.UI.Builder
 
         BuilderClassDragger m_ClassDragger;
         BuilderHierarchyDragger m_HierarchyDragger;
+        private BuilderContextMenuManipulator m_ContextMenuManipulator;
+
+        ToolbarMenu m_HierarchyTypeClassVisibilityMenu;
+        [SerializeField] private BuilderElementInfoVisibilityState m_ElementInfoVisibilityState;
 
         public VisualElement container
         {
@@ -29,7 +45,8 @@ namespace Unity.UI.Builder
         }
 
         public BuilderExplorer(BuilderViewport viewport, BuilderSelection selection,
-            BuilderClassDragger classDragger, BuilderHierarchyDragger hierarchyDragger)
+            BuilderClassDragger classDragger, BuilderHierarchyDragger hierarchyDragger,
+            BuilderContextMenuManipulator contextMenuManipulator)
         {
             m_SharedStylesAndDocumentElement = viewport.sharedStylesAndDocumentElement;
             m_DocumentElement = viewport.documentElement;
@@ -37,6 +54,7 @@ namespace Unity.UI.Builder
 
             m_ClassDragger = classDragger;
             m_HierarchyDragger = hierarchyDragger;
+            m_ContextMenuManipulator = contextMenuManipulator;
 
             m_SelectionMadeExternally = false;
 
@@ -52,12 +70,21 @@ namespace Unity.UI.Builder
                 colorSheet = EditorGUIUtility.Load(k_DefaultLightStyleSheetPath) as StyleSheet;
             styleSheets.Add(colorSheet);
 
+            // Query the UI
+            var template = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
+                BuilderConstants.UIBuilderPackagePath + "/Builder/Explorer/BuilderExplorerToolbar.uxml");
+            template.CloneTree(this);
+
+            viewDataKey = "builder-explorer";
+            m_HierarchyTypeClassVisibilityMenu = this.Q<ToolbarMenu>("hierarchy-visibility-toolbar-menu");
+            SetUpHierarchyVisibilityMenu();
+
             // Get the overlay helper.
             var overlayHelper = viewport.Q<OverlayPainterHelperElement>();
 
             // Create the Hierarchy View.
             m_ElementHierarchyView = new ElementHierarchyView(
-                classDragger, hierarchyDragger, ElementSelected, overlayHelper);
+                classDragger, hierarchyDragger, contextMenuManipulator, ElementSelected, overlayHelper);
             m_ElementHierarchyView.style.flexGrow = 1;
             Add(m_ElementHierarchyView);
 
@@ -143,6 +170,38 @@ namespace Unity.UI.Builder
         public void StylingChanged(List<string> styles)
         {
 
+        }
+
+        public void SetUpHierarchyVisibilityMenu()
+        {
+            m_HierarchyTypeClassVisibilityMenu.menu.AppendAction("Type",
+                a => ChangeVisibilityState(BuilderElementInfoVisibilityState.TypeName),
+                a => m_ElementInfoVisibilityState
+                .HasFlag(BuilderElementInfoVisibilityState.TypeName)
+                ? DropdownMenuAction.Status.Checked
+                : DropdownMenuAction.Status.Normal);
+
+            m_HierarchyTypeClassVisibilityMenu.menu.AppendAction("Class List",
+                a => ChangeVisibilityState(BuilderElementInfoVisibilityState.ClassList),
+                a => m_ElementInfoVisibilityState
+                .HasFlag(BuilderElementInfoVisibilityState.ClassList)
+                ? DropdownMenuAction.Status.Checked
+                : DropdownMenuAction.Status.Normal);
+        }
+
+        private void ChangeVisibilityState(BuilderElementInfoVisibilityState state)
+        {
+            m_ElementInfoVisibilityState ^= state;
+            m_ElementHierarchyView.elementInfoVisibilityState = m_ElementInfoVisibilityState;
+            SaveViewData();
+            UpdateHierarchyAndSelection();
+        }
+
+        internal override void OnViewDataReady()
+        {
+            base.OnViewDataReady();
+            OverwriteFromViewData(this, viewDataKey);
+            m_ElementHierarchyView.elementInfoVisibilityState = m_ElementInfoVisibilityState;
         }
     }
 }

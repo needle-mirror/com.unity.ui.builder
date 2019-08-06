@@ -4,6 +4,20 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.5.8] - 2019-08-06
+
+- Restructured the Border section of the Local Style Overrides inspector to more easily set all values at once.
+- Added "Open" button to Library items that have equivalent .uxml assets for opening them in the UI Builder.
+- Made it easier to navigate the Local Overrides Section of the Inspector by visually breaking up the categories.
+- Added toolbar to Explorer section with menu for always hiding/showing the element type, name, and/or style classes.
+- Added "..." buttons to path fields in the Save Dialog for prompting the system Save File Dialog for easier path selection.
+- Added right-click context menu for Copy/Paste/Duplicate/Delete to the Hierarchy.
+- Allowed split sections to get smaller so the UXML/USS preview section can be almost entirely hidden now.
+- Fixed UXML assets inside Packages not showing up in the Library.
+- Fixed StyleSheets in the Resources folder referenced in UXML not working in the Builder.
+- Fixed the Save Dialog error box icon sometimes showing in the top left corder of the Builder.
+- Fixed url() in USS when the object reference is null to write "none".
+
 ## [0.5.7] - 2019-07-24
 
 - Added Foldout to the Library.

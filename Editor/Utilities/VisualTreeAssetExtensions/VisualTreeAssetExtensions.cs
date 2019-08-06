@@ -146,7 +146,11 @@ namespace Unity.UI.Builder
                 {
                     var sheetAsset = AssetDatabase.LoadAssetAtPath<StyleSheet>(sheetPath);
                     if (sheetAsset == null)
-                        continue;
+                    {
+                        sheetAsset = Resources.Load<StyleSheet>(sheetPath);
+                        if (sheetAsset == null)
+                            continue;
+                    }
 
                     sheets.Add(sheetAsset);
                 }

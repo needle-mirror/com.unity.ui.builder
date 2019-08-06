@@ -168,7 +168,7 @@ namespace Unity.UI.Builder
             }
         }
 
-        private void PerformActionOnSelection(Action<VisualElement> preElementaction, Action preAction = null, Action postAction = null)
+        public void PerformActionOnSelection(Action<VisualElement> preElementaction, Action preAction = null, Action postAction = null)
         {
             preAction?.Invoke();
 

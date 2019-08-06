@@ -104,7 +104,7 @@ namespace Unity.UI.Builder
         public void Init(int fixedPaneIndex, float fixedPaneInitialDimension, Orientation orientation)
         {
             m_Orientation = orientation;
-            m_MinDimension = 100;
+            m_MinDimension = 40;
             m_FixedPaneIndex = fixedPaneIndex;
             m_FixedPaneInitialDimension = fixedPaneInitialDimension;
 
