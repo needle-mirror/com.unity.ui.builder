@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.UIElements;
 using Object = UnityEngine.Object;
+using UnityEngine.Assertions;
 
 #if UNITY_2019_3_OR_NEWER
 using UnityEngine.UIElements.StyleSheets;
@@ -15,6 +16,8 @@ namespace Unity.UI.Builder
 {
     internal partial class BuilderInspector
     {
+        List<string> m_StyleChangeList = new List<string>();
+
         private StyleProperty GetStyleProperty(StyleRule rule, string styleName)
         {
             foreach (var property in rule.properties)
@@ -26,12 +29,22 @@ namespace Unity.UI.Builder
             return null;
         }
 
+        private string ConvertUssStyleNameToCSharpStyleName(string ussStyleName)
+        {
+            if (ussStyleName == "-unity-font-style")
+                return "-unity-font-style-and-weight";
+
+            return ussStyleName;
+        }
+
         private PropertyInfo FindStylePropertyInfo(string styleName)
         {
+            var cSharpStyleName = ConvertUssStyleNameToCSharpStyleName(styleName);
+
             foreach (PropertyInfo field in StyleSheetUtilities.ComputedStylesFieldInfos)
             {
                 var styleNameFrom = BuilderNameUtilities.ConverStyleCSharpNameToUssName(field.Name);
-                if (styleNameFrom == styleName)
+                if (styleNameFrom == cSharpStyleName)
                     return field;
             }
             return null;
@@ -39,6 +52,9 @@ namespace Unity.UI.Builder
 
         public void BindStyleField(BuilderStyleRow styleRow, string styleName, VisualElement fieldElement)
         {
+            // Link the row.
+            fieldElement.SetProperty(BuilderConstants.InspectorLinkedStyleRowVEPropertyName, styleRow);
+
 #if UNITY_2019_2
             if (styleRow.ClassListContains(BuilderConstants.Version_2019_3_OrNewer))
             {
@@ -56,9 +72,6 @@ namespace Unity.UI.Builder
             var field = FindStylePropertyInfo(styleName);
             if (field == null)
                 return;
-
-            // Link the row.
-            fieldElement.SetProperty(BuilderConstants.InspectorLinkedStyleRowVEPropertyName, styleRow);
 
             // We don't care which element we get the value for here as we're only interested
             // in the type of Enum it might be (and for validation), but not it's actual value.
@@ -80,6 +93,11 @@ namespace Unity.UI.Builder
                 else
 #endif
                     uiField.RegisterValueChangedCallback(e => OnFieldValueChangeIntToFloat(e, styleName));
+            }
+            else if (val is StyleFloat && fieldElement is PercentSlider)
+            {
+                var uiField = fieldElement as PercentSlider;
+                uiField.RegisterValueChangedCallback(e => OnFieldValueChange(e, styleName));
             }
             else if (val is StyleInt && fieldElement is IntegerField)
             {
@@ -118,14 +136,46 @@ namespace Unity.UI.Builder
                 uiField.objectType = typeof(Texture2D);
                 uiField.RegisterValueChangedCallback(e => OnFieldValueChange(e, styleName));
             }
-            else if (valType.IsGenericType && valType.GetGenericArguments()[0].IsEnum && fieldElement is EnumField)
+            else if (valType.IsGenericType && valType.GetGenericArguments()[0].IsEnum)
             {
                 var propInfo = valType.GetProperty("value");
                 var enumValue = propInfo.GetValue(val, null) as Enum;
-                var uiField = fieldElement as EnumField;
 
-                uiField.Init(enumValue);
-                uiField.RegisterValueChangedCallback(e => OnFieldValueChange(e, styleName));
+                if (fieldElement is EnumField)
+                {
+                    var uiField = fieldElement as EnumField;
+
+                    uiField.Init(enumValue);
+                    uiField.RegisterValueChangedCallback(e => OnFieldValueChange(e, styleName));
+                }
+                else if (fieldElement is IToggleButtonStrip)
+                {
+                    var uiField = fieldElement as IToggleButtonStrip;
+
+                    var choices = new List<string>();
+                    var labels = new List<string>();
+                    var enumType = enumValue.GetType();
+                    foreach (Enum item in Enum.GetValues(enumType))
+                    {
+                        var typeName = item.ToString();
+                        var label = string.Empty;
+                        if (typeName == "Auto")
+                            label = "AUTO";
+                        var choice = BuilderNameUtilities.ConvertCamelToDash(typeName);
+                        choices.Add(choice);
+                        labels.Add(label);
+                    }
+
+                    uiField.enumType = enumType;
+                    uiField.choices = choices;
+                    uiField.labels = labels;
+                    uiField.RegisterValueChangedCallback(e => OnFieldValueChange(e, styleName));
+                }
+                else
+                {
+                    // Unsupported style value type.
+                    return;
+                }
             }
             else
             {
@@ -265,7 +315,8 @@ namespace Unity.UI.Builder
 
             var val = field.GetValue(currentVisualElement.computedStyle, null);
             var valType = val.GetType();
-            var styleProperty = GetStyleProperty(currentRule, styleName);
+            var cSharpStyleName = ConvertUssStyleNameToCSharpStyleName(styleName);
+            var styleProperty = GetStyleProperty(currentRule, cSharpStyleName);
 
             if (val is StyleFloat && fieldElement is FloatField)
             {
@@ -286,6 +337,17 @@ namespace Unity.UI.Builder
                 var value = (int)style.value;
                 if (styleProperty != null)
                     value = (int)styleSheet.GetFloat(styleProperty.values[0]);
+
+                uiField.SetValueWithoutNotify(value);
+            }
+            else if (val is StyleFloat && fieldElement is PercentSlider)
+            {
+                var style = (StyleFloat)val;
+                var uiField = fieldElement as PercentSlider;
+
+                var value = style.value;
+                if (styleProperty != null)
+                    value = styleSheet.GetFloat(styleProperty.values[0]);
 
                 uiField.SetValueWithoutNotify(value);
             }
@@ -363,21 +425,39 @@ namespace Unity.UI.Builder
 
                 uiField.SetValueWithoutNotify(value.texture);
             }
-            else if (valType.IsGenericType && valType.GetGenericArguments()[0].IsEnum && fieldElement is EnumField)
+            else if (valType.IsGenericType && valType.GetGenericArguments()[0].IsEnum)
             {
                 var propInfo = valType.GetProperty("value");
                 var enumValue = propInfo.GetValue(val, null) as Enum;
-                var uiField = fieldElement as EnumField;
 
                 if (styleProperty != null)
                 {
                     var enumStr = styleSheet.GetEnum(styleProperty.values[0]);
-                    enumStr = BuilderNameUtilities.ConvertDashToHungarian(enumStr);
-                    var enumObj = Enum.Parse(enumValue.GetType(), enumStr);
+                    var enumStrHungarian = BuilderNameUtilities.ConvertDashToHungarian(enumStr);
+                    var enumObj = Enum.Parse(enumValue.GetType(), enumStrHungarian);
                     enumValue = enumObj as Enum;
                 }
 
-                uiField.SetValueWithoutNotify(enumValue);
+                // The state of Flex Direction can affect many other Flex-related fields.
+                if (styleName == "flex-direction")
+                    UpdateFlexColumnGlobalState(enumValue);
+
+                if (fieldElement is EnumField)
+                {
+                    var uiField = fieldElement as EnumField;
+                    uiField.SetValueWithoutNotify(enumValue);
+                }
+                else if (fieldElement is IToggleButtonStrip)
+                {
+                    var enumStr = BuilderNameUtilities.ConvertCamelToDash(enumValue.ToString());
+                    var uiField = fieldElement as IToggleButtonStrip;
+                    uiField.SetValueWithoutNotify(enumStr);
+                }
+                else
+                {
+                    // Unsupported style value type.
+                    return;
+                }
             }
             else
             {
@@ -387,12 +467,16 @@ namespace Unity.UI.Builder
 
             // Add override style to field if it is overwritten.
             var styleRow = fieldElement.GetProperty(BuilderConstants.InspectorLinkedStyleRowVEPropertyName) as BuilderStyleRow;
+            Assert.IsNotNull(styleRow);
+            if (styleRow == null)
+                return;
             var styleFields = styleRow.Query<BindableElement>().ToList();
 
             bool isRowOverride = false;
             foreach (var styleField in styleFields)
             {
-                if (GetStyleProperty(currentRule, styleField.bindingPath) != null)
+                var cShartStyleName = ConvertUssStyleNameToCSharpStyleName(styleField.bindingPath);
+                if (GetStyleProperty(currentRule, cShartStyleName) != null)
                 {
                     isRowOverride = true;
                     styleField.RemoveFromClassList(s_LocalStyleResetClassName);
@@ -423,7 +507,8 @@ namespace Unity.UI.Builder
 
             foreach (var path in foldoutElement.bindingPathArray)
             {
-                var styleProperty = GetStyleProperty(currentRule, path);
+                var cSharpStyleName = ConvertUssStyleNameToCSharpStyleName(path);
+                var styleProperty = GetStyleProperty(currentRule, cSharpStyleName);
 
                 var field = FindStylePropertyInfo(path);
                 if (field == null)
@@ -439,6 +524,19 @@ namespace Unity.UI.Builder
                     {
                         isDirty = true;
                         value = styleSheet.GetFloat(styleProperty.values[0]);
+                    }
+
+                    foldoutElement.UpdateFromChildField(path, value.ToString());
+                }
+                else if (val is StyleInt)
+                {
+                    var style = (StyleInt)val;
+                    var value = style.value;
+
+                    if (styleProperty != null)
+                    {
+                        isDirty = true;
+                        value = styleSheet.GetInt(styleProperty.values[0]);
                     }
 
                     foldoutElement.UpdateFromChildField(path, value.ToString());
@@ -527,12 +625,17 @@ namespace Unity.UI.Builder
             NotifyStyleChanges();
         }
 
-        private void NotifyStyleChanges()
+        private void NotifyStyleChanges(List<string> styles = null)
         {
             if (BuilderSharedStyles.IsSelectorElement(currentVisualElement))
-                m_Selection.NotifyOfStylingChange(this);
+            {
+                m_Selection.NotifyOfStylingChange(this, styles);
+            }
             else
+            {
+                m_Selection.NotifyOfStylingChange(this, styles);
                 m_Selection.NotifyOfHierarchyChange(this, currentVisualElement, BuilderHierarchyChangeType.InlineStyle);
+            }
         }
 
         // Style Updates
@@ -546,7 +649,32 @@ namespace Unity.UI.Builder
             return styleProperty;
         }
 
-        private void PostStyleFieldSteps(VisualElement target)
+        private void UpdateFlexColumnGlobalState(Enum newValue)
+        {
+            m_LocalStylesSection.RemoveFromClassList(BuilderConstants.InspectorFlexColumnModeClassName);
+            m_LocalStylesSection.RemoveFromClassList(BuilderConstants.InspectorFlexColumnReverseModeClassName);
+            m_LocalStylesSection.RemoveFromClassList(BuilderConstants.InspectorFlexRowModeClassName);
+            m_LocalStylesSection.RemoveFromClassList(BuilderConstants.InspectorFlexRowReverseModeClassName);
+
+            var newDirection = (FlexDirection)newValue;
+            switch (newDirection)
+            {
+                case FlexDirection.Column:
+                    m_LocalStylesSection.AddToClassList(BuilderConstants.InspectorFlexColumnModeClassName);
+                    break;
+                case FlexDirection.ColumnReverse:
+                    m_LocalStylesSection.AddToClassList(BuilderConstants.InspectorFlexColumnReverseModeClassName);
+                    break;
+                case FlexDirection.Row:
+                    m_LocalStylesSection.AddToClassList(BuilderConstants.InspectorFlexRowModeClassName);
+                    break;
+                case FlexDirection.RowReverse:
+                    m_LocalStylesSection.AddToClassList(BuilderConstants.InspectorFlexRowReverseModeClassName);
+                    break;
+            }
+        }
+
+        private void PostStyleFieldSteps(VisualElement target, string styleName)
         {
             var styleRow = target.GetProperty(BuilderConstants.InspectorLinkedStyleRowVEPropertyName) as BuilderStyleRow;
             styleRow.AddToClassList(s_LocalStyleOverrideClassName);
@@ -572,7 +700,9 @@ namespace Unity.UI.Builder
                 }
             }
 
-            NotifyStyleChanges();
+            m_StyleChangeList.Clear();
+            m_StyleChangeList.Add(styleName);
+            NotifyStyleChanges(m_StyleChangeList);
         }
 
 #if UNITY_2019_3_OR_NEWER
@@ -589,7 +719,7 @@ namespace Unity.UI.Builder
             else // TODO: Assume only one value.
                 styleSheet.SetValue(styleProperty.values[0], dimension);
 
-            PostStyleFieldSteps(e.target as VisualElement);
+            PostStyleFieldSteps(e.target as VisualElement, styleName);
         }
 #endif
 
@@ -602,7 +732,7 @@ namespace Unity.UI.Builder
             else // TODO: Assume only one value.
                 styleSheet.SetValue(styleProperty.values[0], e.newValue);
 
-            PostStyleFieldSteps(e.target as VisualElement);
+            PostStyleFieldSteps(e.target as VisualElement, styleName);
         }
 
         private void OnFieldValueChangeIntToFloat(ChangeEvent<int> e, string styleName)
@@ -616,7 +746,7 @@ namespace Unity.UI.Builder
             else // TODO: Assume only one value.
                 styleSheet.SetValue(styleProperty.values[0], newValue);
 
-            PostStyleFieldSteps(e.target as VisualElement);
+            PostStyleFieldSteps(e.target as VisualElement, styleName);
         }
 
         private void OnFieldValueChange(ChangeEvent<float> e, string styleName)
@@ -628,7 +758,7 @@ namespace Unity.UI.Builder
             else // TODO: Assume only one value.
                 styleSheet.SetValue(styleProperty.values[0], e.newValue);
 
-            PostStyleFieldSteps(e.target as VisualElement);
+            PostStyleFieldSteps(e.target as VisualElement, styleName);
         }
 
         private void OnFieldValueChange(ChangeEvent<Color> e, string styleName)
@@ -640,19 +770,39 @@ namespace Unity.UI.Builder
             else // TODO: Assume only one value.
                 styleSheet.SetValue(styleProperty.values[0], e.newValue);
 
-            PostStyleFieldSteps(e.target as VisualElement);
+            PostStyleFieldSteps(e.target as VisualElement, styleName);
         }
 
         private void OnFieldValueChange(ChangeEvent<string> e, string styleName)
         {
             var styleProperty = GetStylePropertyByStyleName(styleName);
+            var field = e.target as VisualElement;
 
-            if (styleProperty.values.Length == 0)
-                styleSheet.AddValue(styleProperty, e.newValue);
-            else // TODO: Assume only one value.
-                styleSheet.SetValue(styleProperty.values[0], e.newValue);
+            if (field is IToggleButtonStrip)
+            {
+                var newValue = e.newValue;
+                var newEnumValueStr = BuilderNameUtilities.ConvertDashToHungarian(newValue);
+                var enumType = (field as IToggleButtonStrip).enumType;
+                var newEnumValue = Enum.Parse(enumType, newEnumValueStr) as Enum;
 
-            PostStyleFieldSteps(e.target as VisualElement);
+                if (styleProperty.values.Length == 0)
+                    styleSheet.AddValue(styleProperty, newEnumValue);
+                else // TODO: Assume only one value.
+                    styleSheet.SetValue(styleProperty.values[0], newEnumValue);
+
+                // The state of Flex Direction can affect many other Flex-related fields.
+                if (styleName == "flex-direction")
+                    UpdateFlexColumnGlobalState(newEnumValue);
+            }
+            else
+            {
+                if (styleProperty.values.Length == 0)
+                    styleSheet.AddValue(styleProperty, e.newValue);
+                else // TODO: Assume only one value.
+                    styleSheet.SetValue(styleProperty.values[0], e.newValue);
+            }
+
+            PostStyleFieldSteps(e.target as VisualElement, styleName);
         }
 
         private void OnFieldValueChange(ChangeEvent<Object> e, string styleName)
@@ -664,7 +814,7 @@ namespace Unity.UI.Builder
             else // TODO: Assume only one value.
                 styleSheet.SetValue(styleProperty.values[0], e.newValue);
 
-            PostStyleFieldSteps(e.target as VisualElement);
+            PostStyleFieldSteps(e.target as VisualElement, styleName);
         }
 
         private void OnFieldValueChange(ChangeEvent<Enum> e, string styleName)
@@ -676,7 +826,11 @@ namespace Unity.UI.Builder
             else // TODO: Assume only one value.
                 styleSheet.SetValue(styleProperty.values[0], e.newValue);
 
-            PostStyleFieldSteps(e.target as VisualElement);
+            // The state of Flex Direction can affect many other Flex-related fields.
+            if (styleName == "flex-direction")
+                UpdateFlexColumnGlobalState(e.newValue);
+
+            PostStyleFieldSteps(e.target as VisualElement, styleName);
         }
     }
 }

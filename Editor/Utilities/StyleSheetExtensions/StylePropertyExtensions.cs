@@ -123,6 +123,23 @@ namespace Unity.UI.Builder
             return newValue;
         }
 
+        internal static StyleValueHandle AddValueAsEnum(this StyleSheet styleSheet, StyleProperty property, string value)
+        {
+            // Undo/Redo
+            Undo.RegisterCompleteObjectUndo(styleSheet, "Change UI Style Value");
+
+            // Add value data to data array.
+            var index = styleSheet.AddValueToArray(value);
+
+            // Add value object to property.
+            var newValues = property.values.ToList();
+            var newValue = new StyleValueHandle(index, StyleValueType.Enum);
+            newValues.Add(newValue);
+            property.values = newValues.ToArray();
+
+            return newValue;
+        }
+
         internal static void RemoveValue(this StyleSheet styleSheet, StyleProperty property, StyleValueHandle valueHandle)
         {
             // Undo/Redo

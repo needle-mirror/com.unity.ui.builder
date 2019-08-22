@@ -248,11 +248,10 @@ namespace Unity.UI.Builder
             {
 #if UNITY_2019_3_OR_NEWER
                 rootAsset.AddStyleSheet(mainStyleSheet);
-#else
+#endif
                 rootAsset.AddStyleSheetPath(
                     BuilderConstants.VisualTreeAssetStyleSheetPathAsInstanceIdSchemeName +
                     mainStyleSheet.GetInstanceID().ToString());
-#endif
             }
             else
             {

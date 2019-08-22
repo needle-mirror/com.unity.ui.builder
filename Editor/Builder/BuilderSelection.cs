@@ -179,7 +179,7 @@ namespace Unity.UI.Builder
         }
 
         public void NotifyOfHierarchyChange(
-            IBuilderSelectionNotifier source,
+            IBuilderSelectionNotifier source = null,
             VisualElement element = null,
             BuilderHierarchyChangeType changeType = BuilderHierarchyChangeType.All)
         {
@@ -211,7 +211,7 @@ namespace Unity.UI.Builder
                     notifier.HierarchyChanged(element, changeType);
         }
 
-        public void NotifyOfStylingChange(IBuilderSelectionNotifier source, List<string> styles = null)
+        public void NotifyOfStylingChange(IBuilderSelectionNotifier source = null, List<string> styles = null)
         {
             if (m_Notifiers == null || m_Notifiers.Count == 0)
                 return;

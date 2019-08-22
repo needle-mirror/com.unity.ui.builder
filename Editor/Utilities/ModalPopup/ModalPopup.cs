@@ -12,11 +12,6 @@ namespace Unity.UI.Builder
         private Label m_Title;
         private VisualElement m_Container;
 
-        // HACK! REMOVE!
-#if UNITY_2019_3_OR_NEWER
-        public VisualElement m_OldParent;
-#endif
-
         public new class UxmlFactory : UxmlFactory<ModalPopup, UxmlTraits> { }
 
         public new class UxmlTraits : VisualElement.UxmlTraits
@@ -70,22 +65,10 @@ namespace Unity.UI.Builder
         public void Show()
         {
             RemoveFromClassList(s_InvisibleClassName);
-
-            // HACK! REMOVE!
-#if UNITY_2019_3_OR_NEWER
-            if (m_OldParent != null)
-                m_OldParent.Add(this);
-#endif
         }
 
         public void Hide()
         {
-            // HACK! REMOVE!
-#if UNITY_2019_3_OR_NEWER
-            if (m_OldParent != null)
-                this.RemoveFromHierarchy();
-#endif
-
             AddToClassList(s_InvisibleClassName);
         }
 

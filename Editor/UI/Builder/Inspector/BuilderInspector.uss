@@ -19,8 +19,14 @@
     margin-left: 0px;
 }
 
+/* These selectors need to match widths:
+    .unity-builder-inspector .unity-base-field__label
+    .unity-foldout-with-field .unity-foldout__toggle
+    .unity-builder-double-field-label
+*/
 .unity-builder-inspector .unity-base-field__label {
-    width: 120px;
+    width: 105px;
+    min-width: 105px;
 }
 
 .unity-builder-inspector__nothing-selected-label {
@@ -44,6 +50,10 @@
     margin-right: 0px;
 }
 
+.unity-builder-inspector__category-foldout > .unity-foldout__header > .unity-toggle .unity-label {
+    margin-bottom: 2px;
+}
+
 .unity-builder-inspector__category-foldout > PersistedFoldout > .unity-foldout__header > .unity-toggle {
     margin-left: 2px;
 }
@@ -58,10 +68,6 @@
 
 .unity-builder-inspector__style--reset {
     -unity-font-style: normal;
-}
-
-.unity-builder-inspector__add-class-controls {
-    flex-direction: row;
 }
 
 .unity-builder-inspector__add-class-field {
@@ -123,11 +129,16 @@
     flex-shrink: 1;
 }
 
+/* These selectors need to match widths:
+    .unity-builder-inspector .unity-base-field__label
+    .unity-foldout-with-field .unity-foldout__toggle
+    .unity-builder-double-field-label
+*/
 .unity-builder-double-field-label {
     align-self: flex-end;
     margin-left: 3px;
     margin-bottom: 4px;
-    width: 132px;
+    width: 102px;
 }
 
 /*****************************************************************************/
@@ -163,8 +174,13 @@
     flex-grow: 1;
 }
 
+/* These selectors need to match widths:
+    .unity-builder-inspector .unity-base-field__label
+    .unity-foldout-with-field .unity-foldout__toggle
+    .unity-builder-double-field-label
+*/
 .unity-foldout-with-field .unity-foldout__toggle {
-    width: 129px;
+    width: 99px;
     margin-right: 3px;
 }
 

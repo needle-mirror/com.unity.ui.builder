@@ -26,12 +26,16 @@
         <VisualElement class="unity-builder__save-dialog-container">
             <Label text="UXML Path" />
             <VisualElement class="unity-builder__save-dialog-path-field">
-                <TextField name="save-dialog-uxml-path" />
+                <VisualElement class="unity-builder__save-dialog-path-field-container">
+                    <TextField name="save-dialog-uxml-path" />
+                </VisualElement>
                 <Button name="save-dialog-uxml-location-button" text="..." />
             </VisualElement>
             <Label text="USS Path" />
             <VisualElement class="unity-builder__save-dialog-path-field">
-                <TextField name="save-dialog-uss-path" />
+                <VisualElement class="unity-builder__save-dialog-path-field-container">
+                    <TextField name="save-dialog-uss-path" />
+                </VisualElement>
                 <Button name="save-dialog-uss-location-button" text="..." />
             </VisualElement>
         </VisualElement>

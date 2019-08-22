@@ -1,26 +1,27 @@
 <UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:uib="Unity.UI.Builder">
-    <!-- Flex Grow -->
-    <uib:BuilderStyleRow binding-path="flex-grow">
-        <uie:FloatField label="Grow" tooltip="flex-grow" />
-    </uib:BuilderStyleRow>
-
-    <!-- Flex Shrink -->
-    <uib:BuilderStyleRow binding-path="flex-shrink">
-        <uie:FloatField label="Shrink" tooltip="flex-shrink" />
-    </uib:BuilderStyleRow>
-
     <!-- Flex Basis -->
     <uib:BuilderStyleRow binding-path="flex-basis">
         <uie:IntegerField label="Basis" tooltip="flex-basis" />
     </uib:BuilderStyleRow>
 
+    <!-- Flex -->
+    <uib:BuilderStyleRow class="unity-builder-double-field-row">
+        <Label class="unity-builder-double-field-label" />
+        
+        <!-- Flex Shrink -->
+        <uie:FloatField label="Shrink" tooltip="flex-shrink" binding-path="flex-shrink" class="unity-builder-double-field" />
+
+        <!-- Flex Grow -->
+        <uie:FloatField label="Grow" tooltip="flex-grow" binding-path="flex-grow" class="unity-builder-double-field" />
+    </uib:BuilderStyleRow>
+
     <!-- Flex Direction -->
     <uib:BuilderStyleRow binding-path="flex-direction">
-        <uie:EnumField label="Direction" tooltip="flex-direction" />
+        <uib:ToggleButtonStrip class="unity-builder-inspector_flex-direction-field" label="Direction" tooltip="flex-direction" />
     </uib:BuilderStyleRow>
 
     <!-- Flex Wrap -->
     <uib:BuilderStyleRow binding-path="flex-wrap">
-        <uie:EnumField label="Wrap" tooltip="flex-wrap" />
+        <uib:ToggleButtonStrip class="unity-builder-inspector_flex-wrap-field" label="Wrap" tooltip="flex-wrap" />
     </uib:BuilderStyleRow>
 </UXML>

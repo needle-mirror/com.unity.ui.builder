@@ -21,9 +21,12 @@ namespace Unity.UI.Builder
 
         private void RefreshAttributesSection()
         {
-            m_AttributesSection.text = currentVisualElement.typeName;
-
             m_AttributesSection.Clear();
+
+            if (currentVisualElement == null)
+                return;
+
+            m_AttributesSection.text = currentVisualElement.typeName;
 
             if (m_Selection.selectionType != BuilderSelectionType.Element)
                 return;

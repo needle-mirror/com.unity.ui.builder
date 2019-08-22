@@ -4,6 +4,41 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2019-08-21
+
+- Fixed USS Preview not updating when creating new selector directly inside the Explorer.
+- (2019.3+) Fixed main StyleSheet path not properly being added to root elements.
+
+## [0.6.0] - 2019-08-21
+
+- Redesigned UI/UX:
+    - Redesigned UX in Margin & Padding section in the Inspector.
+    - Redesigned UX in Background section in the Inspector.
+    - Redesigned UX in Text section in the Inspector.
+    - Redesigned UX in Display section in the Inspector.
+    - Redesigned UX in Flex section in the Inspector.
+    - Redesigned UX in Align section in the Inspector. Align section toggle button strips will change icons depending on the value of the flex-direction style.
+- Shared Styles Improvements:
+    - Renamed "Shared Styles" header item in the Explorer to "StyleSheet".
+    - Renamed "Shared Styles" section in Inspector to "Inherited Styles".
+    - Renamed "Local Style Overrides" section in Inspector to "Local Styles".
+    - Added new **Extract Local Styles to New Class** button for extract all set Local (inline) Styles of an element to a new style class in the main StyleSheet.
+    - When hovering or selecting a style selector in the Explorer, all elements in the Canvas that match this selector will highlight.
+    - Added ability to add new StyleSheet selectors from inside the Explorer pane without going to the Inspector.
+    - When hovering over elements in the Canvas, all Explorer entries of style selectors that match this element will highlight.
+- Other Improvements:
+    - Added ability to double-click on elements in the Hierarchy (or right-click > Rename) to rename elements in-place.
+    - When hovering over elements in the Canvas, the corresponding entry in the Hierarchy will highlight.
+    - When changing Width or Height in the Inspector, the corresponding resize handles in the Canvas will highlight.
+    - Will now expose all Unity, UnityEngine, and UnityEditor, namespaced custom VisualElements in the Library if Developer Mode is enabled.
+    - Save Dialog initial path will no longer be based on currently selected path in the Project Browser. It will now default to "Assets/" or the location of the previously saved document.
+- Fixes:
+    - Fixed Save Dialog path fields pushing the "..." buttons out of the dialog when the path string was long.
+    - Fixed a null reference exception being thrown when double clicking on a section of controls or project folder in the Library.
+    - Fixed regression where Canvas resize handles would not stay highlighted (white) while being dragged.
+    - Fixed Font Style style not working at all because it was setting the -unity-font-style-and-weight property instead of -unity-font-style.
+    - (2019.3) Updated code and styling for **2019.3.0a12**.
+
 ## [0.5.8] - 2019-08-06
 
 - Restructured the Border section of the Local Style Overrides inspector to more easily set all values at once.

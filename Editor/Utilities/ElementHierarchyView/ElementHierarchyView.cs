@@ -46,9 +46,12 @@ namespace Unity.UI.Builder
         private List<VisualElement> m_SearchResultsHightlights;
         private IPanel m_CurrentPanelDebug;
 
+        private VisualElement m_DocumentRootElement;
+        private BuilderSelection m_Selection;
         private BuilderClassDragger m_ClassDragger;
         private BuilderHierarchyDragger m_HierarchyDragger;
-        private BuilderContextMenuManipulator m_ContextMenuManipulator;
+        private BuilderExplorerContextMenu m_ContextMenuManipulator;
+
         private StringBuilder m_SelectorStrBuilder;
 
         public VisualElement container
@@ -57,12 +60,16 @@ namespace Unity.UI.Builder
         }
 
         public ElementHierarchyView(
+            VisualElement documentRootElement,
+            BuilderSelection selection,
             BuilderClassDragger classDragger,
             BuilderHierarchyDragger hierarchyDragger,
-            BuilderContextMenuManipulator contextMenuManipulator,
+            BuilderExplorerContextMenu contextMenuManipulator,
             Action<VisualElement> selectElementCallback,
             OverlayPainterHelperElement helperElement = null)
         {
+            m_DocumentRootElement = documentRootElement;
+            m_Selection = selection;
             m_ClassDragger = classDragger;
             m_HierarchyDragger = hierarchyDragger;
             m_ContextMenuManipulator = contextMenuManipulator;
@@ -126,33 +133,45 @@ namespace Unity.UI.Builder
 
         private void FillItem(VisualElement element, ITreeViewItem item)
         {
-            element.Clear();
-
-            var target = (item as TreeViewItem<VisualElement>).data;
-            element.userData = target;
-
-            var labelCont = new VisualElement();
-            labelCont.AddToClassList("unity-builder-explorer-tree-item-label-cont");
-            element.Add(labelCont);
+            var explorerItem = element as BuilderExplorerItem;
+            explorerItem.Clear();
 
             // Pre-emptive cleanup.
-            var row = element.parent.parent;
+            var row = explorerItem.parent.parent;
             row.RemoveFromClassList(BuilderConstants.ExplorerHeaderRowClassName);
-            row.userData = target;
 
-            // Shared Styles
-            if (BuilderSharedStyles.IsSelectorsContainerElement(target))
+            // Get target element (in the document).
+            var documentElement = (item as TreeViewItem<VisualElement>).data;
+            documentElement.SetProperty(BuilderConstants.ElementLinkedExplorerItemVEPropertyName, explorerItem);
+            explorerItem.userData = documentElement;
+            row.userData = documentElement;
+
+            // If we have a FillItem callback (override), we call it and stop creating the rest of the item.
+            var fillItemCallback =
+                documentElement.GetProperty(BuilderConstants.ExplorerItemFillItemCallbackVEPropertyName) as Action<VisualElement, ITreeViewItem, BuilderSelection>;
+            if (fillItemCallback != null)
             {
-                var ssLabel = new Label("Shared Styles");
+                fillItemCallback(explorerItem, item, m_Selection);
+                return;
+            }
+
+            // Create main label container.
+            var labelCont = new VisualElement();
+            labelCont.AddToClassList("unity-builder-explorer-tree-item-label-cont");
+            explorerItem.Add(labelCont);
+
+            if (BuilderSharedStyles.IsSelectorsContainerElement(documentElement))
+            {
+                var ssLabel = new Label("StyleSheet");
                 ssLabel.AddToClassList("unity-builder-explorer-tree-item-label");
                 ssLabel.AddToClassList("unity-debugger-tree-item-type");
                 row.AddToClassList(BuilderConstants.ExplorerHeaderRowClassName);
                 labelCont.Add(ssLabel);
                 return;
             }
-            else if (BuilderSharedStyles.IsSelectorElement(target))
+            else if (BuilderSharedStyles.IsSelectorElement(documentElement))
             {
-                var selectorParts = BuilderSharedStyles.GetSelectorParts(target);
+                var selectorParts = BuilderSharedStyles.GetSelectorParts(documentElement);
 
                 Action<string> addSimpleLabel = (str) =>
                 {
@@ -180,7 +199,7 @@ namespace Unity.UI.Builder
                     var pill = labelCont.contentContainer.ElementAt(labelCont.childCount - 1);
                     var pillLabel = pill.Q<Label>("class-name-label");
                     pill.AddToClassList("unity-debugger-tree-item-pill");
-                    pill.userData = target;
+                    pill.userData = documentElement;
                     pillLabel.text = partStr;
 
                     m_ClassDragger.RegisterCallbacksOnTarget(pill);
@@ -194,7 +213,7 @@ namespace Unity.UI.Builder
 
                 return;
             }
-            else if (BuilderSharedStyles.IsDocumentElement(target))
+            else if (BuilderSharedStyles.IsDocumentElement(documentElement))
             {
                 var ssLabel = new Label("Hierarchy");
                 ssLabel.AddToClassList("unity-builder-explorer-tree-item-label");
@@ -205,43 +224,48 @@ namespace Unity.UI.Builder
             }
 
             // Check if element is inside current document.
-            if (!target.IsPartOfCurrentDocument())
-                row.AddToClassList("unity-builder-explorer--hidden");
+            if (!documentElement.IsPartOfCurrentDocument())
+                row.AddToClassList(BuilderConstants.ExplorerItemHiddenClassName);
 
             // Register drag-and-drop events for reparenting.
-            m_HierarchyDragger.RegisterCallbacksOnTarget(element);
-
-            // Register right-click events for context menu actions.
-            m_ContextMenuManipulator.RegisterCallbacksOnTarget(element);
+            m_HierarchyDragger.RegisterCallbacksOnTarget(explorerItem);
 
             // Allow reparenting.
-            element.SetProperty(BuilderConstants.ExplorerItemElementLinkVEPropertyName, target);
+            explorerItem.SetProperty(BuilderConstants.ExplorerItemElementLinkVEPropertyName, documentElement);
 
-            if (string.IsNullOrEmpty(target.name) ||
+            // Element type label.
+            if (string.IsNullOrEmpty(documentElement.name) ||
                 elementInfoVisibilityState.HasFlag(BuilderExplorer.BuilderElementInfoVisibilityState.TypeName))
             {
-                var typeLabel = new Label(target.typeName);
+                var typeLabel = new Label(documentElement.typeName);
                 typeLabel.AddToClassList("unity-builder-explorer-tree-item-label");
                 typeLabel.AddToClassList("unity-debugger-tree-item-type");
+                typeLabel.AddToClassList(BuilderConstants.ExplorerItemTypeLabelClassName);
                 labelCont.Add(typeLabel);
-
             }
 
-            if (!string.IsNullOrEmpty(target.name))
+            // Element name label.
+            var nameLabel = new Label();
+            nameLabel.AddToClassList("unity-builder-explorer-tree-item-label");
+            nameLabel.AddToClassList("unity-debugger-tree-item-name");
+            nameLabel.AddToClassList("unity-debugger-tree-item-name-label");
+            nameLabel.AddToClassList(BuilderConstants.ExplorerItemNameLabelClassName);
+            if (!string.IsNullOrEmpty(documentElement.name))
+                nameLabel.text = "#" + documentElement.name;
+            labelCont.Add(nameLabel);
+
+            // Textfield to rename element in hierarchy.
+            var renameTextfield = explorerItem.CreateRenamingTextField(documentElement, nameLabel, m_Selection);
+            labelCont.Add(renameTextfield);
+
+            // Add class list.
+            if (documentElement.classList.Count > 0 && elementInfoVisibilityState.HasFlag(BuilderExplorer.BuilderElementInfoVisibilityState.ClassList))
             {
-                var nameLabel = new Label("#" + target.name);
-                nameLabel.AddToClassList("unity-builder-explorer-tree-item-label");
-                nameLabel.AddToClassList("unity-debugger-tree-item-name");
-                nameLabel.AddToClassList("unity-debugger-tree-item-name-label");
-                labelCont.Add(nameLabel);
-            }
-            if (target.classList.Count > 0 && elementInfoVisibilityState.HasFlag(BuilderExplorer.BuilderElementInfoVisibilityState.ClassList))
-            {
-                foreach (var ussClass in target.GetClasses())
+                foreach (var ussClass in documentElement.GetClasses())
                 {
                     var classLabelCont = new VisualElement();
                     classLabelCont.AddToClassList("unity-builder-explorer-tree-item-label-cont");
-                    element.Add(classLabelCont);
+                    explorerItem.Add(classLabelCont);
 
                     var classLabel = new Label("." + ussClass);
                     classLabel.AddToClassList("unity-builder-explorer-tree-item-label");
@@ -253,8 +277,8 @@ namespace Unity.UI.Builder
             }
 
             // Show name of uxml file if this element is a TemplateContainer.
-            var path = target.GetProperty(BuilderConstants.LibraryItemLinkedTemplateContainerPathVEPropertyName) as string;
-            if (target is TemplateContainer && !string.IsNullOrEmpty(path))
+            var path = documentElement.GetProperty(BuilderConstants.LibraryItemLinkedTemplateContainerPathVEPropertyName) as string;
+            if (documentElement is TemplateContainer && !string.IsNullOrEmpty(path))
             {
                 var pathStr = Path.GetFileName(path);
                 var label = new Label(pathStr);
@@ -263,13 +287,15 @@ namespace Unity.UI.Builder
                 label.AddToClassList("unity-builder-explorer-tree-item-template-path"); // Just make it look a bit shaded.
                 labelCont.Add(label);
             }
+
+            // Register right-click events for context menu actions.
+            m_ContextMenuManipulator.RegisterCallbacksOnTarget(explorerItem);
         }
 
-        private void HighlightItemInTargetWindow(VisualElement item)
+        private void HighlightItemInTargetWindow(VisualElement documentElement)
         {
-            m_TreeViewHoverOverlay.ClearOverlay();
-            m_TreeViewHoverOverlay.AddOverlay(item.userData as VisualElement);
-            var panel = item.panel;
+            m_TreeViewHoverOverlay.AddOverlay(documentElement);
+            var panel = documentElement.panel;
             panel?.visualTree.MarkDirtyRepaint();
         }
 
@@ -283,8 +309,13 @@ namespace Unity.UI.Builder
             m_TreeViewHoverOverlay.ClearOverlay();
 
             if (m_TreeView != null)
+            {
                 foreach (TreeViewItem<VisualElement> selectedItem in m_TreeView.currentSelection)
-                    m_TreeViewHoverOverlay.AddOverlay(selectedItem.data);
+                {
+                    var documentElement = selectedItem.data;
+                    HighlightAllRelatedDocumentElements(documentElement);
+                }
+            }
 
             var panel = this.panel;
             panel?.visualTree.MarkDirtyRepaint();
@@ -313,7 +344,6 @@ namespace Unity.UI.Builder
             // Clear selection which would otherwise persist via view data persistence.
             m_TreeView?.ClearSelection();
             m_TreeView.rootItems = m_TreeRootItems;
-            m_TreeView.Refresh();
 
             // Restore focus state.
             if (wasTreeFocused)
@@ -344,6 +374,33 @@ namespace Unity.UI.Builder
             ResetHighlightOverlays();
         }
 
+        private void HighlightAllElementsMatchingSelectorElement(VisualElement selectorElement)
+        {
+            var selector = selectorElement.GetProperty(BuilderConstants.ElementLinkedStyleSelectorVEPropertyName) as StyleComplexSelector;
+            if (selector == null)
+                return;
+
+            var selectorStr = StyleSheetToUss.ToUssSelector(selector);
+            var matchingElements = BuilderSharedStyles.GetMatchingElementsForSelector(m_DocumentRootElement, selectorStr);
+            if (matchingElements == null)
+                return;
+
+            foreach (var element in matchingElements)
+                HighlightItemInTargetWindow(element);
+        }
+
+        private void HighlightAllRelatedDocumentElements(VisualElement documentElement)
+        {
+            if (BuilderSharedStyles.IsSelectorElement(documentElement))
+            {
+                HighlightAllElementsMatchingSelectorElement(documentElement);
+            }
+            else
+            {
+                HighlightItemInTargetWindow(documentElement);
+            }
+        }
+
         private VisualElement MakeItem()
         {
             var element = new BuilderExplorerItem();
@@ -354,7 +411,11 @@ namespace Unity.UI.Builder
             });
             element.RegisterCallback<MouseEnterEvent>((e) =>
             {
-                HighlightItemInTargetWindow(e.target as VisualElement);
+                ClearHighlightOverlay();
+
+                var explorerItem = e.target as VisualElement;
+                var documentElement = explorerItem.userData as VisualElement;
+                HighlightAllRelatedDocumentElements(documentElement);
             });
             element.RegisterCallback<MouseLeaveEvent>((e) =>
             {

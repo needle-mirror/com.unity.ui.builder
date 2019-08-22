@@ -14,8 +14,8 @@ namespace Unity.UI.Builder
             StyleSheet = 1 << 1,
             StyleSelector = 1 << 2,
             ElementAttributes = 1 << 3,
-            ElementSharedStyles = 1 << 4,
-            LocalStyleOverrides = 1 << 5,
+            ElementInheritedStyles = 1 << 4,
+            LocalStyles = 1 << 5,
             ElementInTemplateInstance = 1 << 6,
             VisualTreeAsset = 1 << 7
         }
@@ -36,11 +36,6 @@ namespace Unity.UI.Builder
 
         // Sections List (for hiding/showing based on current selection)
         private List<VisualElement> m_Sections;
-
-        // HACK! REMOVE!
-#if UNITY_2019_3_OR_NEWER
-        private VisualElement m_SectionContainer;
-#endif
 
         // Minor Sections
         private Label m_NothingSelectedSection;
@@ -126,11 +121,6 @@ namespace Unity.UI.Builder
             else
                 styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.InspectorUssPathNoExt + "Light.uss"));
 
-            // HACK! REMOVE!
-#if UNITY_2019_3_OR_NEWER
-            m_SectionContainer = this.Q<ScrollView>();
-#endif
-
             // Matching Selectors
             InitMatchingSelectors();
 
@@ -161,13 +151,13 @@ namespace Unity.UI.Builder
             var attributesSection = InitAttributesSection();
             m_Sections.Add(attributesSection);
 
-            // Shared Styles Section
-            var sharedStylesSection = InitSharedStyleSection();
-            m_Sections.Add(sharedStylesSection);
+            // Inherited Styles Section
+            var inheritedStylesSection = InitInheritedStylesSection();
+            m_Sections.Add(inheritedStylesSection);
 
-            // Local Style Overrides Section
-            var localStyleOverridesSection = InitLocalStyleOverridesSection();
-            m_Sections.Add(localStyleOverridesSection);
+            // Local Styles Section
+            var localStylesSection = InitLocalStylesSection();
+            m_Sections.Add(localStylesSection);
 
             // This will take into account the current selection and then call RefreshUI().
             SelectionChanged();
@@ -184,22 +174,12 @@ namespace Unity.UI.Builder
 
         private void ResetSection(VisualElement section)
         {
-            // HACK! REMOVE!
-#if UNITY_2019_3_OR_NEWER
-            section.RemoveFromHierarchy();
-#else
             section.AddToClassList(BuilderConstants.HiddenStyleClassName);
-#endif
         }
 
         private void EnableSection(VisualElement section)
         {
-            // HACK! REMOVE!
-#if UNITY_2019_3_OR_NEWER
-            m_SectionContainer.Add(section);
-#else
             section.RemoveFromClassList(BuilderConstants.HiddenStyleClassName);
-#endif
         }
 
         private void EnableSections(Section section)
@@ -212,10 +192,10 @@ namespace Unity.UI.Builder
                 EnableSection(m_StyleSelectorSection);
             if (section.HasFlag(Section.ElementAttributes))
                 EnableSection(m_AttributesSection);
-            if (section.HasFlag(Section.ElementSharedStyles))
-                EnableSection(m_SharedStylesSection);
-            if (section.HasFlag(Section.LocalStyleOverrides))
-                EnableSection(m_LocalStyleOverridesSection);
+            if (section.HasFlag(Section.ElementInheritedStyles))
+                EnableSection(m_InheritedStylesSection);
+            if (section.HasFlag(Section.LocalStyles))
+                EnableSection(m_LocalStylesSection);
             if (section.HasFlag(Section.ElementInTemplateInstance))
                 EnableSection(m_ElementInTemplateInstanceSection);
             if (section.HasFlag(Section.VisualTreeAsset))
@@ -251,13 +231,13 @@ namespace Unity.UI.Builder
                 case BuilderSelectionType.StyleSelector:
                     EnableSections(
                         Section.StyleSelector |
-                        Section.LocalStyleOverrides);
+                        Section.LocalStyles);
                     break;
                 case BuilderSelectionType.Element:
                     EnableSections(
                         Section.ElementAttributes |
-                        Section.ElementSharedStyles |
-                        Section.LocalStyleOverrides);
+                        Section.ElementInheritedStyles |
+                        Section.LocalStyles);
                     break;
                 case BuilderSelectionType.ElementInTemplateInstance:
                     EnableSections(Section.ElementInTemplateInstance);
@@ -288,7 +268,7 @@ namespace Unity.UI.Builder
 
         public void HierarchyChanged(VisualElement element, BuilderHierarchyChangeType changeType)
         {
-            // Do nothing.
+            RefreshAttributesSection();
         }
 
         public void SelectionChanged()

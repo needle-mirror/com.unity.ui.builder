@@ -30,6 +30,103 @@ namespace Unity.UI.Builder
 
             m_ReorderZoneAbove.userData = this;
             m_ReorderZoneBelow.userData = this;
+
+            this.RegisterCallback<MouseDownEvent>(e => OnMouseDownEventForRename(e));
+        }
+
+        private void OnMouseDownEventForRename(MouseDownEvent e)
+        {
+            if (e.clickCount != 2 || e.button != (int)MouseButton.LeftMouse || e.target == null)
+                return;
+
+            ActivateRenameElementMode();
+
+            e.PreventDefault();
+        }
+
+        public void ActivateRenameElementMode()
+        {
+            var documentElement = this.userData as VisualElement;
+            if (!documentElement.IsPartOfCurrentDocument())
+                return;
+
+            FocusOnRenameTextField();
+        }
+
+        private void FocusOnRenameTextField()
+        {
+            var renameTextfield = this.Q<TextField>(BuilderConstants.ExplorerItemRenameTextfieldName);
+            var nameLabel = this.Q<Label>(classes: BuilderConstants.ExplorerItemNameLabelClassName);
+
+            renameTextfield.RemoveFromClassList(BuilderConstants.HiddenStyleClassName);
+
+            if (nameLabel != null)
+                nameLabel.AddToClassList(BuilderConstants.HiddenStyleClassName);
+
+            var baseInput = renameTextfield.Q(TextField.textInputUssName);
+            if (baseInput.focusController != null)
+                baseInput.focusController.DoFocusChange(baseInput);
+
+            renameTextfield.SelectAll();
+        }
+
+        public TextField CreateRenamingTextField(VisualElement documentElement, Label nameLabel, BuilderSelection selection)
+        {
+            var renameTextfield = new TextField()
+            {
+                name = BuilderConstants.ExplorerItemRenameTextfieldName,
+                isDelayed = true
+            };
+#if UNITY_2019_3_OR_NEWER
+            renameTextfield.AddToClassList(BuilderConstants.ExplorerItemRenameTextfieldClassName);
+#else
+            renameTextfield.AddToClassList(BuilderConstants.ExplorerItemRenameTextfieldClassNamePre2019_3);
+#endif
+            renameTextfield.SetValueWithoutNotify(
+                string.IsNullOrEmpty(documentElement.name)
+                    ? documentElement.typeName
+                    : documentElement.name);
+            renameTextfield.AddToClassList(BuilderConstants.HiddenStyleClassName);
+
+            renameTextfield.RegisterCallback<KeyUpEvent>((e) =>
+            {
+                e.StopImmediatePropagation();
+            });
+
+            renameTextfield.RegisterValueChangedCallback((e) =>
+            {
+                documentElement.name = e.newValue;
+                var vea = documentElement.GetVisualElementAsset();
+                vea.SetAttributeValue("name", e.newValue);
+
+                if (!string.IsNullOrEmpty(e.newValue))
+                    nameLabel.text = "#" + e.newValue;
+                else
+                    nameLabel.text = e.newValue;
+
+                e.StopPropagation();
+
+                selection.NotifyOfHierarchyChange();
+            });
+
+            renameTextfield.RegisterCallback<BlurEvent>((e) =>
+            {
+                nameLabel.RemoveFromClassList(BuilderConstants.HiddenStyleClassName);
+                renameTextfield.AddToClassList(BuilderConstants.HiddenStyleClassName);
+
+                renameTextfield.SetValueWithoutNotify(string.IsNullOrEmpty(documentElement.name)
+                    ? documentElement.typeName
+                    : documentElement.name);
+
+                e.StopPropagation();
+            });
+
+            return renameTextfield;
+        }
+
+        public VisualElement row()
+        {
+            return parent.parent;
         }
     }
 }

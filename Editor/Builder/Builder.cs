@@ -86,7 +86,7 @@ namespace Unity.UI.Builder
             // Create the rest of the panes.
             var classDragger = new BuilderClassDragger(this, root, m_Selection, m_Viewport, m_Viewport.parentTracker);
             var hierarchyDragger = new BuilderHierarchyDragger(this, root, m_Selection, m_Viewport, m_Viewport.parentTracker);
-            var contextMenuManipulator = new BuilderContextMenuManipulator(this, m_Selection);
+            var contextMenuManipulator = new BuilderExplorerContextMenu(this, m_Selection);
             var explorer = new BuilderExplorer(m_Viewport, m_Selection, classDragger, hierarchyDragger, contextMenuManipulator);
             var libraryDragger = new BuilderLibraryDragger(this, root, m_Selection, m_Viewport, m_Viewport.parentTracker, explorer.container, tooltipPreview);
             m_Toolbar = new BuilderToolbar(this, m_Selection, dialog, m_Viewport, explorer, tooltipPreview);
@@ -142,7 +142,8 @@ namespace Unity.UI.Builder
         private void OnDisable()
         {
             // Commands
-            m_CommandHandler.OnDisable();
+            if (m_CommandHandler != null)
+                m_CommandHandler.OnDisable();
         }
 
         [OnOpenAsset(0)]

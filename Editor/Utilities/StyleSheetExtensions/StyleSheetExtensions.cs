@@ -138,6 +138,32 @@ namespace Unity.UI.Builder
             return complexSelector;
         }
 
+        public static void TransferRulePropertiesToSelector(this StyleSheet toStyleSheet, StyleComplexSelector toSelector, StyleSheet fromStyleSheet, StyleRule fromRule)
+        {
+            foreach (var property in fromRule.properties)
+            {
+                var newProperty = toStyleSheet.AddProperty(toSelector, property.name);
+                foreach (var value in property.values)
+                {
+                    switch (value.valueType)
+                    {
+                        case StyleValueType.Float: toStyleSheet.AddValue(newProperty, fromStyleSheet.GetFloat(value)); break;
+#if UNITY_2019_3_OR_NEWER
+                        case StyleValueType.Dimension: toStyleSheet.AddValue(newProperty, fromStyleSheet.GetDimension(value)); break;
+#endif
+                        case StyleValueType.Enum: toStyleSheet.AddValueAsEnum(newProperty, fromStyleSheet.GetEnum(value)); break;
+                        case StyleValueType.String: toStyleSheet.AddValue(newProperty, fromStyleSheet.GetString(value)); break;
+                        case StyleValueType.Color: toStyleSheet.AddValue(newProperty, fromStyleSheet.GetColor(value)); break;
+                        case StyleValueType.AssetReference: toStyleSheet.AddValue(newProperty, fromStyleSheet.GetAsset(value)); break;
+                    }
+                }
+            }
+            foreach (var property in fromRule.properties)
+            {
+                fromStyleSheet.RemoveProperty(fromRule, property);
+            }
+        }
+
         public static bool IsSelected(this StyleSheet styleSheet)
         {
             var selector = styleSheet.FindSelector(BuilderConstants.SelectedStyleSheetSelectorName);

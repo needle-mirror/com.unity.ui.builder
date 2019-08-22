@@ -36,6 +36,8 @@ namespace Unity.UI.Builder
         private bool m_IsDialogSaveAs;
         private bool m_HasModifiedUssPathManually = false;
 
+        private string m_LastSavePath = "Assets";
+
         private BuilderDocument document
         {
             get { return m_Builder.document; }
@@ -55,12 +57,6 @@ namespace Unity.UI.Builder
             m_Viewport = viewport;
             m_Explorer = explorer;
             m_TooltipPreview = tooltipPreview;
-
-            // HACKS
-#if UNITY_2019_3_OR_NEWER
-            m_SaveDialog.m_OldParent = m_SaveDialog.parent;
-            m_SaveDialog.Hide();
-#endif
 
             // Query the UI
             m_SaveDialogUxmlPathField = m_SaveDialog.Q<TextField>("save-dialog-uxml-path");
@@ -305,7 +301,7 @@ namespace Unity.UI.Builder
             }
 
             var currentPath = string.Empty;
-            var lastSelectedPath = ProjectBrowser.GetSelectedPath();
+            var lastSelectedPath = m_LastSavePath;
             if (!string.IsNullOrEmpty(lastSelectedPath))
                 currentPath = lastSelectedPath;
 
@@ -389,6 +385,9 @@ namespace Unity.UI.Builder
             }
             WriteToFiles(uxmlPath, ussPath);
             AssetDatabase.Refresh();
+
+            // Save last save path.
+            m_LastSavePath = Path.GetDirectoryName(uxmlPath);
 
             // Set asset.
             var visualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(uxmlPath);

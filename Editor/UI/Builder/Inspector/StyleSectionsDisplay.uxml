@@ -1,21 +1,21 @@
 <UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:uib="Unity.UI.Builder">
     <!-- Opacity -->
     <uib:BuilderStyleRow binding-path="opacity">
-        <uie:FloatField label="Opacity" tooltip="opacity" />
+        <uib:PercentSlider label="Opacity" tooltip="opacity" />
     </uib:BuilderStyleRow>
 
     <!-- Display -->
     <uib:BuilderStyleRow binding-path="display">
-        <uie:EnumField label="Display" tooltip="display" />
+        <uib:ToggleButtonStrip class="unity-builder-inspector_display-field" label="Display" tooltip="display" />
     </uib:BuilderStyleRow>
 
     <!-- Visibility -->
     <uib:BuilderStyleRow binding-path="visibility">
-        <uie:EnumField label="Visibility" tooltip="visibility" />
+        <uib:ToggleButtonStrip class="unity-builder-inspector_visibility-field" label="Visibility" tooltip="visibility" />
     </uib:BuilderStyleRow>
 
     <!-- Overflow -->
     <uib:BuilderStyleRow binding-path="overflow">
-        <uie:EnumField label="Overflow" tooltip="overflow" />
+        <uib:ToggleButtonStrip class="unity-builder-inspector_overflow-field" label="Overflow" tooltip="overflow" />
     </uib:BuilderStyleRow>
 </UXML>

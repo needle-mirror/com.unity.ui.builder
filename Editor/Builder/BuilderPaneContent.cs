@@ -81,6 +81,13 @@ namespace Unity.UI.Builder
         private void OnChildFocus(FocusEvent evt)
         {
             m_Pane.pseudoStates = m_Pane.pseudoStates | PseudoStates.Focus;
+
+            var elementAskingForFocus = this.Q(className: BuilderConstants.PaneContentPleaseRefocusElementClassName);
+            if (elementAskingForFocus == null)
+                return;
+
+            elementAskingForFocus.RemoveFromClassList(BuilderConstants.PaneContentPleaseRefocusElementClassName);
+            elementAskingForFocus.Focus();
         }
 
         private void OnChildBlur(BlurEvent evt)

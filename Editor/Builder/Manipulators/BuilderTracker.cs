@@ -121,7 +121,7 @@ namespace Unity.UI.Builder
             ResizeSelfFromTarget(m_Target.layout);
         }
 
-        public void StylingChanged(List<string> styles)
+        public virtual void StylingChanged(List<string> styles)
         {
             if (m_Target == null)
                 return;

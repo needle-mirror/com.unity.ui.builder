@@ -16,28 +16,33 @@ UI Builder lets you visually create and edit UI using UIElements, UXML, and USS.
 
 ## Explorer
 
-### Shared Styles
+### StyleSheet
 
-1. Can select the main StyleSheet by the Shared Styles header, showing its dedicated Inspector.
+1. Can select the main StyleSheet by the "StyleSheet" Explorer item, showing its dedicated Inspector.
 1. Selectors with .classNames get pills for each class created in the Explorer.
 1. In the Explorer, you can select selectors by clicking on the row or a class pill.
 1. Can drag a style class pill from the Explorer onto an element in the Viewport to add the class.
 1. Can drag a style class pill from the Explorer onto an element in the Hierarchy to add the class.
 1. Dragging a style class onto an element inside a template instance or C# type in the Viewport adds it to the parent instance or C# element.
 1. Dragging a style class onto an element inside a template instance or C# type in the Hierarchy does nothing.
+1. Below all selectors there's a field that lets you create new selectors (by pressing enter).
+    1. If **Class** mode is selected, a new `.class` selector will be added and you have options for the pseudo states to add.
+    1. If **Complex** mode selected, the raw string will be used for the full selector name, and the pseudo stats MaskField should not be visible.
+1. When hovering or selecting a style selector in the Explorer, all elements in the Canvas that match this selector will highlight.
 
 ### Hierarchy
 
 1. Can click to select element.
 1. Can drag element onto other elements in the Hierarchy to reparent.
-1. Can drag element between other elements to reorder, with live preview in the canvas.
+1. Can drag element between other elements to reorder, with live preview in the Canvas.
 1. Can drag element onto other elements in the Viewport to reparent.
 1. Elements are displayed using their #name in blue, or C# type in white if they have no name.
 1. Elements are displayed grayed out if they are children of a template instance or C# type.
 1. Selecting an element inside a template instance or C# type selects the parent instance or C# element.
 1. Dragging element onto a template instance or C# type element in the Viewport reparents it to the parent instance or C# element.
 1. Dragging element onto a template instance or C# type element in the Hierarchy does nothing.
-1. Right-clicking anywhere in the Hierarchy will open the Copy/Paste/Duplicate/Delete context menu.
+1. Right-clicking anywhere in the Hierarchy will open the Copy/Paste/Duplicate/Delete/Rename context menu.
+1. Can double-click on an item to rename it.
 
 ## Library
 
@@ -82,6 +87,9 @@ UI Builder lets you visually create and edit UI using UIElements, UXML, and USS.
 1. Absolute position elements can be click-drag moved, changing `top`/`right`/`left`/`bottom` inline styles depending on anchor state.
 1. Resize and position handles change different styles depeneding on anchor state (ie. if `left` and `right` styles are set, changing the width changes the `right` style - otherwise, changing the width changes the `width` style).
 1. Canvas size will be restored after Domain Reload or Window reload. It will be reset when opening a new document.
+1. When changing Width or Height in the Inspector, the corresponding resize handles in the canvas will highlight.
+1. When hovering over elements in the Canvas, the corresponding entry in the Hierarchy will highlight.
+1. When hovering over elements in the Canvas, all Explorer entries of style selectors that match this element will highlight.
 
 ## Previews
 
@@ -118,19 +126,21 @@ UI Builder lets you visually create and edit UI using UIElements, UXML, and USS.
 1. Changing attributes updates the Explorer, the Viewport, and the UXML Preview and changes are immediate.
 1. Right-click **Unset** on an attribute will remove it from the UXML tag, reset the value to the element-defined default, and reset the override styling.
 
-### Shared Styles Section
+### Inherited Styles Section
 
 1. Only visible if the selection is an element in the current document.
-1. Can add new class to element by typing in the **Add Style Class:** field and pressing the **Add Style Class:** (or pressing Enter).
+1. Can add existing style class to element by typing the name of the class in the field inside **Inherited Styles** and pressing the **Add Style Class to List** button (or pressing Enter).
+1. Can extract all overwritten **Local Styles** to a new style class by typing the name of the class in the field inside **Inherited Styles** and pressing the **Extract Local Styles to New Class** button.
 1. If the style class being added to an element is not valid, an error message will appear.
 1. All style classes on the current element are displayed as pills.
 1. Style class pills have an **X** button that lets you remove them from the element.
 1. Under **Matching Selectors**, all matching selectors on the current element are displayed with read-only fields for their properties.
 
-### Local Style Overrides
+### Local Styles
 
 1. Only visible if the selection is an element in the current document, or a selector in the current StyleSheet.
 1. Changing any value will set it in the StyleSheet or inline UXML style attribute and highlight it with the same styling as Prefab overrides.
 1. All style value types are supported.
 1. Sub-section foldout expanded states are preserved between selection changes and domain reload.
 1. Right-click **Unset** on an style field will remove it from the UXML inline style or StyleSheet, reset the value to default, and reset the override styling.
+1. Align section toggle button strips will change icons depending on the value of the flex-direction style.

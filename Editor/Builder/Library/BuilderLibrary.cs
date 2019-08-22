@@ -190,7 +190,7 @@ namespace Unity.UI.Builder
                 var split = known.uxmlNamespace.Split('.');
 
                 // Avoid adding our own internal factories (like Package Manager templates).
-                if (split.Count() > 0 && s_NameSpacesToAvoid.Contains(split[0]))
+                if (!Unsupported.IsDeveloperMode() && split.Count() > 0 && s_NameSpacesToAvoid.Contains(split[0]))
                     continue;
 
                 AddCategoriesToStack(sourceCategory, categoryStack, split);
@@ -426,9 +426,9 @@ namespace Unity.UI.Builder
             treeView.viewDataKey = "samples-tree";
             treeView.itemHeight = 20;
             treeView.rootItems = items;
-            treeView.makeItem = MakeItem;
-            treeView.bindItem = BindItem;
-            treeView.onItemChosen += OnItemChosen;
+            treeView.makeItem = () => MakeItem(); // This is apparently more optimal than "= MakeItem;".
+            treeView.bindItem = (e, i) => BindItem(e, i);
+            treeView.onItemChosen += (s) => OnItemChosen(s);
             treeView.Refresh();
 
             // Make sure the Hierarchy View gets focus when the pane gets focused.
@@ -493,8 +493,13 @@ namespace Unity.UI.Builder
                 return;
 
             var item = selectedItem as LibraryTreeItem;
+            if (item.makeVisualElement == null)
+                return;
 
             var newElement = item.makeVisualElement();
+            if (newElement == null)
+                return;
+
             m_DocumentElement.Add(newElement);
 
             if (item.makeElementAsset == null)

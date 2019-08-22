@@ -26,6 +26,8 @@ namespace Unity.UI.Builder
 
         private BuilderSelection m_Selection;
 
+        private List<VisualElement> m_MatchingExplorerItems = new List<VisualElement>();
+
         public VisualElement toolbar
         {
             get { return m_Toolbar; }
@@ -124,6 +126,20 @@ namespace Unity.UI.Builder
             evt.StopPropagation();
         }
 
+        private void ClearMatchingExplorerItems()
+        {
+            foreach (var item in m_MatchingExplorerItems)
+                item.RemoveFromClassList(BuilderConstants.ExplorerItemHoverClassName);
+
+            m_MatchingExplorerItems.Clear();
+        }
+
+        private void HighlightMatchingExplorerItems()
+        {
+            foreach (var item in m_MatchingExplorerItems)
+                item.AddToClassList(BuilderConstants.ExplorerItemHoverClassName);
+        }
+
         private void OnHover(MouseMoveEvent evt)
         {
             var pickedElement = PickElement(evt.mousePosition);
@@ -134,10 +150,41 @@ namespace Unity.UI.Builder
                 pickedElement = pickedElement.GetClosestElementPartOfCurrentDocument();
 
                 parentTracker.Activate(pickedElement);
+
+                ClearMatchingExplorerItems();
+
+                // Highlight corresponding element in Explorer (if visible).
+                var explorerItem = pickedElement.GetProperty(BuilderConstants.ElementLinkedExplorerItemVEPropertyName) as BuilderExplorerItem;
+                var explorerItemRow = explorerItem?.row();
+                if (explorerItemRow != null)
+                    m_MatchingExplorerItems.Add(explorerItemRow);
+
+                // Highlight matching selectors in the Explorer (if visible).
+                var matchingSelectors = BuilderSharedStyles.GetMatchingSelectorsOnElement(pickedElement);
+                if (matchingSelectors != null)
+                {
+                    foreach (var selectorStr in matchingSelectors)
+                    {
+                        var selectorElement = BuilderSharedStyles.FindSelectorElement(m_DocumentElement, selectorStr);
+                        if (selectorElement == null)
+                            continue;
+
+                        var selectorItem = selectorElement.GetProperty(BuilderConstants.ElementLinkedExplorerItemVEPropertyName) as BuilderExplorerItem;
+                        var selectorItemRow = selectorItem?.row();
+                        if (selectorItemRow == null)
+                            continue;
+
+                        m_MatchingExplorerItems.Add(selectorItemRow);
+                    }
+                }
+
+                HighlightMatchingExplorerItems();
             }
             else
             {
                 parentTracker.Deactivate();
+
+                ClearMatchingExplorerItems();
             }
 
             evt.StopPropagation();
@@ -146,6 +193,8 @@ namespace Unity.UI.Builder
         private void OnMouseLeave(MouseLeaveEvent evt)
         {
             parentTracker.Deactivate();
+
+            ClearMatchingExplorerItems();
         }
 
         private void OnMissPick(MouseDownEvent evt)

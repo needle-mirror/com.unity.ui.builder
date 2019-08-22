@@ -34,7 +34,7 @@ namespace Unity.UI.Builder
 
         BuilderClassDragger m_ClassDragger;
         BuilderHierarchyDragger m_HierarchyDragger;
-        private BuilderContextMenuManipulator m_ContextMenuManipulator;
+        private BuilderExplorerContextMenu m_ContextMenuManipulator;
 
         ToolbarMenu m_HierarchyTypeClassVisibilityMenu;
         [SerializeField] private BuilderElementInfoVisibilityState m_ElementInfoVisibilityState;
@@ -46,7 +46,7 @@ namespace Unity.UI.Builder
 
         public BuilderExplorer(BuilderViewport viewport, BuilderSelection selection,
             BuilderClassDragger classDragger, BuilderHierarchyDragger hierarchyDragger,
-            BuilderContextMenuManipulator contextMenuManipulator)
+            BuilderExplorerContextMenu contextMenuManipulator)
         {
             m_SharedStylesAndDocumentElement = viewport.sharedStylesAndDocumentElement;
             m_DocumentElement = viewport.documentElement;
@@ -84,7 +84,9 @@ namespace Unity.UI.Builder
 
             // Create the Hierarchy View.
             m_ElementHierarchyView = new ElementHierarchyView(
-                classDragger, hierarchyDragger, contextMenuManipulator, ElementSelected, overlayHelper);
+                m_DocumentElement,
+                selection, classDragger, hierarchyDragger,
+                contextMenuManipulator, ElementSelected, overlayHelper);
             m_ElementHierarchyView.style.flexGrow = 1;
             Add(m_ElementHierarchyView);
 

@@ -8,6 +8,10 @@ namespace Unity.UI.Builder
     class BuilderResizer : BuilderTransformer
     {
         private static readonly string s_UssClassName = "unity-builder-resizer";
+        private static readonly int s_HighlightHandleOnInspectorChangeDelayMS = 250;
+
+        IVisualElementScheduledItem m_UndoWidthHighlightScheduledItem;
+        IVisualElementScheduledItem m_UndoHeightHighlightScheduledItem;
 
         private Dictionary<string, VisualElement> m_HandleElements;
 
@@ -50,6 +54,11 @@ namespace Unity.UI.Builder
             base.m_AbsoluteOnlyHandleElements.Add(m_HandleElements["top-left-handle"]);
             base.m_AbsoluteOnlyHandleElements.Add(m_HandleElements["top-right-handle"]);
             base.m_AbsoluteOnlyHandleElements.Add(m_HandleElements["bottom-left-handle"]);
+
+            m_UndoWidthHighlightScheduledItem = this.schedule.Execute(UndoWidthHighlight);
+            m_UndoWidthHighlightScheduledItem.Pause();
+            m_UndoHeightHighlightScheduledItem = this.schedule.Execute(UndoHeightHighlight);
+            m_UndoHeightHighlightScheduledItem.Pause();
         }
 
         private void OnDrag(
@@ -210,6 +219,57 @@ namespace Unity.UI.Builder
             OnDragBottom(diff, m_ScratchChangeList);
             OnDragRight(diff, m_ScratchChangeList);
             NotifySelection();
+        }
+
+        private void UndoWidthHighlight()
+        {
+            m_HandleElements["left-handle"].pseudoStates &= ~PseudoStates.Hover;
+            m_HandleElements["right-handle"].pseudoStates &= ~PseudoStates.Hover;
+        }
+
+        private void UndoHeightHighlight()
+        {
+            m_HandleElements["top-handle"].pseudoStates &= ~PseudoStates.Hover;
+            m_HandleElements["bottom-handle"].pseudoStates &= ~PseudoStates.Hover;
+        }
+
+        public override void StylingChanged(List<string> styles)
+        {
+            if (m_Target == null)
+                return;
+
+            base.StylingChanged(styles);
+
+            if (styles == null)
+                return;
+
+            if (styles.Contains("width"))
+            {
+                if (IsNoneOrAuto(TrackedStyle.Left) && !IsNoneOrAuto(TrackedStyle.Right))
+                    m_HandleElements["left-handle"].pseudoStates |= PseudoStates.Hover;
+                else if (!IsNoneOrAuto(TrackedStyle.Left) && IsNoneOrAuto(TrackedStyle.Right))
+                    m_HandleElements["right-handle"].pseudoStates |= PseudoStates.Hover;
+                else
+                {
+                    m_HandleElements["left-handle"].pseudoStates |= PseudoStates.Hover;
+                    m_HandleElements["right-handle"].pseudoStates |= PseudoStates.Hover;
+                }
+                m_UndoWidthHighlightScheduledItem.ExecuteLater(s_HighlightHandleOnInspectorChangeDelayMS);
+            }
+
+            if (styles.Contains("height"))
+            {
+                if (IsNoneOrAuto(TrackedStyle.Top) && !IsNoneOrAuto(TrackedStyle.Bottom))
+                    m_HandleElements["top-handle"].pseudoStates |= PseudoStates.Hover;
+                else if (!IsNoneOrAuto(TrackedStyle.Top) && IsNoneOrAuto(TrackedStyle.Bottom))
+                    m_HandleElements["bottom-handle"].pseudoStates |= PseudoStates.Hover;
+                else
+                {
+                    m_HandleElements["top-handle"].pseudoStates |= PseudoStates.Hover;
+                    m_HandleElements["bottom-handle"].pseudoStates |= PseudoStates.Hover;
+                }
+                m_UndoHeightHighlightScheduledItem.ExecuteLater(s_HighlightHandleOnInspectorChangeDelayMS);
+            }
         }
     }
 }

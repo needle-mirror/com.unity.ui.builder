@@ -24,7 +24,7 @@ namespace Unity.UI.Builder
 
         public void HierarchyChanged(VisualElement element, BuilderHierarchyChangeType changeType)
         {
-            // Do nothing.
+            RefreshUSS();
         }
 
         public void SelectionChanged()

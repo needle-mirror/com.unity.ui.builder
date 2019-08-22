@@ -1,41 +1,65 @@
 <UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:uib="Unity.UI.Builder">
-    <!-- Margin Left -->
-    <uib:BuilderStyleRow binding-path="margin-left">
-        <uie:IntegerField label="Margin Left" tooltip="margin-left" />
+    <!-- Margin -->
+    <uib:BuilderStyleRow name="inspector-style-section-foldout-margin">
+        <uib:PersistedFoldoutWithField
+            text="Margin"
+            tooltip="margin"
+            binding-path="margin-left margin-right margin-top margin-bottom"
+            view-data-key="builder-inspector-style-section-foldout-margin"
+            class="unity-sub-foldout"
+            value="false">
+
+            <!-- Margin Left -->
+            <uib:BuilderStyleRow binding-path="margin-left">
+                <uie:IntegerField label="Left" tooltip="margin-left" />
+            </uib:BuilderStyleRow>
+
+            <!-- Margin Right -->
+            <uib:BuilderStyleRow binding-path="margin-right">
+                <uie:IntegerField label="Right" tooltip="margin-right" />
+            </uib:BuilderStyleRow>
+
+            <!-- Margin Top -->
+            <uib:BuilderStyleRow binding-path="margin-top">
+                <uie:IntegerField label="Top" tooltip="margin-top" />
+            </uib:BuilderStyleRow>
+
+            <!-- Margin Bottom -->
+            <uib:BuilderStyleRow binding-path="margin-bottom">
+                <uie:IntegerField label="Bottom" tooltip="margin-bottom" />
+            </uib:BuilderStyleRow>
+        </uib:PersistedFoldoutWithField>
     </uib:BuilderStyleRow>
 
-    <!-- Margin Right -->
-    <uib:BuilderStyleRow binding-path="margin-right">
-        <uie:IntegerField label="Margin Right" tooltip="margin-right" />
-    </uib:BuilderStyleRow>
+    <!-- Padding -->
+    <uib:BuilderStyleRow name="inspector-style-section-foldout-padding">
+        <uib:PersistedFoldoutWithField
+            text="Padding"
+            tooltip="padding"
+            binding-path="padding-left padding-right padding-top padding-bottom"
+            view-data-key="builder-inspector-style-section-foldout-padding"
+            class="unity-sub-foldout"
+            value="false">
 
-    <!-- Margin Top -->
-    <uib:BuilderStyleRow binding-path="margin-top">
-        <uie:IntegerField label="Margin Top" tooltip="margin-top" />
-    </uib:BuilderStyleRow>
+            <!-- Padding Left -->
+            <uib:BuilderStyleRow binding-path="padding-left">
+                <uie:IntegerField label="Left" tooltip="padding-left" />
+            </uib:BuilderStyleRow>
 
-    <!-- Margin Bottom -->
-    <uib:BuilderStyleRow binding-path="margin-bottom">
-        <uie:IntegerField label="Margin Bottom" tooltip="margin-bottom" />
-    </uib:BuilderStyleRow>
+            <!-- Padding Right -->
+            <uib:BuilderStyleRow binding-path="padding-right">
+                <uie:IntegerField label="Right" tooltip="padding-right" />
+            </uib:BuilderStyleRow>
 
-    <!-- Padding Left -->
-    <uib:BuilderStyleRow binding-path="padding-left">
-        <uie:IntegerField label="Padding Left" tooltip="padding-left" />
-    </uib:BuilderStyleRow>
+            <!-- Padding Top -->
+            <uib:BuilderStyleRow binding-path="padding-top">
+                <uie:IntegerField label="Top" tooltip="padding-top" />
+            </uib:BuilderStyleRow>
 
-    <!-- Padding Right -->
-    <uib:BuilderStyleRow binding-path="padding-right">
-        <uie:IntegerField label="Padding Right" tooltip="padding-right" />
-    </uib:BuilderStyleRow>
-
-    <!-- Padding Top -->
-    <uib:BuilderStyleRow binding-path="padding-top">
-        <uie:IntegerField label="Padding Top" tooltip="padding-top" />
-    </uib:BuilderStyleRow>
-
-    <!-- Padding Bottom -->
-    <uib:BuilderStyleRow binding-path="padding-bottom">
-        <uie:IntegerField label="Padding Bottom" tooltip="padding-bottom" />
+            <!-- Padding Bottom -->
+            <uib:BuilderStyleRow binding-path="padding-bottom">
+                <uie:IntegerField label="Bottom" tooltip="padding-bottom" />
+            </uib:BuilderStyleRow>
+        </uib:PersistedFoldoutWithField>
     </uib:BuilderStyleRow>
 </UXML>

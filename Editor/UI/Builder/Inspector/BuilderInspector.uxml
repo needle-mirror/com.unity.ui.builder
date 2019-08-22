@@ -35,7 +35,7 @@
             class="unity-builder-inspector__nothing-selected-label"
             text="Current UXML document." />
 
-        <!-- Shared Styles Controls -->
+        <!-- StyleSheet Controls -->
         <uib:PersistedFoldout
             name="shared-styles-controls"
             text="StyleSheet"
@@ -77,11 +77,11 @@
             class="unity-builder-inspector__category-foldout unity-builder-inspector__style-row-container"
             value="false" />
 
-        <!-- Element Shared Styles Foldout -->
+        <!-- Element Inherited Styles Foldout -->
         <uib:PersistedFoldout
-            name="inspector-shared-styles-foldout"
-            text="Shared Styles"
-            view-data-key="builder-inspector-attributes-shared-styles-foldout"
+            name="inspector-inherited-styles-foldout"
+            text="Inherited Styles"
+            view-data-key="builder-inspector-attributes-inherited-styles-foldout"
             class="unity-builder-inspector__category-foldout"
             value="false">
 
@@ -94,8 +94,9 @@
                 value="false" >
 
                 <VisualElement name="add-class-controls-container" class="unity-builder-inspector__add-class-controls">
-                    <Button name="add-class-button" text="Add Style Class:" class="unity-builder-inspector__add-class-button" />
                     <TextField name="add-class-field" class="unity-builder-inspector__add-class-field" />
+                    <Button name="add-class-button" text="Add Style Class to List" class="unity-builder-inspector__add-class-button" />
+                    <Button name="create-class-button" text="Extract Local Styles to New Class" class="unity-builder-inspector__add-class-button" />
                 </VisualElement>
 
                 <VisualElement name="add-class-validation-message-container" />
@@ -111,11 +112,11 @@
                 value="false" />
         </uib:PersistedFoldout>
 
-        <!-- Element/Selector Local Style Overrides Foldout -->
+        <!-- Element/Selector Local Styles Foldout -->
         <uib:PersistedFoldout
-            name="inspector-local-style-overrides-foldout"
-            text="Local Style Overrides"
-            view-data-key="builder-inspector-local-style-overrides-foldout"
+            name="inspector-local-styles-foldout"
+            text="Local Styles"
+            view-data-key="builder-inspector-local-styles-foldout"
             class="unity-builder-inspector__category-foldout unity-builder-inspector__style-row-container"
             value="false">
 

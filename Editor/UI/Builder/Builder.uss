@@ -75,7 +75,8 @@
 }
 
 .unity-builder-explorer-tree-item-label {
-    margin-top: 2px;
+    margin-top: 3px;
+    padding-top: 0;
     padding-left: 1px;
     padding-right: 1px;
     margin-right: 4px;
@@ -114,12 +115,65 @@
 
 .unity-builder-explorer__content-container {
     flex-direction: row;
+    flex-grow: 1;
 }
 
 .unity-builder__toolbar-setting-menu {
     border-width: 0px;
     -unity-slice-top: 0;
     -unity-slice-right: 0;
+}
+
+.unity-builder-explorer__rename-textfield__pre-2019-3 {
+    padding-top: 2px;
+    padding-bottom: 0;
+    margin-top: 0;
+    margin-bottom: 1px;
+}
+
+.unity-builder-explorer__rename-textfield {
+    padding-top: 2px;
+    padding-bottom: 0;
+    margin-top: 0;
+    margin-bottom: 2px;
+}
+
+.unity-builder-explorer__rename-textfield > .unity-text-input {
+    padding-bottom: 3px;
+}
+
+.unity-builder-explorer__new-selector-item {
+    flex-grow: 1;
+    flex-direction: row;
+}
+
+.unity-builder-explorer__new-selector-field-container {
+    flex-grow: 1;
+}
+
+.unity-builder-explorer__new-selector-field {
+    padding-top: 2px;
+    padding-bottom: 0;
+    margin-top: 0;
+    margin-bottom: 1px;
+}
+
+.unity-builder-explorer__new-selector-state-mask {
+    padding-top: 1px;
+    padding-bottom: 0;
+    margin-left: 0;
+    margin-right: 0;
+    margin-bottom: 0;
+    width: 68px;
+}
+
+.unity-builder-explorer__new-selector-mode-enum {
+    padding-top: 1px;
+    padding-bottom: 0;
+    margin-left: 1px;
+    margin-right: 1px;
+    margin-bottom: 0;
+    width: 68px;
 }
 
 /*****************************************************************************/
@@ -572,6 +626,10 @@
 
 .unity-builder__save-dialog-validation-container {
     height: 40px;
+}
+
+.unity-builder__save-dialog-path-field-container {
+    flex-grow: 1;
 }
 
 .unity-builder__save-dialog-container .unity-text-field {

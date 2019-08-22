@@ -47,7 +47,15 @@
 }
 
 .unity-builder__toolbar-setting-menu {
-    background-image: url("/Packages/com.unity.ui.builder/Icons/Light/_Menu.png");
+    background-image: resource("com.unity.ui.builder/Icons/Light/_Menu");
+}
+
+.unity-builder-explorer__item--hover {
+    background-color: #b2b2b2;
+}
+
+.unity-list-view__item--selected.unity-builder-explorer__item--hover {
+    background-color: #3d80df;
 }
 
 /*****************************************************************************/
@@ -162,12 +170,12 @@
     background-color: rgb(47, 114, 168);
 }
 
-.unity-builder-resizer--active .unity-builder-resizer__side__inner,
+.unity-builder-resizer__side.unity-builder-transformer--active .unity-builder-resizer__side__inner,
 .unity-builder-resizer__side:hover .unity-builder-resizer__side__inner {
     background-color: rgb(255, 255, 255);
 }
 
-.unity-builder-resizer--active .unity-builder-resizer__corner__inner,
+.unity-builder-resizer__corner.unity-builder-transformer--active .unity-builder-resizer__corner__inner,
 .unity-builder-resizer__corner:hover .unity-builder-resizer__corner__inner {
     background-color: rgb(255, 255, 255);
 }

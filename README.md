@@ -13,7 +13,8 @@ The UI Builder is still in preview and we would love to hear your feedback!
 
 Unity versions supported:
 - **2019.2**: 2019.2.0b4 or newer
-- **2019.3**: 2019.3.0a10 or newer
+- **2019.3**: 2019.3.0a12 or newer
+- **2020.1**: 2020.1.0a1 or newer
 
 This package has not yet been added to the Package Manager UI. To install:
 1. Open your project's `Packages/manifest.json`
@@ -21,7 +22,7 @@ This package has not yet been added to the Package Manager UI. To install:
     ```
     {
       "dependencies": {
-        "com.unity.ui.builder": "0.5.7-preview",
+        "com.unity.ui.builder": "0.6.1-preview",
         ...
       }
     }
