@@ -199,8 +199,12 @@ namespace Unity.UI.Builder
                     var pill = labelCont.contentContainer.ElementAt(labelCont.childCount - 1);
                     var pillLabel = pill.Q<Label>("class-name-label");
                     pill.AddToClassList("unity-debugger-tree-item-pill");
+                    pill.SetProperty(BuilderConstants.ExplorerStyleClassPillClassNameVEPropertyName, partStr);
                     pill.userData = documentElement;
-                    pillLabel.text = partStr;
+
+                    // Add ellipsis if the class name is too long.
+                    var partStrShortened = BuilderNameUtilities.CapStringLengthAndAddEllipsis(partStr, BuilderConstants.ClassNameInPillMaxLength);
+                    pillLabel.text = partStrShortened;
 
                     m_ClassDragger.RegisterCallbacksOnTarget(pill);
                 }

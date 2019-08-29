@@ -7,6 +7,8 @@ namespace Unity.UI.Builder
 {
     internal class TwoPaneSplitView : VisualElement
     {
+        private static readonly string s_UssPath = BuilderConstants.UtilitiesPath + "/TwoPaneSplitView/TwoPaneSplitView.uss";
+
         private static readonly string s_UssClassName = "unity-two-pane-split-view";
         private static readonly string s_ContentContainerClassName = "unity-two-pane-split-view__content-container";
         private static readonly string s_HandleDragLineClassName = "unity-two-pane-split-view__dragline";
@@ -57,6 +59,8 @@ namespace Unity.UI.Builder
         private VisualElement m_FixedPane;
         private VisualElement m_FlexedPane;
 
+        public VisualElement fixedPane => m_FixedPane;
+
         private VisualElement m_DragLine;
         private VisualElement m_DragLineAnchor;
         private float m_MinDimension;
@@ -67,13 +71,15 @@ namespace Unity.UI.Builder
         private int m_FixedPaneIndex;
         private float m_FixedPaneInitialDimension;
 
-        private SquareResizer m_Resizer;
+        public int fixedPaneIndex => m_FixedPaneIndex;
+
+        private TwoPaneSplitViewResizer m_Resizer;
 
         public TwoPaneSplitView()
         {
             AddToClassList(s_UssClassName);
 
-            styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.UIBuilderPackagePath + "/Utilities/TwoPaneSplitView.uss"));
+            styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(s_UssPath));
 
             m_Content = new VisualElement();
             m_Content.name = "unity-content-container";
@@ -225,9 +231,9 @@ namespace Unity.UI.Builder
                 direction = -1;
 
             if (m_FixedPaneIndex == 0)
-                m_Resizer = new SquareResizer(this, direction, m_MinDimension, m_Orientation);
+                m_Resizer = new TwoPaneSplitViewResizer(this, direction, m_MinDimension, m_Orientation);
             else
-                m_Resizer = new SquareResizer(this, direction, m_MinDimension, m_Orientation);
+                m_Resizer = new TwoPaneSplitViewResizer(this, direction, m_MinDimension, m_Orientation);
 
             m_DragLineAnchor.AddManipulator(m_Resizer);
 
@@ -272,121 +278,6 @@ namespace Unity.UI.Builder
         public override VisualElement contentContainer
         {
             get { return m_Content; }
-        }
-
-        class SquareResizer : MouseManipulator
-        {
-            private Vector2 m_Start;
-            protected bool m_Active;
-            private TwoPaneSplitView m_SplitView;
-            private VisualElement m_Pane;
-            private int m_Direction;
-            private float m_MinWidth;
-            private Orientation m_Orientation;
-
-            public SquareResizer(TwoPaneSplitView splitView, int dir, float minWidth, Orientation orientation)
-            {
-                m_Orientation = orientation;
-                m_MinWidth = minWidth;
-                m_SplitView = splitView;
-                m_Pane = splitView.m_FixedPane;
-                m_Direction = dir;
-                activators.Add(new ManipulatorActivationFilter { button = MouseButton.LeftMouse });
-                m_Active = false;
-            }
-
-            protected override void RegisterCallbacksOnTarget()
-            {
-                target.RegisterCallback<MouseDownEvent>(OnMouseDown);
-                target.RegisterCallback<MouseMoveEvent>(OnMouseMove);
-                target.RegisterCallback<MouseUpEvent>(OnMouseUp);
-            }
-
-            protected override void UnregisterCallbacksFromTarget()
-            {
-                target.UnregisterCallback<MouseDownEvent>(OnMouseDown);
-                target.UnregisterCallback<MouseMoveEvent>(OnMouseMove);
-                target.UnregisterCallback<MouseUpEvent>(OnMouseUp);
-            }
-
-            public void ApplyDelta(float delta)
-            {
-                float oldDimension = m_Orientation == Orientation.Horizontal
-                    ? m_Pane.resolvedStyle.width
-                    : m_Pane.resolvedStyle.height;
-                float newDimension = oldDimension + delta;
-
-                if (newDimension < oldDimension && newDimension < m_MinWidth)
-                    newDimension = m_MinWidth;
-
-                float maxLength = m_Orientation == Orientation.Horizontal
-                    ? m_SplitView.resolvedStyle.width
-                    : m_SplitView.resolvedStyle.height;
-                if (newDimension > oldDimension && newDimension > maxLength)
-                    newDimension = maxLength;
-
-                if (m_Orientation == Orientation.Horizontal)
-                {
-                    m_Pane.style.width = newDimension;
-                    if (m_SplitView.m_FixedPaneIndex == 0)
-                        target.style.left = newDimension;
-                    else
-                        target.style.left = m_SplitView.resolvedStyle.width - newDimension;
-                }
-                else
-                {
-                    m_Pane.style.height = newDimension;
-                    if (m_SplitView.m_FixedPaneIndex == 0)
-                        target.style.top = newDimension;
-                    else
-                        target.style.top = m_SplitView.resolvedStyle.height - newDimension;
-                }
-            }
-
-            protected void OnMouseDown(MouseDownEvent e)
-            {
-                if (m_Active)
-                {
-                    e.StopImmediatePropagation();
-                    return;
-                }
-
-                if (CanStartManipulation(e))
-                {
-                    m_Start = e.localMousePosition;
-
-                    m_Active = true;
-                    target.CaptureMouse();
-                    e.StopPropagation();
-                }
-            }
-
-            protected void OnMouseMove(MouseMoveEvent e)
-            {
-                if (!m_Active || !target.HasMouseCapture())
-                    return;
-
-                Vector2 diff = e.localMousePosition - m_Start;
-                float mouseDiff = diff.x;
-                if (m_Orientation == Orientation.Vertical)
-                    mouseDiff = diff.y;
-
-                float delta = m_Direction * mouseDiff;
-
-                ApplyDelta(delta);
-
-                e.StopPropagation();
-            }
-
-            protected void OnMouseUp(MouseUpEvent e)
-            {
-                if (!m_Active || !target.HasMouseCapture() || !CanStopManipulation(e))
-                    return;
-
-                m_Active = false;
-                target.ReleaseMouse();
-                e.StopPropagation();
-            }
         }
     }
 }

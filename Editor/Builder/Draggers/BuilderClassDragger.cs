@@ -31,7 +31,7 @@ namespace Unity.UI.Builder
 
         protected override bool StartDrag(VisualElement target, Vector2 mousePosition, VisualElement pill)
         {
-            m_ClassNameBeingDragged = target.Q<Label>().text;
+            m_ClassNameBeingDragged = target.GetProperty(BuilderConstants.ExplorerStyleClassPillClassNameVEPropertyName) as string;
             pill.Q<Label>().text = m_ClassNameBeingDragged;
             return true;
         }

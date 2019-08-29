@@ -12,7 +12,7 @@ namespace Unity.UI.Builder
         public new class UxmlTraits : BindableElement.UxmlTraits
         {
             UxmlStringAttributeDescription m_Text = new UxmlStringAttributeDescription { name = "text" };
-            UxmlStringAttributeDescription m_BindingPath = new UxmlStringAttributeDescription { name = "binding-path" };
+            UxmlStringAttributeDescription m_BindingPaths = new UxmlStringAttributeDescription { name = "binding-paths" };
 
             public override IEnumerable<UxmlChildElementDescription> uxmlChildElementsDescription
             {
@@ -25,7 +25,7 @@ namespace Unity.UI.Builder
                 ((PersistedFoldoutWithField)ve).text = m_Text.GetValueFromBag(bag, cc);
 
                 var separator = ' ';
-                ((PersistedFoldoutWithField)ve).bindingPathArray = m_BindingPath.GetValueFromBag(bag, cc).Split(separator);
+                ((PersistedFoldoutWithField)ve).bindingPathArray = m_BindingPaths.GetValueFromBag(bag, cc).Split(separator);
 
                 ((PersistedFoldoutWithField)ve).ReAssignTooltipToHeaderLabel();
             }

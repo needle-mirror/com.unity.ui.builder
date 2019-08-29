@@ -22,7 +22,11 @@ namespace Unity.UI.Builder
             // This is needed because of asset reloads during domain reloads where the
             // stylesheet path might be a temporary instance id to a pure in-memory stylesheet.
             List<string> originalStyleSheets = null;
+#if UNITY_2019_3_OR_NEWER
+            if (root.stylesheetPaths != null && root.stylesheetPaths.Count > 0)
+#else
             if (root.stylesheets != null && root.stylesheets.Count > 0)
+#endif
             {
                 originalStyleSheets = root.GetStyleSheetPaths();
                 var strippedList = originalStyleSheets.Where(

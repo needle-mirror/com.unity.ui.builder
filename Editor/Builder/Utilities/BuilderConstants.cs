@@ -9,6 +9,7 @@ namespace Unity.UI.Builder
         public static readonly int VisualTreeAssetOrderHalfIncrement = 5;
         public static readonly float CanvasInitialWidth = 350;
         public static readonly float CanvasInitialHeight = 550;
+        public static readonly int ClassNameInPillMaxLength = 25;
 
         // Paths
         public static readonly string UIBuilderPackagePath = "Packages/com.unity.ui.builder/Editor/UI";
@@ -62,6 +63,7 @@ namespace Unity.UI.Builder
         public static readonly string AddStyleClassValidationSpaces = "Class names cannot contain spaces.";
         public static readonly string AddStyleClassValidationSpacialCharacters = "Class names can only contain letters, numbers, underscores, and dashes.";
         public static readonly string ContextMenuUnsetMessage = "Unset";
+        public static readonly string FontCannotBeNoneMessage = "UI Builder: Font cannot be set to none.";
 
         //
         // Explorer
@@ -70,6 +72,7 @@ namespace Unity.UI.Builder
         // Explorer Links VE Property Names
         public static readonly string ExplorerItemElementLinkVEPropertyName = "__unity-ui-builder-explorer-item-link";
         public static readonly string ExplorerItemFillItemCallbackVEPropertyName = "__unity-ui-builder-explorer-item-override-template";
+        public static readonly string ExplorerStyleClassPillClassNameVEPropertyName = "__unity-ui-builder-explorer-style-class-pill-name";
 
         // Explorer Names
         public static readonly string ExplorerItemRenameTextfieldName = "unity-builder-explorer__rename-textfield";

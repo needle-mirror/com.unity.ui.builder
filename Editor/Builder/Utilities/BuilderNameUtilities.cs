@@ -61,5 +61,15 @@ namespace Unity.UI.Builder
 
             return dash;
         }
+
+        public static string CapStringLengthAndAddEllipsis(string str, int maxLength)
+        {
+            if (str.Length < maxLength)
+                return str;
+
+            var strShortened = str.Substring(0, maxLength);
+            strShortened += "...";
+            return strShortened;
+        }
     }
 }

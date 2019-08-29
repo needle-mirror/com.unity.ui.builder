@@ -29,7 +29,7 @@
         <uib:PersistedFoldoutWithField
             text="Width"
             tooltip="border-width"
-            binding-path="border-left-width border-right-width border-top-width border-bottom-width"
+            binding-paths="border-left-width border-right-width border-top-width border-bottom-width"
             view-data-key="builder-inspector-style-section-foldout-border-width"
             class="unity-sub-foldout"
             value="false">
@@ -61,7 +61,7 @@
         <uib:PersistedFoldoutWithField
             text="Radius"
             tooltip="border-radius"
-            binding-path="border-top-left-radius border-bottom-left-radius border-top-right-radius border-bottom-right-radius"
+            binding-paths="border-top-left-radius border-bottom-left-radius border-top-right-radius border-bottom-right-radius"
             view-data-key="builder-inspector-style-section-foldout-border-radius"
             class="unity-sub-foldout"
             value="false">

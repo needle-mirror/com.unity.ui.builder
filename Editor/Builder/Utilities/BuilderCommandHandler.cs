@@ -20,6 +20,11 @@ namespace Unity.UI.Builder
         private bool m_ControlWasPressed;
         private IVisualElementScheduledItem m_ControlUnpressScheduleItem;
 
+        // TODO: Hack. We need this because of a bug on Mac where we
+        // get double command events.
+        // Case: https://fogbugz.unity3d.com/f/cases/1180090/
+        private long m_LastFrameCount;
+
         public BuilderCommandHandler(
             Builder builder,
             BuilderExplorer explorer,
@@ -45,8 +50,8 @@ namespace Unity.UI.Builder
             m_Viewport.primaryFocusable.RegisterCallback<ExecuteCommandEvent>(OnCommandExecute);
 
             // Make sure Delete key works on Mac keyboards.
-            m_Explorer.primaryFocusable.RegisterCallback<KeyUpEvent>(OnDelete);
-            m_Viewport.primaryFocusable.RegisterCallback<KeyUpEvent>(OnDelete);
+            m_Explorer.primaryFocusable.RegisterCallback<KeyDownEvent>(OnDelete);
+            m_Viewport.primaryFocusable.RegisterCallback<KeyDownEvent>(OnDelete);
 
             // Ctrl+S to save.
             m_Builder.rootVisualElement.RegisterCallback<KeyUpEvent>(OnSaveDocument);
@@ -66,8 +71,8 @@ namespace Unity.UI.Builder
             m_Viewport.primaryFocusable.UnregisterCallback<ValidateCommandEvent>(OnCommandValidate);
             m_Viewport.primaryFocusable.UnregisterCallback<ExecuteCommandEvent>(OnCommandExecute);
 
-            m_Explorer.primaryFocusable.UnregisterCallback<KeyUpEvent>(OnDelete);
-            m_Viewport.primaryFocusable.UnregisterCallback<KeyUpEvent>(OnDelete);
+            m_Explorer.primaryFocusable.UnregisterCallback<KeyDownEvent>(OnDelete);
+            m_Viewport.primaryFocusable.UnregisterCallback<KeyDownEvent>(OnDelete);
 
             m_Builder.rootVisualElement.UnregisterCallback<KeyUpEvent>(OnSaveDocument);
 
@@ -86,6 +91,12 @@ namespace Unity.UI.Builder
 
         public void OnCommandValidate(ValidateCommandEvent evt)
         {
+            // TODO: Hack. We need this because of a bug on Mac where we
+            // get double command events.
+            if (m_LastFrameCount == Time.frameCount)
+                return;
+            m_LastFrameCount = Time.frameCount;
+
             switch (evt.commandName)
             {
                 case EventCommandNames.Cut: evt.StopPropagation(); return;
@@ -148,7 +159,7 @@ namespace Unity.UI.Builder
             evt.StopPropagation();
         }
 
-        private void OnDelete(KeyUpEvent evt)
+        private void OnDelete(KeyDownEvent evt)
         {
             switch (evt.keyCode)
             {

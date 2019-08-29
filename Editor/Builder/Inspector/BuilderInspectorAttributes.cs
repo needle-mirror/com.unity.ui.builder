@@ -448,24 +448,18 @@ namespace Unity.UI.Builder
                 }
 
                 var traitObj = traitsField.GetValue(factory);
-                var traitType = traitObj.GetType();
-                var initMethod = traitType.GetMethod("Init");
-                if (initMethod == null)
-                {
-                    Debug.LogError("UI Builder: UxmlTraits.Init() private method has not been found! Update the reflection code!");
-                    return;
-                }
+                var trait = traitObj as UxmlTraits;
 
                 var context = new CreationContext();
                 var vea = currentVisualElement.GetVisualElementAsset();
 
                 try
                 {
-                    initMethod.Invoke(traitObj, new object[] { currentVisualElement, vea, context });
+                    trait.Init(currentVisualElement, vea, context);
                 }
                 catch
                 {
-                    // TODO: This throws in 2019.3.0a4 because usageHints property throws when set after the element has already been added to the panel.
+                    // HACK: This throws in 2019.3.0a4 because usageHints property throws when set after the element has already been added to the panel.
                 }
             }
         }

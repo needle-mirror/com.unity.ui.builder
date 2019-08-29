@@ -164,8 +164,8 @@ namespace Unity.UI.Builder
                 BuilderConstants.CreateStyleClassUndoMessage);
 
             // We actually want to get the notification back and refresh ourselves.
-            m_Selection.NotifyOfHierarchyChange(null);
             m_Selection.NotifyOfStylingChange(null);
+            m_Selection.NotifyOfHierarchyChange(null, currentVisualElement);
         }
 
         private void OnStyleClassDelete(EventBase evt)
@@ -215,7 +215,10 @@ namespace Unity.UI.Builder
                 var pillLabel = pill.Q<Label>("class-name-label");
                 var pillDeleteButton = pill.Q<Button>("delete-class-button");
 
-                pillLabel.text = className;
+                // Add ellipsis if the class name is too long.
+                var classNameShortened = BuilderNameUtilities.CapStringLengthAndAddEllipsis(className, BuilderConstants.ClassNameInPillMaxLength);
+                pillLabel.text = "." + classNameShortened;
+
                 pillDeleteButton.userData = className;
                 pillDeleteButton.clickable.clickedWithEventInfo += OnStyleClassDelete;
             }

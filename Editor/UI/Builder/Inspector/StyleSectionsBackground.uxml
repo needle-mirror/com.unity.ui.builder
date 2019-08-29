@@ -24,7 +24,7 @@
         <uib:PersistedFoldoutWithField
             text="Slice"
             tooltip="-unity-slice"
-            binding-path="-unity-slice-left -unity-slice-top -unity-slice-right -unity-slice-bottom"
+            binding-paths="-unity-slice-left -unity-slice-top -unity-slice-right -unity-slice-bottom"
             view-data-key="builder-inspector-style-section-foldout-unity-slice"
             class="unity-sub-foldout"
             value="false">

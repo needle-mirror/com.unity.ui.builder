@@ -4,6 +4,20 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.6.2] - 2019-08-29
+
+- Fixed long style class name appearance in the Builder Pills. Long names will now be capped and an ellipsis (...) added.
+- Fixed warnings and malformed USS/UXML generation when selecting None for the Font style. Will now disallow setting None and give a Log message saying None is disallowed.
+- Fixed pressing backspace or delete in the new-selector field in the Explorer deleting the selected element.
+- Fixed Align Items style being wrongly bound to Align Content.
+- Fixed styles on new selector created via Extract Local Styles to New Class not affecting the original element.
+- Fixed UIElements EditorWindow Creation Dialog not working and throwing errors with the UI Builder package installed.
+- (macOS) Fixed copy/paste/duplicate creating double the amount of elements.
+- (2019.3+) Fixed Opacity style in the Inspector not live updating the opacity in the canvas.
+- (2019.3+) Fixed domain reloads breaking unsaved UXML documents with StyleSheet not found errors.
+- (2019.3+) Fixed style groups (using FoldoutWithField, ie. margin-left, -right, ...) not working for Dimension styles in the Inspector.
+- (2020.1+) Fixed Button Strip styling to account for new Button borders.
+
 ## [0.6.1] - 2019-08-21
 
 - Fixed USS Preview not updating when creating new selector directly inside the Explorer.

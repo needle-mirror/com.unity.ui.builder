@@ -122,7 +122,7 @@ namespace Unity.UI.Builder
             {
                 var uiField = fieldElement as ObjectField;
                 uiField.objectType = typeof(Font);
-                uiField.RegisterValueChangedCallback(e => OnFieldValueChange(e, styleName));
+                uiField.RegisterValueChangedCallback(e => OnFieldValueChangeFont(e, styleName));
             }
             else if (val is StyleBackground && fieldElement is ObjectField)
             {
@@ -261,25 +261,28 @@ namespace Unity.UI.Builder
                     for (int i = 0; i < foldoutElement.bindingPathArray.Length; i++)
                     {
                         var styleProperty = GetStylePropertyByStyleName(foldoutElement.bindingPathArray[i]);
+                        if (styleProperty.values.Length == 0)
+                            continue;
 
 #if UNITY_2019_3_OR_NEWER
-                            if (BuilderConstants.SpecialSnowflakeLengthSytles.Contains(foldoutElement.bindingPathArray[i]))
+                        if (styleProperty.values[0].valueType == StyleValueType.Dimension ||
+                            BuilderConstants.SpecialSnowflakeLengthSytles.Contains(foldoutElement.bindingPathArray[i]))
+                        {
+                            var newValue = 0;
+                            // TryParse to check if fieldValue is not a style string like "auto"
+                            if (Int32.TryParse(foldoutElement.fieldValues[i], out newValue))
                             {
-                                var newValue = 0;
-                                // TryParse to check if fieldValue is not a style string like "auto"
-                                if (Int32.TryParse(foldoutElement.fieldValues[i], out newValue))
-                                {
-                                    var dimension = new Dimension();
-                                    dimension.unit = Dimension.Unit.Pixel;
-                                    dimension.value = newValue;
+                                var dimension = new Dimension();
+                                dimension.unit = Dimension.Unit.Pixel;
+                                dimension.value = newValue;
 
-                                    if (styleProperty.values.Length == 0)
-                                        styleSheet.AddValue(styleProperty, dimension);
-                                    else // TODO: Assume only one value.
-                                        styleSheet.SetValue(styleProperty.values[0], dimension);
-                                }
+                                if (styleProperty.values.Length == 0)
+                                    styleSheet.AddValue(styleProperty, dimension);
+                                else // TODO: Assume only one value.
+                                    styleSheet.SetValue(styleProperty.values[0], dimension);
                             }
-                            else
+                        }
+                        else
 #endif
                         {
                             var newValue = 0;
@@ -815,6 +818,26 @@ namespace Unity.UI.Builder
                 styleSheet.SetValue(styleProperty.values[0], e.newValue);
 
             PostStyleFieldSteps(e.target as VisualElement, styleName);
+        }
+
+        private void OnFieldValueChangeFont(ChangeEvent<Object> e, string styleName)
+        {
+            var field = e.target as ObjectField;
+            if (e.newValue == null)
+            {
+                Debug.Log(BuilderConstants.FontCannotBeNoneMessage);
+                field.SetValueWithoutNotify(e.previousValue);
+                return;
+            }
+
+            var styleProperty = GetStylePropertyByStyleName(styleName);
+
+            if (styleProperty.values.Length == 0)
+                styleSheet.AddValue(styleProperty, e.newValue);
+            else // TODO: Assume only one value.
+                styleSheet.SetValue(styleProperty.values[0], e.newValue);
+
+            PostStyleFieldSteps(field, styleName);
         }
 
         private void OnFieldValueChange(ChangeEvent<Enum> e, string styleName)

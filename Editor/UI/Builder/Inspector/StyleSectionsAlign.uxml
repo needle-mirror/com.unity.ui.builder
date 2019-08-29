@@ -1,6 +1,6 @@
 <UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:uib="Unity.UI.Builder">
     <!-- Align Items -->
-    <uib:BuilderStyleRow binding-path="align-content">
+    <uib:BuilderStyleRow binding-path="align-items">
         <uib:ToggleButtonStrip class="unity-builder-inspector_align-items-field" label="Align Items" tooltip="align-items" />
     </uib:BuilderStyleRow>
 

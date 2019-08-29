@@ -198,6 +198,9 @@ namespace Unity.UI.Builder
 #if UNITY_2019_3_OR_NEWER
                 s_StylePropertyReader.SetInlineContext(vta.inlineSheet, rule, vea.ruleIndex);
                 stylesData.ApplyProperties(s_StylePropertyReader, null);
+
+                // Need to enforce this specific style is updated.
+                element.IncrementVersion(VersionChangeType.Opacity);
 #else
                 var propIds = UnityEngine.UIElements.StyleSheets.StyleSheetCache.GetPropertyIDs(vta.inlineSheet, vea.ruleIndex);
                 element.specifiedStyle.ApplyRule(vta.inlineSheet, Int32.MaxValue, rule, propIds);

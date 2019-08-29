@@ -536,10 +536,13 @@
     border-radius: 4px;
     padding-left: 4px;
     padding-right: 4px;
+    overflow: hidden;
 }
 
 .unity-builder-class-pill Label {
-    -unity-text-align: middle-center;
+    max-width: 200px;
+    overflow: hidden;
+    -unity-text-align: middle-left;
 }
 
 .unity-builder-class-pill__delete-button {

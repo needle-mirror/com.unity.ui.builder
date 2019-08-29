@@ -4,7 +4,7 @@
         <uib:PersistedFoldoutWithField
             text="Margin"
             tooltip="margin"
-            binding-path="margin-left margin-right margin-top margin-bottom"
+            binding-paths="margin-left margin-right margin-top margin-bottom"
             view-data-key="builder-inspector-style-section-foldout-margin"
             class="unity-sub-foldout"
             value="false">
@@ -36,7 +36,7 @@
         <uib:PersistedFoldoutWithField
             text="Padding"
             tooltip="padding"
-            binding-path="padding-left padding-right padding-top padding-bottom"
+            binding-paths="padding-left padding-right padding-top padding-bottom"
             view-data-key="builder-inspector-style-section-foldout-padding"
             class="unity-sub-foldout"
             value="false">
