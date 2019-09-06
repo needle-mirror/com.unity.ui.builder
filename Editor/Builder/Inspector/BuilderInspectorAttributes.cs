@@ -8,18 +8,25 @@ using UnityEngine.UIElements;
 
 namespace Unity.UI.Builder
 {
-    internal partial class BuilderInspector
+    internal class BuilderInspectorAttributes : IBuilderInspectorSection
     {
+        private BuilderInspector m_Inspector;
+        private BuilderSelection m_Selection;
         private PersistedFoldout m_AttributesSection;
 
-        private VisualElement InitAttributesSection()
-        {
-            m_AttributesSection = this.Q<PersistedFoldout>("inspector-attributes-foldout");
+        private VisualElement currentVisualElement => m_Inspector.currentVisualElement;
 
-            return m_AttributesSection;
+        public VisualElement root => m_AttributesSection;
+
+        public BuilderInspectorAttributes(BuilderInspector inspector)
+        {
+            m_Inspector = inspector;
+            m_Selection = inspector.selection;
+
+            m_AttributesSection = m_Inspector.Q<PersistedFoldout>("inspector-attributes-foldout");
         }
 
-        private void RefreshAttributesSection()
+        public void Refresh()
         {
             m_AttributesSection.Clear();
 
@@ -28,13 +35,27 @@ namespace Unity.UI.Builder
 
             m_AttributesSection.text = currentVisualElement.typeName;
 
-            if (m_Selection.selectionType != BuilderSelectionType.Element)
+            if (m_Selection.selectionType != BuilderSelectionType.Element &&
+                m_Selection.selectionType != BuilderSelectionType.ElementInTemplateInstance)
                 return;
 
             GenerateAttributeFields();
 
             // Forward focus to the panel header.
-            m_AttributesSection.Query().Where(e => e.focusable).ForEach((e) => AddFocusable(e));
+            m_AttributesSection
+                .Query()
+                .Where(e => e.focusable)
+                .ForEach((e) => m_Inspector.AddFocusable(e));
+        }
+
+        public void Enable()
+        {
+            m_AttributesSection.contentContainer.SetEnabled(true);
+        }
+
+        public void Disable()
+        {
+            m_AttributesSection.contentContainer.SetEnabled(false);
         }
 
         private void GenerateAttributeFields()
@@ -212,7 +233,7 @@ namespace Unity.UI.Builder
                 var uiField = fieldElement as EnumField;
 
                 // Set the value from the UXML attribute.
-                var enumAttributeValueStr = vea.GetAttributeValue(attribute.name);
+                var enumAttributeValueStr = vea?.GetAttributeValue(attribute.name);
                 if (!string.IsNullOrEmpty(enumAttributeValueStr))
                 {
                     var parsedValue = Enum.Parse(enumValue.GetType(), enumAttributeValueStr, true) as Enum;
@@ -225,20 +246,20 @@ namespace Unity.UI.Builder
             }
 
             // Determine if overridden.
-            styleRow.RemoveFromClassList(s_LocalStyleOverrideClassName);
-            if (attribute.name == "picking-mode")
+            styleRow.RemoveFromClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
+            if (vea != null && attribute.name == "picking-mode")
             {
                 var veaAttributeValue = vea.GetAttributeValue(attribute.name);
                 if (veaAttributeValue != null && veaAttributeValue.ToLower() != attribute.defaultValueAsString.ToLower())
-                    styleRow.AddToClassList(s_LocalStyleOverrideClassName);
+                    styleRow.AddToClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
             }
             else if (attribute.name == "name")
             {
                 if (!string.IsNullOrEmpty(currentVisualElement.name))
-                    styleRow.AddToClassList(s_LocalStyleOverrideClassName);
+                    styleRow.AddToClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
             }
-            else if (vea.HasAttribute(attribute.name))
-                styleRow.AddToClassList(s_LocalStyleOverrideClassName);
+            else if (vea != null && vea.HasAttribute(attribute.name))
+                styleRow.AddToClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
         }
 
         private void ResetAttributeFieldToDefault(BindableElement fieldElement)
@@ -307,12 +328,12 @@ namespace Unity.UI.Builder
             }
 
             // Clear override.
-            styleRow.RemoveFromClassList(s_LocalStyleOverrideClassName);
+            styleRow.RemoveFromClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
             var styleFields = styleRow.Query<BindableElement>().ToList();
             foreach (var styleField in styleFields)
             {
-                styleField.RemoveFromClassList(s_LocalStyleResetClassName);
-                styleField.RemoveFromClassList(s_LocalStyleOverrideClassName);
+                styleField.RemoveFromClassList(BuilderConstants.InspectorLocalStyleResetClassName);
+                styleField.RemoveFromClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
             }
         }
 
@@ -331,7 +352,7 @@ namespace Unity.UI.Builder
             var attributeName = fieldElement.bindingPath;
 
             // Undo/Redo
-            Undo.RegisterCompleteObjectUndo(visualTreeAsset, BuilderConstants.ChangeAttributeValueUndoMessage);
+            Undo.RegisterCompleteObjectUndo(m_Inspector.visualTreeAsset, BuilderConstants.ChangeAttributeValueUndoMessage);
 
             // Unset value in asset.
             var vea = currentVisualElement.GetVisualElementAsset();
@@ -344,7 +365,7 @@ namespace Unity.UI.Builder
             CallInitOnElement();
 
             // Notify of changes.
-            m_Selection.NotifyOfHierarchyChange(this);
+            m_Selection.NotifyOfHierarchyChange(m_Inspector);
         }
 
         private void OnAttributeValueChange(ChangeEvent<string> evt)
@@ -398,7 +419,7 @@ namespace Unity.UI.Builder
         private void PostAttributeValueChange(BindableElement field, string value)
         {
             // Undo/Redo
-            Undo.RegisterCompleteObjectUndo(visualTreeAsset, BuilderConstants.ChangeAttributeValueUndoMessage);
+            Undo.RegisterCompleteObjectUndo(m_Inspector.visualTreeAsset, BuilderConstants.ChangeAttributeValueUndoMessage);
 
             // Set value in asset.
             var vea = currentVisualElement.GetVisualElementAsset();
@@ -406,22 +427,22 @@ namespace Unity.UI.Builder
 
             // Mark field as overridden.
             var styleRow = field.GetProperty(BuilderConstants.InspectorLinkedStyleRowVEPropertyName) as BuilderStyleRow;
-            styleRow.AddToClassList(s_LocalStyleOverrideClassName);
+            styleRow.AddToClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
 
             var styleFields = styleRow.Query<BindableElement>().ToList();
             
             foreach (var styleField in styleFields)
             {
-                styleField.RemoveFromClassList(s_LocalStyleResetClassName);
+                styleField.RemoveFromClassList(BuilderConstants.InspectorLocalStyleResetClassName);
                 if (field.bindingPath == styleField.bindingPath)
                 {
-                    styleField.AddToClassList(s_LocalStyleOverrideClassName);
+                    styleField.AddToClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
                 }
                 else if (!string.IsNullOrEmpty(styleField.bindingPath) &&
                     field.bindingPath != styleField.bindingPath &&
-                    !styleField.ClassListContains(s_LocalStyleOverrideClassName))
+                    !styleField.ClassListContains(BuilderConstants.InspectorLocalStyleOverrideClassName))
                 {
-                    styleField.AddToClassList(s_LocalStyleResetClassName);
+                    styleField.AddToClassList(BuilderConstants.InspectorLocalStyleResetClassName);
                 }
             }
 
@@ -429,7 +450,7 @@ namespace Unity.UI.Builder
             CallInitOnElement();
 
             // Notify of changes.
-            m_Selection.NotifyOfHierarchyChange(this);
+            m_Selection.NotifyOfHierarchyChange(m_Inspector);
         }
 
         private void CallInitOnElement()

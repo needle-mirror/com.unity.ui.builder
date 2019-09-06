@@ -72,7 +72,7 @@ namespace Unity.UI.Builder
 
             // Query the UI
             var template = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
-                BuilderConstants.UIBuilderPackagePath + "/Builder/Explorer/BuilderExplorerToolbar.uxml");
+                BuilderConstants.UIBuilderPackagePath + "/Explorer/BuilderExplorerToolbar.uxml");
             template.CloneTree(this);
 
             viewDataKey = "builder-explorer";
@@ -116,14 +116,13 @@ namespace Unity.UI.Builder
                 m_Selection.ClearSelection(this);
                 return;
             }
-
-            if (!element.IsLinkedToAsset())
+            else if (element.ClassListContains(BuilderConstants.ExplorerItemUnselectableClassName))
             {
-                element = element.GetClosestElementPartOfCurrentDocument();
-
                 m_SelectionMadeExternally = true;
-                m_ElementHierarchyView.SelectElement(element);
+                m_ElementHierarchyView.ClearSelection();
                 m_SelectionMadeExternally = false;
+                m_Selection.ClearSelection(this);
+                return;
             }
 
             m_Selection.Select(this, element);

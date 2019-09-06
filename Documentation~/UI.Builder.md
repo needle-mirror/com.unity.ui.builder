@@ -29,6 +29,8 @@ UI Builder lets you visually create and edit UI using UIElements, UXML, and USS.
     1. If **Class** mode is selected, a new `.class` selector will be added and you have options for the pseudo states to add.
     1. If **Complex** mode selected, the raw string will be used for the full selector name, and the pseudo stats MaskField should not be visible.
 1. When hovering or selecting a style selector in the Explorer, all elements in the Canvas that match this selector will highlight.
+1. With a selector selected, you can use the standard short-cuts and Edit menu to copy/paste/duplicate/delete it. You can also copy/paste the USS for the selector to/from a text file.
+1. Right-clicking anywhere in the Hierarchy will open the Copy/Paste/Duplicate/Delete context menu.
 
 ### Hierarchy
 
@@ -38,9 +40,10 @@ UI Builder lets you visually create and edit UI using UIElements, UXML, and USS.
 1. Can drag element onto other elements in the Viewport to reparent.
 1. Elements are displayed using their #name in blue, or C# type in white if they have no name.
 1. Elements are displayed grayed out if they are children of a template instance or C# type.
-1. Selecting an element inside a template instance or C# type selects the parent instance or C# element.
+1. Selecting an element inside a template instance or C# type will display the Inspector in read-only (disabled) mode.
 1. Dragging element onto a template instance or C# type element in the Viewport reparents it to the parent instance or C# element.
 1. Dragging element onto a template instance or C# type element in the Hierarchy does nothing.
+1. With an element selected, you can use the standard short-cuts and Edit menu to copy/paste/duplicate/delete it. You can also copy/paste the UXML for the element to/from a text file.
 1. Right-clicking anywhere in the Hierarchy will open the Copy/Paste/Duplicate/Delete/Rename context menu.
 1. Can double-click on an item to rename it.
 
@@ -49,7 +52,7 @@ UI Builder lets you visually create and edit UI using UIElements, UXML, and USS.
 1. Displays built-in elements under a **Unity** heading.
 1. Displays project defined factory elements and UXML files (with .uxml extension) under a **Project** heading. This includes assets inside both the `Assets/` and `Packages/` folders.
 1. Can double click to create new element instance in the root.
-1. Items that have corresponding .uxml assets will have an "Open" button visible that will open the asset for editing in the UI Builder.
+1. Items that have corresponding .uxml assets will have an "Open" button visible that will open the asset for editing in the UI Builder. The currently open .uxml asset in the Library will be grayed out and will not be instantiable to prevent infinite recursion.
 1. Can click-drag onto a Viewport element to create new instance as a child.
 1. Can click-drag onto a Hierarchy element to create new instance as a child, or between elements to create as a sibling.
 1. Can create (double-click or drag) template instances from other uxml files.
@@ -76,6 +79,7 @@ UI Builder lets you visually create and edit UI using UIElements, UXML, and USS.
 1. Updating the UXML Path field will automatically update the USS Path field to match, until the USS Path field is changed manually.
 1. Entering file names without extensions will still add the correct extensions when creating the assets.
 1. The "..." button beside each path field should bring up the system Save File Dialog.
+1. Folders in an otherwise valid path will be created if missing.
 
 ### Canvas
 
@@ -90,6 +94,7 @@ UI Builder lets you visually create and edit UI using UIElements, UXML, and USS.
 1. When changing Width or Height in the Inspector, the corresponding resize handles in the canvas will highlight.
 1. When hovering over elements in the Canvas, the corresponding entry in the Hierarchy will highlight.
 1. When hovering over elements in the Canvas, all Explorer entries of style selectors that match this element will highlight.
+1. If the Canvas is bigger than the Viewport, a **Fit Canvas** button will appear that will resize the Canavs to fit in the Viewport.
 
 ## Previews
 
@@ -99,6 +104,8 @@ UI Builder lets you visually create and edit UI using UIElements, UXML, and USS.
 1. Shows unsaved StyleSheet as path="*unsaved in-memory StyleSheet with...".
 1. Upon saving, all unsaved StyleSheet paths are fixed.
 1. Shows `<Style>` tags for all root elements.
+1. (2019.3+) A relative path to a `.uss` asset will be used in the `src` attribute of the `<Style>` tag if the asset is in the same folder (directly or in a subfolder) as the main asset. Otherwise, an absolute path will be used.
+1. (2019.3+) A relative path to a `.uxml` asset will be used in the `src` attribute of the `<Template>` tag if the asset is in the same folder (directly or in a subfolder) as the main asset. Otherwise, an absolute path will be used.
 
 ### USS
 
@@ -139,7 +146,8 @@ UI Builder lets you visually create and edit UI using UIElements, UXML, and USS.
 ### Local Styles
 
 1. Only visible if the selection is an element in the current document, or a selector in the current StyleSheet.
-1. Changing any value will set it in the StyleSheet or inline UXML style attribute and highlight it with the same styling as Prefab overrides.
+1. Changing any value will set it in the StyleSheet or inline UXML style attribute and highlight it with a solid bar on the left side and bold font.
+1. Style category headers will have an override bar and bold font if any child styles are overridden.
 1. All style value types are supported.
 1. Sub-section foldout expanded states are preserved between selection changes and domain reload.
 1. Right-click **Unset** on an style field will remove it from the UXML inline style or StyleSheet, reset the value to default, and reset the override styling.

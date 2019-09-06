@@ -84,7 +84,14 @@ namespace Unity.UI.Builder
             m_SearchResultsHightlights = new List<VisualElement>();
 
             this.RegisterCallback<FocusEvent>(e => m_TreeView?.Focus());
-            this.RegisterCallback<MouseUpEvent>(e => ClearSelection());
+
+            // HACK: ListView/TreeView need to clear their selections when clicking on nothing.
+            this.RegisterCallback<MouseDownEvent>(e =>
+            {
+                var leafTarget = e.leafTarget as VisualElement;
+                if (leafTarget.parent is ScrollView)
+                    ClearSelection();
+            });
 
             m_TreeViewHoverOverlay = new HighlightOverlayPainter();
 
@@ -102,7 +109,7 @@ namespace Unity.UI.Builder
             m_SearchBar.style.display = DisplayStyle.None;
 
             m_ClassPillTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
-                BuilderConstants.UIBuilderPackagePath + "/Builder/BuilderClassPill.uxml");
+                BuilderConstants.UIBuilderPackagePath + "/BuilderClassPill.uxml");
 
             if (helperElement != null)
                 helperElement.painter = m_TreeViewHoverOverlay;
@@ -139,6 +146,7 @@ namespace Unity.UI.Builder
             // Pre-emptive cleanup.
             var row = explorerItem.parent.parent;
             row.RemoveFromClassList(BuilderConstants.ExplorerHeaderRowClassName);
+            row.RemoveFromClassList(BuilderConstants.ExplorerItemHiddenClassName);
 
             // Get target element (in the document).
             var documentElement = (item as TreeViewItem<VisualElement>).data;
@@ -214,6 +222,9 @@ namespace Unity.UI.Builder
                     addSimpleLabel(m_SelectorStrBuilder.ToString());
                     m_SelectorStrBuilder.Clear();
                 }
+
+                // Register right-click events for context menu actions.
+                m_ContextMenuManipulator.RegisterCallbacksOnTarget(explorerItem);
 
                 return;
             }
@@ -409,10 +420,6 @@ namespace Unity.UI.Builder
         {
             var element = new BuilderExplorerItem();
             element.name = "unity-treeview-item-content";
-            element.RegisterCallback<MouseUpEvent>((e) =>
-            {
-                e.StopPropagation();
-            });
             element.RegisterCallback<MouseEnterEvent>((e) =>
             {
                 ClearHighlightOverlay();

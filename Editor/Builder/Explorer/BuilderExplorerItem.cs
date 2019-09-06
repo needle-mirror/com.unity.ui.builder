@@ -20,7 +20,7 @@ namespace Unity.UI.Builder
         {
             // Load Template
             var template = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
-                BuilderConstants.UIBuilderPackagePath + "/Builder/Explorer/BuilderExplorerItem.uxml");
+                BuilderConstants.UIBuilderPackagePath + "/Explorer/BuilderExplorerItem.uxml");
             template.CloneTree(this);
 
             m_Container = this.Q("content-container");

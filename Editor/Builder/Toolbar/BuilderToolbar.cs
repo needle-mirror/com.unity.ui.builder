@@ -16,6 +16,7 @@ namespace Unity.UI.Builder
         private ModalPopup m_SaveDialog;
         private BuilderViewport m_Viewport;
         private BuilderExplorer m_Explorer;
+        private BuilderLibrary m_Library;
         private BuilderTooltipPreview m_TooltipPreview;
 
         private ObjectField m_DocumentField;
@@ -49,6 +50,7 @@ namespace Unity.UI.Builder
             ModalPopup saveDialog,
             BuilderViewport viewport,
             BuilderExplorer explorer,
+            BuilderLibrary library,
             BuilderTooltipPreview tooltipPreview)
         {
             m_Builder = builder;
@@ -56,6 +58,7 @@ namespace Unity.UI.Builder
             m_SaveDialog = saveDialog;
             m_Viewport = viewport;
             m_Explorer = explorer;
+            m_Library = library;
             m_TooltipPreview = tooltipPreview;
 
             // Query the UI
@@ -81,7 +84,7 @@ namespace Unity.UI.Builder
             saveDialogValidationBoxContainer.Add(m_SaveDialogValidationBox);
 
             var template = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
-                BuilderConstants.UIBuilderPackagePath + "/Builder/BuilderToolbar.uxml");
+                BuilderConstants.UIBuilderPackagePath + "/BuilderToolbar.uxml");
             template.CloneTree(this);
 
             var newButton = this.Q<ToolbarButton>("new-button");
@@ -150,7 +153,7 @@ namespace Unity.UI.Builder
                 if (!EditorUtility.DisplayDialog(
                     BuilderConstants.SaveDialogDiscardChangesPromptTitle,
                     BuilderConstants.SaveDialogDiscardChangesPromptMessage,
-                    "Yes", "Cancel"))
+                    "Discard", "Go Back"))
                 {
                     return false;
                 }
@@ -225,6 +228,8 @@ namespace Unity.UI.Builder
 
             m_Selection.NotifyOfHierarchyChange(document);
             m_Selection.NotifyOfStylingChange(document);
+
+            m_Library.ResetCurrentlyLoadedUxmlStyles();
         }
 
         private void NewTestDocument()
@@ -235,7 +240,7 @@ namespace Unity.UI.Builder
             ResetViewData();
 
             var testAsset = BuilderConstants.UIBuilderPackagePath +
-                "/Builder/SampleDocument/BuilderSampleCanvas.uxml";
+                "/SampleDocument/BuilderSampleCanvas.uxml";
             var originalAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(testAsset);
             LoadDocumentInternal(originalAsset);
         }
@@ -367,46 +372,25 @@ namespace Unity.UI.Builder
         
         private void SaveDocument(string uxmlPath, string ussPath)
         {
-            if (!m_IsDialogSaveAs)
-            {
-                var ussInstanceId = document.mainStyleSheet.GetInstanceID().ToString();
-                document.visualTreeAsset.FixStyleSheetPaths(ussInstanceId, ussPath);
+            // Set asset.
+            var needFullRefresh = document.SaveNewDocument(
+                uxmlPath, ussPath, m_Builder.documentRootElement, m_IsDialogSaveAs);
 
-                // Fix old paths if the uss filename/path has since been changed.
-                document.visualTreeAsset.ReplaceStyleSheetPaths(document.ussOldPath, ussPath);
-
-#if UNITY_2019_3_OR_NEWER
-                document.AddStyleSheetToAllRootElements(ussPath);
-#endif
-            }
-            else
-            {
-                document.visualTreeAsset.ReplaceStyleSheetPaths(document.ussPath, ussPath);
-            }
-            WriteToFiles(uxmlPath, ussPath);
-            AssetDatabase.Refresh();
+            // Update any uses out there of the currently edited and saved USS.
+            RetainedMode.FlagStyleSheetChange();
 
             // Save last save path.
             m_LastSavePath = Path.GetDirectoryName(uxmlPath);
 
-            // Set asset.
-            var visualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(uxmlPath);
-            var styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(ussPath);
-            m_DocumentField.SetValueWithoutNotify(visualTreeAsset);
-            document.SaveNewDocument(visualTreeAsset, styleSheet);
-
-            m_Selection.NotifyOfHierarchyChange(document);
+            // Set doc field value.
+            m_DocumentField.SetValueWithoutNotify(document.visualTreeAsset);
 
             m_SaveDialog.Hide();
-        }
 
-        private void WriteToFiles(string uxmlPath, string ussPath)
-        {
-            var uxmlText = document.visualTreeAsset.GenerateUXML();
-            var ussText = document.mainStyleSheet.GenerateUSS();
-
-            File.WriteAllText(uxmlPath, uxmlText);
-            File.WriteAllText(ussPath, ussText);
+            if (needFullRefresh)
+                m_Builder.OnEnableAfterAllSerialization();
+            else
+                m_Selection.NotifyOfHierarchyChange(document);
         }
 
         public void OnAfterBuilderDeserialize()
@@ -454,6 +438,8 @@ namespace Unity.UI.Builder
 
             m_Selection.NotifyOfStylingChange(document);
             m_Selection.NotifyOfHierarchyChange(document);
+
+            m_Library.ResetCurrentlyLoadedUxmlStyles();
         }
 
         private Camera m_InGamePreviewCamera;

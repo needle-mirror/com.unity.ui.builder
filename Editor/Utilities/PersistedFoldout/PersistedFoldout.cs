@@ -4,13 +4,14 @@ using UnityEngine.UIElements;
 
 namespace Unity.UI.Builder
 {
-    public class PersistedFoldout : BindableElement, INotifyValueChanged<bool>
+    internal class PersistedFoldout : BindableElement, INotifyValueChanged<bool>
     {
         public new class UxmlFactory : UxmlFactory<PersistedFoldout, UxmlTraits> { }
 
         public new class UxmlTraits : BindableElement.UxmlTraits
         {
             UxmlStringAttributeDescription m_Text = new UxmlStringAttributeDescription { name = "text" };
+            UxmlBoolAttributeDescription m_Value = new UxmlBoolAttributeDescription { name = "value" };
 
             public override IEnumerable<UxmlChildElementDescription> uxmlChildElementsDescription
             {
@@ -21,6 +22,7 @@ namespace Unity.UI.Builder
             {
                 base.Init(ve, bag, cc);
                 ((PersistedFoldout)ve).text = m_Text.GetValueFromBag(bag, cc);
+                ((PersistedFoldout)ve).value = m_Value.GetValueFromBag(bag, cc);
             }
         }
 
@@ -98,7 +100,6 @@ namespace Unity.UI.Builder
 
             string key = GetFullHierarchicalViewDataKey();
 
-            var before = m_Value;
             OverwriteFromViewData(this, key);
             SetValueWithoutNotify(m_Value);
         }

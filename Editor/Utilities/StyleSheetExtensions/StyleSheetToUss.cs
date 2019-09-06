@@ -71,14 +71,26 @@ namespace Unity.UI.Builder
                     break;
                 case StyleValueType.Float:
                     {
-                        str = sheet.ReadFloat(handle).ToString(CultureInfo.InvariantCulture.NumberFormat);
-                        if (IsLength(propertyName))
-                            str += "px";
+                        var num = sheet.ReadFloat(handle);
+                        if (num == 0)
+                        {
+                            str = "0";
+                        }
+                        else
+                        {
+                            str = num.ToString(CultureInfo.InvariantCulture.NumberFormat);
+                            if (IsLength(propertyName))
+                                str += "px";
+                        }
                     }
                     break;
 #if UNITY_2019_3_OR_NEWER
                 case StyleValueType.Dimension:
-                    str = sheet.ReadDimension(handle).ToString();
+                    var dim = sheet.ReadDimension(handle);
+                    if (dim.value == 0)
+                        str = "0";
+                    else
+                        str = dim.ToString();
                     break;
 #endif
                 case StyleValueType.Color:
@@ -243,6 +255,16 @@ namespace Unity.UI.Builder
             return sb.ToString();
         }
 
+        public static string ToUssString(StyleSheet sheet, StyleComplexSelector complexSelector)
+        {
+            var inlineBuilder = new StringBuilder();
+
+            ToUssString(sheet, new UssExportOptions(), complexSelector, inlineBuilder);
+
+            var result = inlineBuilder.ToString();
+            return result;
+        }
+
         public static void ToUssString(StyleSheet sheet, UssExportOptions options, StyleComplexSelector complexSelector, StringBuilder sb)
         {
             foreach (var selector in complexSelector.selectors)
@@ -259,9 +281,8 @@ namespace Unity.UI.Builder
         public static string ToUssString(StyleSheet sheet, UssExportOptions options = null)
         {
             if (options == null)
-            {
                 options = new UssExportOptions();
-            }
+
             var sb = new StringBuilder();
             if (sheet.complexSelectors != null)
             {

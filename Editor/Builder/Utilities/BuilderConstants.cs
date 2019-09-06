@@ -14,7 +14,7 @@ namespace Unity.UI.Builder
         // Paths
         public static readonly string UIBuilderPackagePath = "Packages/com.unity.ui.builder/Editor/UI";
         public static readonly string UtilitiesPath = "Packages/com.unity.ui.builder/Editor/Utilities";
-        public static readonly string InspectorUssPathNoExt = UIBuilderPackagePath + "/Builder/Inspector/BuilderInspector";
+        public static readonly string InspectorUssPathNoExt = UIBuilderPackagePath + "/Inspector/BuilderInspector";
 
         // Global Style Class Names
         public static readonly string HiddenStyleClassName = "unity-builder-hidden";
@@ -53,6 +53,10 @@ namespace Unity.UI.Builder
         public static readonly string InspectorFlexColumnReverseModeClassName = "unity-builder-inspector--flex-column-reverse";
         public static readonly string InspectorFlexRowModeClassName = "unity-builder-inspector--flex-row";
         public static readonly string InspectorFlexRowReverseModeClassName = "unity-builder-inspector--flex-row-reverse";
+        public static readonly string InspectorCategoryFoldoutOverrideClassName = "unity-builder-inspector__style-category-foldout--override";
+        public static readonly string InspectorLocalStyleOverrideClassName = "unity-builder-inspector__style--override";
+        public static readonly string InspectorLocalStyleResetClassName = "unity-builder-inspector__style--reset"; // used to reset font style of children
+        public static readonly string InspectorEmptyFoldoutLabelClassName = "unity-builder-inspector__empty-foldout-label";
 
         // Inspector Links VE Property Names
         public static readonly string InspectorLinkedStyleRowVEPropertyName = "__unity-ui-builder-style-row";
@@ -79,6 +83,7 @@ namespace Unity.UI.Builder
 
         // Explorer Style Class Names
         public static readonly string ExplorerHeaderRowClassName = "unity-builder-explorer__header";
+        public static readonly string ExplorerItemUnselectableClassName = "unity-builder-explorer--unselectable";
         public static readonly string ExplorerItemHiddenClassName = "unity-builder-explorer--hidden";
         public static readonly string ExplorerItemHoverClassName = "unity-builder-explorer__item--hover";
         public static readonly string ExplorerItemReorderZoneClassName = "unity-builder-explorer__reorder-zone";
@@ -100,6 +105,9 @@ namespace Unity.UI.Builder
         public static readonly string LibraryItemLinkedManipulatorVEPropertyName = "__unity-ui-builder-dragger";
         public static readonly string LibraryItemLinkedTemplateContainerPathVEPropertyName = "__unity-ui-builder-template-container-path";
 
+        // Library Style Class Names
+        public static readonly string LibraryCurrentlyOpenFileItemClassName = "unity-builder-library__currently-open-file";
+
         //
         // Selection
         //
@@ -109,7 +117,7 @@ namespace Unity.UI.Builder
         public static readonly string SelectedVisualElementAssetAttributeValue = "selected";
         public static readonly string SelectedStyleRulePropertyName = "--ui-builder-selected-style-property";
         public static readonly string SelectedStyleSheetSelectorName = "__unity_ui_builder_selected_stylesheet";
-        public static readonly string SelectedVisualTreeAssetSpecialElementTypeName = "__unity_ui_builder_document_selected";
+        public static readonly string SelectedVisualTreeAssetSpecialElementTypeName = typeof(UnityUIBuilderSelectionMarker).FullName;
 
         //
         // Canvas

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.UIElements;
 using System;
+using System.IO;
 
 namespace Unity.UI.Builder
 {
@@ -17,14 +18,14 @@ namespace Unity.UI.Builder
         }
 
         [SerializeField]
-        private VisualTreeAsset m_OpenendVisualTreeAsset;
+        private VisualTreeAsset m_VisualTreeAssetBackup;
 
         // This is for automatic style path fixing after a uss file name change.
         [SerializeField]
         private string m_OpenendMainStyleSheetOldPath;
 
         [SerializeField]
-        private StyleSheet m_OpenendMainStyleSheet;
+        private StyleSheet m_MainStyleSheetBackup;
 
         [SerializeField]
         private VisualTreeAsset m_VisualTreeAsset;
@@ -39,9 +40,22 @@ namespace Unity.UI.Builder
         [SerializeField]
         private CanvasTheme m_CurrentCanvasTheme;
 
+        public string uxmlFileName
+        {
+            get
+            {
+                var path = uxmlPath;
+                if (path == null)
+                    return null;
+
+                var fileName = Path.GetFileName(path);
+                return fileName;
+            }
+        }
+
         public string uxmlPath
         {
-            get { return AssetDatabase.GetAssetPath(m_OpenendVisualTreeAsset); }
+            get { return AssetDatabase.GetAssetPath(m_VisualTreeAsset); }
         }
 
         public string ussOldPath
@@ -51,7 +65,7 @@ namespace Unity.UI.Builder
 
         public string ussPath
         {
-            get { return AssetDatabase.GetAssetPath(m_OpenendMainStyleSheet); }
+            get { return AssetDatabase.GetAssetPath(m_MainStyleSheet); }
         }
 
         public VisualTreeAsset visualTreeAsset
@@ -128,30 +142,46 @@ namespace Unity.UI.Builder
             documentElement.IncrementVersion((VersionChangeType) (-1));
         }
 
+        private void RestoreAssetsFromBackup()
+        {
+            if (m_VisualTreeAsset != null && m_VisualTreeAssetBackup != null)
+                m_VisualTreeAssetBackup.DeepOverwrite(m_VisualTreeAsset);
+
+            if (m_MainStyleSheet != null && m_MainStyleSheetBackup != null)
+                m_MainStyleSheetBackup.DeepOverwrite(m_MainStyleSheet);
+        }
+
+        private void ClearBackups()
+        {
+            m_VisualTreeAssetBackup.Destroy();
+            m_VisualTreeAssetBackup = null;
+
+            m_MainStyleSheetBackup.Destroy();
+            m_MainStyleSheetBackup = null;
+        }
+
         public void Clear()
         {
-            m_OpenendVisualTreeAsset = null;
-            m_OpenendMainStyleSheet = null;
+            m_VisualTreeAsset.ClearUndo();
+            m_MainStyleSheet.ClearUndo();
+
+            RestoreAssetsFromBackup();
+            ClearBackups();
             m_OpenendMainStyleSheetOldPath = string.Empty;
 
             if (m_VisualTreeAsset != null)
             {
-                Undo.ClearUndo(m_VisualTreeAsset);
+                if (!AssetDatabase.Contains(m_VisualTreeAsset))
+                    m_VisualTreeAsset.Destroy();
 
-                if (m_VisualTreeAsset.inlineSheet != null)
-                {
-                    Undo.ClearUndo(m_VisualTreeAsset.inlineSheet);
-                    ScriptableObject.DestroyImmediate(m_VisualTreeAsset.inlineSheet);
-                }
-
-                ScriptableObject.DestroyImmediate(m_VisualTreeAsset);
                 m_VisualTreeAsset = null;
             }
 
             if (m_MainStyleSheet != null)
             {
-                Undo.ClearUndo(m_MainStyleSheet);
-                ScriptableObject.DestroyImmediate(m_MainStyleSheet);
+                if (!AssetDatabase.Contains(m_MainStyleSheet))
+                    m_MainStyleSheet.Destroy();
+
                 m_MainStyleSheet = null;
             }
         }
@@ -162,26 +192,100 @@ namespace Unity.UI.Builder
             RefreshStyle(documentElement);
         }
 
-        public void NewDocument(VisualElement documentElement)
+        public void NewDocument(VisualElement documentRootElement)
         {
             Clear();
-            documentElement.Clear();
-            BuilderSharedStyles.GetSelectorContainerElement(documentElement).Clear();
+            documentRootElement.Clear();
+            BuilderSharedStyles.GetSelectorContainerElement(documentRootElement).Clear();
 
             // Re-run initializations and setup, even though there's nothing to clone.
-            ReloadDocumentToCanvas(documentElement);
+            ReloadDocumentToCanvas(documentRootElement);
 
             hasUnsavedChanges = false;
         }
 
-        public void SaveNewDocument(VisualTreeAsset visualTreeAsset, StyleSheet styleSheet)
+        public bool SaveNewDocument(string uxmlPath, string ussPath, VisualElement documentRootElement, bool isSaveAs)
         {
-            m_OpenendVisualTreeAsset = visualTreeAsset;
-            m_OpenendMainStyleSheet = styleSheet;
+            if (!isSaveAs)
+            {
+                var ussInstanceId = mainStyleSheet.GetInstanceID().ToString();
+                m_VisualTreeAsset.FixStyleSheetPaths(ussInstanceId, ussPath);
 
-            m_OpenendMainStyleSheetOldPath = AssetDatabase.GetAssetPath(styleSheet);
+                // Fix old paths if the uss filename/path has since been changed.
+                m_VisualTreeAsset.ReplaceStyleSheetPaths(ussOldPath, ussPath);
+
+#if UNITY_2019_3_OR_NEWER
+                AddStyleSheetToAllRootElements(ussPath);
+#endif
+            }
+            else
+            {
+                visualTreeAsset.ReplaceStyleSheetPaths(ussPath, ussPath);
+            }
+
+            var tempVisualTreeAsset = m_VisualTreeAsset.DeepCopy();
+            var tempMainStyleSheet = m_MainStyleSheet.DeepCopy();
+
+            WriteToFiles(uxmlPath, ussPath);
+            AssetDatabase.Refresh();
+
+            var loadedVisualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(uxmlPath);
+            var loadedStyleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(ussPath);
+
+            bool needFullRefresh =
+                loadedVisualTreeAsset != m_VisualTreeAsset ||
+                loadedStyleSheet != m_MainStyleSheet;
+
+            if (needFullRefresh)
+            {
+                NewDocument(documentRootElement);
+            }
+            else
+            {
+                m_VisualTreeAsset.ClearUndo();
+                m_MainStyleSheet.ClearUndo();
+                ClearBackups();
+            }
+
+            // Recreate backups.
+            m_VisualTreeAssetBackup = loadedVisualTreeAsset.DeepCopy();
+            m_MainStyleSheetBackup = loadedStyleSheet.DeepCopy();
+
+            // To get all the selection markers into the new assets.
+            tempVisualTreeAsset.DeepOverwrite(loadedVisualTreeAsset);
+            tempMainStyleSheet.DeepOverwrite(loadedStyleSheet);
+
+            // Destroy temps.
+            tempVisualTreeAsset.Destroy();
+            tempMainStyleSheet.Destroy();
+
+            m_VisualTreeAsset = loadedVisualTreeAsset;
+            m_MainStyleSheet = loadedStyleSheet;
+
+            m_VisualTreeAsset.ConvertAllAssetReferencesToPaths();
+
+            m_OpenendMainStyleSheetOldPath = ussPath;
 
             hasUnsavedChanges = false;
+
+            return needFullRefresh;
+        }
+
+        private void WriteToFiles(string uxmlPath, string ussPath)
+        {
+            var uxmlText = visualTreeAsset.GenerateUXML(uxmlPath, true);
+            var ussText = mainStyleSheet.GenerateUSS();
+
+            // Make sure the folders exist.
+            var uxmlFolder = Path.GetDirectoryName(uxmlPath);
+            if (!Directory.Exists(uxmlFolder))
+                Directory.CreateDirectory(uxmlFolder);
+            var ussFolder = Path.GetDirectoryName(ussPath);
+            if (!Directory.Exists(ussFolder))
+                Directory.CreateDirectory(ussFolder);
+
+            File.WriteAllText(uxmlPath, uxmlText);
+            File.WriteAllText(ussPath, ussText);
         }
 
         private void ReloadDocumentToCanvas(VisualElement documentElement)
@@ -218,17 +322,21 @@ namespace Unity.UI.Builder
             if (visualTreeAsset == null)
                 return;
 
-            m_VisualTreeAsset = visualTreeAsset.DeepCopy();
+            m_VisualTreeAssetBackup = visualTreeAsset.DeepCopy();
+            m_VisualTreeAsset = visualTreeAsset;
+            m_VisualTreeAsset.ConvertAllAssetReferencesToPaths();
 
             // Load styles.
             // TODO: For now we only support one stylesheet so we just load the first one we find.
             var styleSheetsUsed = m_VisualTreeAsset.GetAllReferencedStyleSheets();
             var styleSheet = styleSheetsUsed.Count > 0 ? styleSheetsUsed[0] : null;
 
-            m_MainStyleSheet = styleSheet.DeepCopy();
-
-            m_OpenendVisualTreeAsset = visualTreeAsset;
-            m_OpenendMainStyleSheet = styleSheet;
+            m_MainStyleSheetBackup = null;
+            if (styleSheet != null)
+            {
+                m_MainStyleSheetBackup = styleSheet.DeepCopy();
+            }
+            m_MainStyleSheet = styleSheet;
 
             m_OpenendMainStyleSheetOldPath = AssetDatabase.GetAssetPath(styleSheet);
 
@@ -239,6 +347,9 @@ namespace Unity.UI.Builder
 
         private void AddStyleSheetToRootAsset(VisualElementAsset rootAsset, string newUssPath = null)
         {
+            if (rootAsset.fullTypeName == BuilderConstants.SelectedVisualTreeAssetSpecialElementTypeName)
+                return;
+
             var localUssPath = ussPath;
 
             if (!string.IsNullOrEmpty(newUssPath))

@@ -7,11 +7,11 @@ using UnityEditor.UIElements;
 
 namespace Unity.UI.Builder
 {
-    public class UIAssetManipulatorsTestWindow : EditorWindow
+    internal class UIExtensionsTestWindow : EditorWindow
     {
-        private static readonly string s_DefaultUSSPath = BuilderConstants.UIBuilderPackagePath + "/Builder/SampleDocument/BuilderSampleCanvas.uss";
-        private static readonly string s_DefaultUXMLPath = BuilderConstants.UIBuilderPackagePath + "/Builder/SampleDocument/BuilderSampleCanvas.uxml";
-        private static readonly string s_CanvasInstanceUSSPath = BuilderConstants.UIBuilderPackagePath + "/Builder/SampleDocument/BuilderSampleCanvasSection.uss";
+        private static readonly string s_DefaultUSSPath = BuilderConstants.UIBuilderPackagePath + "/SampleDocument/BuilderSampleCanvas.uss";
+        private static readonly string s_DefaultUXMLPath = BuilderConstants.UIBuilderPackagePath + "/SampleDocument/BuilderSampleCanvas.uxml";
+        private static readonly string s_CanvasInstanceUSSPath = BuilderConstants.UIBuilderPackagePath + "/SampleDocument/BuilderSampleCanvasSection.uss";
 
         ObjectField m_StyleSheetField;
         VisualElement m_StyleSheetContents;
@@ -30,7 +30,7 @@ namespace Unity.UI.Builder
         [MenuItem("Tests/UI Builder/UI Extensions Test")]
         public static void ShowWindow()
         {
-            var window = GetWindow<UIAssetManipulatorsTestWindow>();
+            var window = GetWindow<UIExtensionsTestWindow>();
             window.titleContent = new GUIContent("UI Extensions Test");
             window.Show();
         }
@@ -41,11 +41,11 @@ namespace Unity.UI.Builder
 
             // Load styles.
             root.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(
-                BuilderConstants.UIBuilderPackagePath + "/Utilities/UIExtensionsTestWindow.uss"));
+                BuilderConstants.UtilitiesPath + "/UIExtensionsTestWindow/UIExtensionsTestWindow.uss"));
 
             // Load template.
             var builderTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
-                BuilderConstants.UIBuilderPackagePath + "/Utilities/UIExtensionsTestWindow.uxml");
+                BuilderConstants.UtilitiesPath + "/UIExtensionsTestWindow/UIExtensionsTestWindow.uxml");
             builderTemplate.CloneTree(root);
 
             // Init fields.
@@ -156,7 +156,7 @@ namespace Unity.UI.Builder
                     overriddenSection.RemoveStyleSheet(s_CanvasInstanceUSSPath);
 
                 // Add UXML string.
-                var uxmlString = m_VisualTreeAsset.GenerateUXML();
+                var uxmlString = m_VisualTreeAsset.GenerateUXML(null);
                 m_VisualTreeAssetContents.Add(new Label(uxmlString));
 
                 // Add inline stylesheet.

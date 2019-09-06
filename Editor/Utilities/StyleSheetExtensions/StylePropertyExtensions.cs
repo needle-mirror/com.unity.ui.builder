@@ -12,6 +12,17 @@ namespace Unity.UI.Builder
 {
     internal static class StylePropertyExtensions
     {
+        public static StyleValueHandle AddValueHandle(
+            this StyleSheet styleSheet, StyleProperty property, int index, StyleValueType type)
+        {
+            // Add value object to property.
+            var newValues = property.values.ToList();
+            var newValue = new StyleValueHandle(index, type);
+            newValues.Add(newValue);
+            property.values = newValues.ToArray();
+
+            return newValue;
+        }
 
         internal static StyleValueHandle AddValue(
             this StyleSheet styleSheet, StyleProperty property, float value, string undoMessage = null)
@@ -25,10 +36,7 @@ namespace Unity.UI.Builder
             var index = styleSheet.AddValueToArray(value);
 
             // Add value object to property.
-            var newValues = property.values.ToList();
-            var newValue = new StyleValueHandle(index, StyleValueType.Float);
-            newValues.Add(newValue);
-            property.values = newValues.ToArray();
+            var newValue = styleSheet.AddValueHandle(property, index, StyleValueType.Float);
 
             return newValue;
         }
@@ -46,10 +54,7 @@ namespace Unity.UI.Builder
             var index = styleSheet.AddValueToArray(value);
 
             // Add value object to property.
-            var newValues = property.values.ToList();
-            var newValue = new StyleValueHandle(index, StyleValueType.Dimension);
-            newValues.Add(newValue);
-            property.values = newValues.ToArray();
+            var newValue = styleSheet.AddValueHandle(property, index, StyleValueType.Dimension);
 
             return newValue;
         }
@@ -64,10 +69,7 @@ namespace Unity.UI.Builder
             var index = styleSheet.AddValueToArray(value);
 
             // Add value object to property.
-            var newValues = property.values.ToList();
-            var newValue = new StyleValueHandle(index, StyleValueType.Color);
-            newValues.Add(newValue);
-            property.values = newValues.ToArray();
+            var newValue = styleSheet.AddValueHandle(property, index, StyleValueType.Color);
 
             return newValue;
         }
@@ -81,10 +83,7 @@ namespace Unity.UI.Builder
             var index = styleSheet.AddValueToArray(value);
 
             // Add value object to property.
-            var newValues = property.values.ToList();
-            var newValue = new StyleValueHandle(index, StyleValueType.String);
-            newValues.Add(newValue);
-            property.values = newValues.ToArray();
+            var newValue = styleSheet.AddValueHandle(property, index, StyleValueType.String);
 
             return newValue;
         }
@@ -98,10 +97,7 @@ namespace Unity.UI.Builder
             var index = styleSheet.AddValueToArray(value);
 
             // Add value object to property.
-            var newValues = property.values.ToList();
-            var newValue = new StyleValueHandle(index, StyleValueType.AssetReference);
-            newValues.Add(newValue);
-            property.values = newValues.ToArray();
+            var newValue = styleSheet.AddValueHandle(property, index, StyleValueType.AssetReference);
 
             return newValue;
         }
@@ -115,10 +111,7 @@ namespace Unity.UI.Builder
             var index = styleSheet.AddValueToArray(value);
 
             // Add value object to property.
-            var newValues = property.values.ToList();
-            var newValue = new StyleValueHandle(index, StyleValueType.Enum);
-            newValues.Add(newValue);
-            property.values = newValues.ToArray();
+            var newValue = styleSheet.AddValueHandle(property, index, StyleValueType.Enum);
 
             return newValue;
         }
@@ -132,10 +125,7 @@ namespace Unity.UI.Builder
             var index = styleSheet.AddValueToArray(value);
 
             // Add value object to property.
-            var newValues = property.values.ToList();
-            var newValue = new StyleValueHandle(index, StyleValueType.Enum);
-            newValues.Add(newValue);
-            property.values = newValues.ToArray();
+            var newValue = styleSheet.AddValueHandle(property, index, StyleValueType.Enum);
 
             return newValue;
         }

@@ -77,6 +77,15 @@ namespace Unity.UI.Builder
             document.visualTreeAsset.Swallow(parent, otherVta);
         }
 
+        public static void TransferAssetToAsset(
+            BuilderDocument document, StyleSheet otherStyleSheet)
+        {
+            Undo.RegisterCompleteObjectUndo(
+                document.mainStyleSheet, BuilderConstants.AddNewSelectorUndoMessage);
+
+            document.mainStyleSheet.Swallow(otherStyleSheet);
+        }
+
         public static void AddStyleClassToElementInAsset(BuilderDocument document, VisualElement ve, string className)
         {
             Undo.RegisterCompleteObjectUndo(

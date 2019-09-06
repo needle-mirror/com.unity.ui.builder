@@ -14,12 +14,43 @@ using UnityEngine.UIElements.StyleSheets;
 
 namespace Unity.UI.Builder
 {
-    internal partial class BuilderInspector
+    internal class BuilderInspectorStyleFields
     {
-        List<string> m_StyleChangeList = new List<string>();
+        private BuilderInspector m_Inspector;
+        private BuilderSelection m_Selection;
+
+        private Dictionary<string, List<VisualElement>> m_StyleFields;
+
+        private List<string> s_StyleChangeList = new List<string>();
+
+        VisualElement currentVisualElement => m_Inspector.currentVisualElement;
+        StyleSheet styleSheet => m_Inspector.styleSheet;
+        StyleRule currentRule => m_Inspector.currentRule;
+
+        public Action<Enum> updateFlexColumnGlobalState { get; set; }
+
+        public Action updateStyleCategoryFoldoutOverrides { get; set; }
+
+        public BuilderInspectorStyleFields(BuilderInspector inspector)
+        {
+            m_Inspector = inspector;
+            m_Selection = inspector.selection;
+
+            m_StyleFields = new Dictionary<string, List<VisualElement>>();
+        }
+
+        public List<VisualElement> GetFieldListForStyleName(string styleName)
+        {
+            List<VisualElement> fieldList;
+            m_StyleFields.TryGetValue(styleName, out fieldList);
+            return fieldList;
+        }
 
         private StyleProperty GetStyleProperty(StyleRule rule, string styleName)
         {
+            if (rule == null)
+                return null;
+
             foreach (var property in rule.properties)
             {
                 if (property.name == styleName)
@@ -228,7 +259,7 @@ namespace Unity.UI.Builder
                     if (row != null && !string.IsNullOrEmpty(row.bindingPath))
                         foldoutElement.UpdateFromChildField(row.bindingPath, field.value.ToString());
 
-                    foldoutElement.header.AddToClassList(s_LocalStyleOverrideClassName);
+                    foldoutElement.header.AddToClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
                 });
 
                 BuilderStyleRow.ReAssignTooltipToChild(field);
@@ -256,27 +287,44 @@ namespace Unity.UI.Builder
             {
                 if (foldoutElement.IsValidInput(evt.newValue))
                 {
-                    foldoutElement.header.AddToClassList(s_LocalStyleOverrideClassName);
+                    foldoutElement.header.AddToClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
                     foldoutElement.headerInputField.value = foldoutElement.GetFormattedInputString();
                     for (int i = 0; i < foldoutElement.bindingPathArray.Length; i++)
                     {
-                        var styleProperty = GetStylePropertyByStyleName(foldoutElement.bindingPathArray[i]);
-                        if (styleProperty.values.Length == 0)
-                            continue;
+                        var styleName = foldoutElement.bindingPathArray[i];
+
+                        var styleProperty = GetStylePropertyByStyleName(styleName);
 
 #if UNITY_2019_3_OR_NEWER
-                        if (styleProperty.values[0].valueType == StyleValueType.Dimension ||
+                        var field = FindStylePropertyInfo(styleName);
+
+                        // We don't care which element we get the value for here as we're only interested
+                        // in the type of Enum it might be (and for validation), but not it's actual value.
+                        var val = field?.GetValue(foldoutElement.computedStyle, null);
+
+                        if ((val != null && val is StyleLength) ||
                             BuilderConstants.SpecialSnowflakeLengthSytles.Contains(foldoutElement.bindingPathArray[i]))
                         {
                             var newValue = 0;
                             // TryParse to check if fieldValue is not a style string like "auto"
                             if (Int32.TryParse(foldoutElement.fieldValues[i], out newValue))
                             {
+                                var isNewValue = styleProperty.values.Length == 0;
+
+                                // If the current style property is saved as a float instead of a dimension,
+                                // it means it's a user file where they left out the unit. We need to resave
+                                // it here as a dimension to create final proper uss.
+                                if (!isNewValue && styleProperty.values[0].valueType != StyleValueType.Dimension)
+                                {
+                                    styleProperty.values = new StyleValueHandle[0];
+                                    isNewValue = true;
+                                }
+
                                 var dimension = new Dimension();
                                 dimension.unit = Dimension.Unit.Pixel;
                                 dimension.value = newValue;
 
-                                if (styleProperty.values.Length == 0)
+                                if (isNewValue)
                                     styleSheet.AddValue(styleProperty, dimension);
                                 else // TODO: Assume only one value.
                                     styleSheet.SetValue(styleProperty.values[0], dimension);
@@ -301,7 +349,7 @@ namespace Unity.UI.Builder
                         NotifyStyleChanges();
                     }
 
-                    StylingChanged(foldoutElement.bindingPathArray.ToList());
+                    m_Inspector.StylingChanged(foldoutElement.bindingPathArray.ToList());
                 }
                 else
                     foldoutElement.headerInputField.SetValueWithoutNotify(foldoutElement.lastValidInput);
@@ -443,7 +491,7 @@ namespace Unity.UI.Builder
 
                 // The state of Flex Direction can affect many other Flex-related fields.
                 if (styleName == "flex-direction")
-                    UpdateFlexColumnGlobalState(enumValue);
+                    updateFlexColumnGlobalState?.Invoke(enumValue);
 
                 if (fieldElement is EnumField)
                 {
@@ -482,24 +530,24 @@ namespace Unity.UI.Builder
                 if (GetStyleProperty(currentRule, cShartStyleName) != null)
                 {
                     isRowOverride = true;
-                    styleField.RemoveFromClassList(s_LocalStyleResetClassName);
-                    styleField.AddToClassList(s_LocalStyleOverrideClassName);
+                    styleField.RemoveFromClassList(BuilderConstants.InspectorLocalStyleResetClassName);
+                    styleField.AddToClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
                 }
                 else if (!string.IsNullOrEmpty(styleField.bindingPath))
                 {
-                    styleField.AddToClassList(s_LocalStyleResetClassName);
+                    styleField.AddToClassList(BuilderConstants.InspectorLocalStyleResetClassName);
                 }
             }
 
             if (styleProperty != null || isRowOverride)
-                styleRow.AddToClassList(s_LocalStyleOverrideClassName);
+                styleRow.AddToClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
             else
             {
-                styleRow.RemoveFromClassList(s_LocalStyleOverrideClassName);
+                styleRow.RemoveFromClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
                 foreach (var styleField in styleFields)
                 {
-                    styleField.RemoveFromClassList(s_LocalStyleOverrideClassName);
-                    styleField.RemoveFromClassList(s_LocalStyleResetClassName);
+                    styleField.RemoveFromClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
+                    styleField.RemoveFromClassList(BuilderConstants.InspectorLocalStyleResetClassName);
                 }
             }
         }
@@ -565,9 +613,9 @@ namespace Unity.UI.Builder
             }
 
             if (isDirty)
-                foldoutElement.header.AddToClassList(s_LocalStyleOverrideClassName);
+                foldoutElement.header.AddToClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
             else
-                foldoutElement.header.RemoveFromClassList(s_LocalStyleOverrideClassName);
+                foldoutElement.header.RemoveFromClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
         }
 
         private void BuildStyleFieldContextualMenu(ContextualMenuPopulateEvent evt)
@@ -587,7 +635,11 @@ namespace Unity.UI.Builder
                 foreach (var bindableElement in listToUnset as List<BindableElement>)
                 {
                     var beStyleName = bindableElement.GetProperty(BuilderConstants.InspectorStylePropertyNameVEPropertyName) as string;
-                    schedule.Execute(() => RefreshStyleField(beStyleName, bindableElement));
+                    m_Inspector.schedule.Execute(() =>
+                    {
+                        RefreshStyleField(beStyleName, bindableElement);
+                        updateStyleCategoryFoldoutOverrides?.Invoke();
+                    });
                     styleSheet.RemoveProperty(currentRule, beStyleName);
                 }
 
@@ -601,7 +653,11 @@ namespace Unity.UI.Builder
             // TODO: The computed style still has the old (set) value at this point.
             // We need to reset the field with the value after styling has been
             // recomputed. Just execute next frame for now.
-            schedule.Execute(() => RefreshStyleField(styleName, fieldElement));
+            m_Inspector.schedule.Execute(() =>
+            {
+                RefreshStyleField(styleName, fieldElement);
+                updateStyleCategoryFoldoutOverrides?.Invoke();
+            });
 
             styleSheet.RemoveProperty(currentRule, styleName);
 
@@ -614,15 +670,27 @@ namespace Unity.UI.Builder
                     foreach (var path in foldout.bindingPathArray)
                     {
                         foreach (var linkedField in m_StyleFields[path])
-                            schedule.Execute(() => RefreshStyleField(path, linkedField));
+                            m_Inspector.schedule.Execute(() =>
+                            {
+                                RefreshStyleField(path, linkedField);
+                                updateStyleCategoryFoldoutOverrides?.Invoke();
+                            });
                         styleSheet.RemoveProperty(currentRule, path);
                     }
 
-                    schedule.Execute(() => RefreshStyleField(foldout));
+                    m_Inspector.schedule.Execute(() =>
+                    {
+                        RefreshStyleField(foldout);
+                        updateStyleCategoryFoldoutOverrides?.Invoke();
+                    });
                 }
                 else
                     // The unset element was a child of a PersistedFoldoutWithField
-                    schedule.Execute(() => RefreshStyleField(foldout));
+                    m_Inspector.schedule.Execute(() =>
+                    {
+                        RefreshStyleField(foldout);
+                        updateStyleCategoryFoldoutOverrides?.Invoke();
+                    });
             }
 
             NotifyStyleChanges();
@@ -632,12 +700,12 @@ namespace Unity.UI.Builder
         {
             if (BuilderSharedStyles.IsSelectorElement(currentVisualElement))
             {
-                m_Selection.NotifyOfStylingChange(this, styles);
+                m_Selection.NotifyOfStylingChange(m_Inspector, styles);
             }
             else
             {
-                m_Selection.NotifyOfStylingChange(this, styles);
-                m_Selection.NotifyOfHierarchyChange(this, currentVisualElement, BuilderHierarchyChangeType.InlineStyle);
+                m_Selection.NotifyOfStylingChange(m_Inspector, styles);
+                m_Selection.NotifyOfHierarchyChange(m_Inspector, currentVisualElement, BuilderHierarchyChangeType.InlineStyle);
             }
         }
 
@@ -652,35 +720,10 @@ namespace Unity.UI.Builder
             return styleProperty;
         }
 
-        private void UpdateFlexColumnGlobalState(Enum newValue)
-        {
-            m_LocalStylesSection.RemoveFromClassList(BuilderConstants.InspectorFlexColumnModeClassName);
-            m_LocalStylesSection.RemoveFromClassList(BuilderConstants.InspectorFlexColumnReverseModeClassName);
-            m_LocalStylesSection.RemoveFromClassList(BuilderConstants.InspectorFlexRowModeClassName);
-            m_LocalStylesSection.RemoveFromClassList(BuilderConstants.InspectorFlexRowReverseModeClassName);
-
-            var newDirection = (FlexDirection)newValue;
-            switch (newDirection)
-            {
-                case FlexDirection.Column:
-                    m_LocalStylesSection.AddToClassList(BuilderConstants.InspectorFlexColumnModeClassName);
-                    break;
-                case FlexDirection.ColumnReverse:
-                    m_LocalStylesSection.AddToClassList(BuilderConstants.InspectorFlexColumnReverseModeClassName);
-                    break;
-                case FlexDirection.Row:
-                    m_LocalStylesSection.AddToClassList(BuilderConstants.InspectorFlexRowModeClassName);
-                    break;
-                case FlexDirection.RowReverse:
-                    m_LocalStylesSection.AddToClassList(BuilderConstants.InspectorFlexRowReverseModeClassName);
-                    break;
-            }
-        }
-
-        private void PostStyleFieldSteps(VisualElement target, string styleName)
+        private void PostStyleFieldSteps(VisualElement target, string styleName, bool isNewValue)
         {
             var styleRow = target.GetProperty(BuilderConstants.InspectorLinkedStyleRowVEPropertyName) as BuilderStyleRow;
-            styleRow.AddToClassList(s_LocalStyleOverrideClassName);
+            styleRow.AddToClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
 
             // Remove temporary min-size class on VisualElement.
             currentVisualElement.RemoveMinSizeSpecialElement();
@@ -690,95 +733,113 @@ namespace Unity.UI.Builder
             var bindableElement = target as BindableElement;
             foreach (var styleField in styleFields)
             {
-                styleField.RemoveFromClassList(s_LocalStyleResetClassName);
+                styleField.RemoveFromClassList(BuilderConstants.InspectorLocalStyleResetClassName);
                 if (bindableElement.bindingPath == styleField.bindingPath)
                 {
-                    styleField.AddToClassList(s_LocalStyleOverrideClassName);
+                    styleField.AddToClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
                 }
                 else if (!string.IsNullOrEmpty(styleField.bindingPath) &&
                     bindableElement.bindingPath != styleField.bindingPath &&
-                    !styleField.ClassListContains(s_LocalStyleOverrideClassName))
+                    !styleField.ClassListContains(BuilderConstants.InspectorLocalStyleOverrideClassName))
                 {
-                    styleField.AddToClassList(s_LocalStyleResetClassName);
+                    styleField.AddToClassList(BuilderConstants.InspectorLocalStyleResetClassName);
                 }
             }
 
-            m_StyleChangeList.Clear();
-            m_StyleChangeList.Add(styleName);
-            NotifyStyleChanges(m_StyleChangeList);
+            s_StyleChangeList.Clear();
+            s_StyleChangeList.Add(styleName);
+            NotifyStyleChanges(s_StyleChangeList);
+
+            if (isNewValue && updateStyleCategoryFoldoutOverrides != null)
+                updateStyleCategoryFoldoutOverrides();
         }
 
 #if UNITY_2019_3_OR_NEWER
         private void OnFieldDimensionChange(ChangeEvent<int> e, string styleName)
         {
             var styleProperty = GetStylePropertyByStyleName(styleName);
+            var isNewValue = styleProperty.values.Length == 0;
+
+            // If the current style property is saved as a float instead of a dimension,
+            // it means it's a user file where they left out the unit. We need to resave
+            // it here as a dimension to create final proper uss.
+            if (!isNewValue && styleProperty.values[0].valueType != StyleValueType.Dimension)
+            {
+                styleProperty.values = new StyleValueHandle[0];
+                isNewValue = true;
+            }
 
             var dimension = new Dimension();
             dimension.unit = Dimension.Unit.Pixel;
             dimension.value = e.newValue;
 
-            if (styleProperty.values.Length == 0)
+            if (isNewValue)
                 styleSheet.AddValue(styleProperty, dimension);
             else // TODO: Assume only one value.
                 styleSheet.SetValue(styleProperty.values[0], dimension);
 
-            PostStyleFieldSteps(e.target as VisualElement, styleName);
+            PostStyleFieldSteps(e.target as VisualElement, styleName, isNewValue);
         }
 #endif
 
         private void OnFieldValueChange(ChangeEvent<int> e, string styleName)
         {
             var styleProperty = GetStylePropertyByStyleName(styleName);
+            var isNewValue = styleProperty.values.Length == 0;
 
-            if (styleProperty.values.Length == 0)
+            if (isNewValue)
                 styleSheet.AddValue(styleProperty, e.newValue);
             else // TODO: Assume only one value.
                 styleSheet.SetValue(styleProperty.values[0], e.newValue);
 
-            PostStyleFieldSteps(e.target as VisualElement, styleName);
+            PostStyleFieldSteps(e.target as VisualElement, styleName, isNewValue);
         }
 
         private void OnFieldValueChangeIntToFloat(ChangeEvent<int> e, string styleName)
         {
             var styleProperty = GetStylePropertyByStyleName(styleName);
+            var isNewValue = styleProperty.values.Length == 0;
 
             var newValue = (float)e.newValue;
 
-            if (styleProperty.values.Length == 0)
+            if (isNewValue)
                 styleSheet.AddValue(styleProperty, newValue);
             else // TODO: Assume only one value.
                 styleSheet.SetValue(styleProperty.values[0], newValue);
 
-            PostStyleFieldSteps(e.target as VisualElement, styleName);
+            PostStyleFieldSteps(e.target as VisualElement, styleName, isNewValue);
         }
 
         private void OnFieldValueChange(ChangeEvent<float> e, string styleName)
         {
             var styleProperty = GetStylePropertyByStyleName(styleName);
+            var isNewValue = styleProperty.values.Length == 0;
 
-            if (styleProperty.values.Length == 0)
+            if (isNewValue)
                 styleSheet.AddValue(styleProperty, e.newValue);
             else // TODO: Assume only one value.
                 styleSheet.SetValue(styleProperty.values[0], e.newValue);
 
-            PostStyleFieldSteps(e.target as VisualElement, styleName);
+            PostStyleFieldSteps(e.target as VisualElement, styleName, isNewValue);
         }
 
         private void OnFieldValueChange(ChangeEvent<Color> e, string styleName)
         {
             var styleProperty = GetStylePropertyByStyleName(styleName);
+            var isNewValue = styleProperty.values.Length == 0;
 
-            if (styleProperty.values.Length == 0)
+            if (isNewValue)
                 styleSheet.AddValue(styleProperty, e.newValue);
             else // TODO: Assume only one value.
                 styleSheet.SetValue(styleProperty.values[0], e.newValue);
 
-            PostStyleFieldSteps(e.target as VisualElement, styleName);
+            PostStyleFieldSteps(e.target as VisualElement, styleName, isNewValue);
         }
 
         private void OnFieldValueChange(ChangeEvent<string> e, string styleName)
         {
             var styleProperty = GetStylePropertyByStyleName(styleName);
+            var isNewValue = styleProperty.values.Length == 0;
             var field = e.target as VisualElement;
 
             if (field is IToggleButtonStrip)
@@ -788,36 +849,37 @@ namespace Unity.UI.Builder
                 var enumType = (field as IToggleButtonStrip).enumType;
                 var newEnumValue = Enum.Parse(enumType, newEnumValueStr) as Enum;
 
-                if (styleProperty.values.Length == 0)
+                if (isNewValue)
                     styleSheet.AddValue(styleProperty, newEnumValue);
                 else // TODO: Assume only one value.
                     styleSheet.SetValue(styleProperty.values[0], newEnumValue);
 
                 // The state of Flex Direction can affect many other Flex-related fields.
                 if (styleName == "flex-direction")
-                    UpdateFlexColumnGlobalState(newEnumValue);
+                    updateFlexColumnGlobalState?.Invoke(newEnumValue);
             }
             else
             {
-                if (styleProperty.values.Length == 0)
+                if (isNewValue)
                     styleSheet.AddValue(styleProperty, e.newValue);
                 else // TODO: Assume only one value.
                     styleSheet.SetValue(styleProperty.values[0], e.newValue);
             }
 
-            PostStyleFieldSteps(e.target as VisualElement, styleName);
+            PostStyleFieldSteps(e.target as VisualElement, styleName, isNewValue);
         }
 
         private void OnFieldValueChange(ChangeEvent<Object> e, string styleName)
         {
             var styleProperty = GetStylePropertyByStyleName(styleName);
+            var isNewValue = styleProperty.values.Length == 0;
 
-            if (styleProperty.values.Length == 0)
+            if (isNewValue)
                 styleSheet.AddValue(styleProperty, e.newValue);
             else // TODO: Assume only one value.
                 styleSheet.SetValue(styleProperty.values[0], e.newValue);
 
-            PostStyleFieldSteps(e.target as VisualElement, styleName);
+            PostStyleFieldSteps(e.target as VisualElement, styleName, isNewValue);
         }
 
         private void OnFieldValueChangeFont(ChangeEvent<Object> e, string styleName)
@@ -831,29 +893,31 @@ namespace Unity.UI.Builder
             }
 
             var styleProperty = GetStylePropertyByStyleName(styleName);
+            var isNewValue = styleProperty.values.Length == 0;
 
-            if (styleProperty.values.Length == 0)
+            if (isNewValue)
                 styleSheet.AddValue(styleProperty, e.newValue);
             else // TODO: Assume only one value.
                 styleSheet.SetValue(styleProperty.values[0], e.newValue);
 
-            PostStyleFieldSteps(field, styleName);
+            PostStyleFieldSteps(field, styleName, isNewValue);
         }
 
         private void OnFieldValueChange(ChangeEvent<Enum> e, string styleName)
         {
             var styleProperty = GetStylePropertyByStyleName(styleName);
+            var isNewValue = styleProperty.values.Length == 0;
 
-            if (styleProperty.values.Length == 0)
+            if (isNewValue)
                 styleSheet.AddValue(styleProperty, e.newValue);
             else // TODO: Assume only one value.
                 styleSheet.SetValue(styleProperty.values[0], e.newValue);
 
             // The state of Flex Direction can affect many other Flex-related fields.
             if (styleName == "flex-direction")
-                UpdateFlexColumnGlobalState(e.newValue);
+                updateFlexColumnGlobalState?.Invoke(e.newValue);
 
-            PostStyleFieldSteps(e.target as VisualElement, styleName);
+            PostStyleFieldSteps(e.target as VisualElement, styleName, isNewValue);
         }
     }
 }

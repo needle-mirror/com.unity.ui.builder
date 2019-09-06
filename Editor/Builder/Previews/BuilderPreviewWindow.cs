@@ -5,7 +5,7 @@ using UnityEngine.UIElements;
 
 namespace Unity.UI.Builder
 {
-    public class BuilderPreviewWindow : EditorWindow
+    internal class BuilderPreviewWindow : EditorWindow
     {
         ObjectField m_UxmlAssetField;
         VisualElement m_Container;
@@ -26,14 +26,14 @@ namespace Unity.UI.Builder
             var root = rootVisualElement;
 
             // Load styles.
-            root.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.UIBuilderPackagePath + "/Builder/Builder.uss"));
+            root.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.UIBuilderPackagePath + "/Builder.uss"));
             if (EditorGUIUtility.isProSkin)
-                root.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.UIBuilderPackagePath + "/Builder/BuilderDark.uss"));
+                root.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.UIBuilderPackagePath + "/BuilderDark.uss"));
             else
-                root.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.UIBuilderPackagePath + "/Builder/BuilderLight.uss"));
+                root.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.UIBuilderPackagePath + "/BuilderLight.uss"));
 
             // Load template.
-            var builderTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(BuilderConstants.UIBuilderPackagePath + "/Builder/BuilderPreviewWindow.uxml");
+            var builderTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(BuilderConstants.UIBuilderPackagePath + "/BuilderPreviewWindow.uxml");
             builderTemplate.CloneTree(root);
 
             // Init field.

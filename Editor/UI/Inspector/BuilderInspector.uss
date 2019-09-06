@@ -102,6 +102,17 @@
     padding-top: 2px;
 }
 
+.unity-builder-inspector__style-category-foldout > .unity-foldout__header > .unity-toggle {
+    margin-top: 1px;
+    margin-bottom: 1px;
+    padding-top: 1px;
+    padding-bottom: 1px;
+}
+
+.unity-builder-inspector__style-category-foldout.unity-builder-inspector__style-category-foldout--override > .unity-foldout__header {
+    -unity-font-style: bold;
+}
+
 /*****************************************************************************/
 /* BuilderStyleRow                                                           */
 /*****************************************************************************/
@@ -113,6 +124,7 @@
 .unity-builder-style-row__content-container {
     flex-grow: 1;
     margin-left: 12px;
+    padding-top: 2px;
 }
 
 /*****************************************************************************/

@@ -17,6 +17,7 @@
 
 .unity-builder__pane {
     overflow: hidden;
+    flex-shrink: 0;
 }
 
 .unity-builder-pane__header {
@@ -249,6 +250,13 @@
 
 .unity-builder-viewport__pick-overlay.unity-builder-viewport--preview {
     display: none;
+}
+
+.unity-builder-viewport__fit-canvas-button {
+    position: absolute;
+    right: 5px;
+    bottom: 5px;
+    display: none; /* Starts hidden. */
 }
 
 /*****************************************************************************/

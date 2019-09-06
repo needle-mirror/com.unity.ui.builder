@@ -1,33 +1,46 @@
 using UnityEngine.UIElements;
 using System.Collections.Generic;
+using System;
 
 namespace Unity.UI.Builder
 {
-    internal partial class BuilderInspector
+    internal class BuilderInspectorLocalStyles : IBuilderInspectorSection
     {
+        private BuilderInspector m_Inspector;
+        private BuilderInspectorStyleFields m_StyleFields;
+
         private PersistedFoldout m_LocalStylesSection;
 
-        private Dictionary<string, List<VisualElement>> m_StyleFields;
+        private List<PersistedFoldout> m_StyleCategories;
 
-        private VisualElement InitLocalStylesSection()
+        public VisualElement root => m_LocalStylesSection;
+
+        public BuilderInspectorLocalStyles(BuilderInspector inspector, BuilderInspectorStyleFields styleFields)
         {
-            m_LocalStylesSection = this.Q<PersistedFoldout>("inspector-local-styles-foldout");
+            m_Inspector = inspector;
+            m_StyleFields = styleFields;
 
-            m_StyleFields = new Dictionary<string, List<VisualElement>>();
+            m_StyleFields.updateFlexColumnGlobalState = UpdateFlexColumnGlobalState;
+            m_StyleFields.updateStyleCategoryFoldoutOverrides = UpdateStyleCategoryFoldoutOverrides;
+
+            m_LocalStylesSection = m_Inspector.Q<PersistedFoldout>("inspector-local-styles-foldout");
+
+            m_StyleCategories = m_LocalStylesSection.Query<PersistedFoldout>(
+                className: "unity-builder-inspector__style-category-foldout").ToList();
 
             var styleRows = m_LocalStylesSection.Query<BuilderStyleRow>().ToList();
 
             foreach (var styleRow in styleRows)
             {
                 var bindingPath = styleRow.bindingPath;
-                var styleFields = styleRow.Query<BindableElement>().ToList();
+                var currentStyleFields = styleRow.Query<BindableElement>().ToList();
 
                 if (styleRow.ClassListContains("unity-builder-double-field-row"))
                 {
-                    BindDoubleFieldRow(styleRow);
+                    m_StyleFields.BindDoubleFieldRow(styleRow);
                 }
 
-                foreach (var styleField in styleFields)
+                foreach (var styleField in currentStyleFields)
                 {
                     // Avoid fields within fields.
                     if (styleField.parent != styleRow)
@@ -35,24 +48,38 @@ namespace Unity.UI.Builder
 
                     if (styleField is PersistedFoldoutWithField)
                     {
-                        BindStyleField(styleRow, styleField as PersistedFoldoutWithField);
+                        m_StyleFields.BindStyleField(styleRow, styleField as PersistedFoldoutWithField);
                     }
                     else if (!string.IsNullOrEmpty(styleField.bindingPath))
                     {
-                        BindStyleField(styleRow, styleField.bindingPath, styleField);
+                        m_StyleFields.BindStyleField(styleRow, styleField.bindingPath, styleField);
                     }
                     else
                     {
                         BuilderStyleRow.ReAssignTooltipToChild(styleField);
-                        BindStyleField(styleRow, bindingPath, styleField);
+                        m_StyleFields.BindStyleField(styleRow, bindingPath, styleField);
                     }
                 }
             }
-
-            return m_LocalStylesSection;
         }
 
-        private void RefreshLocalStylesOverridesSection()
+        public void Enable()
+        {
+            m_Inspector.Query<BuilderStyleRow>().ForEach(e =>
+            {
+                e.SetEnabled(true);
+            });
+        }
+
+        public void Disable()
+        {
+            m_Inspector.Query<BuilderStyleRow>().ForEach(e =>
+            {
+                e.SetEnabled(false);
+            });
+        }
+
+        public void Refresh()
         {
             var styleRows = m_LocalStylesSection.Query<BuilderStyleRow>().ToList();
 
@@ -69,17 +96,55 @@ namespace Unity.UI.Builder
 
                     if (styleField is PersistedFoldoutWithField)
                     {
-                        RefreshStyleField(styleField as PersistedFoldoutWithField);
+                        m_StyleFields.RefreshStyleField(styleField as PersistedFoldoutWithField);
                     }
                     else if (!string.IsNullOrEmpty(styleField.bindingPath))
                     {
-                        RefreshStyleField(styleField.bindingPath, styleField);
+                        m_StyleFields.RefreshStyleField(styleField.bindingPath, styleField);
                     }
                     else
                     {
-                        RefreshStyleField(bindingPath, styleField);
+                        m_StyleFields.RefreshStyleField(bindingPath, styleField);
                     }
                 }
+            }
+
+            UpdateStyleCategoryFoldoutOverrides();
+        }
+
+        public void UpdateStyleCategoryFoldoutOverrides()
+        {
+            foreach (var styleCategory in m_StyleCategories)
+            {
+                if (styleCategory.Q(className: BuilderConstants.InspectorLocalStyleOverrideClassName) == null)
+                    styleCategory.RemoveFromClassList(BuilderConstants.InspectorCategoryFoldoutOverrideClassName);
+                else
+                    styleCategory.AddToClassList(BuilderConstants.InspectorCategoryFoldoutOverrideClassName);
+            }
+        }
+
+        private void UpdateFlexColumnGlobalState(Enum newValue)
+        {
+            m_LocalStylesSection.RemoveFromClassList(BuilderConstants.InspectorFlexColumnModeClassName);
+            m_LocalStylesSection.RemoveFromClassList(BuilderConstants.InspectorFlexColumnReverseModeClassName);
+            m_LocalStylesSection.RemoveFromClassList(BuilderConstants.InspectorFlexRowModeClassName);
+            m_LocalStylesSection.RemoveFromClassList(BuilderConstants.InspectorFlexRowReverseModeClassName);
+
+            var newDirection = (FlexDirection)newValue;
+            switch (newDirection)
+            {
+                case FlexDirection.Column:
+                    m_LocalStylesSection.AddToClassList(BuilderConstants.InspectorFlexColumnModeClassName);
+                    break;
+                case FlexDirection.ColumnReverse:
+                    m_LocalStylesSection.AddToClassList(BuilderConstants.InspectorFlexColumnReverseModeClassName);
+                    break;
+                case FlexDirection.Row:
+                    m_LocalStylesSection.AddToClassList(BuilderConstants.InspectorFlexRowModeClassName);
+                    break;
+                case FlexDirection.RowReverse:
+                    m_LocalStylesSection.AddToClassList(BuilderConstants.InspectorFlexRowReverseModeClassName);
+                    break;
             }
         }
     }

@@ -3,19 +3,28 @@ using UnityEditor;
 
 namespace Unity.UI.Builder
 {
-    internal partial class BuilderInspector
+    internal class BuilderInspectorSelector : IBuilderInspectorSection
     {
+        BuilderInspector m_Inspector;
+        BuilderSelection m_Selection;
+
         private PersistedFoldout m_StyleSelectorSection;
         private TextField m_StyleSelectorNameField;
 
-        private VisualElement InitSelectorSection()
+        public VisualElement root => m_StyleSelectorSection;
+
+        private StyleSheet styleSheet => m_Inspector.styleSheet;
+        private VisualElement currentVisualElement => m_Inspector.currentVisualElement;
+
+        public BuilderInspectorSelector(BuilderInspector inspector)
         {
-            m_StyleSelectorSection = this.Q<PersistedFoldout>("shared-style-selector-controls");
+            m_Inspector = inspector;
+            m_Selection = inspector.selection;
+
+            m_StyleSelectorSection = m_Inspector.Q<PersistedFoldout>("shared-style-selector-controls");
             m_StyleSelectorNameField = m_StyleSelectorSection.Q<TextField>("rename-selector-field");
             m_StyleSelectorNameField.isDelayed = true;
             m_StyleSelectorNameField.RegisterValueChangedCallback(OnStyleSelectorNameChange);
-
-            return m_StyleSelectorSection;
         }
 
         private void OnStyleSelectorNameChange(ChangeEvent<string> evt)
@@ -31,8 +40,25 @@ namespace Unity.UI.Builder
 
             BuilderSharedStyles.SetSelectorString(currentVisualElement, styleSheet, evt.newValue);
 
-            m_Selection.NotifyOfHierarchyChange(this);
-            m_Selection.NotifyOfStylingChange(this);
+            m_Selection.NotifyOfHierarchyChange(m_Inspector);
+            m_Selection.NotifyOfStylingChange(m_Inspector);
+        }
+
+        public void Refresh()
+        {
+            // Bind the style selector controls.
+            if (m_Selection.selectionType == BuilderSelectionType.StyleSelector)
+                m_StyleSelectorNameField.SetValueWithoutNotify(BuilderSharedStyles.GetSelectorString(currentVisualElement));
+        }
+
+        public void Enable()
+        {
+            // Do nothing.
+        }
+
+        public void Disable()
+        {
+            // Do nothing.
         }
     }
 }

@@ -22,8 +22,9 @@ namespace Unity.UI.Builder
         {
             if (m_Builder == null || m_Builder.document.visualTreeAsset == null)
                 return string.Empty;
-            
-            var uxmlText = m_Builder.document.visualTreeAsset.GenerateUXML();
+
+            bool writingToFile = true; // Set this to false to see the special selection elements and attributes.
+            var uxmlText = m_Builder.document.visualTreeAsset.GenerateUXML(m_Builder.document.uxmlPath, writingToFile);
             return uxmlText;
         }
 
@@ -39,7 +40,7 @@ namespace Unity.UI.Builder
 
         public void SelectionChanged()
         {
-            // Do nothing for now.
+            RefreshUXML();
         }
 
         public void StylingChanged(List<string> styles)

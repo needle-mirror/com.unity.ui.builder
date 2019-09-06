@@ -12,7 +12,7 @@ namespace Unity.UI.Builder
 {
     internal static class StyleValueHandleExtensions
     {
-        public static int TransferStyleValue(this StyleSheet to, StyleSheet from, StyleValueHandle valueHandle)
+        public static int SwallowStyleValue(this StyleSheet to, StyleSheet from, StyleValueHandle valueHandle)
         {
             var index = 0;
             switch (valueHandle.valueType)

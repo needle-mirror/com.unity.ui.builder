@@ -27,7 +27,6 @@ namespace Unity.UI.Builder
 
         Builder m_Builder;
         VisualElement m_DocumentElement;
-        BuilderToolbar m_Toolbar;
         BuilderSelection m_Selection;
         BuilderLibraryDragger m_Dragger;
 
@@ -211,6 +210,11 @@ namespace Unity.UI.Builder
             }
         }
 
+        public void OnAfterBuilderDeserialize()
+        {
+            RefreshTreeView();
+        }
+
         private int GetAllProjectUxmlFilePathsHash(IEnumerable<HierarchyProperty> assets = null)
         {
             if (assets == null)
@@ -248,7 +252,6 @@ namespace Unity.UI.Builder
                 var prettyPath = assetPath;
                 prettyPath = Path.GetDirectoryName(prettyPath);
                 prettyPath = prettyPath.Replace('\\', '/');
-                prettyPath = prettyPath.Replace("Assets/", "");
                 var split = prettyPath.Split('/');
                 AddCategoriesToStack(projectCategory, categoryStack, split);
 
@@ -300,13 +303,12 @@ namespace Unity.UI.Builder
         }
 
         public BuilderLibrary(
-            Builder builder, BuilderViewport viewport, BuilderToolbar toolbar,
+            Builder builder, BuilderViewport viewport,
             BuilderSelection selection, BuilderLibraryDragger dragger,
             BuilderTooltipPreview tooltipPreview)
         {
             m_Builder = builder;
             m_DocumentElement = viewport.documentElement;
-            m_Toolbar = toolbar;
             m_Selection = selection;
             m_Dragger = dragger;
             m_TooltipPreview = tooltipPreview;
@@ -453,6 +455,7 @@ namespace Unity.UI.Builder
 
             box.Add(label);
 
+            // Open button.
             var openButton = new Button() { name = k_OpenButtonClassName, text = "Open" };
             openButton.AddToClassList(BuilderConstants.HiddenStyleClassName);
             openButton.clickable.clickedWithEventInfo += OnOpenButtonClick;
@@ -468,6 +471,17 @@ namespace Unity.UI.Builder
             // Pre-emptive cleanup.
             var row = element.parent.parent;
             row.RemoveFromClassList(BuilderConstants.ExplorerHeaderRowClassName);
+            row.SetEnabled(true);
+
+            // If this is the uxml file entry of the currently open file, don't allow
+            // the user to instantiate it (infinite recursion) or re-open it.
+            if (builderItem.name == m_Builder.document.uxmlFileName)
+            {
+                row.SetEnabled(false);
+                row.AddToClassList(BuilderConstants.LibraryCurrentlyOpenFileItemClassName);
+            }
+
+            // Header
             if (builderItem.isHeader)
                 row.AddToClassList(BuilderConstants.ExplorerHeaderRowClassName);
 
@@ -496,6 +510,11 @@ namespace Unity.UI.Builder
             if (item.makeVisualElement == null)
                 return;
 
+            // If this is the uxml file entry of the currently open file, don't allow
+            // the user to instantiate it (infinite recursion) or re-open it.
+            if (item.name == m_Builder.document.uxmlFileName)
+                return;
+
             var newElement = item.makeVisualElement();
             if (newElement == null)
                 return;
@@ -517,15 +536,40 @@ namespace Unity.UI.Builder
             }).ExecuteLater(200);
         }
 
+        public void ResetCurrentlyLoadedUxmlStyles()
+        {
+            var previouslyOpenFileItem = this.Q(className: BuilderConstants.LibraryCurrentlyOpenFileItemClassName);
+            if (previouslyOpenFileItem != null)
+            {
+                previouslyOpenFileItem.SetEnabled(true);
+                previouslyOpenFileItem.RemoveFromClassList(BuilderConstants.LibraryCurrentlyOpenFileItemClassName);
+            }
+
+            var uxmlFileName = m_Builder.document.uxmlFileName;
+            this.Query(className: k_TreeItemClassName).ForEach((e) =>
+            {
+                var item =
+                    e.GetProperty(BuilderConstants.LibraryItemLinkedManipulatorVEPropertyName)
+                    as LibraryTreeItem;
+
+                if (item.name != uxmlFileName)
+                    return;
+
+                var row = e.GetFirstAncestorWithClass(ListView.itemUssClassName);
+                row.SetEnabled(false);
+                row.AddToClassList(BuilderConstants.LibraryCurrentlyOpenFileItemClassName);
+            });
+        }
+
         void OnOpenButtonClick(EventBase evt)
         {
-            var element = evt.target as VisualElement;
-            var item = element.userData as LibraryTreeItem;
+            var button = evt.target as Button;
+            var item = button.userData as LibraryTreeItem;
 
             if (item.sourceAsset == null)
                 return;
 
-            m_Toolbar.LoadDocument(item.sourceAsset);
+            m_Builder.LoadDocument(item.sourceAsset);
         }
     }
 }

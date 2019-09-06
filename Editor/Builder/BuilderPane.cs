@@ -41,7 +41,7 @@ namespace Unity.UI.Builder
             AddToClassList(s_UssClassName);
 
             var visualAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
-                BuilderConstants.UIBuilderPackagePath + "/Builder/BuilderPane.uxml");
+                BuilderConstants.UIBuilderPackagePath + "/BuilderPane.uxml");
             visualAsset.CloneTree(this);
 
             m_Title = this.Q<Label>("title");

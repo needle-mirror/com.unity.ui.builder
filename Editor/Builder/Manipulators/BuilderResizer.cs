@@ -20,7 +20,7 @@ namespace Unity.UI.Builder
         public BuilderResizer()
         {
             var builderTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
-                BuilderConstants.UIBuilderPackagePath + "/Builder/Manipulators/BuilderResizer.uxml");
+                BuilderConstants.UIBuilderPackagePath + "/Manipulators/BuilderResizer.uxml");
             builderTemplate.CloneTree(this);
 
             AddToClassList(s_UssClassName);

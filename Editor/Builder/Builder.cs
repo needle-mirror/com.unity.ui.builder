@@ -11,6 +11,7 @@ namespace Unity.UI.Builder
         BuilderDocument m_Document;
 
         BuilderToolbar m_Toolbar;
+        BuilderLibrary m_Library;
         BuilderViewport m_Viewport;
         BuilderUxmlPreview m_UxmlPreview;
         BuilderUssPreview m_UssPreview;
@@ -36,6 +37,8 @@ namespace Unity.UI.Builder
             }
         }
 
+        public VisualElement documentRootElement => m_Viewport.documentElement;
+
         public BuilderCommandHandler commandHandler
         {
             get { return m_CommandHandler; }
@@ -60,14 +63,14 @@ namespace Unity.UI.Builder
             var root = rootVisualElement;
 
             // Load styles.
-            root.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.UIBuilderPackagePath + "/Builder/Builder.uss"));
+            root.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.UIBuilderPackagePath + "/Builder.uss"));
             if (EditorGUIUtility.isProSkin)
-                root.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.UIBuilderPackagePath + "/Builder/BuilderDark.uss"));
+                root.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.UIBuilderPackagePath + "/BuilderDark.uss"));
             else
-                root.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.UIBuilderPackagePath + "/Builder/BuilderLight.uss"));
+                root.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.UIBuilderPackagePath + "/BuilderLight.uss"));
 
             // Load template.
-            var builderTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(BuilderConstants.UIBuilderPackagePath + "/Builder/Builder.uxml");
+            var builderTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(BuilderConstants.UIBuilderPackagePath + "/Builder.uxml");
             builderTemplate.CloneTree(root);
 
             // Fetch the save dialog.
@@ -89,14 +92,14 @@ namespace Unity.UI.Builder
             var contextMenuManipulator = new BuilderExplorerContextMenu(this, m_Selection);
             var explorer = new BuilderExplorer(m_Viewport, m_Selection, classDragger, hierarchyDragger, contextMenuManipulator);
             var libraryDragger = new BuilderLibraryDragger(this, root, m_Selection, m_Viewport, m_Viewport.parentTracker, explorer.container, tooltipPreview);
-            m_Toolbar = new BuilderToolbar(this, m_Selection, dialog, m_Viewport, explorer, tooltipPreview);
-            var library = new BuilderLibrary(this, m_Viewport, m_Toolbar, m_Selection, libraryDragger, tooltipPreview);
+            m_Library = new BuilderLibrary(this, m_Viewport, m_Selection, libraryDragger, tooltipPreview);
+            m_Toolbar = new BuilderToolbar(this, m_Selection, dialog, m_Viewport, explorer, m_Library, tooltipPreview);
             m_UxmlPreview = new BuilderUxmlPreview(this, m_Viewport, m_Selection);
             m_UssPreview = new BuilderUssPreview(this);
             var inspector = new BuilderInspector(this, m_Selection);
             root.Q("viewport").Add(m_Viewport);
             m_Viewport.toolbar.Add(m_Toolbar);
-            root.Q("library").Add(library);
+            root.Q("library").Add(m_Library);
             root.Q("explorer").Add(explorer);
             root.Q("uxml-preview").Add(m_UxmlPreview);
             root.Q("uss-preview").Add(m_UssPreview);
@@ -129,6 +132,7 @@ namespace Unity.UI.Builder
             // Perform post-serialization functions.
             m_Document.OnAfterBuilderDeserialize(m_Viewport.documentElement);
             m_Toolbar.OnAfterBuilderDeserialize();
+            m_Library.OnAfterBuilderDeserialize();
 
             // Restore selection.
             m_Selection.RestoreSelectionFromDocument(m_Viewport.sharedStylesAndDocumentElement);
@@ -137,6 +141,11 @@ namespace Unity.UI.Builder
             // want the document hasUnsavedChanges flag to be set at this time.
             m_Selection.NotifyOfStylingChange(m_Document);
             m_Selection.NotifyOfHierarchyChange(m_Document);
+        }
+
+        public void LoadDocument(VisualTreeAsset asset)
+        {
+            m_Toolbar.LoadDocument(asset);
         }
 
         private void OnDisable()
@@ -155,7 +164,7 @@ namespace Unity.UI.Builder
 
             var builder = GetWindowAndInit();
 
-            builder.m_Toolbar.LoadDocument(asset);
+            builder.LoadDocument(asset);
 
             return true;
         }

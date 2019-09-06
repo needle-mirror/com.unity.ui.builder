@@ -15,6 +15,10 @@
     background-color: rgb(34, 34, 34);
 }
 
+.unity-builder-inspector__style-category-foldout.unity-builder-inspector__style-category-foldout--override > .unity-foldout__header > .unity-builder-inspector-blue-override-box {
+    background-color: rgb(223, 223, 223);
+}
+
 /*****************************************************************************/
 /* BuilderStyleRow                                                           */
 /*****************************************************************************/

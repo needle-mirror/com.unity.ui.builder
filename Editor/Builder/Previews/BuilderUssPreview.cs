@@ -29,7 +29,7 @@ namespace Unity.UI.Builder
 
         public void SelectionChanged()
         {
-            // Do nothing.
+            RefreshUSS();
         }
 
         public void StylingChanged(List<string> styles)

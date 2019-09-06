@@ -1,20 +1,23 @@
 <UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:uib="Unity.UI.Builder">
     <!-- Templates -->
-    <Template name="DisplaySection" path="Packages/com.unity.ui.builder/Editor/UI/Builder/Inspector/StyleSectionsDisplay.uxml" />
-    <Template name="PositionSection" path="Packages/com.unity.ui.builder/Editor/UI/Builder/Inspector/StyleSectionsPosition.uxml" />
-    <Template name="FlexSection" path="Packages/com.unity.ui.builder/Editor/UI/Builder/Inspector/StyleSectionsFlex.uxml" />
-    <Template name="AlignSection" path="Packages/com.unity.ui.builder/Editor/UI/Builder/Inspector/StyleSectionsAlign.uxml" />
-    <Template name="SizeSection" path="Packages/com.unity.ui.builder/Editor/UI/Builder/Inspector/StyleSectionsSize.uxml" />
-    <Template name="MarginPaddingSection" path="Packages/com.unity.ui.builder/Editor/UI/Builder/Inspector/StyleSectionsMarginPadding.uxml" />
-    <Template name="TextSection" path="Packages/com.unity.ui.builder/Editor/UI/Builder/Inspector/StyleSectionsText.uxml" />
-    <Template name="BackgroundSection" path="Packages/com.unity.ui.builder/Editor/UI/Builder/Inspector/StyleSectionsBackground.uxml" />
-    <Template name="BorderSection" path="Packages/com.unity.ui.builder/Editor/UI/Builder/Inspector/StyleSectionsBorder.uxml" />
-    <Template name="CursorSection" path="Packages/com.unity.ui.builder/Editor/UI/Builder/Inspector/StyleSectionsCursor.uxml" />
+    <Template name="DisplaySection" path="Packages/com.unity.ui.builder/Editor/UI/Inspector/StyleSectionsDisplay.uxml" />
+    <Template name="PositionSection" path="Packages/com.unity.ui.builder/Editor/UI/Inspector/StyleSectionsPosition.uxml" />
+    <Template name="FlexSection" path="Packages/com.unity.ui.builder/Editor/UI/Inspector/StyleSectionsFlex.uxml" />
+    <Template name="AlignSection" path="Packages/com.unity.ui.builder/Editor/UI/Inspector/StyleSectionsAlign.uxml" />
+    <Template name="SizeSection" path="Packages/com.unity.ui.builder/Editor/UI/Inspector/StyleSectionsSize.uxml" />
+    <Template name="MarginPaddingSection" path="Packages/com.unity.ui.builder/Editor/UI/Inspector/StyleSectionsMarginPadding.uxml" />
+    <Template name="TextSection" path="Packages/com.unity.ui.builder/Editor/UI/Inspector/StyleSectionsText.uxml" />
+    <Template name="BackgroundSection" path="Packages/com.unity.ui.builder/Editor/UI/Inspector/StyleSectionsBackground.uxml" />
+    <Template name="BorderSection" path="Packages/com.unity.ui.builder/Editor/UI/Inspector/StyleSectionsBorder.uxml" />
+    <Template name="CursorSection" path="Packages/com.unity.ui.builder/Editor/UI/Inspector/StyleSectionsCursor.uxml" />
 
     <!-- Main ScrollView -->
+    <!-- DO NOT ADD A VIEW-DATA KEY TO THE SCROLLVIEW! 
+        We handle scorll position restoration in a custom way inside the BuilderInspector
+        element. It relies on ScrollView not trying to restore position as well.
+    -->
     <ScrollView
         name="inspector-scroll-view"
-        view-data-key="builder-inspector-scroll-view"
         class="unity-builder-inspector__scroll-view">
 
         <!-- Nothing Selected Label -->
@@ -22,12 +25,6 @@
             name="nothing-selected-label"
             class="unity-builder-inspector__nothing-selected-label"
             text="Nothing selected. :)" />
-
-        <!-- Element In Template Instance Selected Label -->
-        <Label
-            name="template-instance-label"
-            class="unity-builder-inspector__nothing-selected-label"
-            text="Selected element is inside a template instance. Editing not supported." />
 
         <!-- UXML Document Label -->
         <Label
@@ -75,7 +72,7 @@
             text="Attributes"
             view-data-key="builder-inspector-attributes-foldout"
             class="unity-builder-inspector__category-foldout unity-builder-inspector__style-row-container"
-            value="false" />
+            value="true" />
 
         <!-- Element Inherited Styles Foldout -->
         <uib:PersistedFoldout
@@ -83,7 +80,7 @@
             text="Inherited Styles"
             view-data-key="builder-inspector-attributes-inherited-styles-foldout"
             class="unity-builder-inspector__category-foldout"
-            value="false">
+            value="true">
 
             <!-- Style Class List Controls -->
             <uib:PersistedFoldout
@@ -91,7 +88,7 @@
                 text="Style Class List"
                 view-data-key="builder-inspector-class-list-container-foldout"
                 class="unity-builder-inspector__class-list-foldout"
-                value="false" >
+                value="true" >
 
                 <VisualElement name="add-class-controls-container" class="unity-builder-inspector__add-class-controls">
                     <TextField name="add-class-field" class="unity-builder-inspector__add-class-field" />
@@ -118,7 +115,7 @@
             text="Local Styles"
             view-data-key="builder-inspector-local-styles-foldout"
             class="unity-builder-inspector__category-foldout unity-builder-inspector__style-row-container"
-            value="false">
+            value="true">
 
             <!-- Display Styles -->
             <uib:PersistedFoldout

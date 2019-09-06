@@ -16,7 +16,7 @@ namespace Unity.UI.Builder
         public BuilderAnchorer()
         {
             var builderTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
-                BuilderConstants.UIBuilderPackagePath + "/Builder/Manipulators/BuilderAnchorer.uxml");
+                BuilderConstants.UIBuilderPackagePath + "/Manipulators/BuilderAnchorer.uxml");
             builderTemplate.CloneTree(this);
 
             AddToClassList(s_UssClassName);

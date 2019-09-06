@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
+using System;
 
 namespace Unity.UI.Builder
 {
-    internal partial class BuilderInspector : BuilderPaneContent, IBuilderSelectionNotifier
+    internal class BuilderInspector : BuilderPaneContent, IBuilderSelectionNotifier
     {
         private enum Section
         {
@@ -16,15 +17,50 @@ namespace Unity.UI.Builder
             ElementAttributes = 1 << 3,
             ElementInheritedStyles = 1 << 4,
             LocalStyles = 1 << 5,
-            ElementInTemplateInstance = 1 << 6,
-            VisualTreeAsset = 1 << 7
+            VisualTreeAsset = 1 << 6
         }
+
+        // View Data
+        // HACK: So...we want to restore the scroll position of the inspector but
+        // lots of events cause it to reset. For example, undo/redo will reset the
+        // builder, select nothing, then restore the selection. While nothing is selected,
+        // the ScrolView will rightly reset the scroll position to 0 since it does not
+        // need a scroller just to display the "Nothing selected" message. Then, when
+        // the selection is restored, the scroll position will still be zero.
+        //
+        // The solution here, which is definitely overkill, is to cache the previous
+        // s_MaxCachedScrollPositions m_ScrollView.contentContainer.layout.heights
+        // and their associated scroll positions. Then, when we detect a
+        // m_ScrollView.contenContainer GeometryChangeEvent, we look up our
+        // cache and restore the correct scroll position for this particular content
+        // height.
+        [Serializable]
+        struct CachedScrollPosition
+        {
+            public float scrollPosition;
+            public float maxScrollValue;
+        }
+        ScrollView m_ScrollView;
+        static readonly int s_MaxCachedScrollPositions = 5;
+        [SerializeField] int m_CachedScrollPositionCount = 0;
+        [SerializeField] int m_OldestScrollPositionIndex = 0;
+        [SerializeField] float[] m_CachedContentHeights = new float[s_MaxCachedScrollPositions];
+        [SerializeField] CachedScrollPosition[] m_CachedScrollPositions = new CachedScrollPosition[s_MaxCachedScrollPositions];
+        private float contentHeight => m_ScrollView.contentContainer.layout.height;
+
+        // Utilities
+        private BuilderInspectorMatchingSelectors m_MatchingSelectors;
+        private BuilderInspectorStyleFields m_StyleFields;
+
+        // Sections
+        private BuilderInspectorAttributes m_AttributesSection;
+        private BuilderInspectorInheritedStyles m_InheritedStyleSection;
+        private BuilderInspectorLocalStyles m_LocalStylesSection;
+        private BuilderInspectorSelector m_SelectorSection;
+        private BuilderInspectorStyleSheet m_StyleSheetSection;
 
         // Constants
         private static readonly string s_UssClassName = "unity-builder-inspector";
-        private static readonly string s_LocalStyleOverrideClassName = "unity-builder-inspector__style--override";
-        private static readonly string s_LocalStyleResetClassName = "unity-builder-inspector__style--reset"; // used to reset font style of children
-        private static readonly string s_EmptyFoldoutLabelClassName = "unity-builder-inspector__empty-foldout-label";
 
         // External References
         private Builder m_Builder;
@@ -39,10 +75,12 @@ namespace Unity.UI.Builder
 
         // Minor Sections
         private Label m_NothingSelectedSection;
-        private Label m_ElementInTemplateInstanceSection;
         private Label m_VisualTreeAssetSection;
 
-        private StyleSheet styleSheet
+        public BuilderSelection selection => m_Selection;
+        public Builder builder => m_Builder;
+
+        public StyleSheet styleSheet
         {
             get
             {
@@ -57,12 +95,12 @@ namespace Unity.UI.Builder
             }
         }
 
-        private VisualTreeAsset visualTreeAsset
+        public VisualTreeAsset visualTreeAsset
         {
             get { return m_Builder.document.visualTreeAsset; }
         }
 
-        private StyleRule currentRule
+        public StyleRule currentRule
         {
             get
             {
@@ -74,8 +112,7 @@ namespace Unity.UI.Builder
 
                 if (BuilderSharedStyles.IsSelectorElement(currentVisualElement))
                 {
-                    var complexSelectorStr = BuilderSharedStyles.GetSelectorString(currentVisualElement);
-                    var complexSelector = styleSheet.FindSelector(complexSelectorStr);
+                    var complexSelector = currentVisualElement.GetStyleComplexSelector();
                     m_CurrentRule = complexSelector?.rule;
                 }
                 else if (currentVisualElement.GetVisualElementAsset() != null)
@@ -90,28 +127,43 @@ namespace Unity.UI.Builder
 
                 return m_CurrentRule;
             }
-            set
+            private set
             {
                 m_CurrentRule = value;
             }
         }
 
-        private VisualElement currentVisualElement
+        public VisualElement currentVisualElement
         {
             get { return m_CurrentVisualElement; }
-            set { m_CurrentVisualElement = value; }
+            private set { m_CurrentVisualElement = value; }
         }
 
         public BuilderInspector(Builder builder, BuilderSelection selection)
         {
+            // Yes, we give ourselves a view data key. Don't do this at home!
+            viewDataKey = "unity-ui-builder-inspector";
+
             // Init External References
             m_Selection = selection;
             m_Builder = builder;
 
             // Load Template
             var template = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
-                BuilderConstants.UIBuilderPackagePath + "/Builder/Inspector/BuilderInspector.uxml");
+                BuilderConstants.UIBuilderPackagePath + "/Inspector/BuilderInspector.uxml");
             template.CloneTree(this);
+
+            // Get the scroll view.
+            // HACK: ScrollView is not capable of remembering a scroll position for content that changes often.
+            // The main issue is that we expande/collapse/display/hide different parts of the Inspector
+            // all the time so initially the ScrollView is empty and it restores the scroll position to zero.
+            m_ScrollView = this.Q<ScrollView>("inspector-scroll-view");
+            m_ScrollView.contentContainer.RegisterCallback<GeometryChangedEvent>(OnScrollViewContentGeometryChange);
+            m_ScrollView.verticalScroller.valueChanged += (newValue) =>
+            {
+                CacheScrollPosition(newValue, m_ScrollView.verticalScroller.highValue);
+                SaveViewData();
+            };
 
             // Load styles.
             AddToClassList(s_UssClassName);
@@ -122,7 +174,10 @@ namespace Unity.UI.Builder
                 styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.InspectorUssPathNoExt + "Light.uss"));
 
             // Matching Selectors
-            InitMatchingSelectors();
+            m_MatchingSelectors = new BuilderInspectorMatchingSelectors(this);
+
+            // Style Fields
+            m_StyleFields = new BuilderInspectorStyleFields(this);
 
             // Sections
             m_Sections = new List<VisualElement>();
@@ -131,39 +186,40 @@ namespace Unity.UI.Builder
             m_NothingSelectedSection = this.Q<Label>("nothing-selected-label");
             m_Sections.Add(m_NothingSelectedSection);
 
-            // Element In Template Instance Section
-            m_ElementInTemplateInstanceSection = this.Q<Label>("template-instance-label");
-            m_Sections.Add(m_ElementInTemplateInstanceSection);
-
             // Visual Tree Asset Section
             m_VisualTreeAssetSection = this.Q<Label>("uxml-document-label");
             m_Sections.Add(m_VisualTreeAssetSection);
 
             // StyleSheet Section
-            var styleSheetSection = InitStyleSheetSection();
-            m_Sections.Add(styleSheetSection);
+            m_StyleSheetSection = new BuilderInspectorStyleSheet(this);
+            m_Sections.Add(m_StyleSheetSection.root);
 
             // Style Selector Section
-            var selectorSection = InitSelectorSection();
-            m_Sections.Add(selectorSection);
+            m_SelectorSection = new BuilderInspectorSelector(this);
+            m_Sections.Add(m_SelectorSection.root);
 
             // Attributes Section
-            var attributesSection = InitAttributesSection();
-            m_Sections.Add(attributesSection);
+            m_AttributesSection = new BuilderInspectorAttributes(this);
+            m_Sections.Add(m_AttributesSection.root);
 
             // Inherited Styles Section
-            var inheritedStylesSection = InitInheritedStylesSection();
-            m_Sections.Add(inheritedStylesSection);
+            m_InheritedStyleSection = new BuilderInspectorInheritedStyles(this, m_MatchingSelectors);
+            m_Sections.Add(m_InheritedStyleSection.root);
 
             // Local Styles Section
-            var localStylesSection = InitLocalStylesSection();
-            m_Sections.Add(localStylesSection);
+            m_LocalStylesSection = new BuilderInspectorLocalStyles(this, m_StyleFields);
+            m_Sections.Add(m_LocalStylesSection.root);
 
             // This will take into account the current selection and then call RefreshUI().
             SelectionChanged();
 
             // Forward focus to the panel header.
             this.Query().Where(e => e.focusable).ForEach((e) => AddFocusable(e));
+        }
+
+        public new void AddFocusable(VisualElement focusable)
+        {
+            base.AddFocusable(focusable);
         }
 
         private void RefreshAfterFirstInit(GeometryChangedEvent evt)
@@ -182,30 +238,121 @@ namespace Unity.UI.Builder
             section.RemoveFromClassList(BuilderConstants.HiddenStyleClassName);
         }
 
+        private void EnableFields()
+        {
+            m_AttributesSection.Enable();
+            m_InheritedStyleSection.Enable();
+            m_LocalStylesSection.Enable();
+        }
+
+        private void DisableFields()
+        {
+            m_AttributesSection.Disable();
+            m_InheritedStyleSection.Disable();
+            m_LocalStylesSection.Disable();
+        }
+
         private void EnableSections(Section section)
         {
             if (section.HasFlag(Section.NothingSelected))
                 EnableSection(m_NothingSelectedSection);
             if (section.HasFlag(Section.StyleSheet))
-                EnableSection(m_StyleSheetSection);
+                EnableSection(m_StyleSheetSection.root);
             if (section.HasFlag(Section.StyleSelector))
-                EnableSection(m_StyleSelectorSection);
+                EnableSection(m_SelectorSection.root);
             if (section.HasFlag(Section.ElementAttributes))
-                EnableSection(m_AttributesSection);
+                EnableSection(m_AttributesSection.root);
             if (section.HasFlag(Section.ElementInheritedStyles))
-                EnableSection(m_InheritedStylesSection);
+                EnableSection(m_InheritedStyleSection.root);
             if (section.HasFlag(Section.LocalStyles))
-                EnableSection(m_LocalStylesSection);
-            if (section.HasFlag(Section.ElementInTemplateInstance))
-                EnableSection(m_ElementInTemplateInstanceSection);
+                EnableSection(m_LocalStylesSection.root);
             if (section.HasFlag(Section.VisualTreeAsset))
                 EnableSection(m_VisualTreeAssetSection);
         }
 
         private void ResetSections()
         {
+            EnableFields();
+
             foreach (var section in m_Sections)
                 ResetSection(section);
+        }
+
+        internal override void OnViewDataReady()
+        {
+            base.OnViewDataReady();
+
+            string key = GetFullHierarchicalViewDataKey();
+
+            OverwriteFromViewData(this, key);
+
+            SetScrollerPositionFromSavedState();
+        }
+
+        private void OnScrollViewContentGeometryChange(GeometryChangedEvent evt)
+        {
+            SetScrollerPositionFromSavedState();
+        }
+
+        private void CacheScrollPosition(float currentScrollPosition, float currentMaxScrollValue)
+        {
+            // This avoid pushing legitimate cached positions out of the cache with
+            // short (nothing selected) content.
+            if (!m_ScrollView.needsVertical)
+                return;
+
+            int index = -1;
+            for (int i = 0; i < m_CachedScrollPositionCount; ++i)
+                if (m_CachedContentHeights[i] == contentHeight)
+                {
+                    index = i;
+                    break;
+                }
+
+            if (index < 0)
+            {
+                if (m_CachedScrollPositionCount < s_MaxCachedScrollPositions)
+                {
+                    index = m_CachedScrollPositionCount;
+                    m_CachedScrollPositionCount++;
+                }
+                else
+                {
+                    index = m_OldestScrollPositionIndex;
+                    m_OldestScrollPositionIndex = (m_OldestScrollPositionIndex + 1) % s_MaxCachedScrollPositions;
+                }
+            }
+
+            var cached = m_CachedScrollPositions[index];
+            cached.scrollPosition = currentScrollPosition;
+            cached.maxScrollValue = currentMaxScrollValue;
+            m_CachedScrollPositions[index] = cached;
+
+            m_CachedContentHeights[index] = contentHeight;
+        }
+
+        private int GetCachedScrollPositionIndex()
+        {
+            int index = -1;
+            for (int i = 0; i < m_CachedScrollPositionCount; ++i)
+                if (m_CachedContentHeights[i] == contentHeight)
+                {
+                    index = i;
+                    break;
+                }
+
+            return index;
+        }
+
+        private void SetScrollerPositionFromSavedState()
+        {
+            var index = GetCachedScrollPositionIndex();
+            if (index < 0)
+                return;
+
+            var cached = m_CachedScrollPositions[index];
+            m_ScrollView.verticalScroller.highValue = cached.maxScrollValue;
+            m_ScrollView.verticalScroller.value = cached.scrollPosition;
         }
 
         public void RefreshUI()
@@ -233,42 +380,40 @@ namespace Unity.UI.Builder
                         Section.StyleSelector |
                         Section.LocalStyles);
                     break;
+                case BuilderSelectionType.ElementInTemplateInstance:
                 case BuilderSelectionType.Element:
                     EnableSections(
                         Section.ElementAttributes |
                         Section.ElementInheritedStyles |
                         Section.LocalStyles);
                     break;
-                case BuilderSelectionType.ElementInTemplateInstance:
-                    EnableSections(Section.ElementInTemplateInstance);
-                    return;
                 case BuilderSelectionType.VisualTreeAsset:
                     EnableSections(Section.VisualTreeAsset);
                     return;
             }
+            if (m_Selection.selectionType == BuilderSelectionType.ElementInTemplateInstance)
+                DisableFields();
 
             // Bind the style selector controls.
-            if (m_Selection.selectionType == BuilderSelectionType.StyleSelector)
-                m_StyleSelectorNameField.SetValueWithoutNotify(BuilderSharedStyles.GetSelectorString(currentVisualElement));
+            m_SelectorSection.Refresh();
 
             // Recreate Attribute Fields
-            RefreshAttributesSection();
+            m_AttributesSection.Refresh();
 
             // Reset current style rule.
             currentRule = null;
 
             // Get all shared style selectors and draw their fields.
-            GetElementMatchers();
-            RefreshClassListContainer();
-            RefreshMatchingSelectorsContainer();
+            m_MatchingSelectors.GetElementMatchers();
+            m_InheritedStyleSection.Refresh();
 
             // Create the fields for the overridable styles.
-            RefreshLocalStylesOverridesSection();
+            m_LocalStylesSection.Refresh();
         }
 
         public void HierarchyChanged(VisualElement element, BuilderHierarchyChangeType changeType)
         {
-            RefreshAttributesSection();
+            m_AttributesSection.Refresh();
         }
 
         public void SelectionChanged()
@@ -295,14 +440,15 @@ namespace Unity.UI.Builder
             {
                 foreach (var styleName in styles)
                 {
-                    List<VisualElement> fieldList = null;
-                    m_StyleFields.TryGetValue(styleName, out fieldList);
+                    var fieldList = m_StyleFields.GetFieldListForStyleName(styleName);
                     if (fieldList == null)
                         continue;
 
                     foreach (var field in fieldList)
-                        RefreshStyleField(styleName, field);
+                        m_StyleFields.RefreshStyleField(styleName, field);
                 }
+
+                m_LocalStylesSection.UpdateStyleCategoryFoldoutOverrides();
             }
             else
             {

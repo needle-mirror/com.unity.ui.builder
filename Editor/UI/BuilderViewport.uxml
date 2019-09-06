@@ -24,6 +24,7 @@
 
                 </uib:OverlayPainterHelperElement>
             </uib:BuilderCanvas>
+            <Button name="fit-canvas-button" text="Fit Canvas" class="unity-builder-viewport__fit-canvas-button" />
         </VisualElement>
     </VisualElement>
 </UXML>

@@ -3,23 +3,32 @@ using UnityEditor;
 
 namespace Unity.UI.Builder
 {
-    internal partial class BuilderInspector
+    internal class BuilderInspectorStyleSheet : IBuilderInspectorSection
     {
+        private BuilderInspector m_Inspector;
+        private BuilderSelection m_Selection;
+
         private VisualElement m_StyleSheetSection;
         private TextField m_NewSelectorNameNameField;
         private Button m_AddNewSelectorButton;
 
-        private VisualElement InitStyleSheetSection()
+        public VisualElement root => m_StyleSheetSection;
+
+        private StyleSheet styleSheet => m_Inspector.styleSheet;
+        private VisualElement currentVisualElement => m_Inspector.currentVisualElement;
+
+        public BuilderInspectorStyleSheet(BuilderInspector inspector)
         {
-            m_StyleSheetSection = this.Q("shared-styles-controls");
-            m_NewSelectorNameNameField = this.Q<TextField>("add-new-selector-field");
-            m_AddNewSelectorButton = this.Q<Button>("add-new-selector-button");
+            m_Inspector = inspector;
+            m_Selection = inspector.selection;
+
+            m_StyleSheetSection = m_Inspector.Q("shared-styles-controls");
+            m_NewSelectorNameNameField = m_Inspector.Q<TextField>("add-new-selector-field");
+            m_AddNewSelectorButton = m_Inspector.Q<Button>("add-new-selector-button");
 
             m_AddNewSelectorButton.clickable.clicked += CreateNewSelector;
             m_NewSelectorNameNameField.RegisterValueChangedCallback(OnCreateNewSelector);
             m_NewSelectorNameNameField.isDelayed = true;
-
-            return m_StyleSheetSection;
         }
 
         private void OnCreateNewSelector(ChangeEvent<string> evt)
@@ -45,8 +54,23 @@ namespace Unity.UI.Builder
             BuilderSharedStyles.CreateNewSelector(
                 currentVisualElement, styleSheet, newSelectorString);
 
-            m_Selection.NotifyOfHierarchyChange(this);
-            m_Selection.NotifyOfStylingChange(this);
+            m_Selection.NotifyOfHierarchyChange(m_Inspector);
+            m_Selection.NotifyOfStylingChange(m_Inspector);
+        }
+
+        public void Refresh()
+        {
+            // Do nothing.
+        }
+
+        public void Enable()
+        {
+            // Do nothing.
+        }
+
+        public void Disable()
+        {
+            // Do nothing.
         }
     }
 }

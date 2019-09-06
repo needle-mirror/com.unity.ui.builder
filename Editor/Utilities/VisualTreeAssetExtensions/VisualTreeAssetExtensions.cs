@@ -28,18 +28,25 @@ namespace Unity.UI.Builder
         {
             var newTreeAsset = VisualTreeAssetUtilities.CreateInstance();
 
-            var json = JsonUtility.ToJson(vta);
-            JsonUtility.FromJsonOverwrite(json, newTreeAsset);
-
-            if (vta.inlineSheet != null)
-                newTreeAsset.inlineSheet = vta.inlineSheet.DeepCopy();
+            vta.DeepOverwrite(newTreeAsset);
 
             return newTreeAsset;
         }
 
-        internal static string GenerateUXML(this VisualTreeAsset vta)
+        public static void DeepOverwrite(this VisualTreeAsset vta, VisualTreeAsset other)
         {
-            return VisualTreeAssetToUXML.GenerateUXML(vta);
+            var json = JsonUtility.ToJson(vta);
+            JsonUtility.FromJsonOverwrite(json, other);
+
+            if (vta.inlineSheet != null)
+                other.inlineSheet = vta.inlineSheet.DeepCopy();
+
+            other.name = vta.name;
+        }
+
+        internal static string GenerateUXML(this VisualTreeAsset vta, string vtaPath, bool writingToFile = false)
+        {
+            return VisualTreeAssetToUXML.GenerateUXML(vta, vtaPath, writingToFile);
         }
 
         internal static void LinkedCloneTree(this VisualTreeAsset vta, VisualElement target)
@@ -133,16 +140,18 @@ namespace Unity.UI.Builder
             return foundList;
         }
 
-        internal static List<StyleSheet> GetAllReferencedStyleSheets(this VisualTreeAsset vta)
+        public static void ConvertAllAssetReferencesToPaths(this VisualTreeAsset vta)
         {
+#if UNITY_2019_3_OR_NEWER
             var sheets = new HashSet<StyleSheet>();
             foreach (var asset in vta.visualElementAssets)
             {
-                var styleSheetPaths = asset.GetStyleSheetPaths();
-                if (styleSheetPaths == null)
-                    continue;
+                sheets.Clear();
 
-                foreach (var sheetPath in styleSheetPaths)
+                foreach (var styleSheet in asset.stylesheets)
+                    sheets.Add(styleSheet);
+
+                foreach (var sheetPath in asset.stylesheetPaths)
                 {
                     var sheetAsset = AssetDatabase.LoadAssetAtPath<StyleSheet>(sheetPath);
                     if (sheetAsset == null)
@@ -153,6 +162,71 @@ namespace Unity.UI.Builder
                     }
 
                     sheets.Add(sheetAsset);
+                }
+
+                asset.stylesheetPaths.Clear();
+                foreach (var sheet in sheets)
+                {
+                    var path = AssetDatabase.GetAssetPath(sheet);
+                    if (string.IsNullOrEmpty(path))
+                        continue;
+
+                    asset.stylesheetPaths.Add(path);
+                }
+            }
+
+            var fieldInfo = UsingsListFieldInfo;
+            if (fieldInfo != null)
+            {
+                var usings = fieldInfo.GetValue(vta) as List<VisualTreeAsset.UsingEntry>;
+                if (usings != null && usings.Count > 0)
+                {
+                    for (int i = 0; i < usings.Count; ++i)
+                    {
+                        if (usings[i].asset == null)
+                            continue;
+
+                        var u = usings[i];
+                        u.path = AssetDatabase.GetAssetPath(u.asset);
+                        usings[i] = u;
+                    }
+                }
+            }
+            else
+            {
+                Debug.LogError("UI Builder: VisualTreeAsset.m_Usings private field has not been found! Update the reflection code!");
+            }
+#endif
+        }
+
+        internal static List<StyleSheet> GetAllReferencedStyleSheets(this VisualTreeAsset vta)
+        {
+            var sheets = new HashSet<StyleSheet>();
+            foreach (var asset in vta.visualElementAssets)
+            {
+#if UNITY_2019_3_OR_NEWER
+                var styleSheets = asset.stylesheets;
+                if (styleSheets != null)
+                {
+                    foreach (var styleSheet in styleSheets)
+                        sheets.Add(styleSheet);
+                }
+#endif
+                var styleSheetPaths = asset.GetStyleSheetPaths();
+                if (styleSheetPaths != null)
+                {
+                    foreach (var sheetPath in styleSheetPaths)
+                    {
+                        var sheetAsset = AssetDatabase.LoadAssetAtPath<StyleSheet>(sheetPath);
+                        if (sheetAsset == null)
+                        {
+                            sheetAsset = Resources.Load<StyleSheet>(sheetPath);
+                            if (sheetAsset == null)
+                                continue;
+                        }
+
+                        sheets.Add(sheetAsset);
+                    }
                 }
             }
 
@@ -392,12 +466,36 @@ namespace Unity.UI.Builder
                 {
                     var valueHandle = property.values[i];
                     valueHandle.valueIndex =
-                        toStyleSheet.TransferStyleValue(fromStyleSheet, valueHandle);
+                        toStyleSheet.SwallowStyleValue(fromStyleSheet, valueHandle);
                     property.values[i] = valueHandle;
                 }
             }
 
             vea.ruleIndex = index;
+        }
+
+        public static void ClearUndo(this VisualTreeAsset vta)
+        {
+            if (vta == null)
+                return;
+
+            Undo.ClearUndo(vta);
+
+            if (vta.inlineSheet == null)
+                return;
+
+            Undo.ClearUndo(vta.inlineSheet);
+        }
+
+        public static void Destroy(this VisualTreeAsset vta)
+        {
+            if (vta == null)
+                return;
+
+            if (vta.inlineSheet != null)
+                ScriptableObject.DestroyImmediate(vta.inlineSheet);
+
+            ScriptableObject.DestroyImmediate(vta);
         }
     }
 }

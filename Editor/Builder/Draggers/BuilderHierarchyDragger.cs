@@ -28,7 +28,7 @@ namespace Unity.UI.Builder
         protected override VisualElement CreateDraggedElement()
         {
             var classPillTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
-                BuilderConstants.UIBuilderPackagePath + "/Builder/BuilderClassPill.uxml");
+                BuilderConstants.UIBuilderPackagePath + "/BuilderClassPill.uxml");
             var pill = classPillTemplate.CloneTree();
             pill.AddToClassList(s_DraggableStyleClassPillClassName);
             return pill;

@@ -8,8 +8,13 @@ using System.Text.RegularExpressions;
 
 namespace Unity.UI.Builder
 {
-    internal partial class BuilderInspector
+    internal class BuilderInspectorInheritedStyles : IBuilderInspectorSection
     {
+        private BuilderInspector m_Inspector;
+        private BuilderSelection m_Selection;
+        private Builder m_Builder;
+        private BuilderInspectorMatchingSelectors m_MatchingSelectors;
+
         private PersistedFoldout m_InheritedStylesSection;
         private VisualElement m_ClassListContainer;
         private PersistedFoldout m_MatchingSelectorsFoldout;
@@ -25,32 +30,59 @@ namespace Unity.UI.Builder
         private string m_AddClassValidationMessage = string.Empty;
         private Regex m_AddClassValidationRegex;
 
-        private VisualElement InitInheritedStylesSection()
-        {
-            m_InheritedStylesSection = this.Q<PersistedFoldout>("inspector-inherited-styles-foldout");
-            m_ClassListContainer = this.Q("class-list-container");
-            m_MatchingSelectorsFoldout = this.Q<PersistedFoldout>("matching-selectors-container");
+        private VisualElement currentVisualElement => m_Inspector.currentVisualElement;
 
-            m_AddClassField = this.Q<TextField>("add-class-field");
+        public VisualElement root => m_InheritedStylesSection;
+
+        public BuilderInspectorInheritedStyles(BuilderInspector inspector, BuilderInspectorMatchingSelectors matchingSelectors)
+        {
+            m_Inspector = inspector;
+            m_Selection = inspector.selection;
+            m_Builder = inspector.builder;
+            m_MatchingSelectors = matchingSelectors;
+
+            m_InheritedStylesSection = m_Inspector.Q<PersistedFoldout>("inspector-inherited-styles-foldout");
+            m_ClassListContainer = m_Inspector.Q("class-list-container");
+            m_MatchingSelectorsFoldout = m_Inspector.Q<PersistedFoldout>("matching-selectors-container");
+
+            m_AddClassField = m_Inspector.Q<TextField>("add-class-field");
             m_AddClassField.isDelayed = true;
             m_AddClassField.RegisterCallback<KeyUpEvent>(OnAddClassFieldChange);
 
-            m_AddClassButton = this.Q<Button>("add-class-button");
-            m_CreateClassButton = this.Q<Button>("create-class-button");
+            m_AddClassButton = m_Inspector.Q<Button>("add-class-button");
+            m_CreateClassButton = m_Inspector.Q<Button>("create-class-button");
 
-            m_AddClassValidationMessageContainer = this.Q("add-class-validation-message-container");
+            m_AddClassValidationMessageContainer = m_Inspector.Q("add-class-validation-message-container");
             m_AddClassValidationMessageContainer.Add(new IMGUIContainer(DrawAddClassValidationMessage));
             m_AddClassValidationMessageContainer.style.display = DisplayStyle.None;
 
             m_ClassPillTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
-                BuilderConstants.UIBuilderPackagePath + "/Builder/BuilderClassPill.uxml");
+                BuilderConstants.UIBuilderPackagePath + "/BuilderClassPill.uxml");
 
             m_AddClassButton.clickable.clicked += AddStyleClass;
             m_CreateClassButton.clickable.clicked += ExtractLocalStylesToNewClass;
 
             m_AddClassValidationRegex = new Regex(@"^[a-zA-Z0-9\-_]+$");
+        }
 
-            return m_InheritedStylesSection;
+        public void Enable()
+        {
+            m_Inspector.Query<Button>().ForEach(e =>
+            {
+                e.SetEnabled(true);
+            });
+            m_AddClassField.SetEnabled(true);
+            m_ClassListContainer.SetEnabled(true);
+        }
+
+        public void Disable()
+        {
+            m_Inspector.Query<Button>().ForEach(e =>
+            {
+                e.SetEnabled(false);
+            });
+            m_AddClassField.SetEnabled(false);
+            m_ClassListContainer.SetEnabled(false);
         }
 
         private void DrawAddClassValidationMessage()
@@ -152,7 +184,8 @@ namespace Unity.UI.Builder
             var newSelector = BuilderSharedStyles.CreateNewSelector(selectorsRootElement, mainStyleSheet, selectorString);
 
             // Transfer all properties from inline styles rule to new selector.
-            mainStyleSheet.TransferRulePropertiesToSelector(newSelector, styleSheet, currentRule);
+            mainStyleSheet.TransferRulePropertiesToSelector(
+                newSelector, m_Inspector.styleSheet, m_Inspector.currentRule);
 
             // Update VisualTreeAsset.
             BuilderAssetUtilities.AddStyleClassToElementInAsset(
@@ -226,14 +259,15 @@ namespace Unity.UI.Builder
 
         private VisualElement GeneratedMatchingSelectors()
         {
-            GetElementMatchers();
-            if (m_MatchedRulesExtractor.selectedElementRules == null || m_MatchedRulesExtractor.selectedElementRules.Count <= 0)
+            m_MatchingSelectors.GetElementMatchers();
+            if (m_MatchingSelectors.matchedRulesExtractor.selectedElementRules == null ||
+                m_MatchingSelectors.matchedRulesExtractor.selectedElementRules.Count <= 0)
                 return null;
 
             var container = new VisualElement();
 
             int ruleIndex = 0;
-            foreach (MatchedRulesExtractor.MatchedRule rule in m_MatchedRulesExtractor.selectedElementRules)
+            foreach (MatchedRulesExtractor.MatchedRule rule in m_MatchingSelectors.matchedRulesExtractor.selectedElementRules)
             {
                 var selectorStr = StyleSheetToUss.ToUssSelector(rule.matchRecord.complexSelector);
 
@@ -250,7 +284,7 @@ namespace Unity.UI.Builder
                 if (props.Length == 0)
                 {
                     var label = new Label("None");
-                    label.AddToClassList(s_EmptyFoldoutLabelClassName);
+                    label.AddToClassList(BuilderConstants.InspectorEmptyFoldoutLabelClassName);
                     ruleFoldout.Add(label);
                     continue;
                 }
@@ -289,14 +323,23 @@ namespace Unity.UI.Builder
                 m_MatchingSelectorsFoldout.Add(matchingSelectors);
 
                 // Forward focus to the panel header.
-                matchingSelectors.Query().Where(e => e.focusable).ForEach((e) => AddFocusable(e));
+                matchingSelectors
+                    .Query()
+                    .Where(e => e.focusable)
+                    .ForEach((e) => m_Inspector.AddFocusable(e));
             }
             else
             {
                 var label = new Label("None");
-                label.AddToClassList(s_EmptyFoldoutLabelClassName);
+                label.AddToClassList(BuilderConstants.InspectorEmptyFoldoutLabelClassName);
                 m_MatchingSelectorsFoldout.Add(label);
             }
+        }
+
+        public void Refresh()
+        {
+            RefreshClassListContainer();
+            RefreshMatchingSelectorsContainer();
         }
     }
 }

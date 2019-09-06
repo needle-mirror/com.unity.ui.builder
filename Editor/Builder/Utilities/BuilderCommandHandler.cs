@@ -3,6 +3,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements;
+using UnityEditor.StyleSheets;
 using System.Linq;
 
 namespace Unity.UI.Builder
@@ -161,6 +162,10 @@ namespace Unity.UI.Builder
 
         private void OnDelete(KeyDownEvent evt)
         {
+            // HACK: This must be a bug. TextField leaks its key events to everyone!
+            if (evt.leafTarget is ITextInputField)
+                return;
+
             switch (evt.keyCode)
             {
                 case KeyCode.Delete:
@@ -206,22 +211,24 @@ namespace Unity.UI.Builder
         public void CopyElement(VisualElement element)
         {
             var vea = element.GetVisualElementAsset();
-            if (vea == null)
+            if (vea != null)
+            {
+                EditorGUIUtility.systemCopyBuffer =
+                    VisualTreeAssetToUXML.GenerateUXML(m_Builder.document.visualTreeAsset, null, vea);
                 return;
+            }
 
-            EditorGUIUtility.systemCopyBuffer = VisualTreeAssetToUXML.GenerateUXML(m_Builder.document.visualTreeAsset, vea);
+            var selector = element.GetStyleComplexSelector();
+            if (selector != null)
+            {
+                EditorGUIUtility.systemCopyBuffer =
+                    StyleSheetToUss.ToUssString(m_Builder.document.mainStyleSheet, selector);
+                return;
+            }
         }
 
-        public void Paste()
+        private void PasteUXML(string copyBuffer)
         {
-            var copyBuffer = EditorGUIUtility.systemCopyBuffer;
-
-            if (string.IsNullOrEmpty(copyBuffer))
-                return;
-
-            if (!copyBuffer.StartsWith("<UXML"))
-                return;
-
             VisualTreeAsset pasteVta = null;
             var importer = new UXMLImporterImpl(); // Cannot be cached because the StyleBuilder never gets reset.
             importer.ImportXmlFromString(copyBuffer, out pasteVta);
@@ -233,6 +240,32 @@ namespace Unity.UI.Builder
             BuilderAssetUtilities.TransferAssetToAsset(m_Builder.document, parent, pasteVta);
 
             ScriptableObject.DestroyImmediate(pasteVta);
+        }
+
+        private void PasteUSS(string copyBuffer)
+        {
+            var pasteStyleSheet = StyleSheetUtilities.CreateInstance();
+            var importer = new StyleSheetImporterImpl(); // Cannot be cached because the StyleBuilder never gets reset.
+            importer.Import(pasteStyleSheet, copyBuffer);
+
+            BuilderAssetUtilities.TransferAssetToAsset(m_Builder.document, pasteStyleSheet);
+
+            ScriptableObject.DestroyImmediate(pasteStyleSheet);
+        }
+
+        public void Paste()
+        {
+            var copyBuffer = EditorGUIUtility.systemCopyBuffer;
+
+            if (string.IsNullOrEmpty(copyBuffer))
+                return;
+
+            if (copyBuffer.TrimStart().StartsWith("<UXML"))
+                PasteUXML(copyBuffer);
+            else if (copyBuffer.TrimEnd().EndsWith("}"))
+                PasteUSS(copyBuffer);
+            else // Unknown string.
+                return;
 
             if (m_CutElement != null)
             {

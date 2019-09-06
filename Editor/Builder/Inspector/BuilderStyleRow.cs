@@ -18,7 +18,7 @@ namespace Unity.UI.Builder
             AddToClassList(s_UssClassName);
 
             var visualAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
-                BuilderConstants.UIBuilderPackagePath + "/Builder/Inspector/BuilderStyleRow.uxml");
+                BuilderConstants.UIBuilderPackagePath + "/Inspector/BuilderStyleRow.uxml");
             visualAsset.CloneTree(this);
 
             m_Container = this.Q("content-container");

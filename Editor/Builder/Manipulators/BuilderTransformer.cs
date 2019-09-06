@@ -23,7 +23,7 @@ namespace Unity.UI.Builder
         public BuilderTransformer()
         {
             var builderTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
-                BuilderConstants.UIBuilderPackagePath + "/Builder/Manipulators/BuilderTransformer.uxml");
+                BuilderConstants.UIBuilderPackagePath + "/Manipulators/BuilderTransformer.uxml");
             builderTemplate.CloneTree(this);
 
             AddToClassList(s_UssClassName);

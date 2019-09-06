@@ -9,12 +9,15 @@ namespace Unity.UI.Builder
     internal class BuilderViewport : BuilderPaneContent, IBuilderSelectionNotifier
     {
         private static readonly string s_PreviewModeClassName = "unity-builder-viewport--preview";
+        private static readonly float s_CanvasViewportMinWidthDiff = 30;
+        private static readonly float s_CanvasViewportMinHeightDiff = 36;
 
         private Builder m_Builder;
 
         private VisualElement m_Toolbar;
         private VisualElement m_ViewportWrapper;
         private VisualElement m_Viewport;
+        private BuilderCanvas m_Canvas;
         private VisualElement m_SharedStylesAndDocumentElement;
         private VisualElement m_DocumentElement;
         private VisualElement m_PickOverlay;
@@ -23,6 +26,7 @@ namespace Unity.UI.Builder
         private BuilderResizer m_BuilderResizer;
         private BuilderMover m_BuilderMover;
         private BuilderAnchorer m_BuilderAnchorer;
+        private Button m_FitCanvasButton;
 
         private BuilderSelection m_Selection;
 
@@ -65,12 +69,13 @@ namespace Unity.UI.Builder
 
             AddToClassList("unity-builder-viewport");
 
-            var template = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(BuilderConstants.UIBuilderPackagePath + "/Builder/BuilderViewport.uxml");
+            var template = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(BuilderConstants.UIBuilderPackagePath + "/BuilderViewport.uxml");
             template.CloneTree(this);
 
             m_Toolbar = this.Q("toolbar");
             m_ViewportWrapper = this.Q("viewport-wrapper");
             m_Viewport = this.Q("viewport");
+            m_Canvas = this.Q<BuilderCanvas>("canvas");
             m_SharedStylesAndDocumentElement = this.Q("shared-styles-and-document");
             m_DocumentElement = this.Q("document");
             m_PickOverlay = this.Q("pick-overlay");
@@ -79,6 +84,11 @@ namespace Unity.UI.Builder
             m_BuilderResizer = this.Q<BuilderResizer>("resizer");
             m_BuilderMover = this.Q<BuilderMover>("mover");
             m_BuilderAnchorer = this.Q<BuilderAnchorer>("anchorer");
+            m_FitCanvasButton = this.Q<Button>("fit-canvas-button");
+
+            m_FitCanvasButton.clickable.clicked += FitCanvas;
+            m_Canvas.RegisterCallback<GeometryChangedEvent>(VerifyCanvasStillFitsViewport);
+            m_Viewport.RegisterCallback<GeometryChangedEvent>(VerifyCanvasStillFitsViewport);
 
             m_BuilderMover.parentTracker = m_BuilderParentTracker;
 
@@ -90,6 +100,55 @@ namespace Unity.UI.Builder
             // Make sure this gets focus when the pane gets focused.
             primaryFocusable = this;
             this.focusable = true;
+        }
+
+        private void FitCanvas()
+        {
+            var maxCanvasWidth = m_Viewport.resolvedStyle.width - s_CanvasViewportMinWidthDiff;
+            var maxCanvasHeight = m_Viewport.resolvedStyle.height - s_CanvasViewportMinHeightDiff;
+
+            var currentWidth = m_Canvas.resolvedStyle.width;
+            var currentHeight = m_Canvas.resolvedStyle.height;
+
+            if (currentWidth > maxCanvasWidth)
+                m_Canvas.width = maxCanvasWidth;
+
+            if (currentHeight > maxCanvasHeight)
+                m_Canvas.height = maxCanvasHeight;
+        }
+
+        private void VerifyCanvasStillFitsViewport(GeometryChangedEvent evt)
+        {
+            float viewportWidth;
+            float viewportHeight;
+
+            float canvasWidth;
+            float canvasHeight;
+
+            if (evt.target == m_Viewport)
+            {
+                viewportWidth = evt.newRect.width;
+                viewportHeight = evt.newRect.height;
+
+                canvasWidth = m_Canvas.resolvedStyle.width;
+                canvasHeight = m_Canvas.resolvedStyle.height;
+            }
+            else
+            {
+                viewportWidth = m_Viewport.resolvedStyle.width;
+                viewportHeight = m_Viewport.resolvedStyle.height;
+
+                canvasWidth = evt.newRect.width;
+                canvasHeight = evt.newRect.height;
+            }
+
+            var maxCanvasWidth = viewportWidth - s_CanvasViewportMinWidthDiff;
+            var maxCanvasHeight = viewportHeight - s_CanvasViewportMinHeightDiff;
+
+            if (canvasWidth > maxCanvasWidth || canvasHeight > maxCanvasHeight)
+                m_FitCanvasButton.style.display = DisplayStyle.Flex;
+            else
+                m_FitCanvasButton.style.display = DisplayStyle.None;
         }
 
         private VisualElement PickElement(Vector2 mousePosition)

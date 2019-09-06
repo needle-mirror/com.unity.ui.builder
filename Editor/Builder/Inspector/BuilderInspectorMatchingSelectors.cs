@@ -2,23 +2,28 @@ using UnityEditor.UIElements.Debugger;
 
 namespace Unity.UI.Builder
 {
-    internal partial class BuilderInspector
+    internal class BuilderInspectorMatchingSelectors
     {
+        private BuilderInspector m_Inspector;
         private MatchedRulesExtractor m_MatchedRulesExtractor;
 
-        private void InitMatchingSelectors()
+        public MatchedRulesExtractor matchedRulesExtractor => m_MatchedRulesExtractor;
+
+        public BuilderInspectorMatchingSelectors(BuilderInspector inspector)
         {
+            m_Inspector = inspector;
+
             m_MatchedRulesExtractor = new MatchedRulesExtractor();
         }
 
-        private void GetElementMatchers()
+        public void GetElementMatchers()
         {
-            if (currentVisualElement == null || currentVisualElement.elementPanel == null)
+            if (m_Inspector.currentVisualElement == null || m_Inspector.currentVisualElement.elementPanel == null)
                 return;
 
             m_MatchedRulesExtractor.selectedElementRules.Clear();
             m_MatchedRulesExtractor.selectedElementStylesheets.Clear();
-            m_MatchedRulesExtractor.FindMatchingRules(currentVisualElement);
+            m_MatchedRulesExtractor.FindMatchingRules(m_Inspector.currentVisualElement);
         }
     }
 }

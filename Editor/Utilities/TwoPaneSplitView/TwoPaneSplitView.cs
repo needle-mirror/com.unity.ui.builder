@@ -60,10 +60,10 @@ namespace Unity.UI.Builder
         private VisualElement m_FlexedPane;
 
         public VisualElement fixedPane => m_FixedPane;
+        public VisualElement flexedPane => m_FlexedPane;
 
         private VisualElement m_DragLine;
         private VisualElement m_DragLineAnchor;
-        private float m_MinDimension;
 
         private VisualElement m_Content;
 
@@ -110,14 +110,8 @@ namespace Unity.UI.Builder
         public void Init(int fixedPaneIndex, float fixedPaneInitialDimension, Orientation orientation)
         {
             m_Orientation = orientation;
-            m_MinDimension = 40;
             m_FixedPaneIndex = fixedPaneIndex;
             m_FixedPaneInitialDimension = fixedPaneInitialDimension;
-
-            if (m_Orientation == Orientation.Horizontal)
-                style.minWidth = m_FixedPaneInitialDimension;
-            else
-                style.minHeight = m_FixedPaneInitialDimension;
 
             m_Content.RemoveFromClassList(s_HorizontalClassName);
             m_Content.RemoveFromClassList(s_VerticalClassName);
@@ -205,6 +199,7 @@ namespace Unity.UI.Builder
             }
 
             m_FixedPane.style.flexShrink = 0;
+            m_FixedPane.style.flexGrow = 0;
             m_FlexedPane.style.flexGrow = 1;
             m_FlexedPane.style.flexShrink = 0;
             m_FlexedPane.style.flexBasis = 0;
@@ -231,9 +226,9 @@ namespace Unity.UI.Builder
                 direction = -1;
 
             if (m_FixedPaneIndex == 0)
-                m_Resizer = new TwoPaneSplitViewResizer(this, direction, m_MinDimension, m_Orientation);
+                m_Resizer = new TwoPaneSplitViewResizer(this, direction, m_Orientation);
             else
-                m_Resizer = new TwoPaneSplitViewResizer(this, direction, m_MinDimension, m_Orientation);
+                m_Resizer = new TwoPaneSplitViewResizer(this, direction, m_Orientation);
 
             m_DragLineAnchor.AddManipulator(m_Resizer);
 

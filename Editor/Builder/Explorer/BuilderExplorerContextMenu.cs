@@ -10,6 +10,8 @@ namespace Unity.UI.Builder
         private Builder m_Builder;
         private BuilderSelection m_Selection;
 
+        private bool m_WeStartedTheDrag;
+
         List<ManipulatorActivationFilter> activators { get; set; }
         ManipulatorActivationFilter m_CurrentActivator;
 
@@ -17,6 +19,8 @@ namespace Unity.UI.Builder
         {
             m_Builder = builder;
             m_Selection = selection;
+
+            m_WeStartedTheDrag = false;
 
             activators = new List<ManipulatorActivationFilter>();
             activators.Add(new ManipulatorActivationFilter { button = MouseButton.RightMouse });
@@ -46,18 +50,20 @@ namespace Unity.UI.Builder
 
         private void OnMouseDown(MouseDownEvent evt)
         {
+            if (!CanStartManipulation(evt))
+                return;
+
             var target = evt.currentTarget as VisualElement;
-            if (CanStartManipulation(evt))
-            {
-                target.CaptureMouse();
-            }
+            target.CaptureMouse();
+            m_WeStartedTheDrag = true;
+            evt.StopPropagation();
         }
 
         private void OnMouseUp(MouseUpEvent evt)
         {
             var target = evt.currentTarget as VisualElement;
 
-            if (!target.HasMouseCapture())
+            if (!target.HasMouseCapture() || !m_WeStartedTheDrag)
                 return;
 
             if (!CanStopManipulation(evt))
@@ -70,6 +76,7 @@ namespace Unity.UI.Builder
             }
 
             target.ReleaseMouse();
+            m_WeStartedTheDrag = false;
             evt.StopPropagation();
         }
 
@@ -101,7 +108,7 @@ namespace Unity.UI.Builder
         {
             var item = target.userData as VisualElement;
 
-            var isValidTarget = item != null && item.IsPartOfCurrentDocument();
+            var isValidTarget = item != null && (item.IsPartOfCurrentDocument() || item.GetStyleComplexSelector() != null);
             if (isValidTarget)
                 evt.StopImmediatePropagation();
 
@@ -110,7 +117,7 @@ namespace Unity.UI.Builder
                 a =>
                 {
                     m_Selection.Select(null, item);
-                    if (item.IsPartOfCurrentDocument())
+                    if (item.IsPartOfCurrentDocument() || item.GetStyleComplexSelector() != null)
                         m_Builder.commandHandler.PerformActionOnSelection(
                             m_Builder.commandHandler.CopyElement,
                             m_Builder.commandHandler.ClearCopyBuffer);
@@ -143,7 +150,7 @@ namespace Unity.UI.Builder
 
                     itemElement.ActivateRenameElementMode();
                 },
-                isValidTarget
+                item != null && item.IsPartOfCurrentDocument()
                     ? DropdownMenuAction.Status.Normal
                     : DropdownMenuAction.Status.Disabled);
 
@@ -152,7 +159,7 @@ namespace Unity.UI.Builder
                 a =>
                 {
                     m_Selection.Select(null, item);
-                    if (item.IsPartOfCurrentDocument())
+                    if (item.IsPartOfCurrentDocument() || item.GetStyleComplexSelector() != null)
                         m_Builder.commandHandler.PerformActionOnSelection(
                             m_Builder.commandHandler.DuplicateElement,
                             m_Builder.commandHandler.ClearCopyBuffer,

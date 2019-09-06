@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -10,17 +8,39 @@ namespace Unity.UI.Builder
         private Vector2 m_Start;
         protected bool m_Active;
         private TwoPaneSplitView m_SplitView;
-        private VisualElement m_Pane;
+
         private int m_Direction;
-        private float m_MinWidth;
         private TwoPaneSplitView.Orientation m_Orientation;
 
-        public TwoPaneSplitViewResizer(TwoPaneSplitView splitView, int dir, float minWidth, TwoPaneSplitView.Orientation orientation)
+        private VisualElement fixedPane => m_SplitView.fixedPane;
+        private VisualElement flexedPane => m_SplitView.flexedPane;
+
+        private float fixedPaneMinDimension
+        {
+            get
+            {
+                if (m_Orientation == TwoPaneSplitView.Orientation.Horizontal)
+                    return fixedPane.resolvedStyle.minWidth.value;
+                else
+                    return fixedPane.resolvedStyle.minHeight.value;
+            }
+        }
+
+        private float flexedPaneMinDimension
+        {
+            get
+            {
+                if (m_Orientation == TwoPaneSplitView.Orientation.Horizontal)
+                    return flexedPane.resolvedStyle.minWidth.value;
+                else
+                    return flexedPane.resolvedStyle.minHeight.value;
+            }
+        }
+
+        public TwoPaneSplitViewResizer(TwoPaneSplitView splitView, int dir, TwoPaneSplitView.Orientation orientation)
         {
             m_Orientation = orientation;
-            m_MinWidth = minWidth;
             m_SplitView = splitView;
-            m_Pane = splitView.fixedPane;
             m_Direction = dir;
             activators.Add(new ManipulatorActivationFilter { button = MouseButton.LeftMouse });
             m_Active = false;
@@ -43,22 +63,23 @@ namespace Unity.UI.Builder
         public void ApplyDelta(float delta)
         {
             float oldDimension = m_Orientation == TwoPaneSplitView.Orientation.Horizontal
-                ? m_Pane.resolvedStyle.width
-                : m_Pane.resolvedStyle.height;
+                ? fixedPane.resolvedStyle.width
+                : fixedPane.resolvedStyle.height;
             float newDimension = oldDimension + delta;
 
-            if (newDimension < oldDimension && newDimension < m_MinWidth)
-                newDimension = m_MinWidth;
+            if (newDimension < oldDimension && newDimension < fixedPaneMinDimension)
+                newDimension = fixedPaneMinDimension;
 
-            float maxLength = m_Orientation == TwoPaneSplitView.Orientation.Horizontal
+            float maxDimension = m_Orientation == TwoPaneSplitView.Orientation.Horizontal
                 ? m_SplitView.resolvedStyle.width
                 : m_SplitView.resolvedStyle.height;
-            if (newDimension > oldDimension && newDimension > maxLength)
-                newDimension = maxLength;
+            maxDimension -= flexedPaneMinDimension;
+            if (newDimension > oldDimension && newDimension > maxDimension)
+                newDimension = maxDimension;
 
             if (m_Orientation == TwoPaneSplitView.Orientation.Horizontal)
             {
-                m_Pane.style.width = newDimension;
+                fixedPane.style.width = newDimension;
                 if (m_SplitView.fixedPaneIndex == 0)
                     target.style.left = newDimension;
                 else
@@ -66,7 +87,7 @@ namespace Unity.UI.Builder
             }
             else
             {
-                m_Pane.style.height = newDimension;
+                fixedPane.style.height = newDimension;
                 if (m_SplitView.fixedPaneIndex == 0)
                     target.style.top = newDimension;
                 else

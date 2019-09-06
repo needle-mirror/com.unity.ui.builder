@@ -9,16 +9,26 @@ namespace Unity.UI.Builder
 {
     internal static class StyleSheetExtensions
     {
-        internal static StyleSheet DeepCopy(this StyleSheet styleSheet)
+        public static StyleSheet DeepCopy(this StyleSheet styleSheet)
         {
+            if (styleSheet == null)
+                return null;
+
             var newStyleSheet = StyleSheetUtilities.CreateInstance();
 
-            var json = JsonUtility.ToJson(styleSheet);
-            JsonUtility.FromJsonOverwrite(json, newStyleSheet);
-
-            newStyleSheet.FixRuleReferences();
+            styleSheet.DeepOverwrite(newStyleSheet);
 
             return newStyleSheet;
+        }
+
+        public static void DeepOverwrite(this StyleSheet styleSheet, StyleSheet other)
+        {
+            var json = JsonUtility.ToJson(styleSheet);
+            JsonUtility.FromJsonOverwrite(json, other);
+
+            other.FixRuleReferences();
+
+            other.name = styleSheet.name;
         }
 
         public static void FixRuleReferences(this StyleSheet styleSheet)
@@ -168,6 +178,50 @@ namespace Unity.UI.Builder
         {
             var selector = styleSheet.FindSelector(BuilderConstants.SelectedStyleSheetSelectorName);
             return selector != null;
+        }
+
+        private static void SwallowStyleRule(
+            StyleSheet toStyleSheet, StyleComplexSelector toSelector,
+            StyleSheet fromStyleSheet, StyleComplexSelector fromSelector)
+        {
+            var fromRule = fromSelector.rule;
+
+            // Add property values to sheet.
+            foreach (var fromProperty in fromRule.properties)
+            {
+                var toProperty = toStyleSheet.AddProperty(toSelector, fromProperty.name);
+                for (int i = 0; i < fromProperty.values.Length; ++i)
+                {
+                    var fromValueHandle = fromProperty.values[i];
+                    var toValueIndex = toStyleSheet.SwallowStyleValue(fromStyleSheet, fromValueHandle);
+                    toStyleSheet.AddValueHandle(toProperty, toValueIndex, fromValueHandle.valueType);
+                }
+            }
+        }
+
+        public static void Swallow(this StyleSheet toStyleSheet, StyleSheet fromStyleSheet)
+        {
+            foreach (var fromSelector in fromStyleSheet.complexSelectors)
+            {
+                var toSelector = toStyleSheet.AddSelector(StyleSheetToUss.ToUssSelector(fromSelector));
+                SwallowStyleRule(toStyleSheet, toSelector, fromStyleSheet, fromSelector);
+            }
+        }
+
+        public static void ClearUndo(this StyleSheet styleSheet)
+        {
+            if (styleSheet == null)
+                return;
+
+            Undo.ClearUndo(styleSheet);
+        }
+
+        public static void Destroy(this StyleSheet styleSheet)
+        {
+            if (styleSheet == null)
+                return;
+
+            ScriptableObject.DestroyImmediate(styleSheet);
         }
     }
 }

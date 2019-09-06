@@ -50,12 +50,14 @@ namespace Unity.UI.Builder
 
         public BuilderExplorerNewSelectorElement(StyleSheet styleSheet)
         {
+            AddToClassList(BuilderConstants.ExplorerItemUnselectableClassName);
+
             m_StyleSheet = styleSheet;
             m_ExplorerItemTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
-                BuilderConstants.UIBuilderPackagePath + "/Builder/Explorer/BuilderExplorerNewSelectorItem.uxml");
+                BuilderConstants.UIBuilderPackagePath + "/Explorer/BuilderExplorerNewSelectorItem.uxml");
 
             Action<VisualElement, ITreeViewItem, BuilderSelection> action = CreateInExplorerAddSimpleSelectorButton;
-            SetProperty( BuilderConstants.ExplorerItemFillItemCallbackVEPropertyName, action);
+            SetProperty(BuilderConstants.ExplorerItemFillItemCallbackVEPropertyName, action);
         }
 
         static void HideShowStateMaskField(MaskField maskField, NewSelectorMode newSelectorMode)

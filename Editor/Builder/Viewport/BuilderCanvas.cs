@@ -25,9 +25,31 @@ namespace Unity.UI.Builder
 
         public override VisualElement contentContainer => m_Container;
 
+        public float width
+        {
+            get { return m_SavedWidth; }
+            set
+            {
+                style.width = value;
+                m_SavedWidth = value;
+                SaveViewData();
+            }
+        }
+
+        public float height
+        {
+            get { return m_SavedHeight; }
+            set
+            {
+                style.height = value;
+                m_SavedHeight = value;
+                SaveViewData();
+            }
+        }
+
         public BuilderCanvas()
         {
-            var builderTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(BuilderConstants.UIBuilderPackagePath + "/Builder/BuilderCanvas.uxml");
+            var builderTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(BuilderConstants.UIBuilderPackagePath + "/BuilderCanvas.uxml");
             builderTemplate.CloneTree(this);
 
             m_Container = this.Q("content-container");

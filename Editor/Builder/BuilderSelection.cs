@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine.UIElements;
 using UnityEngine.UIElements.StyleSheets;
 
@@ -209,6 +210,10 @@ namespace Unity.UI.Builder
 
             m_Builder.document.RefreshStyle(m_DocumentElement);
 
+            // This is so anyone interested can refresh their use of this UXML with
+            // the latest (unsaved to disk) changes.
+            EditorUtility.SetDirty(m_Builder.document.visualTreeAsset);
+
             foreach (var notifier in m_Notifiers)
                 if (notifier != source)
                     notifier.HierarchyChanged(element, changeType);
@@ -240,6 +245,11 @@ namespace Unity.UI.Builder
 
         public void NotifyOfStylingChangePostStylingUpdate()
         {
+            // This is so anyone interested can refresh their use of this USS with
+            // the latest (unsaved to disk) changes.
+            //RetainedMode.FlagStyleSheetChange(); // Works but TOO SLOW.
+            EditorUtility.SetDirty(m_Builder.document.mainStyleSheet);
+
             foreach (var notifier in m_Notifiers)
                 if (notifier != m_CurrentNotifier)
                     notifier.StylingChanged(m_CurrentStyleList);

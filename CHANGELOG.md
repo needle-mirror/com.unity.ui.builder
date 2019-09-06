@@ -4,6 +4,31 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2019-09-06
+
+- Major rework of the document managment to allow live updates where the assets are being used (Editor and Runtime). The UI Builder now operates directly on the imported assets, instead of copies.
+- Added copy/paste/cut/duplicate support for USS Selectors, including pasting to/from a text file.
+- (2019.3+) Added support for the "src" attribute in UXML for the <Style> and <Template> tags. A relative path to a .uss or .uxml asset will be used if the asset is in the same folder (directly or in a subfolder) as the main asset. Otherwise, an absolute path will be used.
+- Style category headers will now have an override bar and bold font if any child styles are overridden.
+- Added the ability to select elements inside a Template instance or a C# element. When selecting such an element, all fields in the Inspector will be disabled. Also, such selections are only allowed in the Explorer, not the Canvas.
+- Added "Fit Canvas" button in the Viewport that appears when the Canvas is bigger than the Viewport (an previously unrecoverable state), and that will resize the Canvas to fit the Viewport.
+- Changed the options for the unsaved changes dialog on exit/new from "Yes" and "Cancel" to "Discard" and "Go Back", respectively.
+- Fixed infinite recursion when instancing a UXML template within itself by disabling the currently open UXML file entry in the Library.
+- Fixed being able to select the In-Explorer New Selector field/buttons row.
+- Fixed Inspector scroll position resetting after undo/redo, selection change, and window reloads.
+- Fixed Inspector foldouts sometimes not preserving expanded states properly.
+- Fixed being able to resize panes until they are no longer visible. All panes now have enforced minimum dimensions.
+- Fixed the Inspector binding to the wrong USS Selector when inspecting duplicate selectors (same selector string).
+- Fixed error when saving new files to a folder that does not exit. Folders will now be created if missing.
+- Fixed length styles with 0 as their value no longer getting "px" added.
+- Fixed getting stuck navigating with the arrow keys in the Hieararchy when encountering an expanded Template instance of C# element.
+- Fixed immediate de-selection of selected item in Explorer if clicking to the left of the tree item arrow.
+- Fixed some items in the Explorer incorrectly appearing grayed out sometimes.
+- Fixed folders directly inside the Assets folder appearing at the root of the Library Project tree.
+- Fixed aggregate dimension fields (FoldoutWithField) not setting values properly if values were not previously set.
+- (2019.3+) Fixed handling of user-made USS loaded with length properties that are missing units (and being loaded as floats).
+- (2019.3+) Fixed aggregate dimension fields (FoldoutWithField) throwing null exceptions if values were not previously set.
+
 ## [0.6.2] - 2019-08-29
 
 - Fixed long style class name appearance in the Builder Pills. Long names will now be capped and an ellipsis (...) added.
