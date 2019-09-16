@@ -3,15 +3,15 @@
     <VisualElement name="viewport-wrapper" class="unity-builder-viewport__viewport-wrapper">
         <VisualElement name="viewport" class="unity-builder-viewport__viewport">
             <uib:BuilderCanvas name="canvas" view-data-key="unity-buidler-viewport__canvas" class="unity-builder-viewport__canvas">
-                <VisualElement name="shared-styles-and-document" class="unity-builder-viewport__shared-styles-and-document">
+                <VisualElement name="shared-styles-and-document" class="unity-builder-viewport__shared-styles-and-document unity-builder-viewport__canvas-layer">
                     <VisualElement name="__unity-selector-container-element" class="unity-builder-viewport__shared-styles">
 
                     </VisualElement>
-                    <VisualElement name="document" class="unity-builder-viewport__document">
+                    <VisualElement name="document" class="unity-builder-viewport__document unity-builder-viewport__canvas-layer">
 
                     </VisualElement>
                 </VisualElement>
-                <VisualElement name="pick-overlay" class="unity-builder-viewport__pick-overlay">
+                <VisualElement name="pick-overlay" class="unity-builder-viewport__pick-overlay unity-builder-viewport__canvas-layer">
                     <uib:BuilderParentTracker name="parent-tracker" />
                     <uib:BuilderAnchorer name="anchorer" />
                     <uib:BuilderResizer name="resizer" />

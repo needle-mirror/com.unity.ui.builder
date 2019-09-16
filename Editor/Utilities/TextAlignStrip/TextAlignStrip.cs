@@ -8,22 +8,22 @@ namespace Unity.UI.Builder
 {
     internal class TextAlignStrip : BaseField<string>, IToggleButtonStrip
     {
-        private static readonly string s_UssPath = BuilderConstants.UtilitiesPath + "/TextAlignStrip/TextAlignStrip.uss";
+        static readonly string s_UssPath = BuilderConstants.UtilitiesPath + "/TextAlignStrip/TextAlignStrip.uss";
 
-        private static readonly string s_UssClassName = "unity-text-align-strip";
-        private static readonly string s_ButtonStripContainerClassName = s_UssClassName + "__button-strip-container";
+        static readonly string s_UssClassName = "unity-text-align-strip";
+        static readonly string s_ButtonStripContainerClassName = s_UssClassName + "__button-strip-container";
 
-        private static readonly List<string> s_HorizontalChoices = new List<string>() { "left", "center", "right" };
-        private static readonly List<string> s_VerticalChoices = new List<string>() { "upper", "middle", "lower" };
+        static readonly List<string> s_HorizontalChoices = new List<string>() { "left", "center", "right" };
+        static readonly List<string> s_VerticalChoices = new List<string>() { "upper", "middle", "lower" };
 
         public new class UxmlFactory : UxmlFactory<TextAlignStrip, UxmlTraits> { }
 
-        private VisualElement m_ButtonStripContainer;
-        private ToggleButtonStrip m_HorizontalButtonStrip;
-        private ToggleButtonStrip m_VerticalButtonStrip;
+        VisualElement m_ButtonStripContainer;
+        ToggleButtonStrip m_HorizontalButtonStrip;
+        ToggleButtonStrip m_VerticalButtonStrip;
 
-        private List<string> m_Choices = new List<string>();
-        private List<string> m_Labels = new List<string>();
+        List<string> m_Choices = new List<string>();
+        List<string> m_Labels = new List<string>();
 
         public IEnumerable<string> choices
         {
@@ -90,14 +90,14 @@ namespace Unity.UI.Builder
             m_HorizontalButtonStrip.SetValueWithoutNotify(values[1]);
         }
 
-        private void OnHorizontalValueChange(ChangeEvent<string> evt)
+        void OnHorizontalValueChange(ChangeEvent<string> evt)
         {
             var newValue = m_VerticalButtonStrip.value + "-" + evt.newValue;
             evt.StopPropagation();
             value = newValue;
         }
 
-        private void OnVerticalValueChange(ChangeEvent<string> evt)
+        void OnVerticalValueChange(ChangeEvent<string> evt)
         {
             var newValue = evt.newValue + "-" + m_HorizontalButtonStrip.value;
             evt.StopPropagation();

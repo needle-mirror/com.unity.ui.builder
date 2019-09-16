@@ -6,11 +6,11 @@ namespace Unity.UI.Builder
 {
     internal class ModalPopup : VisualElement
     {
-        private static readonly string s_UssClassName = "unity-modal-popup";
-        private static readonly string s_InvisibleClassName = "unity-modal-popup--invisible";
+        static readonly string s_UssClassName = "unity-modal-popup";
+        static readonly string s_InvisibleClassName = "unity-modal-popup--invisible";
 
-        private Label m_Title;
-        private VisualElement m_Container;
+        Label m_Title;
+        VisualElement m_Container;
 
         public new class UxmlFactory : UxmlFactory<ModalPopup, UxmlTraits> { }
 
@@ -72,12 +72,12 @@ namespace Unity.UI.Builder
             AddToClassList(s_InvisibleClassName);
         }
 
-        private void HideOnClick(MouseUpEvent evt)
+        void HideOnClick(MouseUpEvent evt)
         {
             Hide();
         }
 
-        private void StopPropagation(MouseUpEvent evt)
+        void StopPropagation(MouseUpEvent evt)
         {
             evt.StopPropagation();
         }

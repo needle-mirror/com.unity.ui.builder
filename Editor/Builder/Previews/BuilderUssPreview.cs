@@ -5,7 +5,7 @@ namespace Unity.UI.Builder
 {
     internal class BuilderUssPreview : BuilderCodePreview, IBuilderSelectionNotifier
     {
-        private Builder m_Builder;
+        Builder m_Builder;
 
         public BuilderUssPreview(Builder builder)
         {

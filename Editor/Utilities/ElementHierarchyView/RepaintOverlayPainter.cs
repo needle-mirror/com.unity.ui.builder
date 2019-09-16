@@ -5,9 +5,9 @@ namespace Unity.UI.Builder
 {
     internal class RepaintOverlayPainter : BaseOverlayPainter
     {
-        private static readonly Color kRepaintColor = Color.green;
-        private static readonly float kOverlayFadeOut = 0.01f;
-        private static readonly float kDefaultRepaintAlpha = 0.2f;
+        static readonly Color kRepaintColor = Color.green;
+        static readonly float kOverlayFadeOut = 0.01f;
+        static readonly float kDefaultRepaintAlpha = 0.2f;
 
         public void AddOverlay(VisualElement ve)
         {

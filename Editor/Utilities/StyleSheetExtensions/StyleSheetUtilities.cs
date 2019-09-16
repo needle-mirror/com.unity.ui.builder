@@ -10,7 +10,7 @@ namespace Unity.UI.Builder
         public static readonly PropertyInfo[] ComputedStylesFieldInfos =
             typeof(ComputedStyle).GetProperties(BindingFlags.Instance | BindingFlags.Public);
 
-        private readonly static StyleSheetImporterImpl s_StyleSheetImporter = new StyleSheetImporterImpl();
+        readonly static StyleSheetImporterImpl s_StyleSheetImporter = new StyleSheetImporterImpl();
 
         public static StyleSheet CreateInstance()
         {

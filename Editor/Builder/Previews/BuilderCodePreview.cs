@@ -6,24 +6,24 @@ namespace Unity.UI.Builder
 {
     internal class BuilderCodePreview : BuilderPaneContent
     {
-        private static readonly string s_UssClassName = "unity-builder-code-preview";
-        private static readonly string s_CodeScrollViewClassName = "unity-builder-code__scroll-view";
-        private static readonly string s_CodeContainerClassName = "unity-builder-code__container";
-        private static readonly string s_CodeName = "unity-builder-code__code";
-        private static readonly string s_CodeClassName = "unity-builder-code__code";
-        private static readonly string s_CodeLineNumbersClassName = "unity-builder-code__code-line-numbers";
-        private static readonly string s_CodeTextClassName = "unity-builder-code__code-text";
-        private static readonly string s_CodeInputClassName = "unity-builder-code__input";
-        private static readonly string s_CodeCodeOuterContainerClassName = "unity-builder-code__code_outer_container";
-        private static readonly string s_CodeCodeContainerClassName = "unity-builder-code__code_container";
+        static readonly string s_UssClassName = "unity-builder-code-preview";
+        static readonly string s_CodeScrollViewClassName = "unity-builder-code__scroll-view";
+        static readonly string s_CodeContainerClassName = "unity-builder-code__container";
+        static readonly string s_CodeName = "unity-builder-code__code";
+        static readonly string s_CodeClassName = "unity-builder-code__code";
+        static readonly string s_CodeLineNumbersClassName = "unity-builder-code__code-line-numbers";
+        static readonly string s_CodeTextClassName = "unity-builder-code__code-text";
+        static readonly string s_CodeInputClassName = "unity-builder-code__input";
+        static readonly string s_CodeCodeOuterContainerClassName = "unity-builder-code__code_outer_container";
+        static readonly string s_CodeCodeContainerClassName = "unity-builder-code__code_container";
 
-        private ScrollView m_ScrollView;
+        ScrollView m_ScrollView;
 
-        private VisualElement m_Container;
-        private VisualElement m_CodeContainer;
-        private VisualElement m_CodeOuterContainer;
-        private TextField m_Code;
-        private Label m_LineNumbers;
+        VisualElement m_Container;
+        VisualElement m_CodeContainer;
+        VisualElement m_CodeOuterContainer;
+        TextField m_Code;
+        Label m_LineNumbers;
 
         public BuilderCodePreview()
         {

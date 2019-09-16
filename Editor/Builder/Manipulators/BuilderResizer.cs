@@ -7,13 +7,13 @@ namespace Unity.UI.Builder
 {
     class BuilderResizer : BuilderTransformer
     {
-        private static readonly string s_UssClassName = "unity-builder-resizer";
-        private static readonly int s_HighlightHandleOnInspectorChangeDelayMS = 250;
+        static readonly string s_UssClassName = "unity-builder-resizer";
+        static readonly int s_HighlightHandleOnInspectorChangeDelayMS = 250;
 
         IVisualElementScheduledItem m_UndoWidthHighlightScheduledItem;
         IVisualElementScheduledItem m_UndoHeightHighlightScheduledItem;
 
-        private Dictionary<string, VisualElement> m_HandleElements;
+        Dictionary<string, VisualElement> m_HandleElements;
 
         public new class UxmlFactory : UxmlFactory<BuilderResizer, UxmlTraits> { }
 
@@ -61,7 +61,7 @@ namespace Unity.UI.Builder
             m_UndoHeightHighlightScheduledItem.Pause();
         }
 
-        private void OnDrag(
+        void OnDrag(
             TrackedStyle primaryStyle,
             float onStartDragLength,
             float onStartDragPrimary,
@@ -105,7 +105,7 @@ namespace Unity.UI.Builder
             }
         }
 
-        private void OnDragTop(Vector2 diff, List<string> changeList)
+        void OnDragTop(Vector2 diff, List<string> changeList)
         {
             OnDrag(
                 TrackedStyle.Top,
@@ -118,7 +118,7 @@ namespace Unity.UI.Builder
             style.top = m_ThisRectOnStartDrag.y + diff.y;
         }
 
-        private void OnDragLeft(Vector2 diff, List<string> changeList)
+        void OnDragLeft(Vector2 diff, List<string> changeList)
         {
             OnDrag(
                 TrackedStyle.Left,
@@ -131,7 +131,7 @@ namespace Unity.UI.Builder
             style.left = m_ThisRectOnStartDrag.x + diff.x;
         }
 
-        private void OnDragBottom(Vector2 diff, List<string> changeList)
+        void OnDragBottom(Vector2 diff, List<string> changeList)
         {
             OnDrag(
                 TrackedStyle.Bottom,
@@ -143,7 +143,7 @@ namespace Unity.UI.Builder
             style.height = m_ThisRectOnStartDrag.height + diff.y;
         }
 
-        private void OnDragRight(Vector2 diff, List<string> changeList)
+        void OnDragRight(Vector2 diff, List<string> changeList)
         {
             OnDrag(
                 TrackedStyle.Right,
@@ -155,41 +155,41 @@ namespace Unity.UI.Builder
             style.width = m_ThisRectOnStartDrag.width + diff.x;
         }
 
-        private void NotifySelection()
+        void NotifySelection()
         {
             m_Selection.NotifyOfStylingChange(this, m_ScratchChangeList);
             m_Selection.NotifyOfHierarchyChange(this, m_Target, BuilderHierarchyChangeType.InlineStyle);
         }
 
-        private void OnDragTop(Vector2 diff)
+        void OnDragTop(Vector2 diff)
         {
             m_ScratchChangeList.Clear();
             OnDragTop(diff, m_ScratchChangeList);
             NotifySelection();
         }
 
-        private void OnDragLeft(Vector2 diff)
+        void OnDragLeft(Vector2 diff)
         {
             m_ScratchChangeList.Clear();
             OnDragLeft(diff, m_ScratchChangeList);
             NotifySelection();
         }
 
-        private void OnDragBottom(Vector2 diff)
+        void OnDragBottom(Vector2 diff)
         {
             m_ScratchChangeList.Clear();
             OnDragBottom(diff, m_ScratchChangeList);
             NotifySelection();
         }
 
-        private void OnDragRight(Vector2 diff)
+        void OnDragRight(Vector2 diff)
         {
             m_ScratchChangeList.Clear();
             OnDragRight(diff, m_ScratchChangeList);
             NotifySelection();
         }
 
-        private void OnDragTopLeft(Vector2 diff)
+        void OnDragTopLeft(Vector2 diff)
         {
             m_ScratchChangeList.Clear();
             OnDragTop(diff, m_ScratchChangeList);
@@ -197,7 +197,7 @@ namespace Unity.UI.Builder
             NotifySelection();
         }
 
-        private void OnDragTopRight(Vector2 diff)
+        void OnDragTopRight(Vector2 diff)
         {
             m_ScratchChangeList.Clear();
             OnDragTop(diff, m_ScratchChangeList);
@@ -205,7 +205,7 @@ namespace Unity.UI.Builder
             NotifySelection();
         }
 
-        private void OnDragBottomLeft(Vector2 diff)
+        void OnDragBottomLeft(Vector2 diff)
         {
             m_ScratchChangeList.Clear();
             OnDragBottom(diff, m_ScratchChangeList);
@@ -213,7 +213,7 @@ namespace Unity.UI.Builder
             NotifySelection();
         }
 
-        private void OnDragBottomRight(Vector2 diff)
+        void OnDragBottomRight(Vector2 diff)
         {
             m_ScratchChangeList.Clear();
             OnDragBottom(diff, m_ScratchChangeList);
@@ -221,13 +221,13 @@ namespace Unity.UI.Builder
             NotifySelection();
         }
 
-        private void UndoWidthHighlight()
+        void UndoWidthHighlight()
         {
             m_HandleElements["left-handle"].pseudoStates &= ~PseudoStates.Hover;
             m_HandleElements["right-handle"].pseudoStates &= ~PseudoStates.Hover;
         }
 
-        private void UndoHeightHighlight()
+        void UndoHeightHighlight()
         {
             m_HandleElements["top-handle"].pseudoStates &= ~PseudoStates.Hover;
             m_HandleElements["bottom-handle"].pseudoStates &= ~PseudoStates.Hover;

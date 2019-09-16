@@ -8,12 +8,12 @@ namespace Unity.UI.Builder
 {
     class BuilderTransformer : BuilderManipulator
     {
-        private static readonly string s_UssClassName = "unity-builder-transformer";
-        private static readonly string s_ActiveHandleClassName = "unity-builder-transformer--active";
+        static readonly string s_UssClassName = "unity-builder-transformer";
+        static readonly string s_ActiveHandleClassName = "unity-builder-transformer--active";
 
         protected List<string> m_ScratchChangeList;
 
-        private VisualElement m_DragHoverCoverLayer;
+        VisualElement m_DragHoverCoverLayer;
 
         protected float m_TargetCorrectedBottomOnStartDrag;
         protected float m_TargetCorrectedRightOnStartDrag;
@@ -46,11 +46,19 @@ namespace Unity.UI.Builder
             m_TargetRectOnStartDrag.y -= targetMarginTop;
             m_TargetRectOnStartDrag.x -= targetMarginLeft;
 
+            // Adjust for parent borders.
+            var parentBorderTop = m_Target.parent.resolvedStyle.borderTopWidth;
+            var parentBorderLeft = m_Target.parent.resolvedStyle.borderLeftWidth;
+            var parentBorderBottom = m_Target.parent.resolvedStyle.borderBottomWidth;
+            var parentBorderRight = m_Target.parent.resolvedStyle.borderRightWidth;
+            m_TargetRectOnStartDrag.y -= parentBorderTop;
+            m_TargetRectOnStartDrag.x -= parentBorderLeft;
+
             var parentRect = m_Target.parent.layout;
             m_TargetCorrectedBottomOnStartDrag =
-                parentRect.height - m_TargetRectOnStartDrag.yMax - targetMarginTop - targetMarginBottom;
+                parentRect.height - m_TargetRectOnStartDrag.yMax - targetMarginTop - targetMarginBottom - parentBorderTop - parentBorderBottom;
             m_TargetCorrectedRightOnStartDrag =
-                parentRect.width - m_TargetRectOnStartDrag.xMax - targetMarginLeft - targetMarginRight;
+                parentRect.width - m_TargetRectOnStartDrag.xMax - targetMarginLeft - targetMarginRight - parentBorderLeft - parentBorderRight;
 
             // This is a bit of a hack since the base class constructor always runs before
             // the child class' constructor, therefore, our hover overlay will be first
@@ -69,7 +77,7 @@ namespace Unity.UI.Builder
 
         protected class Manipulator : MouseManipulator
         {
-            private Vector2 m_Start;
+            Vector2 m_Start;
             protected bool m_Active;
 
             Action<VisualElement> m_StartDrag;

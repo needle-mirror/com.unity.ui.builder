@@ -7,10 +7,10 @@ namespace Unity.UI.Builder
 {
     internal class BuilderExplorerContextMenu
     {
-        private Builder m_Builder;
-        private BuilderSelection m_Selection;
+        Builder m_Builder;
+        BuilderSelection m_Selection;
 
-        private bool m_WeStartedTheDrag;
+        bool m_WeStartedTheDrag;
 
         List<ManipulatorActivationFilter> activators { get; set; }
         ManipulatorActivationFilter m_CurrentActivator;
@@ -38,7 +38,7 @@ namespace Unity.UI.Builder
             target.RegisterCallback<DetachFromPanelEvent>(UnregisterCallbacksFromTarget);
         }
 
-        private void UnregisterCallbacksFromTarget(DetachFromPanelEvent evt)
+        void UnregisterCallbacksFromTarget(DetachFromPanelEvent evt)
         {
             var target = evt.target as VisualElement;
 
@@ -48,7 +48,7 @@ namespace Unity.UI.Builder
             target.UnregisterCallback<DetachFromPanelEvent>(UnregisterCallbacksFromTarget);
         }
 
-        private void OnMouseDown(MouseDownEvent evt)
+        void OnMouseDown(MouseDownEvent evt)
         {
             if (!CanStartManipulation(evt))
                 return;
@@ -59,7 +59,7 @@ namespace Unity.UI.Builder
             evt.StopPropagation();
         }
 
-        private void OnMouseUp(MouseUpEvent evt)
+        void OnMouseUp(MouseUpEvent evt)
         {
             var target = evt.currentTarget as VisualElement;
 
@@ -80,7 +80,7 @@ namespace Unity.UI.Builder
             evt.StopPropagation();
         }
 
-        private bool CanStartManipulation(IMouseEvent evt)
+        bool CanStartManipulation(IMouseEvent evt)
         {
             foreach (var activator in activators)
             {
@@ -94,7 +94,7 @@ namespace Unity.UI.Builder
             return false;
         }
 
-        private bool CanStopManipulation(IMouseEvent evt)
+        bool CanStopManipulation(IMouseEvent evt)
         {
             if (evt == null)
             {

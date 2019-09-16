@@ -8,13 +8,13 @@ namespace Unity.UI.Builder
         BuilderInspector m_Inspector;
         BuilderSelection m_Selection;
 
-        private PersistedFoldout m_StyleSelectorSection;
-        private TextField m_StyleSelectorNameField;
+        PersistedFoldout m_StyleSelectorSection;
+        TextField m_StyleSelectorNameField;
 
         public VisualElement root => m_StyleSelectorSection;
 
-        private StyleSheet styleSheet => m_Inspector.styleSheet;
-        private VisualElement currentVisualElement => m_Inspector.currentVisualElement;
+        StyleSheet styleSheet => m_Inspector.styleSheet;
+        VisualElement currentVisualElement => m_Inspector.currentVisualElement;
 
         public BuilderInspectorSelector(BuilderInspector inspector)
         {
@@ -27,7 +27,7 @@ namespace Unity.UI.Builder
             m_StyleSelectorNameField.RegisterValueChangedCallback(OnStyleSelectorNameChange);
         }
 
-        private void OnStyleSelectorNameChange(ChangeEvent<string> evt)
+        void OnStyleSelectorNameChange(ChangeEvent<string> evt)
         {
             if (m_Selection.selectionType != BuilderSelectionType.StyleSelector)
                 return;

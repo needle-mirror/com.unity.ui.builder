@@ -8,33 +8,53 @@ namespace Unity.UI.Builder
 {
     internal class BuilderViewport : BuilderPaneContent, IBuilderSelectionNotifier
     {
-        private static readonly string s_PreviewModeClassName = "unity-builder-viewport--preview";
-        private static readonly float s_CanvasViewportMinWidthDiff = 30;
-        private static readonly float s_CanvasViewportMinHeightDiff = 36;
+        static readonly string s_PreviewModeClassName = "unity-builder-viewport--preview";
+        static readonly float s_CanvasViewportMinWidthDiff = 30;
+        static readonly float s_CanvasViewportMinHeightDiff = 36;
 
-        private Builder m_Builder;
+        Builder m_Builder;
 
-        private VisualElement m_Toolbar;
-        private VisualElement m_ViewportWrapper;
-        private VisualElement m_Viewport;
-        private BuilderCanvas m_Canvas;
-        private VisualElement m_SharedStylesAndDocumentElement;
-        private VisualElement m_DocumentElement;
-        private VisualElement m_PickOverlay;
-        private VisualElement m_HighlightOverlay;
-        private BuilderParentTracker m_BuilderParentTracker;
-        private BuilderResizer m_BuilderResizer;
-        private BuilderMover m_BuilderMover;
-        private BuilderAnchorer m_BuilderAnchorer;
-        private Button m_FitCanvasButton;
+        VisualElement m_Toolbar;
+        VisualElement m_ViewportWrapper;
+        VisualElement m_Viewport;
+        BuilderCanvas m_Canvas;
+        VisualElement m_SharedStylesAndDocumentElement;
+        VisualElement m_DocumentElement;
+        VisualElement m_PickOverlay;
+        VisualElement m_HighlightOverlay;
+        BuilderParentTracker m_BuilderParentTracker;
+        BuilderResizer m_BuilderResizer;
+        BuilderMover m_BuilderMover;
+        BuilderAnchorer m_BuilderAnchorer;
+        Button m_FitCanvasButton;
 
-        private BuilderSelection m_Selection;
+        BuilderSelection m_Selection;
 
-        private List<VisualElement> m_MatchingExplorerItems = new List<VisualElement>();
+        List<VisualElement> m_MatchingExplorerItems = new List<VisualElement>();
 
         public VisualElement toolbar
         {
             get { return m_Toolbar; }
+        }
+
+        public BuilderCanvas canvas => m_Canvas;
+
+        string m_SubTitle;
+        public string subTitle
+        {
+            get
+            {
+                if (pane == null)
+                    return m_SubTitle;
+                else
+                    return pane.subTitle;
+            }
+            set
+            {
+                m_SubTitle = value;
+                if (pane != null)
+                    pane.subTitle = value;
+            }
         }
 
         public BuilderParentTracker parentTracker
@@ -76,6 +96,7 @@ namespace Unity.UI.Builder
             m_ViewportWrapper = this.Q("viewport-wrapper");
             m_Viewport = this.Q("viewport");
             m_Canvas = this.Q<BuilderCanvas>("canvas");
+            m_Canvas.document = builder.document;
             m_SharedStylesAndDocumentElement = this.Q("shared-styles-and-document");
             m_DocumentElement = this.Q("document");
             m_PickOverlay = this.Q("pick-overlay");
@@ -102,7 +123,14 @@ namespace Unity.UI.Builder
             this.focusable = true;
         }
 
-        private void FitCanvas()
+        protected override void ExecuteDefaultAction(EventBase evt)
+        {
+            base.ExecuteDefaultAction(evt);
+
+            pane.subTitle = m_SubTitle;
+        }
+
+        void FitCanvas()
         {
             var maxCanvasWidth = m_Viewport.resolvedStyle.width - s_CanvasViewportMinWidthDiff;
             var maxCanvasHeight = m_Viewport.resolvedStyle.height - s_CanvasViewportMinHeightDiff;
@@ -117,7 +145,7 @@ namespace Unity.UI.Builder
                 m_Canvas.height = maxCanvasHeight;
         }
 
-        private void VerifyCanvasStillFitsViewport(GeometryChangedEvent evt)
+        void VerifyCanvasStillFitsViewport(GeometryChangedEvent evt)
         {
             float viewportWidth;
             float viewportHeight;
@@ -151,7 +179,7 @@ namespace Unity.UI.Builder
                 m_FitCanvasButton.style.display = DisplayStyle.None;
         }
 
-        private VisualElement PickElement(Vector2 mousePosition)
+        VisualElement PickElement(Vector2 mousePosition)
         {
             var pickedElement = Panel.PickAllWithoutValidatingLayout(m_DocumentElement, mousePosition);
 
@@ -167,7 +195,7 @@ namespace Unity.UI.Builder
             return pickedElement;
         }
 
-        private void OnPick(MouseDownEvent evt)
+        void OnPick(MouseDownEvent evt)
         {
             var pickedElement = PickElement(evt.mousePosition);
 
@@ -185,7 +213,7 @@ namespace Unity.UI.Builder
             evt.StopPropagation();
         }
 
-        private void ClearMatchingExplorerItems()
+        void ClearMatchingExplorerItems()
         {
             foreach (var item in m_MatchingExplorerItems)
                 item.RemoveFromClassList(BuilderConstants.ExplorerItemHoverClassName);
@@ -193,13 +221,13 @@ namespace Unity.UI.Builder
             m_MatchingExplorerItems.Clear();
         }
 
-        private void HighlightMatchingExplorerItems()
+        void HighlightMatchingExplorerItems()
         {
             foreach (var item in m_MatchingExplorerItems)
                 item.AddToClassList(BuilderConstants.ExplorerItemHoverClassName);
         }
 
-        private void OnHover(MouseMoveEvent evt)
+        void OnHover(MouseMoveEvent evt)
         {
             var pickedElement = PickElement(evt.mousePosition);
 
@@ -249,14 +277,14 @@ namespace Unity.UI.Builder
             evt.StopPropagation();
         }
 
-        private void OnMouseLeave(MouseLeaveEvent evt)
+        void OnMouseLeave(MouseLeaveEvent evt)
         {
             parentTracker.Deactivate();
 
             ClearMatchingExplorerItems();
         }
 
-        private void OnMissPick(MouseDownEvent evt)
+        void OnMissPick(MouseDownEvent evt)
         {
             ClearInnerSelection();
             m_Selection.ClearSelection(this);
@@ -278,14 +306,14 @@ namespace Unity.UI.Builder
             }
         }
 
-        private void SetInnerSelection(VisualElement selectedElement)
+        void SetInnerSelection(VisualElement selectedElement)
         {
             m_BuilderResizer.Activate(m_Selection, m_Builder.document.visualTreeAsset, selectedElement);
             m_BuilderMover.Activate(m_Selection, m_Builder.document.visualTreeAsset, selectedElement);
             m_BuilderAnchorer.Activate(m_Selection, m_Builder.document.visualTreeAsset, selectedElement);
         }
 
-        private void ClearInnerSelection()
+        void ClearInnerSelection()
         {
             m_BuilderResizer.Deactivate();
             m_BuilderMover.Deactivate();

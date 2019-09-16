@@ -1,55 +1,25 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEditor.UIElements;
 using UnityEngine.UIElements;
 
 namespace Unity.UI.Builder
 {
-    internal class PersistedFoldoutWithField : PersistedFoldout
+    internal class FoldoutNumberField : FoldoutField
     {
-        public new class UxmlFactory : UxmlFactory<PersistedFoldoutWithField, UxmlTraits> { }
+        public new class UxmlFactory : UxmlFactory<FoldoutNumberField, UxmlTraits> { }
 
-        public new class UxmlTraits : BindableElement.UxmlTraits
-        {
-            UxmlStringAttributeDescription m_Text = new UxmlStringAttributeDescription { name = "text" };
-            UxmlStringAttributeDescription m_BindingPaths = new UxmlStringAttributeDescription { name = "binding-paths" };
+        public new class UxmlTraits : FoldoutField.UxmlTraits { }
 
-            public override IEnumerable<UxmlChildElementDescription> uxmlChildElementsDescription
-            {
-                get { yield break; }
-            }
-
-            public override void Init(VisualElement ve, IUxmlAttributes bag, CreationContext cc)
-            {
-                base.Init(ve, bag, cc);
-                ((PersistedFoldoutWithField)ve).text = m_Text.GetValueFromBag(bag, cc);
-
-                var separator = ' ';
-                ((PersistedFoldoutWithField)ve).bindingPathArray = m_BindingPaths.GetValueFromBag(bag, cc).Split(separator);
-
-                ((PersistedFoldoutWithField)ve).ReAssignTooltipToHeaderLabel();
-            }
-        }
-
-        protected TextField m_TextField;
-        protected string m_LastValidInput;
-        protected string[] m_BindingPathArray;
+        TextField m_TextField;
+        IntegerField m_DraggerIntegerField;
+        string m_LastValidInput;
         public List<string> fieldValues = new List<string>(); // Keeps track of child field values inputted from the header field
 
-        public static readonly string textUssClassName = BuilderConstants.PersistedFoldoutWithFieldPropertyName + "__textfield";
-        private static readonly string k_FieldStringSeparator = ", "; // Formatting the header field with multiple values
-
-        public string[] bindingPathArray
-        {
-            get
-            {
-                return m_BindingPathArray;
-            }
-            set
-            {
-                m_BindingPathArray = value;
-            }
-        }
+        public static readonly string textUssClassName = BuilderConstants.FoldoutFieldPropertyName + "__textfield";
+        static readonly string k_DraggerFieldUssClassName = BuilderConstants.FoldoutFieldPropertyName + "__dragger-field";
+        static readonly string k_FieldStringSeparator = " "; // Formatting the header field with multiple values
 
         public TextField headerInputField
         {
@@ -67,17 +37,20 @@ namespace Unity.UI.Builder
             }
         }
 
-        public PersistedFoldoutWithField()
+        public FoldoutNumberField()
         {
-            m_Value = true;
-            AddToClassList(BuilderConstants.PersistedFoldoutWithFieldPropertyName);
+            // Used for its dragger.
+            var toggleInput = toggle.Q(className: "unity-toggle__input");
+            m_DraggerIntegerField = new IntegerField(" ");
+            m_DraggerIntegerField.name = "dragger-integer-field";
+            m_DraggerIntegerField.AddToClassList(k_DraggerFieldUssClassName);
+            m_DraggerIntegerField.RegisterValueChangedCallback(OnDraggerFieldUpdate);
+            toggleInput.Add(m_DraggerIntegerField);
 
             m_TextField = new TextField();
             m_TextField.isDelayed = true; // only updates on Enter or lost focus
-
             m_TextField.AddToClassList(textUssClassName);
             header.hierarchy.Add(m_TextField);
-            header.AddToClassList(BuilderConstants.PersistedFoldoutWithFieldHeaderClassName);
         }
 
         // IS VALID INPUT IF:
@@ -87,7 +60,7 @@ namespace Unity.UI.Builder
         //    - Usage: Each int corresponds respectively to the left, top, right, and bottom attributes
         public bool IsValidInput(string input)
         {
-            var splitBy = new char[]{ ',' };
+            var splitBy = new char[]{ ' ' };
             string[] inputArray = input.Split(splitBy);
 
             if (inputArray.Length == 1)
@@ -120,14 +93,16 @@ namespace Unity.UI.Builder
         public void UpdateFromChildField(string bindingPath, string newValue)
         {
             while (fieldValues.Count != bindingPathArray.Length)
-            {
                 fieldValues.Add("auto");
-            }
 
-            fieldValues[Array.IndexOf(bindingPathArray, bindingPath)] = newValue;
+            var fieldIndex = Array.IndexOf(bindingPathArray, bindingPath);
+            fieldValues[fieldIndex] = newValue;
 
             m_LastValidInput = GetFormattedInputString();
             m_TextField.SetValueWithoutNotify(m_LastValidInput);
+
+            int.TryParse(fieldValues[0], out int intValue);
+            m_DraggerIntegerField.SetValueWithoutNotify(intValue);
         }
 
         public string GetFormattedInputString()
@@ -137,6 +112,11 @@ namespace Unity.UI.Builder
                 return fieldValues[0].ToString();
 
             return String.Join(k_FieldStringSeparator, fieldValues);
+        }
+
+        void OnDraggerFieldUpdate(ChangeEvent<int> evt)
+        {
+            m_TextField.value = evt.newValue.ToString();
         }
     }
 }

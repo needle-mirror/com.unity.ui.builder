@@ -26,7 +26,7 @@ namespace Unity.UI.Builder
             var fieldInfo = AttributesListFieldInfo;
             if (fieldInfo == null)
             {
-                Debug.LogError("UI Builder: VisualElementAsset.m_Properties private field has not been found! Update the reflection code!");
+                Debug.LogError("UI Builder: VisualElementAsset.m_Properties field has not been found! Update the reflection code!");
                 return false;
             }
 
@@ -53,7 +53,7 @@ namespace Unity.UI.Builder
             var fieldInfo = AttributesListFieldInfo;
             if (fieldInfo == null)
             {
-                Debug.LogError("UI Builder: VisualElementAsset.m_Properties private field has not been found! Update the reflection code!");
+                Debug.LogError("UI Builder: VisualElementAsset.m_Properties field has not been found! Update the reflection code!");
                 return null;
             }
 
@@ -85,7 +85,7 @@ namespace Unity.UI.Builder
             var fieldInfo = AttributesListFieldInfo;
             if (fieldInfo == null)
             {
-                Debug.LogError("UI Builder: VisualElementAsset.m_Properties private field has not been found! Update the reflection code!");
+                Debug.LogError("UI Builder: VisualElementAsset.m_Properties field has not been found! Update the reflection code!");
                 return;
             }
 

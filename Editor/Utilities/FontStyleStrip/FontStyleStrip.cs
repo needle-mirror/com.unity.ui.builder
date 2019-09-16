@@ -8,13 +8,13 @@ namespace Unity.UI.Builder
 {
     internal class FontStyleStrip : BaseField<string>, IToggleButtonStrip
     {
-        private static readonly string s_UssPath = BuilderConstants.UtilitiesPath + "/FontStyleStrip/FontStyleStrip.uss";
+        static readonly string s_UssPath = BuilderConstants.UtilitiesPath + "/FontStyleStrip/FontStyleStrip.uss";
 
-        private static readonly string s_UssClassName = "unity-font-style-strip";
+        static readonly string s_UssClassName = "unity-font-style-strip";
 
-        private static readonly string s_BoldChoice = "bold";
-        private static readonly string s_ItalicChocie = "italic";
-        private static readonly List<string> s_VisibleChoices = new List<string>() { s_BoldChoice, s_ItalicChocie };
+        static readonly string s_BoldChoice = "bold";
+        static readonly string s_ItalicChocie = "italic";
+        static readonly List<string> s_VisibleChoices = new List<string>() { s_BoldChoice, s_ItalicChocie };
 
         public new class UxmlFactory : UxmlFactory<FontStyleStrip, UxmlTraits> { }
 
@@ -27,12 +27,12 @@ namespace Unity.UI.Builder
             None = 0
         }
 
-        private FontStyleFlag m_InternalState;
+        FontStyleFlag m_InternalState;
 
-        private ButtonStrip m_ButtonStrip;
+        ButtonStrip m_ButtonStrip;
 
-        private List<string> m_Choices = new List<string>();
-        private List<string> m_Labels = new List<string>();
+        List<string> m_Choices = new List<string>();
+        List<string> m_Labels = new List<string>();
 
         public IEnumerable<string> choices
         {
@@ -85,7 +85,7 @@ namespace Unity.UI.Builder
             SetInternalStatesFromExternalChoice(newValue);
         }
 
-        private void SetInternalStatesFromExternalChoice(string newValue)
+        void SetInternalStatesFromExternalChoice(string newValue)
         {
             m_InternalState = FontStyleFlag.None;
             if (newValue == "normal")
@@ -100,7 +100,7 @@ namespace Unity.UI.Builder
             ToggleButtonStates();
         }
 
-        private void OnOptionChange(EventBase evt)
+        void OnOptionChange(EventBase evt)
         {
             var button = evt.target as Button;
             var choiceName = button.name;

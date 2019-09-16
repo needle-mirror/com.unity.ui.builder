@@ -1,14 +1,14 @@
 {
   "name": "com.unity.ui.builder",
   "displayName": "UI Builder",
-  "version": "0.7.0-preview",
+  "version": "0.8.0-preview",
   "unity": "2019.2",
   "type": "tool",
   "description": "UI Builder lets you visually create and edit UI using UIElements, UXML, and USS.",
   "repository": {
     "type": "git",
     "url": "git@github.cds.internal.unity3d.com:unity/com.unity.ui.builder.git",
-    "revision": "0915f46edea526b42260064a9c8edfb6fb2dadab"
+    "revision": "3344d2d4a7042adcd695bc5b52b9dd689696419d"
   },
   "samples": [
     {

@@ -6,12 +6,12 @@ namespace Unity.UI.Builder
 {
     internal class BuilderInspectorLocalStyles : IBuilderInspectorSection
     {
-        private BuilderInspector m_Inspector;
-        private BuilderInspectorStyleFields m_StyleFields;
+        BuilderInspector m_Inspector;
+        BuilderInspectorStyleFields m_StyleFields;
 
-        private PersistedFoldout m_LocalStylesSection;
+        PersistedFoldout m_LocalStylesSection;
 
-        private List<PersistedFoldout> m_StyleCategories;
+        List<PersistedFoldout> m_StyleCategories;
 
         public VisualElement root => m_LocalStylesSection;
 
@@ -35,6 +35,20 @@ namespace Unity.UI.Builder
                 var bindingPath = styleRow.bindingPath;
                 var currentStyleFields = styleRow.Query<BindableElement>().ToList();
 
+#if UNITY_2019_2
+                if (styleRow.ClassListContains(BuilderConstants.Version_2019_3_OrNewer))
+                {
+                    styleRow.AddToClassList(BuilderConstants.HiddenStyleClassName);
+                    continue;
+                }
+#else
+                if (styleRow.ClassListContains(BuilderConstants.Version_2019_2))
+                {
+                    styleRow.AddToClassList(BuilderConstants.HiddenStyleClassName);
+                    continue;
+                }
+#endif
+
                 if (styleRow.ClassListContains("unity-builder-double-field-row"))
                 {
                     m_StyleFields.BindDoubleFieldRow(styleRow);
@@ -46,9 +60,13 @@ namespace Unity.UI.Builder
                     if (styleField.parent != styleRow)
                         continue;
 
-                    if (styleField is PersistedFoldoutWithField)
+                    if (styleField is FoldoutNumberField)
                     {
-                        m_StyleFields.BindStyleField(styleRow, styleField as PersistedFoldoutWithField);
+                        m_StyleFields.BindStyleField(styleRow, styleField as FoldoutNumberField);
+                    }
+                    else if (styleField is FoldoutColorField)
+                    {
+                        m_StyleFields.BindStyleField(styleRow, styleField as FoldoutColorField);
                     }
                     else if (!string.IsNullOrEmpty(styleField.bindingPath))
                     {
@@ -94,9 +112,9 @@ namespace Unity.UI.Builder
                     if (styleField.parent != styleRow)
                         continue;
 
-                    if (styleField is PersistedFoldoutWithField)
+                    if (styleField is FoldoutField)
                     {
-                        m_StyleFields.RefreshStyleField(styleField as PersistedFoldoutWithField);
+                        m_StyleFields.RefreshStyleField(styleField as FoldoutField);
                     }
                     else if (!string.IsNullOrEmpty(styleField.bindingPath))
                     {
@@ -123,7 +141,7 @@ namespace Unity.UI.Builder
             }
         }
 
-        private void UpdateFlexColumnGlobalState(Enum newValue)
+        void UpdateFlexColumnGlobalState(Enum newValue)
         {
             m_LocalStylesSection.RemoveFromClassList(BuilderConstants.InspectorFlexColumnModeClassName);
             m_LocalStylesSection.RemoveFromClassList(BuilderConstants.InspectorFlexColumnReverseModeClassName);

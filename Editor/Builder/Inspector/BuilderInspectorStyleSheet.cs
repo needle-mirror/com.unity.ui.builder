@@ -5,17 +5,17 @@ namespace Unity.UI.Builder
 {
     internal class BuilderInspectorStyleSheet : IBuilderInspectorSection
     {
-        private BuilderInspector m_Inspector;
-        private BuilderSelection m_Selection;
+        BuilderInspector m_Inspector;
+        BuilderSelection m_Selection;
 
-        private VisualElement m_StyleSheetSection;
-        private TextField m_NewSelectorNameNameField;
-        private Button m_AddNewSelectorButton;
+        VisualElement m_StyleSheetSection;
+        TextField m_NewSelectorNameNameField;
+        Button m_AddNewSelectorButton;
 
         public VisualElement root => m_StyleSheetSection;
 
-        private StyleSheet styleSheet => m_Inspector.styleSheet;
-        private VisualElement currentVisualElement => m_Inspector.currentVisualElement;
+        StyleSheet styleSheet => m_Inspector.styleSheet;
+        VisualElement currentVisualElement => m_Inspector.currentVisualElement;
 
         public BuilderInspectorStyleSheet(BuilderInspector inspector)
         {
@@ -31,12 +31,12 @@ namespace Unity.UI.Builder
             m_NewSelectorNameNameField.isDelayed = true;
         }
 
-        private void OnCreateNewSelector(ChangeEvent<string> evt)
+        void OnCreateNewSelector(ChangeEvent<string> evt)
         {
             CreateNewSelector(evt.newValue);
         }
 
-        private void CreateNewSelector()
+        void CreateNewSelector()
         {
             if (string.IsNullOrEmpty(m_NewSelectorNameNameField.value))
                 return;
@@ -44,7 +44,7 @@ namespace Unity.UI.Builder
             CreateNewSelector(m_NewSelectorNameNameField.value);
         }
 
-        private void CreateNewSelector(string newSelectorString)
+        void CreateNewSelector(string newSelectorString)
         {
             m_NewSelectorNameNameField.SetValueWithoutNotify(string.Empty);
 

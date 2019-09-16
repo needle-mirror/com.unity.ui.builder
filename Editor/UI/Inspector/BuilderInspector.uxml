@@ -1,5 +1,8 @@
 <UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:uib="Unity.UI.Builder">
-    <!-- Templates -->
+    <!-- Full Inspector Templates -->
+    <Template name="CanvasInspector" path="Packages/com.unity.ui.builder/Editor/UI/Inspector/CanvasInspector.uxml" />
+
+    <!-- Local Styles Section Templates -->
     <Template name="DisplaySection" path="Packages/com.unity.ui.builder/Editor/UI/Inspector/StyleSectionsDisplay.uxml" />
     <Template name="PositionSection" path="Packages/com.unity.ui.builder/Editor/UI/Inspector/StyleSectionsPosition.uxml" />
     <Template name="FlexSection" path="Packages/com.unity.ui.builder/Editor/UI/Inspector/StyleSectionsFlex.uxml" />
@@ -26,11 +29,8 @@
             class="unity-builder-inspector__nothing-selected-label"
             text="Nothing selected. :)" />
 
-        <!-- UXML Document Label -->
-        <Label
-            name="uxml-document-label"
-            class="unity-builder-inspector__nothing-selected-label"
-            text="Current UXML document." />
+        <!-- Canvas Inspector -->
+        <Instance template="CanvasInspector" name="canvas-inspector" />
 
         <!-- StyleSheet Controls -->
         <uib:PersistedFoldout

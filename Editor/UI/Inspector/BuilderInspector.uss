@@ -21,12 +21,13 @@
 
 /* These selectors need to match widths:
     .unity-builder-inspector .unity-base-field__label
-    .unity-foldout-with-field .unity-foldout__toggle
+    .unity-foldout-field .unity-foldout__toggle
     .unity-builder-double-field-label
 */
 .unity-builder-inspector .unity-base-field__label {
     width: 105px;
     min-width: 105px;
+    overflow: hidden;
 }
 
 .unity-builder-inspector__nothing-selected-label {
@@ -48,6 +49,7 @@
     border-bottom-width: 1px;
     margin-left: 0px;
     margin-right: 0px;
+    margin-bottom: 0;
 }
 
 .unity-builder-inspector__category-foldout > .unity-foldout__header > .unity-toggle .unity-label {
@@ -99,7 +101,7 @@
 }
 
 .unity-builder-inspector__style-category-foldout {
-    padding-top: 2px;
+    padding-bottom: 2px;
 }
 
 .unity-builder-inspector__style-category-foldout > .unity-foldout__header > .unity-toggle {
@@ -111,6 +113,10 @@
 
 .unity-builder-inspector__style-category-foldout.unity-builder-inspector__style-category-foldout--override > .unity-foldout__header {
     -unity-font-style: bold;
+}
+
+.unity-builder-class-pill--not-in-document Label {
+    opacity: 0.5;
 }
 
 /*****************************************************************************/
@@ -143,7 +149,7 @@
 
 /* These selectors need to match widths:
     .unity-builder-inspector .unity-base-field__label
-    .unity-foldout-with-field .unity-foldout__toggle
+    .unity-foldout-field .unity-foldout__toggle
     .unity-builder-double-field-label
 */
 .unity-builder-double-field-label {
@@ -166,36 +172,65 @@
     margin-right: -14px;
 }
 
-.unity-sub-foldout.unity-foldout-with-field .unity-base-field__label {
+.unity-sub-foldout.unity-foldout-field .unity-base-field__label {
      margin-right: -16px;
  }
 
 /*****************************************************************************/
-/* Persisted Foldout With Field                                              */
+/* Foldout Field                                                             */
 /*****************************************************************************/
 
-.unity-foldout-with-field {
+.unity-foldout-field {
     margin-left: -16px;
 }
 
-.unity-foldout-with-field .unity-builder-style-row__content-container {
+.unity-foldout-field .unity-builder-style-row__content-container {
     margin-left: 28px;
 }
 
-.unity-foldout-with-field .unity-foldout-with-field__textfield {
+.unity-foldout-field .unity-foldout-field__textfield {
+    min-width: 10px;
     flex-grow: 1;
+}
+
+.unity-foldout-field .unity-foldout-field__dragger-field {
+    position: absolute;
+    left: 12px;
+    right: 0;
+    bottom: 0;
+    top: 0;
+}
+
+.unity-foldout-field .unity-foldout-field__dragger-field .unity-base-field__input {
+    display: none;
+}
+
+.unity-foldout-field .unity-foldout-field__color-field {
+    min-width: 10px;
+    flex-grow: 1;
+}
+
+.unity-foldout-field .unity-foldout-field__color-field .unity-imgui-container {
+    flex-basis: 0;
+    justify-content: center;
+}
+
+.unity-foldout-field__mixed-value-line {
+    width: 20px;
+    height: 1px;
+    background-color: rgb(49, 49, 49);
 }
 
 /* These selectors need to match widths:
     .unity-builder-inspector .unity-base-field__label
-    .unity-foldout-with-field .unity-foldout__toggle
+    .unity-foldout-field .unity-foldout__toggle
     .unity-builder-double-field-label
 */
-.unity-foldout-with-field .unity-foldout__toggle {
+.unity-foldout-field .unity-foldout__toggle {
     width: 99px;
     margin-right: 3px;
 }
 
-.unity-foldout-with-field > .unity-foldout__header > Toggle {
+.unity-foldout-field > .unity-foldout__header > Toggle {
     flex-grow: 0;
 }

@@ -14,7 +14,7 @@ namespace Unity.UI.Builder
         public bool hierarchyHasChanged { get; set; }
         public BuilderExplorer.BuilderElementInfoVisibilityState elementInfoVisibilityState { get; set; }
 
-        private VisualTreeAsset m_ClassPillTemplate;
+        VisualTreeAsset m_ClassPillTemplate;
 
         public IList<ITreeViewItem> treeRootItems
         {
@@ -22,7 +22,7 @@ namespace Unity.UI.Builder
             {
                 return m_TreeRootItems;
             }
-            private set {}
+            set {}
         }
 
         public IEnumerable<ITreeViewItem> treeItems
@@ -33,26 +33,26 @@ namespace Unity.UI.Builder
             }
         }
 
-        private IList<ITreeViewItem> m_TreeRootItems;
+        IList<ITreeViewItem> m_TreeRootItems;
 
-        private TreeView m_TreeView;
-        private HighlightOverlayPainter m_TreeViewHoverOverlay;
+        TreeView m_TreeView;
+        HighlightOverlayPainter m_TreeViewHoverOverlay;
 
-        private VisualElement m_Container;
-        private ElementHierarchySearchBar m_SearchBar;
+        VisualElement m_Container;
+        ElementHierarchySearchBar m_SearchBar;
 
-        private Action<VisualElement> m_SelectElementCallback;
+        Action<VisualElement> m_SelectElementCallback;
 
-        private List<VisualElement> m_SearchResultsHightlights;
-        private IPanel m_CurrentPanelDebug;
+        List<VisualElement> m_SearchResultsHightlights;
+        IPanel m_CurrentPanelDebug;
 
-        private VisualElement m_DocumentRootElement;
-        private BuilderSelection m_Selection;
-        private BuilderClassDragger m_ClassDragger;
-        private BuilderHierarchyDragger m_HierarchyDragger;
-        private BuilderExplorerContextMenu m_ContextMenuManipulator;
+        VisualElement m_DocumentRootElement;
+        BuilderSelection m_Selection;
+        BuilderClassDragger m_ClassDragger;
+        BuilderHierarchyDragger m_HierarchyDragger;
+        BuilderExplorerContextMenu m_ContextMenuManipulator;
 
-        private StringBuilder m_SelectorStrBuilder;
+        StringBuilder m_SelectorStrBuilder;
 
         public VisualElement container
         {
@@ -131,14 +131,14 @@ namespace Unity.UI.Builder
             m_TreeViewHoverOverlay.Draw();
         }
 
-        private void ActivateSearchBar(ExecuteCommandEvent evt)
+        void ActivateSearchBar(ExecuteCommandEvent evt)
         {
             Debug.Log(evt.commandName);
             if (evt.commandName == "Find")
                 m_SearchBar.Focus();
         }
 
-        private void FillItem(VisualElement element, ITreeViewItem item)
+        void FillItem(VisualElement element, ITreeViewItem item)
         {
             var explorerItem = element as BuilderExplorerItem;
             explorerItem.Clear();
@@ -307,7 +307,7 @@ namespace Unity.UI.Builder
             m_ContextMenuManipulator.RegisterCallbacksOnTarget(explorerItem);
         }
 
-        private void HighlightItemInTargetWindow(VisualElement documentElement)
+        void HighlightItemInTargetWindow(VisualElement documentElement)
         {
             m_TreeViewHoverOverlay.AddOverlay(documentElement);
             var panel = documentElement.panel;
@@ -371,7 +371,7 @@ namespace Unity.UI.Builder
             hierarchyHasChanged = false;
         }
 
-        private void OnSelectionChange(List<ITreeViewItem> items)
+        void OnSelectionChange(List<ITreeViewItem> items)
         {
             if (m_SelectElementCallback == null)
                 return;
@@ -389,7 +389,7 @@ namespace Unity.UI.Builder
             ResetHighlightOverlays();
         }
 
-        private void HighlightAllElementsMatchingSelectorElement(VisualElement selectorElement)
+        void HighlightAllElementsMatchingSelectorElement(VisualElement selectorElement)
         {
             var selector = selectorElement.GetProperty(BuilderConstants.ElementLinkedStyleSelectorVEPropertyName) as StyleComplexSelector;
             if (selector == null)
@@ -404,7 +404,7 @@ namespace Unity.UI.Builder
                 HighlightItemInTargetWindow(element);
         }
 
-        private void HighlightAllRelatedDocumentElements(VisualElement documentElement)
+        void HighlightAllRelatedDocumentElements(VisualElement documentElement)
         {
             if (BuilderSharedStyles.IsSelectorElement(documentElement))
             {
@@ -416,7 +416,7 @@ namespace Unity.UI.Builder
             }
         }
 
-        private VisualElement MakeItem()
+        VisualElement MakeItem()
         {
             var element = new BuilderExplorerItem();
             element.name = "unity-treeview-item-content";
@@ -436,7 +436,7 @@ namespace Unity.UI.Builder
             return element;
         }
 
-        private TreeViewItem<VisualElement> FindElement(IEnumerable<ITreeViewItem> list, VisualElement element)
+        TreeViewItem<VisualElement> FindElement(IEnumerable<ITreeViewItem> list, VisualElement element)
         {
             if (list == null)
                 return null;
@@ -535,7 +535,7 @@ namespace Unity.UI.Builder
             }
         }
 
-        private IList<ITreeViewItem> GetTreeItemsFromVisualTree(VisualElement parent, ref int nextId)
+        IList<ITreeViewItem> GetTreeItemsFromVisualTree(VisualElement parent, ref int nextId)
         {
             List<ITreeViewItem> items = null;
 

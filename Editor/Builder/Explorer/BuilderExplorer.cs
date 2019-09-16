@@ -10,7 +10,7 @@ namespace Unity.UI.Builder
 {
     internal class BuilderExplorer : BuilderPaneContent, IBuilderSelectionNotifier
     {
-        private static readonly string s_UssClassName = "unity-builder-explorer";
+        static readonly string s_UssClassName = "unity-builder-explorer";
 
         // TODO: Transfer to own USS.
         const string k_DefaultStyleSheetPath = "StyleSheets/UIElementsDebugger/UIElementsDebugger.uss";
@@ -34,10 +34,10 @@ namespace Unity.UI.Builder
 
         BuilderClassDragger m_ClassDragger;
         BuilderHierarchyDragger m_HierarchyDragger;
-        private BuilderExplorerContextMenu m_ContextMenuManipulator;
+        BuilderExplorerContextMenu m_ContextMenuManipulator;
 
         ToolbarMenu m_HierarchyTypeClassVisibilityMenu;
-        [SerializeField] private BuilderElementInfoVisibilityState m_ElementInfoVisibilityState;
+        [SerializeField] BuilderElementInfoVisibilityState m_ElementInfoVisibilityState;
 
         public VisualElement container
         {
@@ -106,7 +106,7 @@ namespace Unity.UI.Builder
             m_ElementHierarchyView.ResetHighlightOverlays();
         }
 
-        private void ElementSelected(VisualElement element)
+        void ElementSelected(VisualElement element)
         {
             if (m_SelectionMadeExternally)
                 return;
@@ -190,7 +190,7 @@ namespace Unity.UI.Builder
                 : DropdownMenuAction.Status.Normal);
         }
 
-        private void ChangeVisibilityState(BuilderElementInfoVisibilityState state)
+        void ChangeVisibilityState(BuilderElementInfoVisibilityState state)
         {
             m_ElementInfoVisibilityState ^= state;
             m_ElementHierarchyView.elementInfoVisibilityState = m_ElementInfoVisibilityState;

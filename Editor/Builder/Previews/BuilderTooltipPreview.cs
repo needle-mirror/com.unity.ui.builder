@@ -5,12 +5,12 @@ namespace Unity.UI.Builder
 {
     internal class BuilderTooltipPreview : VisualElement
     {
-        private static readonly string s_UssClassName = "unity-builder-tooltip-preview";
-        private static readonly string s_EnablerClassName = "unity-builder-tooltip-preview__enabler";
-        private static readonly string s_ContainerClassName = "unity-builder-tooltip-preview__container";
+        static readonly string s_UssClassName = "unity-builder-tooltip-preview";
+        static readonly string s_EnablerClassName = "unity-builder-tooltip-preview__enabler";
+        static readonly string s_ContainerClassName = "unity-builder-tooltip-preview__container";
 
-        private VisualElement m_Enabler;
-        private VisualElement m_Container;
+        VisualElement m_Enabler;
+        VisualElement m_Container;
 
         public new class UxmlFactory : UxmlFactory<BuilderTooltipPreview, UxmlTraits> { }
 

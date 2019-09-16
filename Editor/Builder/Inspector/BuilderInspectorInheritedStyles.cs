@@ -10,27 +10,27 @@ namespace Unity.UI.Builder
 {
     internal class BuilderInspectorInheritedStyles : IBuilderInspectorSection
     {
-        private BuilderInspector m_Inspector;
-        private BuilderSelection m_Selection;
-        private Builder m_Builder;
-        private BuilderInspectorMatchingSelectors m_MatchingSelectors;
+        BuilderInspector m_Inspector;
+        BuilderSelection m_Selection;
+        Builder m_Builder;
+        BuilderInspectorMatchingSelectors m_MatchingSelectors;
 
-        private PersistedFoldout m_InheritedStylesSection;
-        private VisualElement m_ClassListContainer;
-        private PersistedFoldout m_MatchingSelectorsFoldout;
+        PersistedFoldout m_InheritedStylesSection;
+        VisualElement m_ClassListContainer;
+        PersistedFoldout m_MatchingSelectorsFoldout;
 
-        private TextField m_AddClassField;
-        private Button m_AddClassButton;
-        private Button m_CreateClassButton;
+        TextField m_AddClassField;
+        Button m_AddClassButton;
+        Button m_CreateClassButton;
 
-        private VisualElement m_AddClassValidationMessageContainer;
+        VisualElement m_AddClassValidationMessageContainer;
 
-        private VisualTreeAsset m_ClassPillTemplate;
+        VisualTreeAsset m_ClassPillTemplate;
 
-        private string m_AddClassValidationMessage = string.Empty;
-        private Regex m_AddClassValidationRegex;
+        string m_AddClassValidationMessage = string.Empty;
+        Regex m_AddClassValidationRegex;
 
-        private VisualElement currentVisualElement => m_Inspector.currentVisualElement;
+        VisualElement currentVisualElement => m_Inspector.currentVisualElement;
 
         public VisualElement root => m_InheritedStylesSection;
 
@@ -85,12 +85,12 @@ namespace Unity.UI.Builder
             m_ClassListContainer.SetEnabled(false);
         }
 
-        private void DrawAddClassValidationMessage()
+        void DrawAddClassValidationMessage()
         {
             EditorGUILayout.HelpBox(m_AddClassValidationMessage, MessageType.Info, true);
         }
 
-        private void OnAddClassFieldChange(KeyUpEvent evt)
+        void OnAddClassFieldChange(KeyUpEvent evt)
         {
             if (evt.keyCode != KeyCode.Return)
                 return;
@@ -103,7 +103,7 @@ namespace Unity.UI.Builder
             m_AddClassField.Focus();
         }
 
-        private bool VerifyNewClassNameIsValid(string className)
+        bool VerifyNewClassNameIsValid(string className)
         {
             ClearAddStyleValidationWarning();
 
@@ -129,7 +129,7 @@ namespace Unity.UI.Builder
             return true;
         }
 
-        private void AddStyleClass()
+        void AddStyleClass()
         {
             var className = m_AddClassField.value;
 
@@ -139,7 +139,7 @@ namespace Unity.UI.Builder
             AddStyleClass(className);
         }
 
-        private void ExtractLocalStylesToNewClass()
+        void ExtractLocalStylesToNewClass()
         {
             var className = m_AddClassField.value;
 
@@ -149,7 +149,7 @@ namespace Unity.UI.Builder
             ExtractLocalStylesToNewClass(className);
         }
 
-        private void PreAddStyleClass(string className)
+        void PreAddStyleClass(string className)
         {
             m_AddClassField.SetValueWithoutNotify(string.Empty);
 
@@ -160,7 +160,7 @@ namespace Unity.UI.Builder
             currentVisualElement.AddToClassList(className);
         }
 
-        private void AddStyleClass(string className)
+        void AddStyleClass(string className)
         {
             PreAddStyleClass(className);
 
@@ -173,7 +173,7 @@ namespace Unity.UI.Builder
             m_Selection.NotifyOfStylingChange(null);
         }
 
-        private void ExtractLocalStylesToNewClass(string className)
+        void ExtractLocalStylesToNewClass(string className)
         {
             PreAddStyleClass(className);
 
@@ -201,7 +201,7 @@ namespace Unity.UI.Builder
             m_Selection.NotifyOfHierarchyChange(null, currentVisualElement);
         }
 
-        private void OnStyleClassDelete(EventBase evt)
+        void OnStyleClassDelete(EventBase evt)
         {
             var target = evt.target as VisualElement;
             var className = target.userData as string;
@@ -221,25 +221,36 @@ namespace Unity.UI.Builder
             m_Selection.NotifyOfStylingChange(null);
         }
 
-        private void DisplayAddStyleValidationWarning(string warningMessage)
+        void DisplayAddStyleValidationWarning(string warningMessage)
         {
             m_AddClassValidationMessage = warningMessage;
             m_AddClassValidationMessageContainer.style.display = DisplayStyle.Flex;
         }
 
-        private void ClearAddStyleValidationWarning()
+        void ClearAddStyleValidationWarning()
         {
             m_AddClassValidationMessageContainer.style.display = DisplayStyle.None;
             m_AddClassValidationMessage = string.Empty;
         }
 
-        private void RefreshClassListContainer()
+        Clickable CreateClassPillClickableManipulator()
+        {
+            var clickable = new Clickable(OnClassPillDoubleClick);
+            var activator = clickable.activators[0];
+            activator.clickCount = 2;
+            clickable.activators[0] = activator;
+            return clickable;
+        }
+
+        void RefreshClassListContainer()
         {
             ClearAddStyleValidationWarning();
 
             m_ClassListContainer.Clear();
             if (BuilderSharedStyles.IsSelectorElement(currentVisualElement))
                 return;
+
+            var documentRootElement = m_Builder.documentRootElement;
 
             foreach (var className in currentVisualElement.GetClasses())
             {
@@ -254,10 +265,48 @@ namespace Unity.UI.Builder
 
                 pillDeleteButton.userData = className;
                 pillDeleteButton.clickable.clickedWithEventInfo += OnStyleClassDelete;
+
+                // See if the class is in document as its own selector.
+                var selector = BuilderSharedStyles.FindSelectorElement(documentRootElement, "." + className);
+                pill.SetProperty(BuilderConstants.InspectorClassPillLinkedSelectorElementVEPropertyName, selector);
+                var clickable = CreateClassPillClickableManipulator();
+                pill.AddManipulator(clickable);
+                if (selector == null)
+                {
+                    pill.AddToClassList(BuilderConstants.InspectorClassPillNotInDocumentClassName);
+                    pill.tooltip = BuilderConstants.InspectorClassPillDoubleClickToCreate;
+                }
+                else
+                {
+                    pill.tooltip = BuilderConstants.InspectorClassPillDoubleClickToSelect;
+                }
             }
         }
 
-        private VisualElement GeneratedMatchingSelectors()
+        void OnClassPillDoubleClick(EventBase evt)
+        {
+            var pill = evt.target as VisualElement;
+            var pillDeleteButton = pill.Q<Button>("delete-class-button");
+            var className = pillDeleteButton.userData as string;
+            var selectorString = "." + className;
+            var selectorElement = pill.GetProperty(BuilderConstants.InspectorClassPillLinkedSelectorElementVEPropertyName) as VisualElement;
+
+            if (selectorElement == null)
+            {
+                var selectorsRootElement = BuilderSharedStyles.GetSelectorContainerElement(m_Selection.documentElement);
+                var mainStyleSheet = m_Builder.document.mainStyleSheet;
+                BuilderSharedStyles.CreateNewSelector(selectorsRootElement, mainStyleSheet, selectorString);
+
+                m_Selection.NotifyOfStylingChange();
+                m_Selection.NotifyOfHierarchyChange();
+            }
+            else
+            {
+                m_Selection.Select(null, selectorElement);
+            }
+        }
+
+        VisualElement GeneratedMatchingSelectors()
         {
             m_MatchingSelectors.GetElementMatchers();
             if (m_MatchingSelectors.matchedRulesExtractor.selectedElementRules == null ||
@@ -311,7 +360,7 @@ namespace Unity.UI.Builder
             return container;
         }
 
-        private void RefreshMatchingSelectorsContainer()
+        void RefreshMatchingSelectorsContainer()
         {
             m_MatchingSelectorsFoldout.Clear();
             if (BuilderSharedStyles.IsSelectorElement(currentVisualElement))

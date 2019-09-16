@@ -9,9 +9,9 @@ namespace Unity.UI.Builder
 {
     internal class UIExtensionsTestWindow : EditorWindow
     {
-        private static readonly string s_DefaultUSSPath = BuilderConstants.UIBuilderPackagePath + "/SampleDocument/BuilderSampleCanvas.uss";
-        private static readonly string s_DefaultUXMLPath = BuilderConstants.UIBuilderPackagePath + "/SampleDocument/BuilderSampleCanvas.uxml";
-        private static readonly string s_CanvasInstanceUSSPath = BuilderConstants.UIBuilderPackagePath + "/SampleDocument/BuilderSampleCanvasSection.uss";
+        static readonly string s_DefaultUSSPath = BuilderConstants.UIBuilderPackagePath + "/SampleDocument/BuilderSampleCanvas.uss";
+        static readonly string s_DefaultUXMLPath = BuilderConstants.UIBuilderPackagePath + "/SampleDocument/BuilderSampleCanvas.uxml";
+        static readonly string s_CanvasInstanceUSSPath = BuilderConstants.UIBuilderPackagePath + "/SampleDocument/BuilderSampleCanvasSection.uss";
 
         ObjectField m_StyleSheetField;
         VisualElement m_StyleSheetContents;
@@ -67,7 +67,7 @@ namespace Unity.UI.Builder
             root.schedule.Execute(AfterImport);
         }
 
-        private void AfterImport()
+        void AfterImport()
         {
             m_StyleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(s_DefaultUSSPath);
             m_VisualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(s_DefaultUXMLPath);
@@ -86,19 +86,19 @@ namespace Unity.UI.Builder
             }
         }
 
-        private void StyleSheetChanged(ChangeEvent<Object> evt)
+        void StyleSheetChanged(ChangeEvent<Object> evt)
         {
             m_StyleSheet = evt.newValue as StyleSheet;
             CloneTree();
         }
 
-        private void VisualTreeAssetChanged(ChangeEvent<Object> evt)
+        void VisualTreeAssetChanged(ChangeEvent<Object> evt)
         {
             m_VisualTreeAsset = evt.newValue as VisualTreeAsset;
             CloneTree();
         }
 
-        private void CloneTree()
+        void CloneTree()
         {
             m_Container.Clear();
             m_StyleSheetContents.Clear();

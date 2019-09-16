@@ -10,6 +10,10 @@ namespace Unity.UI.Builder
 {
     internal class BuilderDocument : ScriptableObject, IBuilderSelectionNotifier, ISerializationCallbackReceiver
     {
+        static readonly string s_DiskJsonFileName = "UIBuilderDocument.json";
+        static readonly string s_DiskJsonFolderPath = "Library/UIBuilder";
+        static readonly string s_DiskSettingsJsonFolderPath = "Library/UIBuilder/DocumentSettings";
+
         public enum CanvasTheme
         {
             Default,
@@ -18,27 +22,39 @@ namespace Unity.UI.Builder
         }
 
         [SerializeField]
-        private VisualTreeAsset m_VisualTreeAssetBackup;
+        VisualTreeAsset m_VisualTreeAssetBackup;
 
         // This is for automatic style path fixing after a uss file name change.
         [SerializeField]
-        private string m_OpenendMainStyleSheetOldPath;
+        string m_OpenendMainStyleSheetOldPath;
 
         [SerializeField]
-        private StyleSheet m_MainStyleSheetBackup;
+        StyleSheet m_MainStyleSheetBackup;
 
         [SerializeField]
-        private VisualTreeAsset m_VisualTreeAsset;
+        VisualTreeAsset m_VisualTreeAsset;
 
         [SerializeField]
-        private StyleSheet m_MainStyleSheet;
+        StyleSheet m_MainStyleSheet;
 
-        private StyleSheet m_CanvasThemeStyleSheet;
+        StyleSheet m_CanvasThemeStyleSheet;
 
-        private bool m_HasUnsavedChanges = false;
+        bool m_HasUnsavedChanges = false;
+        WeakReference<Action> m_UnsavedChangesStateChangeCallback;
 
         [SerializeField]
-        private CanvasTheme m_CurrentCanvasTheme;
+        CanvasTheme m_CurrentCanvasTheme;
+
+        [SerializeField]
+        BuilderDocumentSettings m_Settings;
+        public BuilderDocumentSettings settings
+        {
+            get
+            {
+                CreateOrLoadSettingsObject();
+                return m_Settings;
+            }
+        }
 
         public string uxmlFileName
         {
@@ -90,6 +106,14 @@ namespace Unity.UI.Builder
             }
         }
 
+        public Action unsavedChangesStateChanged
+        {
+            set
+            {
+                m_UnsavedChangesStateChangeCallback = new WeakReference<Action>(value, true);
+            }
+        }
+
         public bool hasUnsavedChanges
         {
             get { return m_HasUnsavedChanges; }
@@ -99,6 +123,11 @@ namespace Unity.UI.Builder
                     return;
 
                 m_HasUnsavedChanges = value;
+
+                if (m_UnsavedChangesStateChangeCallback.TryGetTarget(out Action action))
+                {
+                    action.Invoke();
+                }
             }
         }
         
@@ -114,9 +143,39 @@ namespace Unity.UI.Builder
             }
         }
 
+        string diskJsonFolderPath
+        {
+            get
+            {
+                var path = Application.dataPath + "/../" + s_DiskJsonFolderPath;
+                path = Path.GetFullPath(path);
+                return path;
+            }
+        }
+
+        string diskJsonFilePath
+        {
+            get
+            {
+                var path = diskJsonFolderPath + "/" + s_DiskJsonFileName;
+                return path;
+            }
+        }
+
+        string diskSettingsJsonFolderPath
+        {
+            get
+            {
+                var path = Application.dataPath + "/../" + s_DiskSettingsJsonFolderPath;
+                path = Path.GetFullPath(path);
+                return path;
+            }
+        }
+
         public BuilderDocument()
         {
             hasUnsavedChanges = false;
+            EditorApplication.playModeStateChanged += PlayModeStateChange;
             Clear();
         }
 
@@ -125,6 +184,7 @@ namespace Unity.UI.Builder
             var newDoc = ScriptableObject.CreateInstance<BuilderDocument>();
             newDoc.hideFlags = HideFlags.DontUnloadUnusedAsset | HideFlags.DontSaveInEditor;
             newDoc.name = "BuilderDocument";
+            newDoc.LoadFromDisk();
             return newDoc;
         }
 
@@ -142,7 +202,7 @@ namespace Unity.UI.Builder
             documentElement.IncrementVersion((VersionChangeType) (-1));
         }
 
-        private void RestoreAssetsFromBackup()
+        void RestoreAssetsFromBackup()
         {
             if (m_VisualTreeAsset != null && m_VisualTreeAssetBackup != null)
                 m_VisualTreeAssetBackup.DeepOverwrite(m_VisualTreeAsset);
@@ -151,7 +211,7 @@ namespace Unity.UI.Builder
                 m_MainStyleSheetBackup.DeepOverwrite(m_MainStyleSheet);
         }
 
-        private void ClearBackups()
+        void ClearBackups()
         {
             m_VisualTreeAssetBackup.Destroy();
             m_VisualTreeAssetBackup = null;
@@ -160,10 +220,20 @@ namespace Unity.UI.Builder
             m_MainStyleSheetBackup = null;
         }
 
-        public void Clear()
+        void PlayModeStateChange(PlayModeStateChange state)
+        {
+            ClearUndo();
+        }
+
+        void ClearUndo()
         {
             m_VisualTreeAsset.ClearUndo();
             m_MainStyleSheet.ClearUndo();
+        }
+
+        void Clear()
+        {
+            ClearUndo();
 
             RestoreAssetsFromBackup();
             ClearBackups();
@@ -184,6 +254,8 @@ namespace Unity.UI.Builder
 
                 m_MainStyleSheet = null;
             }
+
+            m_Settings = null;
         }
 
         public void ChangeDocumentTheme(VisualElement documentElement, CanvasTheme canvasTheme)
@@ -202,6 +274,8 @@ namespace Unity.UI.Builder
             ReloadDocumentToCanvas(documentRootElement);
 
             hasUnsavedChanges = false;
+
+            SaveToDisk();
         }
 
         public bool SaveNewDocument(string uxmlPath, string ussPath, VisualElement documentRootElement, bool isSaveAs)
@@ -220,7 +294,7 @@ namespace Unity.UI.Builder
             }
             else
             {
-                visualTreeAsset.ReplaceStyleSheetPaths(ussPath, ussPath);
+                visualTreeAsset.ReplaceStyleSheetPaths(ussOldPath, ussPath);
             }
 
             var tempVisualTreeAsset = m_VisualTreeAsset.DeepCopy();
@@ -239,6 +313,14 @@ namespace Unity.UI.Builder
             if (needFullRefresh)
             {
                 NewDocument(documentRootElement);
+
+                // Re-init setting.
+                if (m_Settings != null)
+                {
+                    m_Settings.UxmlGuid = AssetDatabase.AssetPathToGUID(uxmlPath);
+                    m_Settings.UxmlPath = uxmlPath;
+                    SaveSettingsToDisk();
+                }
             }
             else
             {
@@ -262,16 +344,21 @@ namespace Unity.UI.Builder
             m_VisualTreeAsset = loadedVisualTreeAsset;
             m_MainStyleSheet = loadedStyleSheet;
 
+            // Reset asset name.
+            m_VisualTreeAsset.name = Path.GetFileNameWithoutExtension(uxmlPath);
+
             m_VisualTreeAsset.ConvertAllAssetReferencesToPaths();
 
             m_OpenendMainStyleSheetOldPath = ussPath;
 
             hasUnsavedChanges = false;
 
+            SaveToDisk();
+
             return needFullRefresh;
         }
 
-        private void WriteToFiles(string uxmlPath, string ussPath)
+        void WriteToFiles(string uxmlPath, string ussPath)
         {
             var uxmlText = visualTreeAsset.GenerateUXML(uxmlPath, true);
             var ussText = mainStyleSheet.GenerateUSS();
@@ -288,7 +375,7 @@ namespace Unity.UI.Builder
             File.WriteAllText(ussPath, ussText);
         }
 
-        private void ReloadDocumentToCanvas(VisualElement documentElement)
+        void ReloadDocumentToCanvas(VisualElement documentElement)
         {
             // Load the asset.
             documentElement.Clear();
@@ -342,10 +429,14 @@ namespace Unity.UI.Builder
 
             hasUnsavedChanges = false;
 
+            CreateOrLoadSettingsObject();
+
             ReloadDocumentToCanvas(documentElement);
+
+            SaveToDisk();
         }
 
-        private void AddStyleSheetToRootAsset(VisualElementAsset rootAsset, string newUssPath = null)
+        void AddStyleSheetToRootAsset(VisualElementAsset rootAsset, string newUssPath = null)
         {
             if (rootAsset.fullTypeName == BuilderConstants.SelectedVisualTreeAssetSpecialElementTypeName)
                 return;
@@ -384,7 +475,7 @@ namespace Unity.UI.Builder
             }
         }
 
-        private void AddStyleSheetToRootIfNeeded(VisualElement element)
+        void AddStyleSheetToRootIfNeeded(VisualElement element)
         {
             var rootElement = BuilderSharedStyles.GetDocumentRootLevelElement(element);
             if (rootElement == null)
@@ -438,6 +529,82 @@ namespace Unity.UI.Builder
             // VTA.inlineSheet only has Rules so it does not need this fix.
             if (m_MainStyleSheet != null)
                 m_MainStyleSheet.FixRuleReferences();
+        }
+
+        void LoadFromDisk()
+        {
+            var path = diskJsonFilePath;
+
+            if (!File.Exists(path))
+                return;
+
+            var json = File.ReadAllText(path);
+            EditorJsonUtility.FromJsonOverwrite(json, this);
+
+            // Very important we convert asset references to paths here after a restore.
+            if (m_VisualTreeAsset != null)
+                m_VisualTreeAsset.ConvertAllAssetReferencesToPaths();
+        }
+
+        public void SaveToDisk()
+        {
+            var json = EditorJsonUtility.ToJson(this, true);
+
+            var folderPath = diskJsonFolderPath;
+            if (!Directory.Exists(folderPath))
+                Directory.CreateDirectory(folderPath);
+
+            File.WriteAllText(diskJsonFilePath, json);
+        }
+
+        void CreateOrLoadSettingsObject()
+        {
+            if (m_Settings != null)
+                return;
+
+            m_Settings = new BuilderDocumentSettings();
+
+            var diskDataFound = LoadSettingsFromDisk(m_Settings);
+            if (diskDataFound)
+                return;
+
+            m_Settings.UxmlGuid = AssetDatabase.AssetPathToGUID(uxmlPath);
+            m_Settings.UxmlPath = uxmlPath;
+        }
+
+        bool LoadSettingsFromDisk(BuilderDocumentSettings settings)
+        {
+            var guid = AssetDatabase.AssetPathToGUID(uxmlPath);
+            if (string.IsNullOrEmpty(guid))
+                return false;
+
+            var folderPath = diskSettingsJsonFolderPath;
+            var fileName = guid + ".json";
+            var path = folderPath + "/" + fileName;
+
+            if (!File.Exists(path))
+                return false;
+
+            var json = File.ReadAllText(path);
+            EditorJsonUtility.FromJsonOverwrite(json, settings);
+
+            return true;
+        }
+
+        public void SaveSettingsToDisk()
+        {
+            if (string.IsNullOrEmpty(settings.UxmlGuid) || string.IsNullOrEmpty(settings.UxmlPath))
+                return;
+
+            var json = EditorJsonUtility.ToJson(m_Settings, true);
+
+            var folderPath = diskSettingsJsonFolderPath;
+            if (!Directory.Exists(folderPath))
+                Directory.CreateDirectory(folderPath);
+
+            var fileName = settings.UxmlGuid + ".json";
+            var filePath = folderPath + "/" + fileName;
+            File.WriteAllText(filePath, json);
         }
     }
 }

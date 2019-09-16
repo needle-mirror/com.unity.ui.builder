@@ -133,6 +133,7 @@ namespace Unity.UI.Builder
                 BuilderSharedStyles.CreateNewSelector(selectorContainerElement, styleSheet, newSelectorStr);
 
                 selection.NotifyOfHierarchyChange();
+                selection.NotifyOfStylingChange();
 
                 evt.PreventDefault();
                 evt.StopImmediatePropagation();

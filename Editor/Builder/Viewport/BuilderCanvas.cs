@@ -6,44 +6,75 @@ using UnityEngine.UIElements;
 
 namespace Unity.UI.Builder
 {
-    class BuilderCanvas : VisualElement, IResetableViewData
+    internal enum BuilderCanvasBackgroundMode
     {
-        private static readonly string s_ActiveHandleClassName = "unity-builder-canvas--active";
+        None,
+        Color,
+        Image,
+        Camera
+    };
 
-        [SerializeField]
-        private float m_SavedWidth;
-        [SerializeField]
-        private float m_SavedHeight;
+    internal class BuilderCanvas : VisualElement
+    {
+        static readonly string s_ActiveHandleClassName = "unity-builder-canvas--active";
 
-        private VisualElement m_Container;
-        private Rect m_ThisRectOnStartDrag;
-        private VisualElement m_DragHoverCoverLayer;
+        VisualElement m_Container;
+        Rect m_ThisRectOnStartDrag;
+        VisualElement m_DragHoverCoverLayer;
 
-        private Dictionary<string, VisualElement> m_HandleElements;
+        VisualElement m_DefaultBackgroundElement;
+        VisualElement m_CustomBackgroundElement;
+
+        Dictionary<string, VisualElement> m_HandleElements;
 
         public new class UxmlFactory : UxmlFactory<BuilderCanvas, UxmlTraits> { }
 
         public override VisualElement contentContainer => m_Container;
 
+        public VisualElement defaultBackgroundElement => m_DefaultBackgroundElement;
+        public VisualElement customBackgroundElement => m_CustomBackgroundElement;
+
+        BuilderDocument m_Document;
+        public BuilderDocument document
+        {
+            get { return m_Document; }
+            set
+            {
+                if (value == m_Document)
+                    return;
+
+                m_Document = value;
+                SetSizeFromDocumentSettings();
+            }
+        }
+
         public float width
         {
-            get { return m_SavedWidth; }
+            get { return resolvedStyle.width; }
             set
             {
                 style.width = value;
-                m_SavedWidth = value;
-                SaveViewData();
+
+                if (document != null)
+                {
+                    document.settings.CanvasWidth = (int)value;
+                    document.SaveSettingsToDisk();
+                }
             }
         }
 
         public float height
         {
-            get { return m_SavedHeight; }
+            get { return resolvedStyle.height; }
             set
             {
                 style.height = value;
-                m_SavedHeight = value;
-                SaveViewData();
+
+                if (document != null)
+                {
+                    document.settings.CanvasHeight = (int)value;
+                    document.SaveSettingsToDisk();
+                }
             }
         }
 
@@ -72,31 +103,26 @@ namespace Unity.UI.Builder
 
             m_DragHoverCoverLayer = this.Q("drag-hover-cover-layer");
 
-            ResetViewData();
+            SetSizeFromDocumentSettings();
+
+            m_DefaultBackgroundElement = this.Q("default-background-element");
+            m_CustomBackgroundElement = this.Q("custom-background-element");
         }
 
-        public void ResetViewData()
+        public void SetSizeFromDocumentSettings()
         {
-            m_SavedWidth = BuilderConstants.CanvasInitialWidth;
-            m_SavedHeight = BuilderConstants.CanvasInitialHeight;
-            style.width = m_SavedWidth;
-            style.height = m_SavedHeight;
-            SaveViewData();
+            if (document == null || document.settings.CanvasWidth < BuilderConstants.CanvasMinWidth)
+            {
+                width = BuilderConstants.CanvasInitialWidth;
+                height = BuilderConstants.CanvasInitialHeight;
+                return;
+            }
+
+            style.width = document.settings.CanvasWidth;
+            style.height = document.settings.CanvasHeight;
         }
 
-        internal override void OnViewDataReady()
-        {
-            base.OnViewDataReady();
-
-            string key = GetFullHierarchicalViewDataKey();
-
-            OverwriteFromViewData(this, key);
-
-            style.width = m_SavedWidth;
-            style.height = m_SavedHeight;
-        }
-
-        private void OnStartDrag(VisualElement handle)
+        void OnStartDrag(VisualElement handle)
         {
             m_ThisRectOnStartDrag = this.layout;
 
@@ -104,48 +130,48 @@ namespace Unity.UI.Builder
             m_DragHoverCoverLayer.style.cursor = handle.computedStyle.cursor;
         }
 
-        private void OnEndDrag()
+        void OnEndDrag()
         {
             m_DragHoverCoverLayer.style.display = DisplayStyle.None;
             m_DragHoverCoverLayer.RemoveFromClassList(s_ActiveHandleClassName);
         }
 
-        private void OnDragLeft(Vector2 diff)
+        void OnDragLeft(Vector2 diff)
         {
-            m_SavedWidth = m_ThisRectOnStartDrag.width - (diff.x * 2);
-            style.width = m_SavedWidth;
-            SaveViewData();
+            var newWidth = m_ThisRectOnStartDrag.width - (diff.x * 2);
+            newWidth = Mathf.Max(newWidth, BuilderConstants.CanvasMinWidth);
+            width = newWidth;
         }
 
-        private void OnDragBottom(Vector2 diff)
+        void OnDragBottom(Vector2 diff)
         {
-            m_SavedHeight = m_ThisRectOnStartDrag.height + diff.y;
-            style.height = m_SavedHeight;
-            SaveViewData();
+            var newHeight = m_ThisRectOnStartDrag.height + diff.y;
+            newHeight = Mathf.Max(newHeight, BuilderConstants.CanvasMinHeight);
+            height = newHeight;
         }
 
-        private void OnDragRight(Vector2 diff)
+        void OnDragRight(Vector2 diff)
         {
-            m_SavedWidth = m_ThisRectOnStartDrag.width + (diff.x * 2);
-            style.width = m_SavedWidth;
-            SaveViewData();
+            var newWidth = m_ThisRectOnStartDrag.width + (diff.x * 2);
+            newWidth = Mathf.Max(newWidth, BuilderConstants.CanvasMinWidth);
+            width = newWidth;
         }
 
-        private void OnDragBottomLeft(Vector2 diff)
+        void OnDragBottomLeft(Vector2 diff)
         {
             OnDragBottom(diff);
             OnDragLeft(diff);
         }
 
-        private void OnDragBottomRight(Vector2 diff)
+        void OnDragBottomRight(Vector2 diff)
         {
             OnDragBottom(diff);
             OnDragRight(diff);
         }
 
-        private class Manipulator : MouseManipulator
+        class Manipulator : MouseManipulator
         {
-            private Vector2 m_Start;
+            Vector2 m_Start;
             protected bool m_Active;
 
             Action<VisualElement> m_StartDrag;

@@ -31,7 +31,7 @@ namespace Unity.UI.Builder
             return AssetDeleteResult.DidNotDelete;
         }
 
-        private static AssetMoveResult OnWillMoveAsset(string sourcePath, string destinationPath)
+        static AssetMoveResult OnWillMoveAsset(string sourcePath, string destinationPath)
         {
             if (IsUxml(sourcePath) || IsUxml(destinationPath))
                 OnAssetChange?.Invoke();

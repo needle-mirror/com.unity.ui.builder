@@ -155,7 +155,7 @@ namespace Unity.UI.Builder
             }
         }
 
-        private static bool IsLength(string name)
+        static bool IsLength(string name)
         {
             if (BuilderConstants.SpecialSnowflakeLengthSytles.Contains(name))
                 return true;

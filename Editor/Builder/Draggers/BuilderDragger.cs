@@ -17,7 +17,7 @@ namespace Unity.UI.Builder
 
         Vector2 m_Start;
         bool m_Active;
-        private bool m_WeStartedTheDrag;
+        bool m_WeStartedTheDrag;
 
         Builder m_Builder;
         VisualElement m_Root;
@@ -127,7 +127,7 @@ namespace Unity.UI.Builder
             target.RegisterCallback<DetachFromPanelEvent>(UnregisterCallbacksFromTarget);
         }
 
-        private void UnregisterCallbacksFromTarget(DetachFromPanelEvent evt)
+        void UnregisterCallbacksFromTarget(DetachFromPanelEvent evt)
         {
             var target = evt.target as VisualElement;
 
@@ -139,7 +139,7 @@ namespace Unity.UI.Builder
             target.UnregisterCallback<DetachFromPanelEvent>(UnregisterCallbacksFromTarget);
         }
 
-        private bool StartDrag(VisualElement target, Vector2 mousePosition)
+        bool StartDrag(VisualElement target, Vector2 mousePosition)
         {
             var startSuccess = StartDrag(target, mousePosition, m_DraggedElement);
             if (!startSuccess)
@@ -155,7 +155,7 @@ namespace Unity.UI.Builder
             return startSuccess;
         }
 
-        private bool TryToPickInCanvas(Vector2 mousePosition)
+        bool TryToPickInCanvas(Vector2 mousePosition)
         {
             var localMouse = m_Canvas.WorldToLocal(mousePosition);
             if (!m_Canvas.ContainsPoint(localMouse))
@@ -185,7 +185,7 @@ namespace Unity.UI.Builder
             return true;
         }
 
-        private bool TryToPickInHierarchy(Vector2 mousePosition)
+        bool TryToPickInHierarchy(Vector2 mousePosition)
         {
             if (builderHierarchyRoot == null)
                 return false;
@@ -259,7 +259,7 @@ namespace Unity.UI.Builder
             return true;
         }
 
-        private void PerformDragInner(VisualElement target, Vector2 mousePosition)
+        void PerformDragInner(VisualElement target, Vector2 mousePosition)
         {
             // Move dragged element.
             m_DraggedElement.style.left = mousePosition.x;
@@ -289,7 +289,7 @@ namespace Unity.UI.Builder
             PerformDrag(target, null);
         }
 
-        private void EndDragInner()
+        void EndDragInner()
         {
             EndDrag();
 
@@ -299,7 +299,7 @@ namespace Unity.UI.Builder
             m_ParentTracker.Deactivate();
         }
 
-        private void OnMouseDown(MouseDownEvent evt)
+        void OnMouseDown(MouseDownEvent evt)
         {
             if (!CanStartManipulation(evt))
                 return;
@@ -323,7 +323,7 @@ namespace Unity.UI.Builder
             target.CaptureMouse();
         }
 
-        private void OnMouseMove(MouseMoveEvent evt)
+        void OnMouseMove(MouseMoveEvent evt)
         {
             var target = evt.currentTarget as VisualElement;
 
@@ -357,7 +357,7 @@ namespace Unity.UI.Builder
             evt.StopPropagation();
         }
 
-        private VisualElement GetLinkedElementFromReorderZone(VisualElement hoverZone)
+        VisualElement GetLinkedElementFromReorderZone(VisualElement hoverZone)
         {
             var reorderZone = hoverZone;
             var explorerItem = reorderZone.userData as BuilderExplorerItem;
@@ -365,7 +365,7 @@ namespace Unity.UI.Builder
             return sibling;
         }
 
-        private void OnMouseUp(MouseUpEvent evt)
+        void OnMouseUp(MouseUpEvent evt)
         {
             if (evt.button != (int) MouseButton.LeftMouse)
             {
@@ -418,7 +418,7 @@ namespace Unity.UI.Builder
             EndDragInner();
         }
 
-        private void GetPickedElementFromHoverElement(out VisualElement pickedElement, out int index)
+        void GetPickedElementFromHoverElement(out VisualElement pickedElement, out int index)
         {
             index = -1;
             if (m_LastRowHoverElement.ClassListContains(ScrollView.viewportUssClassName))
@@ -446,7 +446,7 @@ namespace Unity.UI.Builder
                 pickedElement = m_LastHoverElement.GetProperty(BuilderConstants.ExplorerItemElementLinkVEPropertyName) as VisualElement;
         }
 
-        private void OnEsc(KeyUpEvent evt)
+        void OnEsc(KeyUpEvent evt)
         {
             if (evt.keyCode != KeyCode.Escape)
                 return;
@@ -468,7 +468,7 @@ namespace Unity.UI.Builder
             FailAction(target);
         }
 
-        private bool CanStartManipulation(IMouseEvent evt)
+        bool CanStartManipulation(IMouseEvent evt)
         {
             foreach (var activator in activators)
             {
@@ -482,7 +482,7 @@ namespace Unity.UI.Builder
             return false;
         }
 
-        private bool CanStopManipulation(IMouseEvent evt)
+        bool CanStopManipulation(IMouseEvent evt)
         {
             if (evt == null)
             {

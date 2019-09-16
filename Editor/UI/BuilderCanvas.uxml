@@ -1,4 +1,6 @@
 <UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <VisualElement name="default-background-element" class="unity-builder-viewport__canvas-layer" />
+    <VisualElement name="custom-background-element" class="unity-builder-viewport__canvas-layer" />
     <VisualElement name="content-container" class="unity-builder-canvas__container" />
 
     <VisualElement name="left-handle" class="unity-builder-canvas__handle unity-builder-canvas__side unity-builder-canvas__side--vertical unity-builder-canvas__side--left">

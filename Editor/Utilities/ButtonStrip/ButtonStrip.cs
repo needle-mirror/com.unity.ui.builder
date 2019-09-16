@@ -8,26 +8,26 @@ namespace Unity.UI.Builder
 {
     internal class ButtonStrip : VisualElement
     {
-        private static readonly string s_UssPathNoExt = BuilderConstants.UtilitiesPath + "/ButtonStrip/ButtonStrip";
+        static readonly string s_UssPathNoExt = BuilderConstants.UtilitiesPath + "/ButtonStrip/ButtonStrip";
 #if UNITY_2019_3_OR_NEWER
-        private static readonly string s_UssPath = s_UssPathNoExt + ".uss";
-        private static readonly string s_UssDarkPath = s_UssPathNoExt + "Dark.uss";
-        private static readonly string s_UssLightPath = s_UssPathNoExt + "Light.uss";
+        static readonly string s_UssPath = s_UssPathNoExt + ".uss";
+        static readonly string s_UssDarkPath = s_UssPathNoExt + "Dark.uss";
+        static readonly string s_UssLightPath = s_UssPathNoExt + "Light.uss";
 #else
-        private static readonly string s_UssPath = s_UssPathNoExt + "2019_2.uss";
-        private static readonly string s_UssDarkPath = s_UssPathNoExt + "Dark2019_2.uss";
-        private static readonly string s_UssLightPath = s_UssPathNoExt + "Light2019_2.uss";
+        static readonly string s_UssPath = s_UssPathNoExt + "2019_2.uss";
+        static readonly string s_UssDarkPath = s_UssPathNoExt + "Dark2019_2.uss";
+        static readonly string s_UssLightPath = s_UssPathNoExt + "Light2019_2.uss";
 #endif
 
-        private static readonly string s_UssClassName = "unity-button-strip";
-        private static readonly string s_ButtonClassName = s_UssClassName + "__button";
-        private static readonly string s_ButtonLeftClassName = s_ButtonClassName + "--left";
-        private static readonly string s_ButtonMidClassName = s_ButtonClassName + "--mid";
-        private static readonly string s_ButtonRightClassName = s_ButtonClassName + "--right";
-        private static readonly string s_ButtonIconClassName = s_UssClassName + "__button-icon";
+        static readonly string s_UssClassName = "unity-button-strip";
+        static readonly string s_ButtonClassName = s_UssClassName + "__button";
+        static readonly string s_ButtonLeftClassName = s_ButtonClassName + "--left";
+        static readonly string s_ButtonMidClassName = s_ButtonClassName + "--mid";
+        static readonly string s_ButtonRightClassName = s_ButtonClassName + "--right";
+        static readonly string s_ButtonIconClassName = s_UssClassName + "__button-icon";
 
-        private List<string> m_Choices = new List<string>();
-        private List<string> m_Labels = new List<string>();
+        List<string> m_Choices = new List<string>();
+        List<string> m_Labels = new List<string>();
 
         public IEnumerable<string> choices
         {
@@ -80,7 +80,7 @@ namespace Unity.UI.Builder
             this.choices = choices;
         }
 
-        private void RecreateButtons()
+        void RecreateButtons()
         {
             this.Clear();
             for (int i = 0; i < m_Choices.Count; ++i)
@@ -123,7 +123,7 @@ namespace Unity.UI.Builder
             }
         }
 
-        private void OnOptionChange(EventBase evt)
+        void OnOptionChange(EventBase evt)
         {
             var button = evt.target as Button;
             var newValue = button.name;

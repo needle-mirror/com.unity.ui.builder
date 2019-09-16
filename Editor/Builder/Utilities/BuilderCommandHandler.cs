@@ -10,21 +10,21 @@ namespace Unity.UI.Builder
 {
     internal class BuilderCommandHandler
     {
-        private Builder m_Builder;
-        private BuilderExplorer m_Explorer;
-        private BuilderViewport m_Viewport;
-        private BuilderToolbar m_Toolbar;
-        private BuilderSelection m_Selection;
+        Builder m_Builder;
+        BuilderExplorer m_Explorer;
+        BuilderViewport m_Viewport;
+        BuilderToolbar m_Toolbar;
+        BuilderSelection m_Selection;
 
-        private VisualElement m_CutElement;
+        VisualElement m_CutElement;
 
-        private bool m_ControlWasPressed;
-        private IVisualElementScheduledItem m_ControlUnpressScheduleItem;
+        bool m_ControlWasPressed;
+        IVisualElementScheduledItem m_ControlUnpressScheduleItem;
 
         // TODO: Hack. We need this because of a bug on Mac where we
         // get double command events.
         // Case: https://fogbugz.unity3d.com/f/cases/1180090/
-        private long m_LastFrameCount;
+        long m_LastFrameCount;
 
         public BuilderCommandHandler(
             Builder builder,
@@ -122,18 +122,18 @@ namespace Unity.UI.Builder
             }
         }
 
-        private void OnUndoRedo()
+        void OnUndoRedo()
         {
             m_Builder.OnEnableAfterAllSerialization();
         }
 
-        private void UnsetControlFlag()
+        void UnsetControlFlag()
         {
             m_ControlWasPressed = false;
             m_ControlUnpressScheduleItem.Pause();
         }
 
-        private void OnSaveDocument(KeyUpEvent evt)
+        void OnSaveDocument(KeyUpEvent evt)
         {
             if (evt.keyCode == KeyCode.LeftCommand ||
                 evt.keyCode == KeyCode.RightCommand ||
@@ -160,7 +160,7 @@ namespace Unity.UI.Builder
             evt.StopPropagation();
         }
 
-        private void OnDelete(KeyDownEvent evt)
+        void OnDelete(KeyDownEvent evt)
         {
             // HACK: This must be a bug. TextField leaks its key events to everyone!
             if (evt.leafTarget is ITextInputField)
@@ -227,10 +227,13 @@ namespace Unity.UI.Builder
             }
         }
 
-        private void PasteUXML(string copyBuffer)
+        void PasteUXML(string copyBuffer)
         {
+            // HACK: Why??
+            copyBuffer = copyBuffer.Replace("ui:UXML", "UXML");
+
             VisualTreeAsset pasteVta = null;
-            var importer = new UXMLImporterImpl(); // Cannot be cached because the StyleBuilder never gets reset.
+            var importer = new BuilderVisualTreeAssetImporter(); // Cannot be cached because the StyleBuilder never gets reset.
             importer.ImportXmlFromString(copyBuffer, out pasteVta);
 
             VisualElementAsset parent = null;
@@ -242,10 +245,10 @@ namespace Unity.UI.Builder
             ScriptableObject.DestroyImmediate(pasteVta);
         }
 
-        private void PasteUSS(string copyBuffer)
+        void PasteUSS(string copyBuffer)
         {
             var pasteStyleSheet = StyleSheetUtilities.CreateInstance();
-            var importer = new StyleSheetImporterImpl(); // Cannot be cached because the StyleBuilder never gets reset.
+            var importer = new BuilderStyleSheetImporter(); // Cannot be cached because the StyleBuilder never gets reset.
             importer.Import(pasteStyleSheet, copyBuffer);
 
             BuilderAssetUtilities.TransferAssetToAsset(m_Builder.document, pasteStyleSheet);
@@ -260,9 +263,10 @@ namespace Unity.UI.Builder
             if (string.IsNullOrEmpty(copyBuffer))
                 return;
 
-            if (copyBuffer.TrimStart().StartsWith("<UXML"))
+            var trimmedBuffer = copyBuffer.Trim();
+            if (trimmedBuffer.StartsWith("<") && trimmedBuffer.EndsWith(">"))
                 PasteUXML(copyBuffer);
-            else if (copyBuffer.TrimEnd().EndsWith("}"))
+            else if (trimmedBuffer.EndsWith("}"))
                 PasteUSS(copyBuffer);
             else // Unknown string.
                 return;

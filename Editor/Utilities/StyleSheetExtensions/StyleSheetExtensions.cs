@@ -180,7 +180,7 @@ namespace Unity.UI.Builder
             return selector != null;
         }
 
-        private static void SwallowStyleRule(
+        static void SwallowStyleRule(
             StyleSheet toStyleSheet, StyleComplexSelector toSelector,
             StyleSheet fromStyleSheet, StyleComplexSelector fromSelector)
         {

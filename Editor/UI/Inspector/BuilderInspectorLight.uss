@@ -213,27 +213,27 @@
 /*****************************************************************************/
 
 .unity-builder-inspector_display-field #none > .unity-button-strip__button-icon {
-    background-image: resource("com.unity.ui.builder/Icons/Light/Inspector/Display Visibility/Hidden");
+    background-image: resource("com.unity.ui.builder/Icons/Light/Inspector/Display/None");
 }
 
 .unity-builder-inspector_display-field #none:checked > .unity-button-strip__button-icon {
-    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Display Visibility/Hidden");
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Display/None");
 }
 
 .unity-builder-inspector_display-field #none:checked:hover > .unity-button-strip__button-icon {
-    background-image: resource("com.unity.ui.builder/Icons/Light/Inspector/Display Visibility/Hidden");
+    background-image: resource("com.unity.ui.builder/Icons/Light/Inspector/Display/None");
 }
 
 .unity-builder-inspector_display-field #flex > .unity-button-strip__button-icon {
-    background-image: resource("com.unity.ui.builder/Icons/Light/Inspector/Display Visibility/Visible");
+    background-image: resource("com.unity.ui.builder/Icons/Light/Inspector/Display/Flex");
 }
 
 .unity-builder-inspector_display-field #flex:checked > .unity-button-strip__button-icon {
-    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Display Visibility/Visible");
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Display/Flex");
 }
 
 .unity-builder-inspector_display-field #flex:checked:hover > .unity-button-strip__button-icon {
-    background-image: resource("com.unity.ui.builder/Icons/Light/Inspector/Display Visibility/Visible");
+    background-image: resource("com.unity.ui.builder/Icons/Light/Inspector/Display/Flex");
 }
 
 /*****************************************************************************/
@@ -527,15 +527,15 @@
 }
 
 .unity-builder-inspector--flex-row .unity-builder-inspector_align-items-field #stretch > .unity-button-strip__button-icon {
-    background-image: resource("com.unity.ui.builder/Icons/Light/Inspector/Align Items/Flex Column/Stretch");
+    background-image: resource("com.unity.ui.builder/Icons/Light/Inspector/Align Items/Flex Row/Stretch");
 }
 
 .unity-builder-inspector--flex-row .unity-builder-inspector_align-items-field #stretch:checked > .unity-button-strip__button-icon {
-    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Align Items/Flex Column/Stretch");
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Align Items/Flex Row/Stretch");
 }
 
 .unity-builder-inspector--flex-row .unity-builder-inspector_align-items-field #stretch:checked:hover > .unity-button-strip__button-icon {
-    background-image: resource("com.unity.ui.builder/Icons/Light/Inspector/Align Items/Flex Column/Stretch");
+    background-image: resource("com.unity.ui.builder/Icons/Light/Inspector/Align Items/Flex Row/Stretch");
 }
 
 /* Flex-Row-Reverse */
@@ -577,15 +577,15 @@
 }
 
 .unity-builder-inspector--flex-row-reverse .unity-builder-inspector_align-items-field #stretch > .unity-button-strip__button-icon {
-    background-image: resource("com.unity.ui.builder/Icons/Light/Inspector/Align Items/Flex Column/Stretch Reverse");
+    background-image: resource("com.unity.ui.builder/Icons/Light/Inspector/Align Items/Flex Row/Stretch Reverse");
 }
 
 .unity-builder-inspector--flex-row-reverse .unity-builder-inspector_align-items-field #stretch:checked > .unity-button-strip__button-icon {
-    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Align Items/Flex Column/Stretch Reverse");
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Align Items/Flex Row/Stretch Reverse");
 }
 
 .unity-builder-inspector--flex-row-reverse .unity-builder-inspector_align-items-field #stretch:checked:hover > .unity-button-strip__button-icon {
-    background-image: resource("com.unity.ui.builder/Icons/Light/Inspector/Align Items/Flex Column/Stretch Reverse");
+    background-image: resource("com.unity.ui.builder/Icons/Light/Inspector/Align Items/Flex Row/Stretch Reverse");
 }
 
 /*****************************************************************************/

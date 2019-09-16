@@ -5,9 +5,9 @@ namespace Unity.UI.Builder
 {
     internal class LayoutOverlayPainter : BaseOverlayPainter
     {
-        private static readonly float kDefaultAlpha = 1.0f;
-        private static readonly Color kBoundColor = Color.gray;
-        private static readonly Color kSelectedBoundColor = Color.green;
+        static readonly float kDefaultAlpha = 1.0f;
+        static readonly Color kBoundColor = Color.gray;
+        static readonly Color kSelectedBoundColor = Color.green;
 
         public VisualElement selectedElement;
 

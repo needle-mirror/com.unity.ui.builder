@@ -22,7 +22,7 @@ This package has not yet been added to the Package Manager UI. To install:
     ```
     {
       "dependencies": {
-        "com.unity.ui.builder": "0.6.2-preview",
+        "com.unity.ui.builder": "0.7.0-preview",
         ...
       }
     }
@@ -34,21 +34,21 @@ This package has not yet been added to the Package Manager UI. To install:
 ![UI Builder Main Window](Documentation~/UIBuilderAnnotatedMainWindow.png)
 
 ### Explorer
-1. Shared Styles: Create USS selectors for sharing common styling between multiple elements.
-2. Hierarchy: Current document element tree.
+1. **StyleSheet:** Create USS selectors for sharing common styling between multiple elements.
+2. **Hierarchy:** Current document element tree.
 ### Library
-3. Unity Elements: Built-in Unity elements.
-4. Project Elements: Custom user elements like other .uxml templates in the current project.
+3. **Unity Elements:** Built-in Unity elements.
+4. **Project Elements:** Custom user elements like other `.uxml` templates in the current project.
 ### Viewport
-5. Toolbar: Can Save/Load, change the Theme and activate Preview mode.
+5. **Toolbar:** Can Save/Load, change the Theme and activate Preview mode.
 6. Currently selected element with manipulation handles.
-7. Canvas showing the current document live elements.
+7. Edit-time Canvas for editing and previewing current document with optional edit-time-only background image.
 ### Code Previews
-8. UXML Preview: Preview of the generated UXML hierarchy asset.
-9. USS Preview: Preview of the generated USS styles asset.
+8. **UXML Preview:** Preview of the generated UXML hierarchy asset.
+9. **USS Preview:** Preview of the generated USS styles asset.
 ### Inspector
-10. Attributes: Change attributes, like element name, that are set in the UXML document.
-11. Shared Styles: Add/remove style classes and see which selectors match the current element.
-12. Local Style Overrides: Override styles on the current element, inlined in the UXML document.
+10. **Attributes:** Change attributes, like element name, that are set in the UXML document.
+11. **Inherited Styles:** Add/remove style classes and see which selectors match the current element.
+12. **Local Styles:** Override styles on the current element, inlined in the UXML document.
 
-For a list of all supported features, see our [documentation page](Documentation~/UI.Builder.md).
+For more info, see our [documentation page](Documentation~/UI.Builder.md).

@@ -4,16 +4,22 @@ namespace Unity.UI.Builder
 {
     internal static class BuilderConstants
     {
+        // Builder
+        public static readonly string BuilderWindowTitle = "UI Builder";
+        public static readonly string BuilderPackageName = "com.unity.ui.builder";
+
         // Numbers
         public static readonly int VisualTreeAssetOrderIncrement = 10;
         public static readonly int VisualTreeAssetOrderHalfIncrement = 5;
         public static readonly float CanvasInitialWidth = 350;
         public static readonly float CanvasInitialHeight = 550;
+        public static readonly float CanvasMinWidth = 100;
+        public static readonly float CanvasMinHeight = 100;
         public static readonly int ClassNameInPillMaxLength = 25;
 
         // Paths
-        public static readonly string UIBuilderPackagePath = "Packages/com.unity.ui.builder/Editor/UI";
-        public static readonly string UtilitiesPath = "Packages/com.unity.ui.builder/Editor/Utilities";
+        public static readonly string UIBuilderPackagePath = "Packages/" + BuilderPackageName + "/Editor/UI";
+        public static readonly string UtilitiesPath = "Packages/" + BuilderPackageName + "/Editor/Utilities";
         public static readonly string InspectorUssPathNoExt = UIBuilderPackagePath + "/Inspector/BuilderInspector";
 
         // Global Style Class Names
@@ -44,11 +50,12 @@ namespace Unity.UI.Builder
         // Inspector Style VE Property Names
         public static readonly string InspectorStylePropertyNameVEPropertyName = "__unity-ui-builder-style-property-name";
         public static readonly string InspectorComputedStylePropertyInfoVEPropertyName = "__unity-ui-builder-computed-style-property-info";
+        public static readonly string InspectorClassPillLinkedSelectorElementVEPropertyName = "__unity-ui-builder-class-linked-pill-selector-element";
 
         // Inspector Style Property and Class Names
         public static readonly string BuilderStyleRowBlueOverrideBoxClassName = "unity-builder-inspector-blue-override-box";
-        public static readonly string PersistedFoldoutWithFieldPropertyName = "unity-foldout-with-field";
-        public static readonly string PersistedFoldoutWithFieldHeaderClassName = PersistedFoldoutWithFieldPropertyName + "__header";
+        public static readonly string FoldoutFieldPropertyName = "unity-foldout-field";
+        public static readonly string FoldoutFieldHeaderClassName = FoldoutFieldPropertyName + "__header";
         public static readonly string InspectorFlexColumnModeClassName = "unity-builder-inspector--flex-column";
         public static readonly string InspectorFlexColumnReverseModeClassName = "unity-builder-inspector--flex-column-reverse";
         public static readonly string InspectorFlexRowModeClassName = "unity-builder-inspector--flex-row";
@@ -57,6 +64,7 @@ namespace Unity.UI.Builder
         public static readonly string InspectorLocalStyleOverrideClassName = "unity-builder-inspector__style--override";
         public static readonly string InspectorLocalStyleResetClassName = "unity-builder-inspector__style--reset"; // used to reset font style of children
         public static readonly string InspectorEmptyFoldoutLabelClassName = "unity-builder-inspector__empty-foldout-label";
+        public static readonly string InspectorClassPillNotInDocumentClassName = "unity-builder-class-pill--not-in-document";
 
         // Inspector Links VE Property Names
         public static readonly string InspectorLinkedStyleRowVEPropertyName = "__unity-ui-builder-style-row";
@@ -68,6 +76,8 @@ namespace Unity.UI.Builder
         public static readonly string AddStyleClassValidationSpacialCharacters = "Class names can only contain letters, numbers, underscores, and dashes.";
         public static readonly string ContextMenuUnsetMessage = "Unset";
         public static readonly string FontCannotBeNoneMessage = "UI Builder: Font cannot be set to none.";
+        public static readonly string InspectorClassPillDoubleClickToCreate = "Double-click to create new USS selector.";
+        public static readonly string InspectorClassPillDoubleClickToSelect = "Double-click to select and edit USS selector.";
 
         //
         // Explorer
@@ -130,6 +140,17 @@ namespace Unity.UI.Builder
         public static readonly string SpecialVisualElementInitialMinSizeClassName = "unity-builder-canvas__special-visual-element-initial-size";
 
         //
+        // Toolbar
+        //
+
+        // Toolbar Messages
+        public static readonly string ToolbarLoadUxmlDialogTitle = "Load UXML File";
+        public static readonly string ToolbarCannotLoadUxmlOutsideProjectMessage = "UI Builder: Cannot load .uxml files outside the Project.";
+        public static readonly string ToolbarSelectedAssetIsInvalidMessage = "UI Builder: The asset selected was not a valid UXML asset.";
+        public static readonly string ToolbarUnsavedFileDisplayMessage = "<unsaved file>";
+        public static readonly string BuilderStandinPackageVersion = "0.0.0";
+
+        //
         // VisualTreeAsset/StyleSheet
         //
 
@@ -162,17 +183,31 @@ namespace Unity.UI.Builder
         //
 
         // Save Dialog Messages
+        public static readonly string SaveDialogChooseUxmlPathDialogTitle = "Choose UXML File Location";
+        public static readonly string SaveDialogChooseUssPathDialogTitle = "Choose USS File Location";
         public static readonly string SaveDialogDiscardChangesPromptTitle = "UI Builder: Discard unsaved changes?";
         public static readonly string SaveDialogDiscardChangesPromptMessage = "Are you sure you want to discard unsaved changes on the current UI documents?";
+        public static readonly string SaveDialogDiscardChangesPromptDiscardOption = "Discard";
+        public static readonly string SaveDialogDiscardChangesPromptGoBackOption = "Go Back";
         public static readonly string SaveDialogInvalidPathMessage = "Can only save in the 'Assets/' or 'Packages/' folders.";
 
         //
         // UXML/USS
         //
 
+        // UXML/USS Trivials
+        public static readonly string Uxml = "uxml";
+        public static readonly string Uss = "uss";
+        public static readonly string UxmlExtension = ".uxml";
+        public static readonly string UssExtension = ".uss";
+
         // UXML
-        public static readonly string UxmlHeader = "<UXML xmlns=\"UnityEngine.UIElements\" xmlns:uie=\"UnityEditor.UIElements\">\n";
-        public static readonly string UxmlFooter = "</UXML>\n";
+        public static readonly string UxmlHeader = "<ui:UXML xmlns:ui=\"UnityEngine.UIElements\" xmlns:uie=\"UnityEditor.UIElements\">\n";
+        public static readonly string UxmlFooter = "</ui:UXML>\n";
+        public static readonly string UxmlEngineNamespace = "UnityEngine.UIElements.";
+        public static readonly string UxmlEngineNamespaceReplace = "ui:";
+        public static readonly string UxmlEditorNamespace = "UnityEditor.UIElements.";
+        public static readonly string UxmlEditorNamespaceReplace = "uie:";
 
         // Styles
         public static readonly List<string> SpecialSnowflakeLengthSytles = new List<string>()

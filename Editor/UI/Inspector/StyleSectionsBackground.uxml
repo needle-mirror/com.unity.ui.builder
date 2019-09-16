@@ -21,7 +21,7 @@
 
     <!-- Unity Slice -->
     <uib:BuilderStyleRow name="inspector-style-section-foldout-unity-slice">
-        <uib:PersistedFoldoutWithField
+        <uib:FoldoutNumberField
             text="Slice"
             tooltip="-unity-slice"
             binding-paths="-unity-slice-left -unity-slice-top -unity-slice-right -unity-slice-bottom"
@@ -48,6 +48,6 @@
             <uib:BuilderStyleRow binding-path="-unity-slice-bottom">
                 <uie:IntegerField label="Bottom" tooltip="-unity-slice-bottom" />
             </uib:BuilderStyleRow>
-        </uib:PersistedFoldoutWithField>
+        </uib:FoldoutNumberField>
     </uib:BuilderStyleRow>
 </UXML>

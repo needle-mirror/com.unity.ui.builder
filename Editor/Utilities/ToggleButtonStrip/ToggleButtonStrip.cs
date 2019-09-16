@@ -17,11 +17,11 @@ namespace Unity.UI.Builder
 
     internal class ToggleButtonStrip : BaseField<string>, IToggleButtonStrip
     {
-        private static readonly string s_UssPath = BuilderConstants.UtilitiesPath + "/ToggleButtonStrip/ToggleButtonStrip.uss";
+        static readonly string s_UssPath = BuilderConstants.UtilitiesPath + "/ToggleButtonStrip/ToggleButtonStrip.uss";
 
-        private static readonly string s_UssClassName = "unity-toggle-button-strip";
+        static readonly string s_UssClassName = "unity-toggle-button-strip";
 
-        private ButtonStrip m_ButtonStrip;
+        ButtonStrip m_ButtonStrip;
 
         public new class UxmlFactory : UxmlFactory<ToggleButtonStrip, UxmlTraits> {}
 
@@ -76,7 +76,7 @@ namespace Unity.UI.Builder
             ToggleButtonStates(button);
         }
 
-        private void OnOptionChange(EventBase evt)
+        void OnOptionChange(EventBase evt)
         {
             var button = evt.target as Button;
             var newValue = button.name;
@@ -85,7 +85,7 @@ namespace Unity.UI.Builder
             ToggleButtonStates(button);
         }
 
-        private void ToggleButtonStates(Button button)
+        void ToggleButtonStates(Button button)
         {
             m_ButtonStrip.Query<Button>().ForEach((b) =>
             {

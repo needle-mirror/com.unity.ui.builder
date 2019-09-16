@@ -13,30 +13,30 @@ namespace Unity.UI.Builder
 {
     internal class BuilderLibrary : BuilderPaneContent
     {
-        private static readonly string s_UssClassName = "unity-builder-library";
+        static readonly string s_UssClassName = "unity-builder-library";
 
-        private readonly string k_TreeViewName = "library-tree-view";
-        private readonly string k_TreeViewClassName = "unity-builder-library__tree-view";
+        readonly string k_TreeViewName = "library-tree-view";
+        readonly string k_TreeViewClassName = "unity-builder-library__tree-view";
 
-        private readonly string k_TreeItemClassName = "unity-builder-library__tree-item";
-        private readonly string k_TreeItemLabelClassName = "unity-builder-library__tree-item-label";
+        readonly string k_TreeItemClassName = "unity-builder-library__tree-item";
+        readonly string k_TreeItemLabelClassName = "unity-builder-library__tree-item-label";
 
-        private readonly string k_OpenButtonClassName = "unity-builder-library__tree-item-open-button";
+        readonly string k_OpenButtonClassName = "unity-builder-library__tree-item-open-button";
 
-        private static List<string> s_NameSpacesToAvoid = new List<string>() { "Unity", "UnityEngine", "UnityEditor" };
+        static List<string> s_NameSpacesToAvoid = new List<string>() { "Unity", "UnityEngine", "UnityEditor" };
 
         Builder m_Builder;
         VisualElement m_DocumentElement;
         BuilderSelection m_Selection;
         BuilderLibraryDragger m_Dragger;
 
-        private int m_ProjectUxmlPathsHash;
+        int m_ProjectUxmlPathsHash;
 
         BuilderTooltipPreview m_TooltipPreview;
 
         public class LibraryTreeItem : TreeViewItem<string>
         {
-            private static int m_NextId = 0;
+            static int m_NextId = 0;
 
             public string name => data;
 
@@ -44,9 +44,9 @@ namespace Unity.UI.Builder
 
             public VisualTreeAsset sourceAsset { get; set; }
 
-            public Func<VisualElement> makeVisualElement { get; private set; }
+            public Func<VisualElement> makeVisualElement { get; set; }
 
-            public Func<VisualTreeAsset, VisualElementAsset, VisualElementAsset> makeElementAsset { get; private set; }
+            public Func<VisualTreeAsset, VisualElementAsset, VisualElementAsset> makeElementAsset { get; set; }
 
             public LibraryTreeItem(
                 string name, Func<VisualElement> makeVisualElement,
@@ -64,7 +64,7 @@ namespace Unity.UI.Builder
             }
         }
 
-        private class FactoryProcessingHelper
+        class FactoryProcessingHelper
         {
             public class AttributeRecord
             {
@@ -93,7 +93,7 @@ namespace Unity.UI.Builder
             }
         }
 
-        private bool ProcessFactory(IUxmlFactory factory, FactoryProcessingHelper processingData)
+        bool ProcessFactory(IUxmlFactory factory, FactoryProcessingHelper processingData)
         {
             if (!string.IsNullOrEmpty(factory.substituteForTypeName))
             {
@@ -109,7 +109,7 @@ namespace Unity.UI.Builder
             return true;
         }
 
-        private static void AddCategoriesToStack(LibraryTreeItem sourceCategory, List<LibraryTreeItem> categoryStack, string[] split)
+        static void AddCategoriesToStack(LibraryTreeItem sourceCategory, List<LibraryTreeItem> categoryStack, string[] split)
         {
             for (int i = 0; i < split.Length; ++i)
             {
@@ -142,7 +142,7 @@ namespace Unity.UI.Builder
             }
         }
 
-        private void ImportFactoriesFromSource(LibraryTreeItem sourceCategory)
+        void ImportFactoriesFromSource(LibraryTreeItem sourceCategory)
         {
             List<IUxmlFactory> deferredFactories = new List<IUxmlFactory>();
             FactoryProcessingHelper processingData = new FactoryProcessingHelper();
@@ -215,7 +215,7 @@ namespace Unity.UI.Builder
             RefreshTreeView();
         }
 
-        private int GetAllProjectUxmlFilePathsHash(IEnumerable<HierarchyProperty> assets = null)
+        int GetAllProjectUxmlFilePathsHash(IEnumerable<HierarchyProperty> assets = null)
         {
             if (assets == null)
             {
@@ -236,7 +236,7 @@ namespace Unity.UI.Builder
             return pathsStr.GetHashCode();
         }
 
-        private void ImportUxmlFromProject(LibraryTreeItem projectCategory)
+        void ImportUxmlFromProject(LibraryTreeItem projectCategory)
         {
             var filter = new SearchFilter();
             filter.searchArea = SearchFilter.SearchArea.AllAssets;
@@ -320,14 +320,14 @@ namespace Unity.UI.Builder
             RefreshTreeView();
         }
 
-        private void OnBeforeAssetChange()
+        void OnBeforeAssetChange()
         {
             // AssetDatabase.FindAllAssets(filter) will return outdated assets if
             // we refresh immediately.
             this.schedule.Execute(OnAfterAssetChange);
         }
 
-        private void OnAfterAssetChange()
+        void OnAfterAssetChange()
         {
             var newHash = GetAllProjectUxmlFilePathsHash();
 
@@ -337,7 +337,7 @@ namespace Unity.UI.Builder
             RefreshTreeView();
         }
 
-        private void RefreshTreeView()
+        void RefreshTreeView()
         {
             Clear();
 
@@ -379,18 +379,19 @@ namespace Unity.UI.Builder
                     new LibraryTreeItem("Integer", () => new IntegerField("Int Field") { value = 42 }),
                     new LibraryTreeItem("Float", () => new FloatField("Float Field") { value = 42.2f }),
                     new LibraryTreeItem("Long", () => new LongField("Long Field") { value = 42 }),
-                    new LibraryTreeItem("MinMaxSlider", () => new MinMaxSlider("Min/Max Slider", 0, 20, -10, 40) { value = new Vector2(10, 12) }),
+                    new LibraryTreeItem("Min-Max Slider", () => new MinMaxSlider("Min/Max Slider", 0, 20, -10, 40) { value = new Vector2(10, 12) }),
                     new LibraryTreeItem("Slider", () => new Slider("SliderInt", 0, 100) { value = 42 }),
+                    new LibraryTreeItem("Progress Bar", () => new ProgressBar() { title = "my-progress", value = 22 } ),
                     new LibraryTreeItem("Vector2", () => new Vector2Field("Vec2 Field")),
                     new LibraryTreeItem("Vector3", () => new Vector3Field("Vec3 Field")),
                     new LibraryTreeItem("Vector4", () => new Vector4Field("Vec4 Field")),
                     new LibraryTreeItem("Rect", () => new RectField("Rect")),
                     new LibraryTreeItem("Bounds", () => new BoundsField("Bounds")),
-                    new LibraryTreeItem("SliderInt", () => new SliderInt("SliderInt", 0, 100) { value = 42 }),
-                    new LibraryTreeItem("Vector2Int", () => new Vector2IntField("Vector2Int")),
-                    new LibraryTreeItem("Vector3Int", () => new Vector3IntField("Vector3Int")),
-                    new LibraryTreeItem("RectInt", () => new RectIntField("RectInt")),
-                    new LibraryTreeItem("BoundsInt", () => new BoundsIntField("BoundsInt"))
+                    new LibraryTreeItem("Slider (Int)", () => new SliderInt("SliderInt", 0, 100) { value = 42 }),
+                    new LibraryTreeItem("Vector2 (Int)", () => new Vector2IntField("Vector2Int")),
+                    new LibraryTreeItem("Vector3 (Int)", () => new Vector3IntField("Vector3Int")),
+                    new LibraryTreeItem("Rect (Int)", () => new RectIntField("RectInt")),
+                    new LibraryTreeItem("Bounds (Int)", () => new BoundsIntField("BoundsInt"))
                 }),
                 new LibraryTreeItem("Value Fields", () => null, null, new List<TreeViewItem<string>>()
                 {
@@ -409,6 +410,15 @@ namespace Unity.UI.Builder
                     new LibraryTreeItem("Mask", () => new MaskField("Mask")),
                     new LibraryTreeItem("Layer", () => new LayerField("Layer")),
                     new LibraryTreeItem("LayerMask", () => new LayerMaskField("LayerMask"))
+                }),
+                new LibraryTreeItem("Containers", () => null, null, new List<TreeViewItem<string>>()
+                {
+                    new LibraryTreeItem("ScrollView", () => new ScrollView()),
+                    new LibraryTreeItem("ListView", () => new ListView())
+                }),
+                new LibraryTreeItem("Inspectors", () => null, null, new List<TreeViewItem<string>>()
+                {
+                    new LibraryTreeItem("PropertyField", () => new PropertyField())
                 }),
             };
             unityItem.AddChildren(unityItemList);
@@ -475,7 +485,7 @@ namespace Unity.UI.Builder
 
             // If this is the uxml file entry of the currently open file, don't allow
             // the user to instantiate it (infinite recursion) or re-open it.
-            if (builderItem.name == m_Builder.document.uxmlFileName)
+            if (builderItem.sourceAsset == m_Builder.document.visualTreeAsset)
             {
                 row.SetEnabled(false);
                 row.AddToClassList(BuilderConstants.LibraryCurrentlyOpenFileItemClassName);
@@ -545,14 +555,14 @@ namespace Unity.UI.Builder
                 previouslyOpenFileItem.RemoveFromClassList(BuilderConstants.LibraryCurrentlyOpenFileItemClassName);
             }
 
-            var uxmlFileName = m_Builder.document.uxmlFileName;
+            var vta = m_Builder.document.visualTreeAsset;
             this.Query(className: k_TreeItemClassName).ForEach((e) =>
             {
                 var item =
                     e.GetProperty(BuilderConstants.LibraryItemLinkedManipulatorVEPropertyName)
                     as LibraryTreeItem;
 
-                if (item.name != uxmlFileName)
+                if (item == null || item.sourceAsset != vta)
                     return;
 
                 var row = e.GetFirstAncestorWithClass(ListView.itemUssClassName);

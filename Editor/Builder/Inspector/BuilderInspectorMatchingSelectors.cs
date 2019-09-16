@@ -4,8 +4,8 @@ namespace Unity.UI.Builder
 {
     internal class BuilderInspectorMatchingSelectors
     {
-        private BuilderInspector m_Inspector;
-        private MatchedRulesExtractor m_MatchedRulesExtractor;
+        BuilderInspector m_Inspector;
+        MatchedRulesExtractor m_MatchedRulesExtractor;
 
         public MatchedRulesExtractor matchedRulesExtractor => m_MatchedRulesExtractor;
 

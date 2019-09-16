@@ -54,7 +54,7 @@ namespace Unity.UI.Builder
             m_CleanUpOverlay.Clear();
         }
 
-        private void PaintAllOverlay(Rect clipRect)
+        void PaintAllOverlay(Rect clipRect)
         {
             using (new GUIClip.ParentClipScope(Matrix4x4.identity, clipRect))
             {

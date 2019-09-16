@@ -6,10 +6,11 @@ namespace Unity.UI.Builder
 {
     class BuilderTracker : VisualElement, IBuilderSelectionNotifier
     {
-        private static readonly string s_UssClassName = "unity-builder-tracker";
+        static readonly string s_UssClassName = "unity-builder-tracker";
         protected static readonly string s_ActiveClassName = "unity-builder-tracker--active";
 
         protected VisualElement m_Target;
+        BuilderCanvas m_Canvas;
 
         public BuilderTracker()
         {
@@ -36,6 +37,9 @@ namespace Unity.UI.Builder
             m_Target.RegisterCallback<GeometryChangedEvent>(OnExternalTargetResize);
             m_Target.RegisterCallback<DetachFromPanelEvent>(OnTargetDeletion);
 
+            m_Canvas = m_Target.GetFirstAncestorOfType<BuilderCanvas>();
+            m_Canvas.RegisterCallback<GeometryChangedEvent>(OnCanvasResize);
+
             if (float.IsNaN(m_Target.layout.width))
             {
                 m_Target.RegisterCallback<GeometryChangedEvent>(OnInitialStylesResolved);
@@ -54,13 +58,15 @@ namespace Unity.UI.Builder
 
             m_Target.UnregisterCallback<GeometryChangedEvent>(OnExternalTargetResize);
             m_Target.UnregisterCallback<DetachFromPanelEvent>(OnTargetDeletion);
+            m_Canvas?.UnregisterCallback<GeometryChangedEvent>(OnCanvasResize);
 
             m_Target = null;
+            m_Canvas = null;
 
             RemoveFromClassList(s_ActiveClassName);
         }
 
-        private void OnInitialStylesResolved(GeometryChangedEvent evt)
+        void OnInitialStylesResolved(GeometryChangedEvent evt)
         {
             SetStylesFromTargetStyles();
             m_Target.UnregisterCallback<GeometryChangedEvent>(OnInitialStylesResolved);
@@ -69,12 +75,20 @@ namespace Unity.UI.Builder
         protected virtual void SetStylesFromTargetStyles()
         {}
 
-        private void OnExternalTargetResize(GeometryChangedEvent evt)
+        void OnExternalTargetResize(GeometryChangedEvent evt)
         {
             ResizeSelfFromTarget(m_Target.layout);
         }
 
-        private void OnTargetDeletion(DetachFromPanelEvent evt)
+        void OnCanvasResize(GeometryChangedEvent evt)
+        {
+            if (m_Target == null)
+                return;
+
+            ResizeSelfFromTarget(m_Target.layout);
+        }
+
+        void OnTargetDeletion(DetachFromPanelEvent evt)
         {
             Deactivate();
         }

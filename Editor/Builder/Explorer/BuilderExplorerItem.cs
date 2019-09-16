@@ -7,9 +7,9 @@ namespace Unity.UI.Builder
 {
     internal class BuilderExplorerItem : VisualElement
     {
-        private VisualElement m_Container;
-        private VisualElement m_ReorderZoneAbove;
-        private VisualElement m_ReorderZoneBelow;
+        VisualElement m_Container;
+        VisualElement m_ReorderZoneAbove;
+        VisualElement m_ReorderZoneBelow;
 
         public override VisualElement contentContainer => m_Container;
 
@@ -34,7 +34,7 @@ namespace Unity.UI.Builder
             this.RegisterCallback<MouseDownEvent>(e => OnMouseDownEventForRename(e));
         }
 
-        private void OnMouseDownEventForRename(MouseDownEvent e)
+        void OnMouseDownEventForRename(MouseDownEvent e)
         {
             if (e.clickCount != 2 || e.button != (int)MouseButton.LeftMouse || e.target == null)
                 return;
@@ -53,7 +53,7 @@ namespace Unity.UI.Builder
             FocusOnRenameTextField();
         }
 
-        private void FocusOnRenameTextField()
+        void FocusOnRenameTextField()
         {
             var renameTextfield = this.Q<TextField>(BuilderConstants.ExplorerItemRenameTextfieldName);
             var nameLabel = this.Q<Label>(classes: BuilderConstants.ExplorerItemNameLabelClassName);

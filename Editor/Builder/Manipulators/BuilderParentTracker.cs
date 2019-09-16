@@ -4,7 +4,7 @@ namespace Unity.UI.Builder
 {
     class BuilderParentTracker : BuilderTracker
     {
-        private static readonly string s_UssClassName = "unity-builder-parent-tracker";
+        static readonly string s_UssClassName = "unity-builder-parent-tracker";
 
         public new class UxmlFactory : UxmlFactory<BuilderParentTracker, UxmlTraits> { }
 

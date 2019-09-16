@@ -6,10 +6,10 @@ namespace Unity.UI.Builder
 {
     class BuilderAnchorer : BuilderManipulator
     {
-        private static readonly string s_UssClassName = "unity-builder-anchorer";
-        private static readonly string s_ActiveAnchorClassName = "unity-builder-anchorer--active";
+        static readonly string s_UssClassName = "unity-builder-anchorer";
+        static readonly string s_ActiveAnchorClassName = "unity-builder-anchorer--active";
 
-        private Dictionary<string, VisualElement> m_HandleElements;
+        Dictionary<string, VisualElement> m_HandleElements;
 
         public new class UxmlFactory : UxmlFactory<BuilderAnchorer, UxmlTraits> {}
 
@@ -61,7 +61,7 @@ namespace Unity.UI.Builder
                 m_HandleElements["right-anchor"].AddToClassList(s_ActiveAnchorClassName);
         }
 
-        private void SetAnchorHandleState(TrackedStyle style, bool state)
+        void SetAnchorHandleState(TrackedStyle style, bool state)
         {
             string anchorName = string.Empty;
             switch (style)
@@ -79,7 +79,7 @@ namespace Unity.UI.Builder
                 m_HandleElements[anchorName].RemoveFromClassList(s_ActiveAnchorClassName);
         }
 
-        private void OnAnchorClick(TrackedStyle primaryStyle, TrackedStyle oppositeStyle, TrackedStyle lengthStyle)
+        void OnAnchorClick(TrackedStyle primaryStyle, TrackedStyle oppositeStyle, TrackedStyle lengthStyle)
         {
             var primaryIsUnset = IsNoneOrAuto(primaryStyle); // We can enable primary.
             var oppositeIsSet = !IsNoneOrAuto(oppositeStyle); // We can safely unset primary.
@@ -88,6 +88,9 @@ namespace Unity.UI.Builder
                 return;
 
             var parentLength = GetResolvedStyleFloat(lengthStyle, m_Target.parent);
+            var parentBorderPrimary = GetBorderResolvedStyleFloat(primaryStyle, m_Target.parent);
+            var parentBorderOpposite = GetBorderResolvedStyleFloat(oppositeStyle, m_Target.parent);
+
             var primary = GetStyleSheetFloat(primaryStyle);
             var opposite = GetStyleSheetFloat(oppositeStyle);
             var length = GetStyleSheetFloat(lengthStyle);
@@ -103,7 +106,7 @@ namespace Unity.UI.Builder
 
             if (primaryIsUnset)
             {
-                var newPrimaryValue = parentLength - opposite - length - totalAxisMargin;
+                var newPrimaryValue = parentLength - opposite - length - totalAxisMargin - parentBorderOpposite - parentBorderPrimary;
                 SetStyleSheetValue(primaryName, newPrimaryValue);
                 RemoveStyleSheetValue(lengthName);
 
@@ -114,7 +117,7 @@ namespace Unity.UI.Builder
             }
             else if (oppositeIsSet)
             {
-                var newLengthValue = parentLength - opposite - primary - totalAxisMargin;
+                var newLengthValue = parentLength - opposite - primary - totalAxisMargin - parentBorderOpposite - parentBorderPrimary;
                 SetStyleSheetValue(lengthName, newLengthValue);
                 RemoveStyleSheetValue(primaryName);
 

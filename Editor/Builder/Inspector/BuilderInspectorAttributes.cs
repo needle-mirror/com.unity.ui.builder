@@ -10,11 +10,11 @@ namespace Unity.UI.Builder
 {
     internal class BuilderInspectorAttributes : IBuilderInspectorSection
     {
-        private BuilderInspector m_Inspector;
-        private BuilderSelection m_Selection;
-        private PersistedFoldout m_AttributesSection;
+        BuilderInspector m_Inspector;
+        BuilderSelection m_Selection;
+        PersistedFoldout m_AttributesSection;
 
-        private VisualElement currentVisualElement => m_Inspector.currentVisualElement;
+        VisualElement currentVisualElement => m_Inspector.currentVisualElement;
 
         public VisualElement root => m_AttributesSection;
 
@@ -58,7 +58,7 @@ namespace Unity.UI.Builder
             m_AttributesSection.contentContainer.SetEnabled(false);
         }
 
-        private void GenerateAttributeFields()
+        void GenerateAttributeFields()
         {
             var attributeList = currentVisualElement.GetAttributeDescriptions();
 
@@ -72,7 +72,7 @@ namespace Unity.UI.Builder
             }
         }
 
-        private BuilderStyleRow CreateAttributeRow(UxmlAttributeDescription attribute)
+        BuilderStyleRow CreateAttributeRow(UxmlAttributeDescription attribute)
         {
             var attributeType = attribute.GetType();
             var vea = currentVisualElement.GetVisualElementAsset();
@@ -169,7 +169,34 @@ namespace Unity.UI.Builder
             return styleRow;
         }
 
-        private void RefreshAttributeField(BindableElement fieldElement)
+        object GetCustomValueAbstract(string attributeName)
+        {
+            if (currentVisualElement is ScrollView)
+            {
+                var scrollView = currentVisualElement as ScrollView;
+                if (attributeName == "mode")
+                {
+                    if (scrollView.ClassListContains(ScrollView.verticalVariantUssClassName))
+                        return ScrollViewMode.Vertical;
+                    else if (scrollView.ClassListContains(ScrollView.horizontalVariantUssClassName))
+                        return ScrollViewMode.Horizontal;
+                    else if (scrollView.ClassListContains(ScrollView.verticalHorizontalVariantUssClassName))
+                        return ScrollViewMode.VerticalAndHorizontal;
+                }
+                else if (attributeName == "show-horizontal-scroller")
+                {
+                    return scrollView.showHorizontal;
+                }
+                else if (attributeName == "show-vertical-scroller")
+                {
+                    return scrollView.showVertical;
+                }
+            }
+
+            return null;
+        }
+
+        void RefreshAttributeField(BindableElement fieldElement)
         {
             var styleRow = fieldElement.GetProperty(BuilderConstants.InspectorLinkedStyleRowVEPropertyName) as VisualElement;
             var attribute = fieldElement.GetProperty(BuilderConstants.InspectorLinkedAttributeDescriptionVEPropertyName) as UxmlAttributeDescription;
@@ -178,10 +205,16 @@ namespace Unity.UI.Builder
             var camel = BuilderNameUtilities.ConvertDashToCamel(attribute.name);
 
             var fieldInfo = veType.GetProperty(camel, BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
-            if (fieldInfo == null)
-                return;
 
-            var veValueAbstract = fieldInfo.GetValue(currentVisualElement);
+            object veValueAbstract = null;
+            if (fieldInfo == null)
+            {
+                veValueAbstract = GetCustomValueAbstract(attribute.name);
+            }
+            else
+            {
+                veValueAbstract = fieldInfo.GetValue(currentVisualElement);
+            }
             if (veValueAbstract == null)
                 return;
 
@@ -262,7 +295,7 @@ namespace Unity.UI.Builder
                 styleRow.AddToClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
         }
 
-        private void ResetAttributeFieldToDefault(BindableElement fieldElement)
+        void ResetAttributeFieldToDefault(BindableElement fieldElement)
         {
             var styleRow = fieldElement.GetProperty(BuilderConstants.InspectorLinkedStyleRowVEPropertyName) as VisualElement;
             var attribute = fieldElement.GetProperty(BuilderConstants.InspectorLinkedAttributeDescriptionVEPropertyName) as UxmlAttributeDescription;
@@ -337,7 +370,7 @@ namespace Unity.UI.Builder
             }
         }
 
-        private void BuildAttributeFieldContextualMenu(ContextualMenuPopulateEvent evt)
+        void BuildAttributeFieldContextualMenu(ContextualMenuPopulateEvent evt)
         {
             evt.menu.AppendAction(
                 BuilderConstants.ContextMenuUnsetMessage,
@@ -346,7 +379,7 @@ namespace Unity.UI.Builder
                 evt.target);
         }
 
-        private void UnsetAttributeProperty(DropdownMenuAction action)
+        void UnsetAttributeProperty(DropdownMenuAction action)
         {
             var fieldElement = action.userData as BindableElement;
             var attributeName = fieldElement.bindingPath;
@@ -368,55 +401,55 @@ namespace Unity.UI.Builder
             m_Selection.NotifyOfHierarchyChange(m_Inspector);
         }
 
-        private void OnAttributeValueChange(ChangeEvent<string> evt)
+        void OnAttributeValueChange(ChangeEvent<string> evt)
         {
             var field = evt.target as TextField;
             PostAttributeValueChange(field, evt.newValue);
         }
 
-        private void OnAttributeValueChange(ChangeEvent<float> evt)
+        void OnAttributeValueChange(ChangeEvent<float> evt)
         {
             var field = evt.target as FloatField;
             PostAttributeValueChange(field, evt.newValue.ToString());
         }
 
-        private void OnAttributeValueChange(ChangeEvent<double> evt)
+        void OnAttributeValueChange(ChangeEvent<double> evt)
         {
             var field = evt.target as DoubleField;
             PostAttributeValueChange(field, evt.newValue.ToString());
         }
 
-        private void OnAttributeValueChange(ChangeEvent<int> evt)
+        void OnAttributeValueChange(ChangeEvent<int> evt)
         {
             var field = evt.target as IntegerField;
             PostAttributeValueChange(field, evt.newValue.ToString());
         }
 
-        private void OnAttributeValueChange(ChangeEvent<long> evt)
+        void OnAttributeValueChange(ChangeEvent<long> evt)
         {
             var field = evt.target as LongField;
             PostAttributeValueChange(field, evt.newValue.ToString());
         }
 
-        private void OnAttributeValueChange(ChangeEvent<bool> evt)
+        void OnAttributeValueChange(ChangeEvent<bool> evt)
         {
             var field = evt.target as Toggle;
             PostAttributeValueChange(field, evt.newValue.ToString().ToLower());
         }
 
-        private void OnAttributeValueChange(ChangeEvent<Color> evt)
+        void OnAttributeValueChange(ChangeEvent<Color> evt)
         {
             var field = evt.target as ColorField;
             PostAttributeValueChange(field, "#" + ColorUtility.ToHtmlStringRGBA(evt.newValue));
         }
 
-        private void OnAttributeValueChange(ChangeEvent<Enum> evt)
+        void OnAttributeValueChange(ChangeEvent<Enum> evt)
         {
             var field = evt.target as EnumField;
             PostAttributeValueChange(field, evt.newValue.ToString());
         }
 
-        private void PostAttributeValueChange(BindableElement field, string value)
+        void PostAttributeValueChange(BindableElement field, string value)
         {
             // Undo/Redo
             Undo.RegisterCompleteObjectUndo(m_Inspector.visualTreeAsset, BuilderConstants.ChangeAttributeValueUndoMessage);
@@ -453,7 +486,7 @@ namespace Unity.UI.Builder
             m_Selection.NotifyOfHierarchyChange(m_Inspector);
         }
 
-        private void CallInitOnElement()
+        void CallInitOnElement()
         {
             var attributeList = new List<UxmlAttributeDescription>();
             var fullTypeName = currentVisualElement.GetType().ToString();
@@ -464,7 +497,7 @@ namespace Unity.UI.Builder
                 var traitsField = factory.GetType().GetField("m_Traits", BindingFlags.Instance | BindingFlags.NonPublic);
                 if (traitsField == null)
                 {
-                    Debug.LogError("UI Builder: IUxmlFactory.m_Traits private field has not been found! Update the reflection code!");
+                    Debug.LogError("UI Builder: IUxmlFactory.m_Traits field has not been found! Update the reflection code!");
                     return;
                 }
 

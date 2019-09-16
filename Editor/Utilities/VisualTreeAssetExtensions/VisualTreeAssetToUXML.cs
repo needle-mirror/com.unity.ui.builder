@@ -12,28 +12,41 @@ namespace Unity.UI.Builder
 {
     internal static class VisualTreeAssetToUXML
     {
-        private static void Indent(StringBuilder stringBuilder, int depth)
+        static void Indent(StringBuilder stringBuilder, int depth)
         {
             for (int i = 0; i < depth; ++i)
                 stringBuilder.Append("    ");
         }
 
-        private static void AppendElementTypeName(VisualElementAsset root, StringBuilder stringBuilder)
+        static void AppendElementTypeName(VisualElementAsset root, StringBuilder stringBuilder)
         {
             if (root is TemplateAsset)
             {
+                stringBuilder.Append(BuilderConstants.UxmlEngineNamespaceReplace);
                 stringBuilder.Append("Instance");
                 return;
             }
 
             var typeName = root.fullTypeName;
-            typeName = typeName.Replace("UnityEngine.UIElements.", string.Empty);
-            typeName = typeName.Replace("UnityEditor.UIElements.", "uie:");
+            if (typeName.StartsWith(BuilderConstants.UxmlEngineNamespace))
+            {
+                typeName = typeName.Substring(BuilderConstants.UxmlEngineNamespace.Length);
+                stringBuilder.Append(BuilderConstants.UxmlEngineNamespaceReplace);
+                stringBuilder.Append(typeName);
+                return;
+            }
+            else if (typeName.StartsWith(BuilderConstants.UxmlEditorNamespace))
+            {
+                typeName = typeName.Substring(BuilderConstants.UxmlEditorNamespace.Length);
+                stringBuilder.Append(BuilderConstants.UxmlEditorNamespaceReplace);
+                stringBuilder.Append(typeName);
+                return;
+            }
 
             stringBuilder.Append(typeName);
         }
 
-        private static void AppendElementAttribute(string name, string value, StringBuilder stringBuilder)
+        static void AppendElementAttribute(string name, string value, StringBuilder stringBuilder)
         {
             if (string.IsNullOrEmpty(value))
                 return;
@@ -48,12 +61,12 @@ namespace Unity.UI.Builder
             stringBuilder.Append("\"");
         }
 
-        private static void AppendElementNonStyleAttributes(VisualElementAsset vea, StringBuilder stringBuilder, bool writingToFile)
+        static void AppendElementNonStyleAttributes(VisualElementAsset vea, StringBuilder stringBuilder, bool writingToFile)
         {
             var fieldInfo = VisualElementAssetExtensions.AttributesListFieldInfo;
             if (fieldInfo == null)
             {
-                Debug.LogError("UI Builder: VisualElementAsset.m_Properties private field has not been found! Update the reflection code!");
+                Debug.LogError("UI Builder: VisualElementAsset.m_Properties field has not been found! Update the reflection code!");
                 return;
             }
 
@@ -78,7 +91,7 @@ namespace Unity.UI.Builder
             }
         }
 
-        private static void AppendTemplateRegistrations(
+        static void AppendTemplateRegistrations(
             VisualTreeAsset vta, string vtaPath, StringBuilder stringBuilder, HashSet<string> templatesFilter = null)
         {
             if (vta.templateAssets != null && vta.templateAssets.Count > 0)
@@ -96,7 +109,9 @@ namespace Unity.UI.Builder
                         continue;
 
                     Indent(stringBuilder, 1);
-                    stringBuilder.Append("<Template");
+                    stringBuilder.Append("<");
+                    stringBuilder.Append(BuilderConstants.UxmlEngineNamespaceReplace);
+                    stringBuilder.Append("Template");
                     AppendElementAttribute("name", templateAsset.templateAlias, stringBuilder);
 
                     var fieldInfo = VisualTreeAssetExtensions.UsingsListFieldInfo;
@@ -121,14 +136,14 @@ namespace Unity.UI.Builder
                     }
                     else
                     {
-                        Debug.LogError("UI Builder: VisualTreeAsset.m_Usings private field has not been found! Update the reflection code!");
+                        Debug.LogError("UI Builder: VisualTreeAsset.m_Usings field has not been found! Update the reflection code!");
                     }
                     stringBuilder.Append(" />\n");
                 }
             }
         }
 
-        private static void GatherUsedTemplates(
+        static void GatherUsedTemplates(
             VisualTreeAsset vta, VisualElementAsset root,
             Dictionary<int, List<VisualElementAsset>> idToChildren,
             HashSet<string> templates)
@@ -171,7 +186,7 @@ namespace Unity.UI.Builder
             return result;
         }
 
-        private static void ProcessStyleSheetPath(
+        static void ProcessStyleSheetPath(
             string vtaPath,
             string path, StringBuilder stringBuilder, int depth, bool omitUnsavedUss,
             ref bool newLineAdded, ref bool hasChildTags)
@@ -205,7 +220,7 @@ namespace Unity.UI.Builder
             hasChildTags = true;
         }
 
-        private static void GenerateUXMLRecursive(
+        static void GenerateUXMLRecursive(
             VisualTreeAsset vta, string vtaPath, VisualElementAsset root,
             Dictionary<int, List<VisualElementAsset>> idToChildren,
             StringBuilder stringBuilder, int depth,

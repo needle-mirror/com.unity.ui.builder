@@ -4,29 +4,41 @@
         <uie:ColorField label="Color" tooltip="border-color" />
     </uib:BuilderStyleRow>
 
-    <!-- Border Left Color -->
-    <uib:BuilderStyleRow binding-path="border-left-color" class="unity-builder-2019-3-or-newer">
-        <uie:ColorField label="Color Left" tooltip="border-left-color" />
-    </uib:BuilderStyleRow>
+    <!-- Border Width -->
+    <uib:BuilderStyleRow name="inspector-style-section-foldout-border-color" class="unity-builder-2019-3-or-newer">
+        <uib:FoldoutColorField
+            text="Color"
+            tooltip="border-color"
+            binding-paths="border-left-color border-right-color border-top-color border-bottom-color"
+            view-data-key="builder-inspector-style-section-foldout-border-color"
+            class="unity-sub-foldout"
+            value="false">
 
-    <!-- Border Right Color -->
-    <uib:BuilderStyleRow binding-path="border-right-color" class="unity-builder-2019-3-or-newer">
-        <uie:ColorField label="Color Right" tooltip="border-right-color" />
-    </uib:BuilderStyleRow>
+            <!-- Border Left Color -->
+            <uib:BuilderStyleRow binding-path="border-left-color" class="unity-builder-2019-3-or-newer">
+                <uie:ColorField label="Left" tooltip="border-left-color" />
+            </uib:BuilderStyleRow>
 
-    <!-- Border Top Color -->
-    <uib:BuilderStyleRow binding-path="border-top-color" class="unity-builder-2019-3-or-newer">
-        <uie:ColorField label="Color Top" tooltip="border-top-color" />
-    </uib:BuilderStyleRow>
+            <!-- Border Right Color -->
+            <uib:BuilderStyleRow binding-path="border-right-color" class="unity-builder-2019-3-or-newer">
+                <uie:ColorField label="Right" tooltip="border-right-color" />
+            </uib:BuilderStyleRow>
 
-    <!-- Border Bottom Color -->
-    <uib:BuilderStyleRow binding-path="border-bottom-color" class="unity-builder-2019-3-or-newer">
-        <uie:ColorField label="Color Bottom" tooltip="border-bottom-color" />
+            <!-- Border Top Color -->
+            <uib:BuilderStyleRow binding-path="border-top-color" class="unity-builder-2019-3-or-newer">
+                <uie:ColorField label="Top" tooltip="border-top-color" />
+            </uib:BuilderStyleRow>
+
+            <!-- Border Bottom Color -->
+            <uib:BuilderStyleRow binding-path="border-bottom-color" class="unity-builder-2019-3-or-newer">
+                <uie:ColorField label="Bottom" tooltip="border-bottom-color" />
+            </uib:BuilderStyleRow>
+        </uib:FoldoutColorField>
     </uib:BuilderStyleRow>
 
     <!-- Border Width -->
     <uib:BuilderStyleRow name="inspector-style-section-foldout-border-width">
-        <uib:PersistedFoldoutWithField
+        <uib:FoldoutNumberField
             text="Width"
             tooltip="border-width"
             binding-paths="border-left-width border-right-width border-top-width border-bottom-width"
@@ -53,12 +65,12 @@
             <uib:BuilderStyleRow binding-path="border-bottom-width">
                 <uie:IntegerField label="Bottom" tooltip="border-bottom-width" />
             </uib:BuilderStyleRow>
-        </uib:PersistedFoldoutWithField>
+        </uib:FoldoutNumberField>
     </uib:BuilderStyleRow>
 
     <!-- Border Radius -->
     <uib:BuilderStyleRow name="inspector-style-section-foldout-border-radius">
-        <uib:PersistedFoldoutWithField
+        <uib:FoldoutNumberField
             text="Radius"
             tooltip="border-radius"
             binding-paths="border-top-left-radius border-bottom-left-radius border-top-right-radius border-bottom-right-radius"
@@ -85,6 +97,6 @@
             <uib:BuilderStyleRow binding-path="border-bottom-right-radius">
                 <uie:IntegerField label="Bottom-Right" tooltip="border-bottom-right-radius" />
             </uib:BuilderStyleRow>
-        </uib:PersistedFoldoutWithField>
+        </uib:FoldoutNumberField>
     </uib:BuilderStyleRow>
 </UXML>

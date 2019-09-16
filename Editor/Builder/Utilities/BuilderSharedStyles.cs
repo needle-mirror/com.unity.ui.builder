@@ -156,7 +156,7 @@ namespace Unity.UI.Builder
             return null;
         }
 
-        private static VisualElement CreateNewSelectorElement(StyleComplexSelector complexSelector)
+        static VisualElement CreateNewSelectorElement(StyleComplexSelector complexSelector)
         {
             var ssVE = new VisualElement();
 

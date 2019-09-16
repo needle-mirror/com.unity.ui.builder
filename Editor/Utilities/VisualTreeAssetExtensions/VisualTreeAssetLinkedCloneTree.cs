@@ -12,11 +12,11 @@ namespace Unity.UI.Builder
     internal static class VisualTreeAssetLinkedCloneTree
     {
 #if UNITY_2019_3_OR_NEWER
-        private static readonly StylePropertyReader s_StylePropertyReader = new StylePropertyReader();
+        static readonly StylePropertyReader s_StylePropertyReader = new StylePropertyReader();
 #endif
-        private static readonly Dictionary<string, VisualElement> s_TemporarySlotInsertionPoints = new Dictionary<string, VisualElement>();
+        static readonly Dictionary<string, VisualElement> s_TemporarySlotInsertionPoints = new Dictionary<string, VisualElement>();
 
-        private static VisualElement CloneSetupRecursively(VisualTreeAsset vta, VisualElementAsset root,
+        static VisualElement CloneSetupRecursively(VisualTreeAsset vta, VisualElementAsset root,
             Dictionary<int, List<VisualElementAsset>> idToChildren, CreationContext context)
         {
             // This is needed because of asset reloads during domain reloads where the

@@ -9,7 +9,7 @@ namespace Unity.UI.Builder
 {
     internal class BuilderInspector : BuilderPaneContent, IBuilderSelectionNotifier
     {
-        private enum Section
+        enum Section
         {
             NothingSelected = 1 << 0,
             StyleSheet = 1 << 1,
@@ -46,38 +46,40 @@ namespace Unity.UI.Builder
         [SerializeField] int m_OldestScrollPositionIndex = 0;
         [SerializeField] float[] m_CachedContentHeights = new float[s_MaxCachedScrollPositions];
         [SerializeField] CachedScrollPosition[] m_CachedScrollPositions = new CachedScrollPosition[s_MaxCachedScrollPositions];
-        private float contentHeight => m_ScrollView.contentContainer.layout.height;
+        float contentHeight => m_ScrollView.contentContainer.layout.height;
 
         // Utilities
-        private BuilderInspectorMatchingSelectors m_MatchingSelectors;
-        private BuilderInspectorStyleFields m_StyleFields;
+        BuilderInspectorMatchingSelectors m_MatchingSelectors;
+        BuilderInspectorStyleFields m_StyleFields;
 
         // Sections
-        private BuilderInspectorAttributes m_AttributesSection;
-        private BuilderInspectorInheritedStyles m_InheritedStyleSection;
-        private BuilderInspectorLocalStyles m_LocalStylesSection;
-        private BuilderInspectorSelector m_SelectorSection;
-        private BuilderInspectorStyleSheet m_StyleSheetSection;
+        BuilderInspectorCanvas m_CanvasSection;
+        BuilderInspectorAttributes m_AttributesSection;
+        BuilderInspectorInheritedStyles m_InheritedStyleSection;
+        BuilderInspectorLocalStyles m_LocalStylesSection;
+        BuilderInspectorSelector m_SelectorSection;
+        BuilderInspectorStyleSheet m_StyleSheetSection;
+        public BuilderInspectorCanvas canvasInspector => m_CanvasSection;
 
         // Constants
-        private static readonly string s_UssClassName = "unity-builder-inspector";
+        static readonly string s_UssClassName = "unity-builder-inspector";
 
         // External References
-        private Builder m_Builder;
-        private BuilderSelection m_Selection;
+        Builder m_Builder;
+        BuilderSelection m_Selection;
 
         // Current Selection
-        private StyleRule m_CurrentRule;
-        private VisualElement m_CurrentVisualElement;
+        StyleRule m_CurrentRule;
+        VisualElement m_CurrentVisualElement;
 
         // Sections List (for hiding/showing based on current selection)
-        private List<VisualElement> m_Sections;
+        List<VisualElement> m_Sections;
 
         // Minor Sections
-        private Label m_NothingSelectedSection;
-        private Label m_VisualTreeAssetSection;
+        Label m_NothingSelectedSection;
 
         public BuilderSelection selection => m_Selection;
+        public BuilderDocument document => m_Builder.document;
         public Builder builder => m_Builder;
 
         public StyleSheet styleSheet
@@ -127,7 +129,7 @@ namespace Unity.UI.Builder
 
                 return m_CurrentRule;
             }
-            private set
+            set
             {
                 m_CurrentRule = value;
             }
@@ -136,7 +138,7 @@ namespace Unity.UI.Builder
         public VisualElement currentVisualElement
         {
             get { return m_CurrentVisualElement; }
-            private set { m_CurrentVisualElement = value; }
+            set { m_CurrentVisualElement = value; }
         }
 
         public BuilderInspector(Builder builder, BuilderSelection selection)
@@ -186,9 +188,9 @@ namespace Unity.UI.Builder
             m_NothingSelectedSection = this.Q<Label>("nothing-selected-label");
             m_Sections.Add(m_NothingSelectedSection);
 
-            // Visual Tree Asset Section
-            m_VisualTreeAssetSection = this.Q<Label>("uxml-document-label");
-            m_Sections.Add(m_VisualTreeAssetSection);
+            // Canvas Section
+            m_CanvasSection = new BuilderInspectorCanvas(this);
+            m_Sections.Add(m_CanvasSection.root);
 
             // StyleSheet Section
             m_StyleSheetSection = new BuilderInspectorStyleSheet(this);
@@ -222,37 +224,37 @@ namespace Unity.UI.Builder
             base.AddFocusable(focusable);
         }
 
-        private void RefreshAfterFirstInit(GeometryChangedEvent evt)
+        void RefreshAfterFirstInit(GeometryChangedEvent evt)
         {
-            currentVisualElement.UnregisterCallback<GeometryChangedEvent>(RefreshAfterFirstInit);
+            currentVisualElement?.UnregisterCallback<GeometryChangedEvent>(RefreshAfterFirstInit);
             RefreshUI();
         }
 
-        private void ResetSection(VisualElement section)
+        void ResetSection(VisualElement section)
         {
             section.AddToClassList(BuilderConstants.HiddenStyleClassName);
         }
 
-        private void EnableSection(VisualElement section)
+        void EnableSection(VisualElement section)
         {
             section.RemoveFromClassList(BuilderConstants.HiddenStyleClassName);
         }
 
-        private void EnableFields()
+        void EnableFields()
         {
             m_AttributesSection.Enable();
             m_InheritedStyleSection.Enable();
             m_LocalStylesSection.Enable();
         }
 
-        private void DisableFields()
+        void DisableFields()
         {
             m_AttributesSection.Disable();
             m_InheritedStyleSection.Disable();
             m_LocalStylesSection.Disable();
         }
 
-        private void EnableSections(Section section)
+        void EnableSections(Section section)
         {
             if (section.HasFlag(Section.NothingSelected))
                 EnableSection(m_NothingSelectedSection);
@@ -267,10 +269,10 @@ namespace Unity.UI.Builder
             if (section.HasFlag(Section.LocalStyles))
                 EnableSection(m_LocalStylesSection.root);
             if (section.HasFlag(Section.VisualTreeAsset))
-                EnableSection(m_VisualTreeAssetSection);
+                EnableSection(m_CanvasSection.root);
         }
 
-        private void ResetSections()
+        void ResetSections()
         {
             EnableFields();
 
@@ -289,12 +291,12 @@ namespace Unity.UI.Builder
             SetScrollerPositionFromSavedState();
         }
 
-        private void OnScrollViewContentGeometryChange(GeometryChangedEvent evt)
+        void OnScrollViewContentGeometryChange(GeometryChangedEvent evt)
         {
             SetScrollerPositionFromSavedState();
         }
 
-        private void CacheScrollPosition(float currentScrollPosition, float currentMaxScrollValue)
+        void CacheScrollPosition(float currentScrollPosition, float currentMaxScrollValue)
         {
             // This avoid pushing legitimate cached positions out of the cache with
             // short (nothing selected) content.
@@ -331,7 +333,7 @@ namespace Unity.UI.Builder
             m_CachedContentHeights[index] = contentHeight;
         }
 
-        private int GetCachedScrollPositionIndex()
+        int GetCachedScrollPositionIndex()
         {
             int index = -1;
             for (int i = 0; i < m_CachedScrollPositionCount; ++i)
@@ -344,7 +346,7 @@ namespace Unity.UI.Builder
             return index;
         }
 
-        private void SetScrollerPositionFromSavedState()
+        void SetScrollerPositionFromSavedState()
         {
             var index = GetCachedScrollPositionIndex();
             if (index < 0)
@@ -409,6 +411,11 @@ namespace Unity.UI.Builder
 
             // Create the fields for the overridable styles.
             m_LocalStylesSection.Refresh();
+        }
+
+        public void OnAfterBuilderDeserialize()
+        {
+            m_CanvasSection.Refresh();
         }
 
         public void HierarchyChanged(VisualElement element, BuilderHierarchyChangeType changeType)

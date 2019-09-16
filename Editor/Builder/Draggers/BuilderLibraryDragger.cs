@@ -5,12 +5,12 @@ namespace Unity.UI.Builder
 {
     internal class BuilderLibraryDragger : BuilderDragger
     {
-        private static readonly string s_ContainerClassName = "unity-builder-dragger__container";
-        private static readonly string s_OverlayName = "unity-dragged-element-overlay";
-        private static readonly string s_OverlayClassName = "unity-builder-dragger__overlay";
-        private static readonly string s_EmptyVisualElementClassName = "unity-builder-dragger__empty-vs";
-        private static readonly string s_BeingDraggedClassName = "unity-builder-dragger--being-dragged";
-        private static readonly string s_DragPreviewElementClassName = "unity-builder-dragger__drag-preview";
+        static readonly string s_ContainerClassName = "unity-builder-dragger__container";
+        static readonly string s_OverlayName = "unity-dragged-element-overlay";
+        static readonly string s_OverlayClassName = "unity-builder-dragger__overlay";
+        static readonly string s_EmptyVisualElementClassName = "unity-builder-dragger__empty-vs";
+        static readonly string s_BeingDraggedClassName = "unity-builder-dragger--being-dragged";
+        static readonly string s_DragPreviewElementClassName = "unity-builder-dragger__drag-preview";
 
         VisualElement m_DragPreviewLastParent;
         VisualElement m_DragPreviewElement;
@@ -149,7 +149,7 @@ namespace Unity.UI.Builder
             return true;
         }
 
-        private bool ElementIsInsideDragPreviewElement(VisualElement ve)
+        bool ElementIsInsideDragPreviewElement(VisualElement ve)
         {
             if (ve == null)
                 return false;
@@ -160,7 +160,7 @@ namespace Unity.UI.Builder
             return ElementIsInsideDragPreviewElement(ve.parent);
         }
 
-        private void ResetDragPreviewElement()
+        void ResetDragPreviewElement()
         {
             if (m_DragPreviewLastParent != null)
             {

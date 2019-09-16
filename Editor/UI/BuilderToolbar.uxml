@@ -1,13 +1,8 @@
 <UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
     <uie:Toolbar class="unity-builder-toolbar">
-        <uie:ToolbarButton name="new-button" text="New" />
-        <uie:ToolbarButton name="new-test-button" text="New (Test)" class="unity-builder__toolbar-align" />
-        <uie:ToolbarButton name="save-button" text="Save" class="unity-builder__toolbar-align" />
-        <uie:ToolbarButton name="save-as-button" text="Save As" class="unity-builder__toolbar-align" />
-        <uie:ObjectField name="document-field" class="unity-builder__toolbar-document-field" />
+        <uie:ToolbarMenu name="file-menu" text="File" />
         <uie:ToolbarSpacer class="unity-builder__toolbar-flex-space" />
         <uie:ToolbarMenu name="canvas-theme-menu" text="Canvas Theme" class="unity-builder__theme-toolbar-menu" />
-        <uie:ToolbarToggle name="in-game-button" text="Game" />
         <uie:ToolbarToggle name="preview-button" text="Preview" class="unity-builder__toolbar-align" />
     </uie:Toolbar>
 </UXML>

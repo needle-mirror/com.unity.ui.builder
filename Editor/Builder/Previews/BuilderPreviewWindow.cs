@@ -47,13 +47,13 @@ namespace Unity.UI.Builder
             CloneTree();
         }
 
-        private void VisualTreeAssetChanged(ChangeEvent<Object> evt)
+        void VisualTreeAssetChanged(ChangeEvent<Object> evt)
         {
             m_CurrentVisualTreeAsset = evt.newValue as VisualTreeAsset;
             CloneTree();
         }
 
-        private void CloneTree()
+        void CloneTree()
         {
             m_Container.Clear();
 

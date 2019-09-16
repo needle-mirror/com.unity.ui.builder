@@ -4,11 +4,53 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2019-09-15
+
+- Added full documentation.
+- Toolbar:
+    - Moved **New**, **Save**, and **Save As** buttons in the Toolbar to a new **File** menu in the Toolbar.
+    - Added **Open...** option to the new **File** menu that opens a file selection dialog.
+    - Removed the UXML Asset Object Field from the Toolbar.
+    - Added name of currently open UXML Asset in the **Viewport** title bar, faded, and with a `*` when there are unsaved changes.
+    - Added UI Builder package version to the **Viewport** title bar.
+- Inspector:
+    - Updated Inspector icons.
+    - Inspector style class pills in the **Inherited Styles** section will now show faded if there is no single-class selector in the main StyleSheet.
+    - Double-clicking on a style class pill in the **Inherited Styles** section it will now select the corresponding single-class selector in the main StyleSheet, if one exists, otherwise it will create it.
+    - The label of the header field of a group of number fields (ie. border width) now has a dragger manipulator so you can drag-change all grouped fields (border sides) at once.
+    - (2019.3+) Border color style fields are now grouped under a Foldout with a header field that changes all 4 sides at once.
+- Canvas:
+    - Added Canvas inspector. Access by selecting the Hierarchy item in the Explorer.
+    - Can add a custom Canvas background color, image, or camera view (with an Opacity setting).
+    - Removed **Game** button from Toolbar.
+    - Added and now enforcing a minimum Canvas size.
+    - Canvas size will now be remembered for each asset and restored when loading the asset. It also means it will survive Editor restarts.
+- Other:
+    - UXML and USS Preview section now starts off minimized.
+    - Previously open document will be re-opened after a Unity Editor restart. Unsaved changes will still be discarded on Editor quit.
+    - Added PropertyField, ProgressBar, ScrollView, and ListView to the Library.
+    - Removed the default namespace from UXML generation, aliased the `UnityEngine.UIElements` namespace to `ui:`, and added `ui:` to the main `<ui:UXML>` tag.
+- Fixes:
+    - Fixed `<Style>` tag staying on root elements that are reparented to no longer be at the root, leading to multiple assignments of the same StyleSheet.
+    - Fixed custom C# elements inside different namespaces not working because the default namespace in UXML was `UnityEngine.UIElements`.
+    - Fixed UXML generation when a custom element had "UnityEngine.UIElements" in its full type but did not start with it.
+    - Fixed copy/paste/duplicate of elements with inlined style background images or relative stylesheet paths.
+    - Fixed pasting not always putting at the end of the selected element's parent's children list.
+    - Fixed first creation VisualElement helper visualizer and sizer not keeping the shape of its VisualElement if the parent element was set to flex-direction: row.
+    - Fixed Canvas manipulators not properly staying on top of the target element sometimes when the Canvas itself was being resized.
+    - Fixed Canvas manipulators not accounting for the target element's parent's border widths, causing jitters.
+    - Fixed uxml assets with the same names all being disabled in the Library when one of them was open.
+    - Fixed the asset name in the Toolbar ObjectField not updating after a new file Save or a Save As.
+    - Fixed Save As no properly rename the StyleSheet references in the new asset.
+    - Fixed Save As default folder path not being properly set to current document's folder in some cases.
+    - Fixed adding a new selector via the Explorer not updating the currently selected element's Inspector.
+    - (2019.3+) Fixed duplicate `<Style>` tags appearing in the UXML after a Save As, one referencing the old StyleSheet.
+
 ## [0.7.0] - 2019-09-06
 
 - Major rework of the document managment to allow live updates where the assets are being used (Editor and Runtime). The UI Builder now operates directly on the imported assets, instead of copies.
 - Added copy/paste/cut/duplicate support for USS Selectors, including pasting to/from a text file.
-- (2019.3+) Added support for the "src" attribute in UXML for the <Style> and <Template> tags. A relative path to a .uss or .uxml asset will be used if the asset is in the same folder (directly or in a subfolder) as the main asset. Otherwise, an absolute path will be used.
+- (2019.3+) Added support for the `src` attribute in UXML for the `<Style>` and `<Template>` tags. A relative path to a .uss or .uxml asset will be used if the asset is in the same folder (directly or in a subfolder) as the main asset. Otherwise, an absolute path will be used.
 - Style category headers will now have an override bar and bold font if any child styles are overridden.
 - Added the ability to select elements inside a Template instance or a C# element. When selecting such an element, all fields in the Inspector will be disabled. Also, such selections are only allowed in the Explorer, not the Canvas.
 - Added "Fit Canvas" button in the Viewport that appears when the Canvas is bigger than the Viewport (an previously unrecoverable state), and that will resize the Canvas to fit the Viewport.

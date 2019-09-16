@@ -38,18 +38,18 @@ namespace Unity.UI.Builder
     internal class BuilderSelection
     {
 #if UNITY_2019_3_OR_NEWER
-        private static readonly StylePropertyReader s_StylePropertyReader = new StylePropertyReader();
+        static readonly StylePropertyReader s_StylePropertyReader = new StylePropertyReader();
 #endif
-        private List<IBuilderSelectionNotifier> m_Notifiers;
+        List<IBuilderSelectionNotifier> m_Notifiers;
 
-        private IBuilderSelectionNotifier m_CurrentNotifier;
-        private List<string> m_CurrentStyleList;
-        private Action m_NextPostStylingAction;
+        IBuilderSelectionNotifier m_CurrentNotifier;
+        List<string> m_CurrentStyleList;
+        Action m_NextPostStylingAction;
 
-        private VisualElement m_Root;
-        private Builder m_Builder;
-        private VisualElement m_DocumentElement;
-        private VisualElement m_DummyElementForStyleChangeNotifications;
+        VisualElement m_Root;
+        Builder m_Builder;
+        VisualElement m_DocumentElement;
+        VisualElement m_DummyElementForStyleChangeNotifications;
 
         public BuilderSelectionType selectionType
         {
@@ -75,7 +75,7 @@ namespace Unity.UI.Builder
             }
         }
 
-        private List<VisualElement> m_Selection;
+        List<VisualElement> m_Selection;
         public IEnumerable<VisualElement> selection
         {
             get { return m_Selection; }
@@ -231,7 +231,7 @@ namespace Unity.UI.Builder
             QueueUpPostPanelUpdaterChangeAction(NotifyOfStylingChangePostStylingUpdate);
         }
 
-        private void NotifyOfSelectionChange(IBuilderSelectionNotifier source)
+        void NotifyOfSelectionChange(IBuilderSelectionNotifier source)
         {
             if (m_Notifiers == null || m_Notifiers.Count == 0)
                 return;
@@ -258,7 +258,7 @@ namespace Unity.UI.Builder
             m_CurrentStyleList = null;
         }
 
-        private void QueueUpPostPanelUpdaterChangeAction(Action action)
+        void QueueUpPostPanelUpdaterChangeAction(Action action)
         {
             m_NextPostStylingAction = action;
             if (m_DummyElementForStyleChangeNotifications.resolvedStyle.width > 0)
@@ -267,7 +267,7 @@ namespace Unity.UI.Builder
                 m_DummyElementForStyleChangeNotifications.style.width = 1;
         }
 
-        private void AfterPanelUpdaterChange(GeometryChangedEvent evt)
+        void AfterPanelUpdaterChange(GeometryChangedEvent evt)
         {
             if (m_NextPostStylingAction == null)
                 return;

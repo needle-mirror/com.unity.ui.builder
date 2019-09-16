@@ -13,6 +13,7 @@ namespace Unity.UI.Builder
         BuilderToolbar m_Toolbar;
         BuilderLibrary m_Library;
         BuilderViewport m_Viewport;
+        BuilderInspector m_Inspector;
         BuilderUxmlPreview m_UxmlPreview;
         BuilderUssPreview m_UssPreview;
         BuilderCommandHandler m_CommandHandler;
@@ -38,6 +39,7 @@ namespace Unity.UI.Builder
         }
 
         public VisualElement documentRootElement => m_Viewport.documentElement;
+        public BuilderCanvas canvas => m_Viewport.canvas;
 
         public BuilderCommandHandler commandHandler
         {
@@ -47,7 +49,7 @@ namespace Unity.UI.Builder
         public static Builder GetWindowAndInit()
         {
             var window = GetWindow<Builder>();
-            window.titleContent = new GUIContent("Builder");
+            window.titleContent = new GUIContent(BuilderConstants.BuilderWindowTitle);
             window.Show();
             return window;
         }
@@ -58,19 +60,35 @@ namespace Unity.UI.Builder
             GetWindowAndInit();
         }
 
-        private void OnEnable()
+        void OnEnable()
         {
             var root = rootVisualElement;
 
+            // Load assets.
+            var mainSS = AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.UIBuilderPackagePath + "/Builder.uss");
+            var darkSS = AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.UIBuilderPackagePath + "/BuilderDark.uss");
+            var lightSS = AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.UIBuilderPackagePath + "/BuilderLight.uss");
+            var builderTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(BuilderConstants.UIBuilderPackagePath + "/Builder.uxml");
+
+            // HACK: Check for null assets.
+            // See: https://fogbugz.unity3d.com/f/cases/1180330/
+            if (mainSS == null || darkSS == null || lightSS == null || builderTemplate == null)
+            {
+                EditorApplication.delayCall += () =>
+                {
+                    this.m_Parent.Reload(this);
+                };
+                return;
+            }
+
             // Load styles.
-            root.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.UIBuilderPackagePath + "/Builder.uss"));
+            root.styleSheets.Add(mainSS);
             if (EditorGUIUtility.isProSkin)
-                root.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.UIBuilderPackagePath + "/BuilderDark.uss"));
+                root.styleSheets.Add(darkSS);
             else
-                root.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.UIBuilderPackagePath + "/BuilderLight.uss"));
+                root.styleSheets.Add(lightSS);
 
             // Load template.
-            var builderTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(BuilderConstants.UIBuilderPackagePath + "/Builder.uxml");
             builderTemplate.CloneTree(root);
 
             // Fetch the save dialog.
@@ -93,17 +111,17 @@ namespace Unity.UI.Builder
             var explorer = new BuilderExplorer(m_Viewport, m_Selection, classDragger, hierarchyDragger, contextMenuManipulator);
             var libraryDragger = new BuilderLibraryDragger(this, root, m_Selection, m_Viewport, m_Viewport.parentTracker, explorer.container, tooltipPreview);
             m_Library = new BuilderLibrary(this, m_Viewport, m_Selection, libraryDragger, tooltipPreview);
-            m_Toolbar = new BuilderToolbar(this, m_Selection, dialog, m_Viewport, explorer, m_Library, tooltipPreview);
+            m_Inspector = new BuilderInspector(this, m_Selection);
+            m_Toolbar = new BuilderToolbar(this, m_Selection, dialog, m_Viewport, explorer, m_Library, m_Inspector, tooltipPreview);
             m_UxmlPreview = new BuilderUxmlPreview(this, m_Viewport, m_Selection);
             m_UssPreview = new BuilderUssPreview(this);
-            var inspector = new BuilderInspector(this, m_Selection);
             root.Q("viewport").Add(m_Viewport);
             m_Viewport.toolbar.Add(m_Toolbar);
             root.Q("library").Add(m_Library);
             root.Q("explorer").Add(explorer);
             root.Q("uxml-preview").Add(m_UxmlPreview);
             root.Q("uss-preview").Add(m_UssPreview);
-            root.Q("inspector").Add(inspector);
+            root.Q("inspector").Add(m_Inspector);
 
             // Init selection.
             m_Selection.AssignNotifiers(new IBuilderSelectionNotifier[]
@@ -111,7 +129,7 @@ namespace Unity.UI.Builder
                 document,
                 m_Viewport,
                 explorer,
-                inspector,
+                m_Inspector,
                 m_UxmlPreview,
                 m_UssPreview,
                 m_Viewport.parentTracker,
@@ -133,6 +151,7 @@ namespace Unity.UI.Builder
             m_Document.OnAfterBuilderDeserialize(m_Viewport.documentElement);
             m_Toolbar.OnAfterBuilderDeserialize();
             m_Library.OnAfterBuilderDeserialize();
+            m_Inspector.OnAfterBuilderDeserialize();
 
             // Restore selection.
             m_Selection.RestoreSelectionFromDocument(m_Viewport.sharedStylesAndDocumentElement);
@@ -148,7 +167,7 @@ namespace Unity.UI.Builder
             m_Toolbar.LoadDocument(asset);
         }
 
-        private void OnDisable()
+        void OnDisable()
         {
             // Commands
             if (m_CommandHandler != null)

@@ -70,7 +70,7 @@ namespace Unity.UI.Builder
             }
         }
 
-        private static void ReOrderDocumentRecursive(
+        static void ReOrderDocumentRecursive(
             VisualTreeAsset vta,
             VisualElementAsset rootElement,
             Dictionary<int, List<VisualElementAsset>> idToChildren)
@@ -91,7 +91,7 @@ namespace Unity.UI.Builder
             }
         }
 
-        private static void AddElementToDocumentArrays(VisualTreeAsset vta, VisualElementAsset vea)
+        static void AddElementToDocumentArrays(VisualTreeAsset vta, VisualElementAsset vea)
         {
             if (vea is TemplateAsset)
                 vta.templateAssets.Add(vea as TemplateAsset);
@@ -99,7 +99,7 @@ namespace Unity.UI.Builder
                 vta.visualElementAssets.Add(vea);
         }
 
-        private static void SetInitElementWithParent(
+        static void SetInitElementWithParent(
             VisualTreeAsset vta, VisualElementAsset vea, VisualElementAsset parent,
             Dictionary<int, List<VisualElementAsset>> idToChildren,
             int orderIndex = -1)
@@ -179,6 +179,20 @@ namespace Unity.UI.Builder
             VisualElementAsset newParent, int index = -1)
         {
             var idToChildren = GenerateIdToChildren(vta);
+
+            // HACK: We clear ALL stylesheets here if element is no longer at root.
+            // this is fine as long as we only support one uss but when we support more
+            // we need to make sure we only remove the stylesheets that make sense to remove.
+            // See: https://unity3d.atlassian.net/browse/UIT-469
+            if (vea.parentId == 0 && newParent != null)
+            {
+#if UNITY_2019_3_OR_NEWER
+                vea.stylesheetPaths.Clear();
+                vea.stylesheets.Clear();
+#else
+                vea.stylesheets.Clear();
+#endif
+            }
 
             SetInitElementWithParent(vta, vea, newParent, idToChildren, index);
 

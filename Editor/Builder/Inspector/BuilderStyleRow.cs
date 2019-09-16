@@ -5,9 +5,9 @@ namespace Unity.UI.Builder
 {
     internal class BuilderStyleRow : BindableElement
     {
-        private static readonly string s_UssClassName = "unity-builder-style-row";
+        static readonly string s_UssClassName = "unity-builder-style-row";
 
-        private VisualElement m_Container;
+        VisualElement m_Container;
 
         public new class UxmlFactory : UxmlFactory<BuilderStyleRow, UxmlTraits> { }
 

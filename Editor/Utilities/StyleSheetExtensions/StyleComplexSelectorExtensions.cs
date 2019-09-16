@@ -9,7 +9,7 @@ namespace Unity.UI.Builder
 {
     internal static class StyleComplexSelectorExtensions
     {
-        private static readonly string s_DecendantSymbol = ">";
+        static readonly string s_DecendantSymbol = ">";
 
         internal static bool InitializeSelector(StyleComplexSelector complexSelector, string complexSelectorStr)
         {

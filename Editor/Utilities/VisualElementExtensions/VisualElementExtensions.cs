@@ -6,7 +6,7 @@ namespace Unity.UI.Builder
 {
     internal static class VisualElementExtensions
     {
-        private static readonly List<string> s_SkippedAttributeNames = new List<string>()
+        static readonly List<string> s_SkippedAttributeNames = new List<string>()
         {
             "content-container",
             "class",
@@ -191,7 +191,7 @@ namespace Unity.UI.Builder
             return element.parent.GetClosestElementPartOfCurrentDocument();
         }
 
-        private static void FindSelectedElementsRecursive(VisualElement parent, List<VisualElement> selected)
+        static void FindSelectedElementsRecursive(VisualElement parent, List<VisualElement> selected)
         {
             if (parent.IsSelected())
                 selected.Add(parent);

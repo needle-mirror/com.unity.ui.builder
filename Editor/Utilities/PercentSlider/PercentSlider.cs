@@ -9,13 +9,13 @@ namespace Unity.UI.Builder
 {
     internal class PercentSlider : BaseField<float>
     {
-        private static readonly string s_UssPath = BuilderConstants.UtilitiesPath + "/PercentSlider/PercentSlider.uss";
-        private static readonly string s_UxmlPath = BuilderConstants.UtilitiesPath + "/PercentSlider/PercentSlider.uxml";
+        static readonly string s_UssPath = BuilderConstants.UtilitiesPath + "/PercentSlider/PercentSlider.uss";
+        static readonly string s_UxmlPath = BuilderConstants.UtilitiesPath + "/PercentSlider/PercentSlider.uxml";
 
-        private static readonly string s_UssClassName = "unity-percent-slider";
-        private static readonly string s_VisualInputName = "unity-visual-input";
-        private static readonly string s_SliderName = "unity-slider";
-        private static readonly string s_FieldName = "unity-field";
+        static readonly string s_UssClassName = "unity-percent-slider";
+        static readonly string s_VisualInputName = "unity-visual-input";
+        static readonly string s_SliderName = "unity-slider";
+        static readonly string s_FieldName = "unity-field";
 
         public new class UxmlFactory : UxmlFactory<PercentSlider, UxmlTraits> { }
 
@@ -31,8 +31,8 @@ namespace Unity.UI.Builder
             }
         }
 
-        private SliderInt mSlider;
-        private IntegerField mField;
+        SliderInt mSlider;
+        IntegerField mField;
 
         public override void SetValueWithoutNotify(float newValue)
         {
@@ -65,7 +65,8 @@ namespace Unity.UI.Builder
             var intNewValue = (int)(value * 100);
 
             mSlider.SetValueWithoutNotify(intNewValue);
-            mSlider.OnViewDataReady(); // Hack to force update the slide handle position.
+            if (mSlider.elementPanel != null)
+                mSlider.OnViewDataReady(); // Hack to force update the slide handle position.
 
             mField.SetValueWithoutNotify(intNewValue);
         }

@@ -71,14 +71,14 @@ namespace Unity.UI.Builder
             }
         }
 
-        private void OnDetachFromPanel(DetachFromPanelEvent evt)
+        void OnDetachFromPanel(DetachFromPanelEvent evt)
         {
             var focusable = evt.target as VisualElement;
             focusable.UnregisterCallback<FocusEvent>(OnChildFocus);
             focusable.UnregisterCallback<BlurEvent>(OnChildBlur);
         }
 
-        private void OnChildFocus(FocusEvent evt)
+        void OnChildFocus(FocusEvent evt)
         {
             m_Pane.pseudoStates = m_Pane.pseudoStates | PseudoStates.Focus;
 
@@ -90,12 +90,12 @@ namespace Unity.UI.Builder
             elementAskingForFocus.Focus();
         }
 
-        private void OnChildBlur(BlurEvent evt)
+        void OnChildBlur(BlurEvent evt)
         {
             m_Pane.pseudoStates = m_Pane.pseudoStates & ~PseudoStates.Focus;
         }
 
-        private void OnPaneFocus(FocusEvent evt)
+        void OnPaneFocus(FocusEvent evt)
         {
             primaryFocusable?.Focus();
         }

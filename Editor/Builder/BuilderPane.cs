@@ -7,10 +7,11 @@ namespace Unity.UI.Builder
 {
     internal class BuilderPane : VisualElement
     {
-        private static readonly string s_UssClassName = "unity-builder-pane";
+        static readonly string s_UssClassName = "unity-builder-pane";
 
-        private Label m_Title;
-        private VisualElement m_Container;
+        Label m_Title;
+        Label m_SubTitle;
+        VisualElement m_Container;
 
         public new class UxmlFactory : UxmlFactory<BuilderPane, UxmlTraits> {}
 
@@ -36,6 +37,12 @@ namespace Unity.UI.Builder
             set { m_Title.text = value; }
         }
 
+        public string subTitle
+        {
+            get { return m_SubTitle.text; }
+            set { m_SubTitle.text = value; }
+        }
+
         public BuilderPane()
         {
             AddToClassList(s_UssClassName);
@@ -45,6 +52,7 @@ namespace Unity.UI.Builder
             visualAsset.CloneTree(this);
 
             m_Title = this.Q<Label>("title");
+            m_SubTitle = this.Q<Label>("sub-title");
             m_Container = this.Q("content-container");
 
             focusable = true;

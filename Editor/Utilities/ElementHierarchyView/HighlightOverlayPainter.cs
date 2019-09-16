@@ -5,15 +5,15 @@ namespace Unity.UI.Builder
 {
     internal class HighlightOverlayPainter : BaseOverlayPainter
     {
-        private static readonly float kDefaultHighlightAlpha = 0.4f;
-        private static readonly Color kHighlightContentColor = new Color(0.1f, 0.6f, 0.9f);
-        private static readonly Color kHighlightPaddingColor = new Color(0.1f, 0.9f, 0.1f);
-        private static readonly Color kHighlightBorderColor = new Color(1.0f, 1.0f, 0.4f);
-        private static readonly Color kHighlightMarginColor = new Color(1.0f, 0.6f, 0.0f);
+        static readonly float kDefaultHighlightAlpha = 0.4f;
+        static readonly Color kHighlightContentColor = new Color(0.1f, 0.6f, 0.9f);
+        static readonly Color kHighlightPaddingColor = new Color(0.1f, 0.9f, 0.1f);
+        static readonly Color kHighlightBorderColor = new Color(1.0f, 1.0f, 0.4f);
+        static readonly Color kHighlightMarginColor = new Color(1.0f, 0.6f, 0.0f);
 
-        private Rect[] m_MarginRects = new Rect[4];
-        private Rect[] m_BorderRects = new Rect[4];
-        private Rect[] m_PaddingRects = new Rect[4];
+        Rect[] m_MarginRects = new Rect[4];
+        Rect[] m_BorderRects = new Rect[4];
+        Rect[] m_PaddingRects = new Rect[4];
 
         public void AddOverlay(VisualElement ve, OverlayContent content = OverlayContent.All)
         {
@@ -32,7 +32,7 @@ namespace Unity.UI.Builder
             DrawHighlights(od);
         }
 
-        private void DrawHighlights(OverlayData od)
+        void DrawHighlights(OverlayData od)
         {
             var ve = od.element;
             Rect contentRect = ve.LocalToWorld(ve.contentRect);
@@ -70,7 +70,7 @@ namespace Unity.UI.Builder
             }
         }
 
-        private void FillHighlightRects(VisualElement ve)
+        void FillHighlightRects(VisualElement ve)
         {
             var style = ve.resolvedStyle;
             Rect contentRect = ve.LocalToWorld(ve.contentRect);

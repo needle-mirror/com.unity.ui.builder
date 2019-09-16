@@ -7,18 +7,18 @@ namespace Unity.UI.Builder
 {
     internal class TwoPaneSplitView : VisualElement
     {
-        private static readonly string s_UssPath = BuilderConstants.UtilitiesPath + "/TwoPaneSplitView/TwoPaneSplitView.uss";
+        static readonly string s_UssPath = BuilderConstants.UtilitiesPath + "/TwoPaneSplitView/TwoPaneSplitView.uss";
 
-        private static readonly string s_UssClassName = "unity-two-pane-split-view";
-        private static readonly string s_ContentContainerClassName = "unity-two-pane-split-view__content-container";
-        private static readonly string s_HandleDragLineClassName = "unity-two-pane-split-view__dragline";
-        private static readonly string s_HandleDragLineVerticalClassName = s_HandleDragLineClassName + "--vertical";
-        private static readonly string s_HandleDragLineHorizontalClassName = s_HandleDragLineClassName + "--horizontal";
-        private static readonly string s_HandleDragLineAnchorClassName = "unity-two-pane-split-view__dragline-anchor";
-        private static readonly string s_HandleDragLineAnchorVerticalClassName = s_HandleDragLineAnchorClassName + "--vertical";
-        private static readonly string s_HandleDragLineAnchorHorizontalClassName = s_HandleDragLineAnchorClassName + "--horizontal";
-        private static readonly string s_VerticalClassName = "unity-two-pane-split-view--vertical";
-        private static readonly string s_HorizontalClassName = "unity-two-pane-split-view--horizontal";
+        static readonly string s_UssClassName = "unity-two-pane-split-view";
+        static readonly string s_ContentContainerClassName = "unity-two-pane-split-view__content-container";
+        static readonly string s_HandleDragLineClassName = "unity-two-pane-split-view__dragline";
+        static readonly string s_HandleDragLineVerticalClassName = s_HandleDragLineClassName + "--vertical";
+        static readonly string s_HandleDragLineHorizontalClassName = s_HandleDragLineClassName + "--horizontal";
+        static readonly string s_HandleDragLineAnchorClassName = "unity-two-pane-split-view__dragline-anchor";
+        static readonly string s_HandleDragLineAnchorVerticalClassName = s_HandleDragLineAnchorClassName + "--vertical";
+        static readonly string s_HandleDragLineAnchorHorizontalClassName = s_HandleDragLineAnchorClassName + "--horizontal";
+        static readonly string s_VerticalClassName = "unity-two-pane-split-view--vertical";
+        static readonly string s_HorizontalClassName = "unity-two-pane-split-view--horizontal";
 
         public enum Orientation
         {
@@ -53,27 +53,27 @@ namespace Unity.UI.Builder
             }
         }
 
-        private VisualElement m_LeftPane;
-        private VisualElement m_RightPane;
+        VisualElement m_LeftPane;
+        VisualElement m_RightPane;
 
-        private VisualElement m_FixedPane;
-        private VisualElement m_FlexedPane;
+        VisualElement m_FixedPane;
+        VisualElement m_FlexedPane;
 
         public VisualElement fixedPane => m_FixedPane;
         public VisualElement flexedPane => m_FlexedPane;
 
-        private VisualElement m_DragLine;
-        private VisualElement m_DragLineAnchor;
+        VisualElement m_DragLine;
+        VisualElement m_DragLineAnchor;
 
-        private VisualElement m_Content;
+        VisualElement m_Content;
 
-        private Orientation m_Orientation;
-        private int m_FixedPaneIndex;
-        private float m_FixedPaneInitialDimension;
+        Orientation m_Orientation;
+        int m_FixedPaneIndex;
+        float m_FixedPaneInitialDimension;
 
         public int fixedPaneIndex => m_FixedPaneIndex;
 
-        private TwoPaneSplitViewResizer m_Resizer;
+        TwoPaneSplitViewResizer m_Resizer;
 
         public TwoPaneSplitView()
         {

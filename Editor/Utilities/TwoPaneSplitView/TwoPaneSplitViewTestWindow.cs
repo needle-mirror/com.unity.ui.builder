@@ -14,7 +14,7 @@ namespace Unity.UI.Builder
             window.Show();
         }
 
-        private void OnEnable()
+        void OnEnable()
         {
             var root = rootVisualElement;
 

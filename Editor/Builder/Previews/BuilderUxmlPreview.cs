@@ -5,9 +5,9 @@ namespace Unity.UI.Builder
 {
     internal class BuilderUxmlPreview : BuilderCodePreview, IBuilderSelectionNotifier
     {
-        private Builder m_Builder;
-        private VisualElement m_Canvas;
-        private BuilderSelection m_Selection;
+        Builder m_Builder;
+        VisualElement m_Canvas;
+        BuilderSelection m_Selection;
 
         public BuilderUxmlPreview(Builder builder, BuilderViewport viewport, BuilderSelection selection)
         {
@@ -28,7 +28,7 @@ namespace Unity.UI.Builder
             return uxmlText;
         }
 
-        private void RefreshUXML()
+        void RefreshUXML()
         {
             SetText(GenerateUXMLText());
         }

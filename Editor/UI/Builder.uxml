@@ -33,7 +33,7 @@
                 0 1 1 0
                   ===
                 0 1 1 0 -->
-            <uib:TwoPaneSplitView name="middle-column" style="min-width: 200px;" fixed-pane-index="1" fixed-pane-initial-size="200" orientation="vertical" class="unity-builder__pane" >
+            <uib:TwoPaneSplitView name="middle-column" style="min-width: 200px;" fixed-pane-index="1" fixed-pane-initial-size="20" orientation="vertical" class="unity-builder__pane" >
                 <!-- Viewport
                     0 1 1 0
 
@@ -43,7 +43,7 @@
                     0 0 0 0
 
                     0 1|1 0 -->
-                <uib:TwoPaneSplitView name="code-preview-pane" style="min-height: 100px;" fixed-pane-index="1" fixed-pane-initial-size="200" orientation="horizontal">
+                <uib:TwoPaneSplitView name="code-preview-pane" style="min-height: 20px;" fixed-pane-index="1" fixed-pane-initial-size="200" orientation="horizontal">
                     <!-- Core Previews
                         0 0 0 0
 

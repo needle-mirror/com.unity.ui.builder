@@ -7,7 +7,7 @@ namespace Unity.UI.Builder
     internal class BuilderHierarchyDragger : BuilderDragger
     {
         static readonly string s_DraggableStyleClassPillClassName = "unity-builder-class-pill--draggable";
-        private static readonly string s_DragPreviewElementClassName = "unity-builder-dragger__drag-preview";
+        static readonly string s_DragPreviewElementClassName = "unity-builder-dragger__drag-preview";
 
         VisualElement m_DragPreviewLastParent;
 
@@ -75,7 +75,7 @@ namespace Unity.UI.Builder
             Reparent(pickedElement, index);
         }
 
-        private void Reparent(VisualElement newParent, int index)
+        void Reparent(VisualElement newParent, int index)
         {
             var elementToReparent = m_TargetElementToReparent;
 
@@ -144,7 +144,7 @@ namespace Unity.UI.Builder
             Reparent(m_OldParent, m_OldIndex);
         }
 
-        private void ResetDragPreviewElement()
+        void ResetDragPreviewElement()
         {
             m_TargetElementToReparent.RemoveFromClassList(s_DragPreviewElementClassName);
 

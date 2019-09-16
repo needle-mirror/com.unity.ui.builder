@@ -30,15 +30,15 @@ namespace Unity.UI.Builder
 
     internal class ElementHierarchySearchBar : VisualElement
     {
-        private List<SearchResultItem> m_FoundItems;
-        private int m_SelectedIndex;
-        private string m_CurrentQuery;
-        private ElementHierarchySearchBarFilter m_CurrentFilter;
+        List<SearchResultItem> m_FoundItems;
+        int m_SelectedIndex;
+        string m_CurrentQuery;
+        ElementHierarchySearchBarFilter m_CurrentFilter;
 
-        private ElementHierarchyView m_ParentTreeView;
+        ElementHierarchyView m_ParentTreeView;
 
-        private Label m_CountLabel;
-        private Label m_FieldHelpLabel;
+        Label m_CountLabel;
+        Label m_FieldHelpLabel;
 
         public ElementHierarchySearchBar(ElementHierarchyView parent)
         {
@@ -92,7 +92,7 @@ namespace Unity.UI.Builder
             Add(nextButton);
         }
 
-        private void SelectNext()
+        void SelectNext()
         {
             if (m_FoundItems.Count == 0)
                 return;
@@ -103,7 +103,7 @@ namespace Unity.UI.Builder
                 string.Format("{0} of {1}", m_SelectedIndex + 1, m_FoundItems.Count);
         }
 
-        private void SelectPrev()
+        void SelectPrev()
         {
             if (m_FoundItems.Count == 0)
                 return;
@@ -117,7 +117,7 @@ namespace Unity.UI.Builder
                 string.Format("{0} of {1}", m_SelectedIndex + 1, m_FoundItems.Count);
         }
 
-        private void PerformSearch(ChangeEvent<string> evt)
+        void PerformSearch(ChangeEvent<string> evt)
         {
             m_FoundItems.Clear();
             m_SelectedIndex = 0;

@@ -14,9 +14,9 @@ namespace Unity.UI.Builder
         public static readonly FieldInfo UsingsListFieldInfo =
             typeof(VisualTreeAsset).GetField("m_Usings", BindingFlags.Instance | BindingFlags.NonPublic);
 
-        private static readonly IComparer<VisualTreeAsset.UsingEntry> s_UsingEntryPathComparer = new UsingEntryPathComparer();
+        static readonly IComparer<VisualTreeAsset.UsingEntry> s_UsingEntryPathComparer = new UsingEntryPathComparer();
 
-        private class UsingEntryPathComparer : IComparer<VisualTreeAsset.UsingEntry>
+        class UsingEntryPathComparer : IComparer<VisualTreeAsset.UsingEntry>
         {
             public int Compare(VisualTreeAsset.UsingEntry x, VisualTreeAsset.UsingEntry y)
             {
@@ -194,7 +194,7 @@ namespace Unity.UI.Builder
             }
             else
             {
-                Debug.LogError("UI Builder: VisualTreeAsset.m_Usings private field has not been found! Update the reflection code!");
+                Debug.LogError("UI Builder: VisualTreeAsset.m_Usings field has not been found! Update the reflection code!");
             }
 #endif
         }
@@ -260,7 +260,7 @@ namespace Unity.UI.Builder
             }
             else
             {
-                Debug.LogError("UI Builder: VisualTreeAsset.m_Usings private field has not been found! Update the reflection code!");
+                Debug.LogError("UI Builder: VisualTreeAsset.m_Usings field has not been found! Update the reflection code!");
             }
 
             return Path.GetFileNameWithoutExtension(path);
@@ -376,6 +376,13 @@ namespace Unity.UI.Builder
                         styleSheetPaths[i] = newUssPath;
                     }
                 }
+
+#if UNITY_2019_3_OR_NEWER
+                // If we change the paths above, they are clearly not going to match
+                // the styleSheets (assets) anymore. We can end up with the assets
+                // added back later in the Save process.
+                element.stylesheets.Clear();
+#endif
             }
         }
 
@@ -389,7 +396,7 @@ namespace Unity.UI.Builder
         {
             var otherIdToChildren = VisualTreeAssetUtilities.GenerateIdToChildren(other);
 
-            var nextOrderInDocument = vta.visualElementAssets.Count + vta.templateAssets.Count;
+            var nextOrderInDocument = (vta.visualElementAssets.Count + vta.templateAssets.Count) * BuilderConstants.VisualTreeAssetOrderIncrement;
 
             foreach (var vea in other.visualElementAssets)
             {
@@ -416,7 +423,7 @@ namespace Unity.UI.Builder
             VisualTreeAssetUtilities.ReOrderDocument(vta);
         }
 
-        private static void ReinitElementWithNewParentAsset(
+        static void ReinitElementWithNewParentAsset(
             VisualTreeAsset vta, VisualElementAsset parent, VisualTreeAsset other,
             Dictionary<int, List<VisualElementAsset>> otherIdToChildren,
             VisualElementAsset vea, ref int nextOrderInDocument)
@@ -429,7 +436,7 @@ namespace Unity.UI.Builder
 
             // Set order in document.
             vea.orderInDocument = nextOrderInDocument;
-            nextOrderInDocument++;
+            nextOrderInDocument += BuilderConstants.VisualTreeAssetOrderIncrement;
 
             // Create new id and update parentId in children.
             var oldId = vea.id;
@@ -440,7 +447,7 @@ namespace Unity.UI.Builder
                     child.parentId = vea.id;
         }
 
-        private static void SwallowStyleRule(VisualTreeAsset vta, VisualTreeAsset other, VisualElementAsset vea)
+        static void SwallowStyleRule(VisualTreeAsset vta, VisualTreeAsset other, VisualElementAsset vea)
         {
             if (vea.ruleIndex < 0)
                 return;

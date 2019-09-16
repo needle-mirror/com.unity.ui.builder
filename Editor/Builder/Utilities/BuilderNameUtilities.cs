@@ -5,7 +5,7 @@ namespace Unity.UI.Builder
 {
     internal static class BuilderNameUtilities
     {
-        private static string ConvertDashToUpperNoSpace(string dash, bool firstCase, bool addSpace)
+        static string ConvertDashToUpperNoSpace(string dash, bool firstCase, bool addSpace)
         {
             var sb = new StringBuilder();
             bool caseFlag = firstCase;

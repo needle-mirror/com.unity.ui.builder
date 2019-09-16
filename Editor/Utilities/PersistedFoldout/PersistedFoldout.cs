@@ -26,18 +26,13 @@ namespace Unity.UI.Builder
             }
         }
 
-        private VisualElement m_Header;
-        private Toggle m_Toggle;
-        private VisualElement m_OverrideBox;
-        private VisualElement m_Container;
+        VisualElement m_Header;
+        Toggle m_Toggle;
+        VisualElement m_OverrideBox;
+        VisualElement m_Container;
 
-        public VisualElement header
-        {
-            get
-            {
-                return m_Header;
-            }
-        }
+        public VisualElement header => m_Header;
+        public Toggle toggle => m_Toggle;
 
         public override VisualElement contentContainer
         {

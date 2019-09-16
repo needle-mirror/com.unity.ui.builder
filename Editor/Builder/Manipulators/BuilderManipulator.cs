@@ -150,6 +150,22 @@ namespace Unity.UI.Builder
             return 0;
         }
 
+        protected float GetBorderResolvedStyleFloat(TrackedStyle trackedStyle, VisualElement target)
+        {
+            if (target == null)
+                return 0;
+
+            switch (trackedStyle)
+            {
+                case TrackedStyle.Left: return target.resolvedStyle.borderLeftWidth;
+                case TrackedStyle.Top: return target.resolvedStyle.borderTopWidth;
+                case TrackedStyle.Right: return target.resolvedStyle.borderRightWidth;
+                case TrackedStyle.Bottom: return target.resolvedStyle.borderBottomWidth;
+            }
+
+            return 0;
+        }
+
         protected TrackedStyle GetOppositeStyle(TrackedStyle trackedStyle)
         {
             switch (trackedStyle)
@@ -185,7 +201,11 @@ namespace Unity.UI.Builder
         protected float GetStyleSheetFloat(TrackedStyle trackedStyle)
         {
             var name = GetStyleName(trackedStyle);
-            return GetStyleSheetFloat(name);
+
+            if (IsNoneOrAuto(trackedStyle))
+                return GetResolvedStyleFloat(trackedStyle, m_Target);
+            else
+                return GetStyleSheetFloat(name);
         }
 
         protected float GetStyleSheetFloat(string styleName)

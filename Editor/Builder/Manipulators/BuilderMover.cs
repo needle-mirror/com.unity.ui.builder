@@ -6,9 +6,9 @@ namespace Unity.UI.Builder
 {
     class BuilderMover : BuilderTransformer
     {
-        private static readonly string s_UssClassName = "unity-builder-mover";
+        static readonly string s_UssClassName = "unity-builder-mover";
 
-        private Manipulator m_MoveManipulator;
+        Manipulator m_MoveManipulator;
 
         public BuilderParentTracker parentTracker { get; set; }
 
@@ -42,7 +42,7 @@ namespace Unity.UI.Builder
             }
         }
 
-        private new void OnStartDrag(VisualElement handle)
+        new void OnStartDrag(VisualElement handle)
         {
             base.OnStartDrag(handle);
 
@@ -52,7 +52,7 @@ namespace Unity.UI.Builder
             parentTracker.Activate(m_Target.parent);
         }
 
-        private new void OnEndDrag()
+        new void OnEndDrag()
         {
             base.OnEndDrag();
 
@@ -62,7 +62,7 @@ namespace Unity.UI.Builder
             parentTracker.Deactivate();
         }
 
-        private void OnMove(
+        void OnMove(
             TrackedStyle trackedStyle,
             bool force,
             float onStartDragPrimary,
@@ -77,7 +77,7 @@ namespace Unity.UI.Builder
             m_ScratchChangeList.Add(styleName);
         }
 
-        private void OnMove(Vector2 diff)
+        void OnMove(Vector2 diff)
         {
             m_ScratchChangeList.Clear();
 

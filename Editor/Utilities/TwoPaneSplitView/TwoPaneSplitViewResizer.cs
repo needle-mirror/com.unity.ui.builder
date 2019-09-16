@@ -5,17 +5,17 @@ namespace Unity.UI.Builder
 {
     internal class TwoPaneSplitViewResizer : MouseManipulator
     {
-        private Vector2 m_Start;
+        Vector2 m_Start;
         protected bool m_Active;
-        private TwoPaneSplitView m_SplitView;
+        TwoPaneSplitView m_SplitView;
 
-        private int m_Direction;
-        private TwoPaneSplitView.Orientation m_Orientation;
+        int m_Direction;
+        TwoPaneSplitView.Orientation m_Orientation;
 
-        private VisualElement fixedPane => m_SplitView.fixedPane;
-        private VisualElement flexedPane => m_SplitView.flexedPane;
+        VisualElement fixedPane => m_SplitView.fixedPane;
+        VisualElement flexedPane => m_SplitView.flexedPane;
 
-        private float fixedPaneMinDimension
+        float fixedPaneMinDimension
         {
             get
             {
@@ -26,7 +26,7 @@ namespace Unity.UI.Builder
             }
         }
 
-        private float flexedPaneMinDimension
+        float flexedPaneMinDimension
         {
             get
             {
