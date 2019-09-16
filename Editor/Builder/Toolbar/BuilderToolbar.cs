@@ -109,9 +109,9 @@ namespace Unity.UI.Builder
 
             // Get Builder package version.
             var packageList = PackageManagerUtilityInternal.GetAllVisiblePackages();
-            var builderPackageInfo = packageList.First((pi) => pi.name == BuilderConstants.BuilderPackageName);
+            var builderPackageInfo = packageList.FirstOrDefault((pi) => pi.name == BuilderConstants.BuilderPackageName);
             if (builderPackageInfo == null)
-                m_BuilderPackageVersion = BuilderConstants.BuilderStandinPackageVersion;
+                m_BuilderPackageVersion = null;
             else
                 m_BuilderPackageVersion = builderPackageInfo.version;
         }
@@ -620,9 +620,10 @@ namespace Unity.UI.Builder
             if (document.hasUnsavedChanges)
                 newFileName = newFileName + "*";
 
-            var fullSubTitle = newFileName + " - UI Builder " + m_BuilderPackageVersion;
+            if (!string.IsNullOrEmpty(m_BuilderPackageVersion))
+                newFileName = newFileName + " - UI Builder " + m_BuilderPackageVersion;
 
-            m_Viewport.subTitle = fullSubTitle;
+            m_Viewport.subTitle = newFileName;
         }
     }
 }

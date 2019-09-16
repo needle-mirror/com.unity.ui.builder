@@ -22,7 +22,7 @@ This package has not yet been added to the Package Manager UI. To install:
     ```
     {
       "dependencies": {
-        "com.unity.ui.builder": "0.7.0-preview",
+        "com.unity.ui.builder": "0.8.0-preview",
         ...
       }
     }
