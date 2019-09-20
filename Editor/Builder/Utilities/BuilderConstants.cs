@@ -21,6 +21,7 @@ namespace Unity.UI.Builder
         public static readonly string UIBuilderPackagePath = "Packages/" + BuilderPackageName + "/Editor/UI";
         public static readonly string UtilitiesPath = "Packages/" + BuilderPackageName + "/Editor/Utilities";
         public static readonly string InspectorUssPathNoExt = UIBuilderPackagePath + "/Inspector/BuilderInspector";
+        public static readonly string RuntimeThemeUSSPath = "Packages/com.unity.ui.runtime/USS/Default.uss.asset";
 
         // Global Style Class Names
         public static readonly string HiddenStyleClassName = "unity-builder-hidden";
@@ -78,6 +79,8 @@ namespace Unity.UI.Builder
         public static readonly string FontCannotBeNoneMessage = "UI Builder: Font cannot be set to none.";
         public static readonly string InspectorClassPillDoubleClickToCreate = "Double-click to create new USS selector.";
         public static readonly string InspectorClassPillDoubleClickToSelect = "Double-click to select and edit USS selector.";
+        public static readonly string InspectorLocalStylesSectionTitleForSelector = "Styles";
+        public static readonly string InspectorLocalStylesSectionTitleForElement = "Inlined Styles";
 
         //
         // Explorer
@@ -136,6 +139,7 @@ namespace Unity.UI.Builder
         // Canvas Container Style Class Names
         public static readonly string CanvasContainerDarkStyleClassName = "unity-builder-canvas__container--dark";
         public static readonly string CanvasContainerLightStyleClassName = "unity-builder-canvas__container--light";
+        public static readonly string CanvasContainerRuntimeStyleClassName = "unity-builder-canvas__container--runtime";
         public static readonly string SpecialVisualElementInitialMinSizeName = "__unity-builder-canvas__special-visual-element-initial-size";
         public static readonly string SpecialVisualElementInitialMinSizeClassName = "unity-builder-canvas__special-visual-element-initial-size";
 

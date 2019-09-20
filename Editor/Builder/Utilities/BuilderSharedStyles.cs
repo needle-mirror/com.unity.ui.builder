@@ -177,7 +177,7 @@ namespace Unity.UI.Builder
                 return null;
 
             var complexSelectors = new List<string>();
-            foreach (MatchedRulesExtractor.MatchedRule rule in matchedElementsSelector.selectedElementRules)
+            foreach (var rule in matchedElementsSelector.selectedElementRules)
             {
                 var complexSelector = rule.matchRecord.complexSelector;
                 var complexSelectorString = StyleSheetToUss.ToUssSelector(complexSelector);

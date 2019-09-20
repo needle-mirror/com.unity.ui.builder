@@ -98,7 +98,7 @@ namespace Unity.UI.Builder
                     str = ToUssString(color, options.useColorCode);
                     break;
                 case StyleValueType.ResourcePath:
-                    str = $"resource(\"{sheet.ReadResourcePath(handle)}\")";
+                    str = $"resource('{sheet.ReadResourcePath(handle)}')";
                     break;
                 case StyleValueType.Enum:
                     str = sheet.ReadEnum(handle);

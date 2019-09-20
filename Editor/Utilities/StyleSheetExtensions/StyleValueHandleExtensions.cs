@@ -29,6 +29,8 @@ namespace Unity.UI.Builder
                     index = to.AddValueToArray(from.GetString(valueHandle)); break;
                 case StyleValueType.AssetReference:
                     index = to.AddValueToArray(from.GetAsset(valueHandle)); break;
+                case StyleValueType.ResourcePath:
+                    index = to.AddValueToArray(from.GetString(valueHandle)); break;
                 case StyleValueType.Enum:
                     index = to.AddValueToArray(from.GetEnum(valueHandle)); break;
             }
@@ -125,7 +127,16 @@ namespace Unity.UI.Builder
 
         public static Object GetAsset(this StyleSheet styleSheet, StyleValueHandle valueHandle)
         {
-            return styleSheet.assets[valueHandle.valueIndex];
+            if (valueHandle.valueType == StyleValueType.ResourcePath)
+            {
+                var resourcePath = styleSheet.strings[valueHandle.valueIndex];
+                var asset = Resources.Load<Object>(resourcePath);
+                return asset;
+            }
+            else
+            {
+                return styleSheet.assets[valueHandle.valueIndex];
+            }
         }
 
         public static string GetEnum(this StyleSheet styleSheet, StyleValueHandle valueHandle)
@@ -172,7 +183,15 @@ namespace Unity.UI.Builder
             // Undo/Redo
             Undo.RegisterCompleteObjectUndo(styleSheet, BuilderConstants.ChangeUIStyleValueUndoMessage);
 
-            styleSheet.assets[valueHandle.valueIndex] = value;
+            if (valueHandle.valueType == StyleValueType.ResourcePath)
+            {
+                var resourcesPath = BuilderAssetUtilities.GetResourcesPathForAsset(value);
+                styleSheet.strings[valueHandle.valueIndex] = resourcesPath;
+            }
+            else
+            {
+                styleSheet.assets[valueHandle.valueIndex] = value;
+            }
         }
 
         public static void SetValue(this StyleSheet styleSheet, StyleValueHandle valueHandle, Enum value)

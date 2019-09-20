@@ -480,7 +480,7 @@ namespace Unity.UI.Builder
                     value = styleSheet.GetColor(styleProperty.values[0]);
 
                 // We keep falling into the alpha==0 trap. This patches the issue a little.
-                if (value.a < 0.1f && style.specificity == 0)
+                if (value.a < 0.1f)
                     value.a = 255.0f;
 
                 uiField.SetValueWithoutNotify(value);
@@ -688,7 +688,7 @@ namespace Unity.UI.Builder
                     var value = style.value;
 
                     // We keep falling into the alpha==0 trap. This patches the issue a little.
-                    if (value.a < 0.1f && style.specificity == 0)
+                    if (value.a < 0.1f)
                         value.a = 255.0f;
 
                     if (styleProperty != null)
@@ -927,9 +927,16 @@ namespace Unity.UI.Builder
 
         void OnFieldValueChange(ChangeEvent<string> e, string styleName)
         {
+            var field = e.target as VisualElement;
+
+            // HACK: For some reason, when using "Pick Element" feature of Debugger and
+            // hovering over the button strips, we get bogus value change events with
+            // empty strings.
+            if (field is IToggleButtonStrip && string.IsNullOrEmpty(e.newValue))
+                return;
+
             var styleProperty = GetStylePropertyByStyleName(styleName);
             var isNewValue = styleProperty.values.Length == 0;
-            var field = e.target as VisualElement;
 
             if (field is IToggleButtonStrip)
             {
@@ -962,6 +969,21 @@ namespace Unity.UI.Builder
         {
             var styleProperty = GetStylePropertyByStyleName(styleName);
             var isNewValue = styleProperty.values.Length == 0;
+
+            var resourcesPath = BuilderAssetUtilities.GetResourcesPathForAsset(e.newValue);
+            if (!isNewValue)
+            {
+                if (styleProperty.values[0].valueType == StyleValueType.ResourcePath && string.IsNullOrEmpty(resourcesPath))
+                {
+                    styleSheet.RemoveValue(styleProperty, styleProperty.values[0]);
+                    isNewValue = true;
+                }
+                else if (styleProperty.values[0].valueType == StyleValueType.AssetReference && !string.IsNullOrEmpty(resourcesPath))
+                {
+                    styleSheet.RemoveValue(styleProperty, styleProperty.values[0]);
+                    isNewValue = true;
+                }
+            }
 
             if (isNewValue)
                 styleSheet.AddValue(styleProperty, e.newValue);

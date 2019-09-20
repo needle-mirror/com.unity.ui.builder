@@ -316,7 +316,7 @@ namespace Unity.UI.Builder
             var container = new VisualElement();
 
             int ruleIndex = 0;
-            foreach (MatchedRulesExtractor.MatchedRule rule in m_MatchingSelectors.matchedRulesExtractor.selectedElementRules)
+            foreach (var rule in m_MatchingSelectors.matchedRulesExtractor.selectedElementRules)
             {
                 var selectorStr = StyleSheetToUss.ToUssSelector(rule.matchRecord.complexSelector);
 

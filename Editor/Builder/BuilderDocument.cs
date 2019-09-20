@@ -18,7 +18,8 @@ namespace Unity.UI.Builder
         {
             Default,
             Dark,
-            Light
+            Light,
+            Runtime
         }
 
         [SerializeField]

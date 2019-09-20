@@ -27,7 +27,7 @@ namespace Unity.UI.Builder
         //[SerializeField]
         VisualTreeAsset m_VisualTreeAsset;
 
-        [MenuItem("Tests/UI Builder/UI Extensions Test")]
+        //[MenuItem("Tests/UI Builder/UI Extensions Test")]
         public static void ShowWindow()
         {
             var window = GetWindow<UIExtensionsTestWindow>();

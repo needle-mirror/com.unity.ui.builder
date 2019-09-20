@@ -1,11 +1,32 @@
 using System;
 using UnityEditor;
 using UnityEngine.UIElements;
+using Object = UnityEngine.Object;
 
 namespace Unity.UI.Builder
 {
     internal static class BuilderAssetUtilities
     {
+        public static string GetResourcesPathForAsset(Object asset)
+        {
+            var assetPath = AssetDatabase.GetAssetPath(asset);
+            return GetResourcesPathForAsset(assetPath);
+        }
+
+        public static string GetResourcesPathForAsset(string assetPath)
+        {
+            var resourcesFolder = "Resources/";
+            if (string.IsNullOrEmpty(assetPath) || !assetPath.Contains(resourcesFolder))
+                return null;
+
+            var lastResourcesSubstring = assetPath.LastIndexOf(resourcesFolder) + resourcesFolder.Length;
+            assetPath = assetPath.Substring(lastResourcesSubstring);
+            var lastExtDot = assetPath.LastIndexOf(".");
+            assetPath = assetPath.Substring(0, lastExtDot);
+
+            return assetPath;
+        }
+
         public static VisualElementAsset AddElementToAsset(
             BuilderDocument document, VisualElement ve, int index = -1)
         {

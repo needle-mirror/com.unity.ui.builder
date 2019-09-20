@@ -4,6 +4,21 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.8.2] - 2019-09-20
+
+- Updated documentation after pass by docs team.
+- Added support for the Runtime theme.
+- Added back OptionsPanel sample and fixed it to work in the Assets folder after being imported.
+- Added four new Samples derived from the Unite CPH 2019 Tanks demo.
+- Added support for `resource()` function in USS which will be used if the asset being referenced is inside a **Resources** folder.
+- Renamed Inspector "Inherited Styles" section to just "StyleSheet".
+- Renamed Inspector "Local Styles" section to "Styles" if inspecting a selector, or "Inlined Styles" if inspecting an element.
+- Removed exposed UI Builder test windows from the Tests menu.
+- Fixed the way the Builder's own package version was being retrieved for display in the Viewport header.
+- Fixed Project section of the Library to properly handle elements at the root Project path (`Assets/`) or root namespace.
+- Fixed the Library not updating when deleting or renaming an entire folder from the Unity Project window containing `.uxml` assets.
+- (2020.1) Fixed compilation errors with latest trunk.
+
 ## [0.8.1] - 2019-09-16
 
 - Removed broken sample.

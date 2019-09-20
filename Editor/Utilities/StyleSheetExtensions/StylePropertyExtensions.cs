@@ -93,11 +93,15 @@ namespace Unity.UI.Builder
             // Undo/Redo
             Undo.RegisterCompleteObjectUndo(styleSheet, "Change UI Style Value");
 
+            // Determine real asset type.
+            var resourcePath = BuilderAssetUtilities.GetResourcesPathForAsset(value);
+            var styleValueType = string.IsNullOrEmpty(resourcePath) ? StyleValueType.AssetReference : StyleValueType.ResourcePath;
+
             // Add value data to data array.
-            var index = styleSheet.AddValueToArray(value);
+            var index = string.IsNullOrEmpty(resourcePath) ? styleSheet.AddValueToArray(value) : styleSheet.AddValueToArray(resourcePath);
 
             // Add value object to property.
-            var newValue = styleSheet.AddValueHandle(property, index, StyleValueType.AssetReference);
+            var newValue = styleSheet.AddValueHandle(property, index, styleValueType);
 
             return newValue;
         }

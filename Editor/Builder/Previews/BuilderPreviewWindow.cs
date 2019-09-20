@@ -13,7 +13,7 @@ namespace Unity.UI.Builder
         [SerializeField]
         VisualTreeAsset m_CurrentVisualTreeAsset;
 
-        [MenuItem("Tests/UI Builder/Document Preview")]
+        //[MenuItem("Tests/UI Builder/Document Preview")]
         public static void ShowWindow()
         {
             var window = GetWindow<BuilderPreviewWindow>();

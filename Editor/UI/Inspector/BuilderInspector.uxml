@@ -77,7 +77,7 @@
         <!-- Element Inherited Styles Foldout -->
         <uib:PersistedFoldout
             name="inspector-inherited-styles-foldout"
-            text="Inherited Styles"
+            text="StyleSheet"
             view-data-key="builder-inspector-attributes-inherited-styles-foldout"
             class="unity-builder-inspector__category-foldout"
             value="true">
@@ -93,7 +93,7 @@
                 <VisualElement name="add-class-controls-container" class="unity-builder-inspector__add-class-controls">
                     <TextField name="add-class-field" class="unity-builder-inspector__add-class-field" />
                     <Button name="add-class-button" text="Add Style Class to List" class="unity-builder-inspector__add-class-button" />
-                    <Button name="create-class-button" text="Extract Local Styles to New Class" class="unity-builder-inspector__add-class-button" />
+                    <Button name="create-class-button" text="Extract Inlined Styles to New Class" class="unity-builder-inspector__add-class-button" />
                 </VisualElement>
 
                 <VisualElement name="add-class-validation-message-container" />
@@ -112,7 +112,7 @@
         <!-- Element/Selector Local Styles Foldout -->
         <uib:PersistedFoldout
             name="inspector-local-styles-foldout"
-            text="Local Styles"
+            text="Inlined Styles"
             view-data-key="builder-inspector-local-styles-foldout"
             class="unity-builder-inspector__category-foldout unity-builder-inspector__style-row-container"
             value="true">

@@ -437,6 +437,11 @@
     background-color: rgb(182, 182, 182);
 }
 
+.unity-builder-canvas__container--runtime {
+    color: #000;
+    background-color: rgb(40, 61, 75);
+}
+
 .unity-builder-canvas__special-visual-element-initial-size {
     min-width: 100px;
     min-height: 100px;

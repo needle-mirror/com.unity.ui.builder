@@ -4,7 +4,9 @@ using System.IO;
 using UnityEditor;
 using UnityEditor.UIElements;
 using System.Linq;
+using UnityEditor.PackageManager;
 using Object = UnityEngine.Object;
+using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 
 namespace Unity.UI.Builder
 {
@@ -108,12 +110,11 @@ namespace Unity.UI.Builder
             SetViewportSubTitle();
 
             // Get Builder package version.
-            var packageList = PackageManagerUtilityInternal.GetAllVisiblePackages();
-            var builderPackageInfo = packageList.FirstOrDefault((pi) => pi.name == BuilderConstants.BuilderPackageName);
-            if (builderPackageInfo == null)
+            var packageInfo = PackageInfo.FindForAssetPath("Packages/" + BuilderConstants.BuilderPackageName);
+            if (packageInfo == null)
                 m_BuilderPackageVersion = null;
             else
-                m_BuilderPackageVersion = builderPackageInfo.version;
+                m_BuilderPackageVersion = packageInfo.version;
         }
 
         void DrawSaveDialogValidationMessage()
@@ -511,6 +512,7 @@ namespace Unity.UI.Builder
                 a => document.currentCanvasTheme == BuilderDocument.CanvasTheme.Default
                     ? DropdownMenuAction.Status.Checked
                     : DropdownMenuAction.Status.Normal);
+
             m_CanvasThemeMenu.menu.AppendAction("Dark", a =>
                 {
                     ChangeCanvasTheme(BuilderDocument.CanvasTheme.Dark);
@@ -519,12 +521,22 @@ namespace Unity.UI.Builder
                 a => document.currentCanvasTheme == BuilderDocument.CanvasTheme.Dark
                     ? DropdownMenuAction.Status.Checked
                     : DropdownMenuAction.Status.Normal);
+
             m_CanvasThemeMenu.menu.AppendAction("Light", a =>
                 {
                     ChangeCanvasTheme(BuilderDocument.CanvasTheme.Light);
                     UpdateCanvasThemeMenuStatus();
                 },
                 a => document.currentCanvasTheme == BuilderDocument.CanvasTheme.Light
+                    ? DropdownMenuAction.Status.Checked
+                    : DropdownMenuAction.Status.Normal);
+
+            m_CanvasThemeMenu.menu.AppendAction("Runtime", a =>
+            {
+                ChangeCanvasTheme(BuilderDocument.CanvasTheme.Runtime);
+                UpdateCanvasThemeMenuStatus();
+            },
+                a => document.currentCanvasTheme == BuilderDocument.CanvasTheme.Runtime
                     ? DropdownMenuAction.Status.Checked
                     : DropdownMenuAction.Status.Normal);
 
@@ -542,8 +554,14 @@ namespace Unity.UI.Builder
 
         void ApplyCanvasTheme(VisualElement element, BuilderDocument.CanvasTheme theme)
         {
+            // Find the runtime stylesheet.
+            var runtimeStyleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.RuntimeThemeUSSPath);
+            if (runtimeStyleSheet == null)
+                runtimeStyleSheet = UIElementsEditorUtility.s_DefaultCommonLightStyleSheet;
+
             element.styleSheets.Remove(UIElementsEditorUtility.s_DefaultCommonDarkStyleSheet);
             element.styleSheets.Remove(UIElementsEditorUtility.s_DefaultCommonLightStyleSheet);
+            element.styleSheets.Remove(runtimeStyleSheet);
 
             StyleSheet themeStyleSheet = null;
 
@@ -554,6 +572,9 @@ namespace Unity.UI.Builder
                     break;
                 case BuilderDocument.CanvasTheme.Light:
                     themeStyleSheet = UIElementsEditorUtility.s_DefaultCommonLightStyleSheet;
+                    break;
+                case BuilderDocument.CanvasTheme.Runtime:
+                    themeStyleSheet = runtimeStyleSheet;
                     break;
                 case BuilderDocument.CanvasTheme.Default:
                     themeStyleSheet = null;
@@ -568,6 +589,7 @@ namespace Unity.UI.Builder
         {
             element.RemoveFromClassList(BuilderConstants.CanvasContainerDarkStyleClassName);
             element.RemoveFromClassList(BuilderConstants.CanvasContainerLightStyleClassName);
+            element.RemoveFromClassList(BuilderConstants.CanvasContainerRuntimeStyleClassName);
 
             switch (theme)
             {
@@ -576,6 +598,9 @@ namespace Unity.UI.Builder
                     break;
                 case BuilderDocument.CanvasTheme.Light:
                     element.AddToClassList(BuilderConstants.CanvasContainerLightStyleClassName);
+                    break;
+                case BuilderDocument.CanvasTheme.Runtime:
+                    element.AddToClassList(BuilderConstants.CanvasContainerRuntimeStyleClassName);
                     break;
                 case BuilderDocument.CanvasTheme.Default:
                     string defaultClass = EditorGUIUtility.isProSkin
@@ -612,6 +637,7 @@ namespace Unity.UI.Builder
 
         void SetViewportSubTitle()
         {
+            var subTitle = " - ";
             var newFileName = document.uxmlFileName;
 
             if (string.IsNullOrEmpty(newFileName))
@@ -620,10 +646,12 @@ namespace Unity.UI.Builder
             if (document.hasUnsavedChanges)
                 newFileName = newFileName + "*";
 
-            if (!string.IsNullOrEmpty(m_BuilderPackageVersion))
-                newFileName = newFileName + " - UI Builder " + m_BuilderPackageVersion;
+            subTitle = subTitle + newFileName;
 
-            m_Viewport.subTitle = newFileName;
+            if (!string.IsNullOrEmpty(m_BuilderPackageVersion))
+                subTitle = subTitle + " - UI Builder " + m_BuilderPackageVersion;
+
+            m_Viewport.subTitle = subTitle;
         }
     }
 }

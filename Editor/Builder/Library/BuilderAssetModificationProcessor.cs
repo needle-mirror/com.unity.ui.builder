@@ -25,16 +25,14 @@ namespace Unity.UI.Builder
 
         static AssetDeleteResult OnWillDeleteAsset(string assetPath, RemoveAssetOptions option)
         {
-            if (IsUxml(assetPath))
-                OnAssetChange?.Invoke();
+            OnAssetChange?.Invoke();
 
             return AssetDeleteResult.DidNotDelete;
         }
 
         static AssetMoveResult OnWillMoveAsset(string sourcePath, string destinationPath)
         {
-            if (IsUxml(sourcePath) || IsUxml(destinationPath))
-                OnAssetChange?.Invoke();
+            OnAssetChange?.Invoke();
 
             return AssetMoveResult.DidNotMove;
         }

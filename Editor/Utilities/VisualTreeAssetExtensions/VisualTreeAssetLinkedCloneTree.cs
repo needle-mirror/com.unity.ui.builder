@@ -94,12 +94,16 @@ namespace Unity.UI.Builder
                 else
                 {
                     var rule = vta.inlineSheet.rules[root.ruleIndex];
+#if UNITY_2020_1_OR_NEWER
+                    ve.SetInlineRule(vta.inlineSheet, rule);
+#elif UNITY_2019_3_OR_NEWER
                     var stylesData = new VisualElementStylesData(false);
                     ve.SetInlineStyles(stylesData);
-#if UNITY_2019_3_OR_NEWER
                     s_StylePropertyReader.SetInlineContext(vta.inlineSheet, rule, root.ruleIndex);
                     stylesData.ApplyProperties(s_StylePropertyReader, null);
 #else
+                    var stylesData = new VisualElementStylesData(false);
+                    ve.SetInlineStyles(stylesData);
                     var propIds = StyleSheetCache.GetPropertyIDs(vta.inlineSheet, root.ruleIndex);
                     stylesData.ApplyRule(vta.inlineSheet, Int32.MaxValue, rule, propIds);
 #endif

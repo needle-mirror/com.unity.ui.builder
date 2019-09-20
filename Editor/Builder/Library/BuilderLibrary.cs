@@ -111,6 +111,11 @@ namespace Unity.UI.Builder
 
         static void AddCategoriesToStack(LibraryTreeItem sourceCategory, List<LibraryTreeItem> categoryStack, string[] split)
         {
+            if (categoryStack.Count > split.Length)
+            {
+                categoryStack.RemoveRange(split.Length, categoryStack.Count - split.Length);
+            }
+
             for (int i = 0; i < split.Length; ++i)
             {
                 var part = split[i];

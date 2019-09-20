@@ -6,7 +6,7 @@ namespace Unity.UI.Builder
 {
     class TwoPaneSplitViewTestWindow : EditorWindow
     {
-        [MenuItem("Tests/UI Builder/TwoPaneSplitViewTest")]
+        //[MenuItem("Tests/UI Builder/TwoPaneSplitViewTest")]
         static void ShowWindow()
         {
             var window = GetWindow<TwoPaneSplitViewTestWindow>();

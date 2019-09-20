@@ -99,6 +99,11 @@ namespace Unity.UI.Builder
 
         public void Refresh()
         {
+            if (BuilderSharedStyles.IsSelectorElement(m_Inspector.currentVisualElement))
+                m_LocalStylesSection.text = BuilderConstants.InspectorLocalStylesSectionTitleForSelector;
+            else
+                m_LocalStylesSection.text = BuilderConstants.InspectorLocalStylesSectionTitleForElement;
+
             var styleRows = m_LocalStylesSection.Query<BuilderStyleRow>().ToList();
 
             foreach (var styleRow in styleRows)
