@@ -15,6 +15,13 @@ namespace Unity.UI.Builder
 
             vta.hideFlags = HideFlags.DontUnloadUnusedAsset | HideFlags.DontSaveInEditor;
 
+#if UNITY_2020_1_OR_NEWER
+            var uxmlTagElement = new VisualElementAsset(BuilderConstants.UxmlTagTypeName);
+            InitializeElement(uxmlTagElement);
+            uxmlTagElement.id = GenerateNewId(vta, uxmlTagElement);
+            vta.visualElementAssets.Add(uxmlTagElement);
+#endif
+
             return vta;
         }
 
@@ -148,8 +155,8 @@ namespace Unity.UI.Builder
 
         public static int GenerateNewId(VisualTreeAsset vta, VisualElementAsset vea)
         {
-            var parentHash = 0;
-            if (vea.parentId == 0)
+            int parentHash;
+            if (!vea.HasParent())
                 parentHash = vta.GetHashCode();
             else
                 parentHash = vea.parentId;
@@ -184,7 +191,7 @@ namespace Unity.UI.Builder
             // this is fine as long as we only support one uss but when we support more
             // we need to make sure we only remove the stylesheets that make sense to remove.
             // See: https://unity3d.atlassian.net/browse/UIT-469
-            if (vea.parentId == 0 && newParent != null)
+            if (vta.IsRootElement(vea) && newParent != null)
             {
 #if UNITY_2019_3_OR_NEWER
                 vea.stylesheetPaths.Clear();

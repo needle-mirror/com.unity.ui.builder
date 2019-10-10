@@ -184,27 +184,38 @@ namespace Unity.UI.Builder
 
             var idToChildren = VisualTreeAssetUtilities.GenerateIdToChildren(vta);
 
-            // all nodes under the tree root have a parentId == 0
             List<VisualElementAsset> rootAssets;
-            if (idToChildren.TryGetValue(0, out rootAssets) && rootAssets != null)
+
+            // Tree root has parentId == 0
+            idToChildren.TryGetValue(0, out rootAssets);
+            if (rootAssets == null || rootAssets.Count == 0)
+                return;
+
+#if UNITY_2020_1_OR_NEWER
+            //vta.AssignClassListFromAssetToElement(rootAssets[0], target);
+            //vta.AssignStyleSheetFromAssetToElement(rootAssets[0], target);
+
+            // Get the first-level elements. These will be instantiated and added to target.
+            idToChildren.TryGetValue(rootAssets[0].id, out rootAssets);
+            if (rootAssets == null || rootAssets.Count == 0)
+                return;
+#endif
+
+            rootAssets.Sort(VisualTreeAssetUtilities.CompareForOrder);
+            foreach (VisualElementAsset rootElement in rootAssets)
             {
-                rootAssets.Sort(VisualTreeAssetUtilities.CompareForOrder);
+                Assert.IsNotNull(rootElement);
 
-                foreach (VisualElementAsset rootElement in rootAssets)
-                {
-                    Assert.IsNotNull(rootElement);
+                // Don't try to instatiate the special selection tracking element.
+                if (rootElement.fullTypeName == BuilderConstants.SelectedVisualTreeAssetSpecialElementTypeName)
+                    continue;
 
-                    // Don't try to instatiate the special selection tracking element.
-                    if (rootElement.fullTypeName == BuilderConstants.SelectedVisualTreeAssetSpecialElementTypeName)
-                        continue;
+                VisualElement rootVe = CloneSetupRecursively(vta, rootElement, idToChildren,
+                    new CreationContext(slotInsertionPoints, attributeOverrides, vta, target));
 
-                    VisualElement rootVe = CloneSetupRecursively(vta, rootElement, idToChildren,
-                        new CreationContext(slotInsertionPoints, attributeOverrides, vta, target));
-
-                    // if contentContainer == this, the shadow and the logical hierarchy are identical
-                    // otherwise, if there is a CC, we want to insert in the shadow
-                    target.hierarchy.Add(rootVe);
-                }
+                // if contentContainer == this, the shadow and the logical hierarchy are identical
+                // otherwise, if there is a CC, we want to insert in the shadow
+                target.hierarchy.Add(rootVe);
             }
         }
 

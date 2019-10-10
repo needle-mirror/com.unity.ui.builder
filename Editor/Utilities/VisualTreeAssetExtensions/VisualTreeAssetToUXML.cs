@@ -387,9 +387,46 @@ namespace Unity.UI.Builder
 
             GenerateUXMLRecursive(vta, vtaPath, vea, idToChildren, stringBuilder, 1, true, true);
 
-            stringBuilder.Append("</UXML>\n");
+            stringBuilder.Append(BuilderConstants.UxmlFooter);
 
             return stringBuilder.ToString();
+        }
+
+        static void GenerateUXMLFromRootElements(
+            VisualTreeAsset vta,
+            Dictionary<int, List<VisualElementAsset>> idToChildren,
+            StringBuilder stringBuilder,
+            string vtaPath,
+            bool writingToFile)
+        {
+            List<VisualElementAsset> rootAssets;
+
+            // Tree root has parentId == 0
+            idToChildren.TryGetValue(0, out rootAssets);
+            if (rootAssets == null || rootAssets.Count == 0)
+                return;
+
+#if UNITY_2020_1_OR_NEWER
+            //vta.AssignClassListFromAssetToElement(rootAssets[0], target);
+            //vta.AssignStyleSheetFromAssetToElement(rootAssets[0], target);
+
+            // Get the first-level elements. These will be instantiated and added to target.
+            idToChildren.TryGetValue(rootAssets[0].id, out rootAssets);
+            if (rootAssets == null || rootAssets.Count == 0)
+                return;
+#endif
+
+            rootAssets.Sort(VisualTreeAssetUtilities.CompareForOrder);
+            foreach (VisualElementAsset rootElement in rootAssets)
+            {
+                Assert.IsNotNull(rootElement);
+
+                // Don't try to include the special selection tracking element.
+                if (writingToFile && rootElement.fullTypeName == BuilderConstants.SelectedVisualTreeAssetSpecialElementTypeName)
+                    continue;
+
+                GenerateUXMLRecursive(vta, vtaPath, rootElement, idToChildren, stringBuilder, 1, false, writingToFile);
+            }
         }
 
         public static string GenerateUXML(VisualTreeAsset vta, string vtaPath, bool writingToFile = false)
@@ -411,23 +448,7 @@ namespace Unity.UI.Builder
             // Templates
             AppendTemplateRegistrations(vta, vtaPath, stringBuilder);
 
-            // all nodes under the tree root have a parentId == 0
-            List<VisualElementAsset> rootAssets;
-            if (idToChildren.TryGetValue(0, out rootAssets) && rootAssets != null)
-            {
-                rootAssets.Sort(VisualTreeAssetUtilities.CompareForOrder);
-
-                foreach (VisualElementAsset rootElement in rootAssets)
-                {
-                    Assert.IsNotNull(rootElement);
-
-                    // Don't try to include the special selection tracking element.
-                    if (writingToFile && rootElement.fullTypeName == BuilderConstants.SelectedVisualTreeAssetSpecialElementTypeName)
-                        continue;
-
-                    GenerateUXMLRecursive(vta, vtaPath, rootElement, idToChildren, stringBuilder, 1, false, writingToFile);
-                }
-            }
+            GenerateUXMLFromRootElements(vta, idToChildren, stringBuilder, vtaPath, writingToFile);
 
             stringBuilder.Append(BuilderConstants.UxmlFooter);
 

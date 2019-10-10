@@ -34,7 +34,15 @@ namespace Unity.UI.Builder
                 document.visualTreeAsset, BuilderConstants.CreateUIElementUndoMessage);
 
             var veParent = ve.parent;
-            var veaParent = veParent == null ? null : veParent.GetVisualElementAsset();
+            VisualElementAsset veaParent = null;
+            if (veParent != null)
+                veaParent = veParent.GetVisualElementAsset();
+
+#if UNITY_2020_1_OR_NEWER
+            if (veaParent == null)
+                veaParent = document.visualTreeAsset.GetRootUXMLElement(); // UXML Root Element
+#endif
+
             var vea = document.visualTreeAsset.AddElement(veaParent, ve);
 
             if (index >= 0)
@@ -73,7 +81,15 @@ namespace Unity.UI.Builder
             Undo.RegisterCompleteObjectUndo(
                 document.visualTreeAsset, BuilderConstants.ReparentUIElementUndoMessage);
 
-            var veaNewParent = newParent == null ? null : newParent.GetVisualElementAsset();
+            VisualElementAsset veaNewParent = null;
+            if (newParent != null)
+                veaNewParent = newParent.GetVisualElementAsset();
+
+#if UNITY_2020_1_OR_NEWER
+            if (veaNewParent == null)
+                veaNewParent = document.visualTreeAsset.GetRootUXMLElement(); // UXML Root Element
+#endif
+
             document.visualTreeAsset.ReparentElement(veaToReparent, veaNewParent, index);
         }
 

@@ -130,6 +130,10 @@
     -unity-slice-right: 0;
 }
 
+.unity-builder__toolbar-setting-menu > .unity-toolbar-menu__arrow {
+    background-image: none;
+}
+
 .unity-builder-explorer__rename-textfield__pre-2019-3 {
     padding-top: 2px;
     padding-bottom: 0;
@@ -607,12 +611,8 @@
 }
 
 .unity-builder__theme-toolbar-menu {
-    width: 110px;
+    width: 120px;
     padding-top: 2px;
-}
-
-.unity-builder__toolbar-align {
-    border-left-width: 0;
 }
 
 /*****************************************************************************/

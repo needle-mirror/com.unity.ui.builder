@@ -21,6 +21,11 @@ namespace Unity.UI.Builder
 #endif
         }
 
+        public static bool HasParent(this VisualElementAsset vea)
+        {
+            return vea.parentId != 0;
+        }
+
         public static bool HasAttribute(this VisualElementAsset vea, string attributeName)
         {
             var fieldInfo = AttributesListFieldInfo;

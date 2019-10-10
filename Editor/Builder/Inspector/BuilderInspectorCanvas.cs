@@ -70,8 +70,10 @@ namespace Unity.UI.Builder
 
             // Size Fields
             m_CanvasWidth = root.Q<IntegerField>("canvas-width");
+            m_CanvasWidth.isDelayed = true;
             m_CanvasWidth.RegisterValueChangedCallback(OnWidthChange);
             m_CanvasHeight = root.Q<IntegerField>("canvas-height");
+            m_CanvasHeight.isDelayed = true;
             m_CanvasHeight.RegisterValueChangedCallback(OnHeightChange);
             m_Canvas.RegisterCallback<GeometryChangedEvent>(OnCanvasSizeChange);
 
@@ -132,8 +134,15 @@ namespace Unity.UI.Builder
 
         public void Refresh()
         {
+            // HACK until fix goes in:
+            m_CanvasWidth.isDelayed = false;
+            m_CanvasHeight.isDelayed = false;
+
             m_CanvasWidth.SetValueWithoutNotify(settings.CanvasWidth);
             m_CanvasHeight.SetValueWithoutNotify(settings.CanvasHeight);
+
+            m_CanvasWidth.isDelayed = true;
+            m_CanvasHeight.isDelayed = true;
 
             m_OpacityField.SetValueWithoutNotify(settings.CanvasBackgroundOpacity);
             m_BackgroundMode.SetValueWithoutNotify(settings.CanvasBackgroundMode.ToString());
@@ -267,8 +276,16 @@ namespace Unity.UI.Builder
 
         void OnCanvasSizeChange(GeometryChangedEvent evt)
         {
+            // HACK until fix goes in:
+            m_CanvasWidth.isDelayed = false;
+            m_CanvasHeight.isDelayed = false;
+
             m_CanvasWidth.SetValueWithoutNotify((int)evt.newRect.width);
             m_CanvasHeight.SetValueWithoutNotify((int)evt.newRect.height);
+
+            m_CanvasWidth.isDelayed = true;
+            m_CanvasHeight.isDelayed = true;
+
             UpdateCameraRects();
         }
 
@@ -278,7 +295,12 @@ namespace Unity.UI.Builder
             if (newValue < (int)BuilderConstants.CanvasMinWidth)
             {
                 newValue = (int)BuilderConstants.CanvasMinWidth;
-                (evt.target as IntegerField).SetValueWithoutNotify(newValue);
+                var field = evt.target as IntegerField;
+
+                // HACK until fix goes in:
+                field.isDelayed = false;
+                field.SetValueWithoutNotify(newValue);
+                field.isDelayed = true;
             }
 
             settings.CanvasWidth = newValue;
@@ -293,7 +315,13 @@ namespace Unity.UI.Builder
             if (newValue < (int)BuilderConstants.CanvasMinHeight)
             {
                 newValue = (int)BuilderConstants.CanvasMinHeight;
-                (evt.target as IntegerField).SetValueWithoutNotify(newValue);
+
+                var field = evt.target as IntegerField;
+
+                // HACK until fix goes in:
+                field.isDelayed = false;
+                field.SetValueWithoutNotify(newValue);
+                field.isDelayed = true;
             }
 
             settings.CanvasHeight = newValue;

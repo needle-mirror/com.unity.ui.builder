@@ -7,9 +7,9 @@ The **UI Builder** lets you visually create and edit UXML and USS UI assets for 
 ## Installation
 
 Unity versions supported:
-- **2019.2**: 2019.2.2f1 or newer
-- **2019.3**: 2019.3.0b1 or newer
-- **2020.1**: 2020.1.0a6 or newer
+- **2019.2**: 2019.2.8f1 or newer
+- **2019.3**: 2019.3.0b6 or newer
+- **2020.1**: 2020.1.0a7 or newer
 
 To install:
 1. Open the **Window > Package Manager**.

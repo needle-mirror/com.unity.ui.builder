@@ -229,9 +229,6 @@ namespace Unity.UI.Builder
 
         void PasteUXML(string copyBuffer)
         {
-            // HACK: Why??
-            copyBuffer = copyBuffer.Replace("ui:UXML", "UXML");
-
             VisualTreeAsset pasteVta = null;
             var importer = new BuilderVisualTreeAssetImporter(); // Cannot be cached because the StyleBuilder never gets reset.
             importer.ImportXmlFromString(copyBuffer, out pasteVta);
@@ -241,6 +238,8 @@ namespace Unity.UI.Builder
                 parent = m_Selection.selection.First().parent?.GetVisualElementAsset();
 
             BuilderAssetUtilities.TransferAssetToAsset(m_Builder.document, parent, pasteVta);
+
+            m_Builder.document.AddStyleSheetToAllRootElements();
 
             ScriptableObject.DestroyImmediate(pasteVta);
         }

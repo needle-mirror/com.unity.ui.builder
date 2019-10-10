@@ -1,6 +1,6 @@
 # UI Builder
 
-UI Builder lets you visually create and edit user interfaces using UIElements, UXML, and USS.
+The **UI Builder** lets you visually create and edit UXML and USS UI assets for **UIElements**. Once the package is installed, the UI Builder window can be opened via the **Window > UI > UI Builder** menu, or double-clicking on a `.uxml` asset in the Project Browser.
 
 ## Overview
 

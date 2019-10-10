@@ -54,6 +54,38 @@ namespace Unity.UI.Builder
             VisualTreeAssetLinkedCloneTree.CloneTree(vta, target);
         }
 
+        public static VisualElementAsset GetRootUXMLElement(this VisualTreeAsset vta)
+        {
+#if UNITY_2020_1_OR_NEWER
+            return vta.visualElementAssets[0];
+#else
+            return null;
+#endif
+        }
+
+        public static int GetRootUXMLElementId(this VisualTreeAsset vta)
+        {
+#if UNITY_2020_1_OR_NEWER
+            return vta.GetRootUXMLElement().id;
+#else
+            return 0;
+#endif
+        }
+
+        public static bool IsRootUXMLElement(this VisualTreeAsset vta, VisualElementAsset vea)
+        {
+#if UNITY_2020_1_OR_NEWER
+            return vea == vta.GetRootUXMLElement();
+#else
+            return false;
+#endif
+        }
+
+        public static bool IsRootElement(this VisualTreeAsset vta, VisualElementAsset vea)
+        {
+            return vea.parentId == vta.GetRootUXMLElementId();
+        }
+
         internal static VisualElementAsset FindElementByType(this VisualTreeAsset vta, string fullTypeName)
         {
             foreach (var vea in vta.visualElementAssets)
@@ -273,7 +305,11 @@ namespace Unity.UI.Builder
             if (!vta.TemplateExists(templateName))
                 vta.RegisterTemplate(templateName, path);
 
+#if UNITY_2020_1_OR_NEWER
+            var templateAsset = new TemplateAsset(templateName, BuilderConstants.UxmlTagTypeName);
+#else
             var templateAsset = new TemplateAsset(templateName);
+#endif
             VisualTreeAssetUtilities.InitializeElement(templateAsset);
 
             templateAsset.AddProperty("template", templateName);
@@ -396,10 +432,16 @@ namespace Unity.UI.Builder
         {
             var otherIdToChildren = VisualTreeAssetUtilities.GenerateIdToChildren(other);
 
+            if (parent == null)
+                parent = vta.GetRootUXMLElement();
+
             var nextOrderInDocument = (vta.visualElementAssets.Count + vta.templateAssets.Count) * BuilderConstants.VisualTreeAssetOrderIncrement;
 
             foreach (var vea in other.visualElementAssets)
             {
+                if (other.IsRootUXMLElement(vea))
+                    continue;
+
                 ReinitElementWithNewParentAsset(
                     vta, parent, other, otherIdToChildren, vea, ref nextOrderInDocument);
 
@@ -431,7 +473,7 @@ namespace Unity.UI.Builder
             SwallowStyleRule(vta, other, vea);
 
             // Set new parent id on root elements.
-            if (vea.parentId == 0 && parent != null)
+            if (other.IsRootElement(vea) && parent != null)
                 vea.parentId = parent.id;
 
             // Set order in document.

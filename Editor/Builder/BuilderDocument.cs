@@ -469,7 +469,7 @@ namespace Unity.UI.Builder
         {
             foreach (var asset in visualTreeAsset.visualElementAssets)
             {
-                if (asset.parentId != 0)
+                if (!visualTreeAsset.IsRootElement(asset))
                     continue; // Not a root asset.
 
                 AddStyleSheetToRootAsset(asset, newUssPath);

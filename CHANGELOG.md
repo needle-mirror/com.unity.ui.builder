@@ -4,6 +4,13 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.8.3] - 2019-10-10
+
+- Fixed inability to type a Canvas size in the Canvas Inspector because the min-value validation would kick in on every key press.
+- (2019.3+) Fixed Viewport toolbar visual glitches with recent **2019.3.0b6+** and **2020.1.0a7+** versions.
+- (2019.3+) Fixed Explorer toolbar settings menu (3 dots) visual glitch with recent **2019.3.0b6+** and **2020.1.0a7+** versions.
+- (2020.1) Fixed compilation errors and various bugs when using recent trunk: **2020.1.0a7+**
+
 ## [0.8.2] - 2019-09-20
 
 - Updated documentation after pass by docs team.

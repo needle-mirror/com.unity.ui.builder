@@ -3,6 +3,6 @@
         <uie:ToolbarMenu name="file-menu" text="File" />
         <uie:ToolbarSpacer class="unity-builder__toolbar-flex-space" />
         <uie:ToolbarMenu name="canvas-theme-menu" text="Canvas Theme" class="unity-builder__theme-toolbar-menu" />
-        <uie:ToolbarToggle name="preview-button" text="Preview" class="unity-builder__toolbar-align" />
+        <uie:ToolbarToggle name="preview-button" text="Preview" />
     </uie:Toolbar>
 </UXML>
