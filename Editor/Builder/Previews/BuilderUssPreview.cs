@@ -5,19 +5,19 @@ namespace Unity.UI.Builder
 {
     internal class BuilderUssPreview : BuilderCodePreview, IBuilderSelectionNotifier
     {
-        Builder m_Builder;
+        BuilderPaneWindow m_PaneWindow;
 
-        public BuilderUssPreview(Builder builder)
+        public BuilderUssPreview(BuilderPaneWindow paneWindow)
         {
-            m_Builder = builder;
+            m_PaneWindow = paneWindow;
             RefreshUSS();
         }
 
         public void RefreshUSS()
         {
             var uss = string.Empty;
-            if (m_Builder.document != null && m_Builder.document.mainStyleSheet != null)
-                uss = m_Builder.document.mainStyleSheet.GenerateUSS();
+            if (m_PaneWindow.document != null && m_PaneWindow.document.mainStyleSheet != null)
+                uss = m_PaneWindow.document.mainStyleSheet.GenerateUSS();
 
             SetText(uss);
         }

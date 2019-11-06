@@ -48,6 +48,31 @@ namespace Unity.UI.Builder
 
         [SerializeField]
         BuilderDocumentSettings m_Settings;
+
+        WeakReference<IBuilderViewportWindow> m_PrimaryViewportWindow = new WeakReference<IBuilderViewportWindow>(null);
+
+        List<BuilderPaneWindow> m_RegisteredWindows = new List<BuilderPaneWindow>();
+
+        public IBuilderViewportWindow primaryViewportWindow
+        {
+            get
+            {
+                if (m_PrimaryViewportWindow == null)
+                    return null;
+
+                IBuilderViewportWindow window;
+                bool isReferenceValid = m_PrimaryViewportWindow.TryGetTarget(out window);
+                if (!isReferenceValid)
+                    return null;
+
+                return window;
+            }
+            private set
+            {
+                m_PrimaryViewportWindow.SetTarget(value);
+            }
+        }
+
         public BuilderDocumentSettings settings
         {
             get
@@ -178,6 +203,42 @@ namespace Unity.UI.Builder
             hasUnsavedChanges = false;
             EditorApplication.playModeStateChanged += PlayModeStateChange;
             Clear();
+        }
+
+        public void RegisterWindow(BuilderPaneWindow window)
+        {
+            if (window == null || m_RegisteredWindows.Contains(window))
+                return;
+
+            m_RegisteredWindows.Add(window);
+
+            if (window is IBuilderViewportWindow)
+            {
+                primaryViewportWindow = window as IBuilderViewportWindow;
+                BroadcastChange();
+            }
+        }
+
+        public void UnregisterWindow(BuilderPaneWindow window)
+        {
+            if (window == null)
+                return;
+
+            var removed = m_RegisteredWindows.Remove(window);
+            if (!removed)
+                return;
+
+            if (window is IBuilderViewportWindow && primaryViewportWindow == window as IBuilderViewportWindow)
+            {
+                primaryViewportWindow = null;
+                BroadcastChange();
+            }
+        }
+
+        public void BroadcastChange()
+        {
+            foreach (var window in m_RegisteredWindows)
+                window.PrimaryViewportWindowChanged();
         }
 
         public static BuilderDocument CreateInstance()

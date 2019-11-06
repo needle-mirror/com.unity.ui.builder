@@ -212,7 +212,8 @@ namespace Unity.UI.Builder
         public static readonly string UxmlEditorNamespace = "UnityEditor.UIElements.";
         public static readonly string UxmlEditorNamespaceReplace = "uie:";
 #if UNITY_2020_1_OR_NEWER
-        public static readonly string UxmlTagTypeName = "UnityEngine.UIElements.Template";
+        public static readonly string UxmlTagTypeName = "UnityEngine.UIElements.UXML";
+        public static readonly string UxmlInstanceTypeName = "UnityEngine.UIElements.Instance";
 #endif
 
         // Styles

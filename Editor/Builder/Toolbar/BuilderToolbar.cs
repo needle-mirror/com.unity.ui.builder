@@ -12,7 +12,7 @@ namespace Unity.UI.Builder
 {
     internal class BuilderToolbar : VisualElement
     {
-        Builder m_Builder;
+        BuilderPaneWindow m_PaneWindow;
         BuilderSelection m_Selection;
         ModalPopup m_SaveDialog;
         BuilderViewport m_Viewport;
@@ -44,11 +44,11 @@ namespace Unity.UI.Builder
 
         BuilderDocument document
         {
-            get { return m_Builder.document; }
+            get { return m_PaneWindow.document; }
         }
 
         public BuilderToolbar(
-            Builder builder,
+            BuilderPaneWindow paneWindow,
             BuilderSelection selection,
             ModalPopup saveDialog,
             BuilderViewport viewport,
@@ -57,7 +57,7 @@ namespace Unity.UI.Builder
             BuilderInspector inspector,
             BuilderTooltipPreview tooltipPreview)
         {
-            m_Builder = builder;
+            m_PaneWindow = paneWindow;
             m_Selection = selection;
             m_SaveDialog = saveDialog;
             m_Viewport = viewport;
@@ -237,12 +237,12 @@ namespace Unity.UI.Builder
             document.NewDocument(m_Viewport.documentElement);
 
             m_Viewport.canvas.SetSizeFromDocumentSettings();
-            m_Inspector.canvasInspector.Refresh();
+            m_Inspector?.canvasInspector.Refresh();
 
             m_Selection.NotifyOfHierarchyChange(document);
             m_Selection.NotifyOfStylingChange(document);
 
-            m_Library.ResetCurrentlyLoadedUxmlStyles();
+            m_Library?.ResetCurrentlyLoadedUxmlStyles();
 
             SetViewportSubTitle();
         }
@@ -376,9 +376,13 @@ namespace Unity.UI.Builder
         
         void SaveDocument(string uxmlPath, string ussPath)
         {
+            var viewportWindow = m_PaneWindow as IBuilderViewportWindow;
+            if (viewportWindow == null)
+                return;
+
             // Set asset.
             var needFullRefresh = document.SaveNewDocument(
-                uxmlPath, ussPath, m_Builder.documentRootElement, m_IsDialogSaveAs);
+                uxmlPath, ussPath, viewportWindow.documentRootElement, m_IsDialogSaveAs);
 
             // Update any uses out there of the currently edited and saved USS.
             RetainedMode.FlagStyleSheetChange();
@@ -392,7 +396,7 @@ namespace Unity.UI.Builder
             m_SaveDialog.Hide();
 
             if (needFullRefresh)
-                m_Builder.OnEnableAfterAllSerialization();
+                m_PaneWindow.OnEnableAfterAllSerialization();
             else
                 m_Selection.NotifyOfHierarchyChange(document);
         }
@@ -400,8 +404,8 @@ namespace Unity.UI.Builder
         public void OnAfterBuilderDeserialize()
         {
             VisualTreeAsset docFieldValue = null;
-            if (!string.IsNullOrEmpty(m_Builder.document.uxmlPath))
-                docFieldValue = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(m_Builder.document.uxmlPath);
+            if (!string.IsNullOrEmpty(m_PaneWindow.document.uxmlPath))
+                docFieldValue = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(m_PaneWindow.document.uxmlPath);
             SetViewportSubTitle();
 
             ChangeCanvasTheme(document.currentCanvasTheme);
@@ -434,12 +438,12 @@ namespace Unity.UI.Builder
             document.LoadDocument(visualTreeAsset, m_Viewport.documentElement);
 
             m_Viewport.canvas.SetSizeFromDocumentSettings();
-            m_Inspector.canvasInspector.Refresh();
+            m_Inspector?.canvasInspector.Refresh();
 
             m_Selection.NotifyOfStylingChange(document);
             m_Selection.NotifyOfHierarchyChange(document);
 
-            m_Library.ResetCurrentlyLoadedUxmlStyles();
+            m_Library?.ResetCurrentlyLoadedUxmlStyles();
 
             m_LastSavePath = Path.GetDirectoryName(document.uxmlPath);
 
@@ -554,6 +558,9 @@ namespace Unity.UI.Builder
 
         void ApplyCanvasTheme(VisualElement element, BuilderDocument.CanvasTheme theme)
         {
+            if (element == null)
+                return;
+
             // Find the runtime stylesheet.
             var runtimeStyleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.RuntimeThemeUSSPath);
             if (runtimeStyleSheet == null)
@@ -587,6 +594,9 @@ namespace Unity.UI.Builder
 
         void ApplyCanvasBackground(VisualElement element, BuilderDocument.CanvasTheme theme)
         {
+            if (element == null)
+                return;
+
             element.RemoveFromClassList(BuilderConstants.CanvasContainerDarkStyleClassName);
             element.RemoveFromClassList(BuilderConstants.CanvasContainerLightStyleClassName);
             element.RemoveFromClassList(BuilderConstants.CanvasContainerRuntimeStyleClassName);
@@ -630,9 +640,9 @@ namespace Unity.UI.Builder
             m_Viewport.SetPreviewMode(evt.newValue);
 
             if (evt.newValue)
-                m_Explorer.ClearHighlightOverlay();
+                m_Explorer?.ClearHighlightOverlay();
             else
-                m_Explorer.ResetHighlightOverlays();
+                m_Explorer?.ResetHighlightOverlays();
         }
 
         void SetViewportSubTitle()

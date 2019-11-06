@@ -5,26 +5,22 @@ namespace Unity.UI.Builder
 {
     internal class BuilderUxmlPreview : BuilderCodePreview, IBuilderSelectionNotifier
     {
-        Builder m_Builder;
-        VisualElement m_Canvas;
-        BuilderSelection m_Selection;
+        BuilderPaneWindow m_PaneWindow;
 
-        public BuilderUxmlPreview(Builder builder, BuilderViewport viewport, BuilderSelection selection)
+        public BuilderUxmlPreview(BuilderPaneWindow paneWindow)
         {
-            m_Builder = builder;
-            m_Canvas = viewport.documentElement;
-            m_Selection = selection;
+            m_PaneWindow = paneWindow;
 
             RefreshUXML();
         }
 
         public string GenerateUXMLText()
         {
-            if (m_Builder == null || m_Builder.document.visualTreeAsset == null)
+            if (m_PaneWindow == null || m_PaneWindow.document.visualTreeAsset == null)
                 return string.Empty;
 
             bool writingToFile = true; // Set this to false to see the special selection elements and attributes.
-            var uxmlText = m_Builder.document.visualTreeAsset.GenerateUXML(m_Builder.document.uxmlPath, writingToFile);
+            var uxmlText = m_PaneWindow.document.visualTreeAsset.GenerateUXML(m_PaneWindow.document.uxmlPath, writingToFile);
             return uxmlText;
         }
 

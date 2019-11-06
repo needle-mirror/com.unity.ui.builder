@@ -18,12 +18,12 @@ namespace Unity.UI.Builder
         BuilderTooltipPreview m_TooltipPreview;
 
         public BuilderLibraryDragger(
-            Builder builder,
+            BuilderPaneWindow paneWindow,
             VisualElement root, BuilderSelection selection,
             BuilderViewport viewport, BuilderParentTracker parentTracker,
             VisualElement explorerContainer,
             BuilderTooltipPreview tooltipPreview)
-            : base(builder, root, selection, viewport, parentTracker)
+            : base(paneWindow, root, selection, viewport, parentTracker)
         {
             builderHierarchyRoot = explorerContainer;
             m_TooltipPreview = tooltipPreview;
@@ -118,10 +118,10 @@ namespace Unity.UI.Builder
 
             if (item.makeElementAsset == null)
                 BuilderAssetUtilities.AddElementToAsset(
-                    builder.document, m_DragPreviewElement, index);
+                    paneWindow.document, m_DragPreviewElement, index);
             else
                 BuilderAssetUtilities.AddElementToAsset(
-                    builder.document, m_DragPreviewElement, item.makeElementAsset, index);
+                    paneWindow.document, m_DragPreviewElement, item.makeElementAsset, index);
 
             selection.NotifyOfHierarchyChange(null);
             selection.NotifyOfStylingChange(null);

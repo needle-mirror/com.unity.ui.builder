@@ -67,7 +67,7 @@ namespace Unity.UI.Builder
             if (evt.eventTypeId == AttachToPanelEvent.TypeId())
             {
                 m_Pane = GetFirstAncestorOfType<BuilderPane>();
-                m_Pane.RegisterCallback<FocusEvent>(OnPaneFocus);
+                m_Pane?.RegisterCallback<FocusEvent>(OnPaneFocus);
             }
         }
 
@@ -80,7 +80,8 @@ namespace Unity.UI.Builder
 
         void OnChildFocus(FocusEvent evt)
         {
-            m_Pane.pseudoStates = m_Pane.pseudoStates | PseudoStates.Focus;
+            if (m_Pane != null)
+                m_Pane.pseudoStates = m_Pane.pseudoStates | PseudoStates.Focus;
 
             var elementAskingForFocus = this.Q(className: BuilderConstants.PaneContentPleaseRefocusElementClassName);
             if (elementAskingForFocus == null)
@@ -92,7 +93,8 @@ namespace Unity.UI.Builder
 
         void OnChildBlur(BlurEvent evt)
         {
-            m_Pane.pseudoStates = m_Pane.pseudoStates & ~PseudoStates.Focus;
+            if (m_Pane != null)
+                m_Pane.pseudoStates = m_Pane.pseudoStates & ~PseudoStates.Focus;
         }
 
         void OnPaneFocus(FocusEvent evt)

@@ -19,7 +19,7 @@ namespace Unity.UI.Builder
         bool m_Active;
         bool m_WeStartedTheDrag;
 
-        Builder m_Builder;
+        BuilderPaneWindow m_PaneWindow;
         VisualElement m_Root;
         VisualElement m_Canvas;
         BuilderSelection m_Selection;
@@ -32,18 +32,18 @@ namespace Unity.UI.Builder
 
         public VisualElement builderHierarchyRoot { get; set; }
 
-        protected Builder builder { get { return m_Builder; } }
+        protected BuilderPaneWindow paneWindow { get { return m_PaneWindow; } }
         protected BuilderSelection selection { get { return m_Selection; } }
 
         List<ManipulatorActivationFilter> activators { get; set; }
         ManipulatorActivationFilter m_CurrentActivator;
 
         public BuilderDragger(
-            Builder builder,
+            BuilderPaneWindow paneWindow,
             VisualElement root, BuilderSelection selection,
             BuilderViewport viewport, BuilderParentTracker parentTracker)
         {
-            m_Builder = builder;
+            m_PaneWindow = paneWindow;
             m_Root = root;
             m_Canvas = viewport.documentElement;
             m_Selection = selection;

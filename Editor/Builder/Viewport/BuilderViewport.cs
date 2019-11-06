@@ -12,7 +12,7 @@ namespace Unity.UI.Builder
         static readonly float s_CanvasViewportMinWidthDiff = 30;
         static readonly float s_CanvasViewportMinHeightDiff = 36;
 
-        Builder m_Builder;
+        BuilderPaneWindow m_PaneWindow;
 
         VisualElement m_Toolbar;
         VisualElement m_ViewportWrapper;
@@ -82,9 +82,9 @@ namespace Unity.UI.Builder
         public VisualElement pickOverlay => m_PickOverlay;
         public VisualElement highlightOverlay => m_HighlightOverlay;
 
-        public BuilderViewport(Builder builder, BuilderSelection selection)
+        public BuilderViewport(BuilderPaneWindow paneWindow, BuilderSelection selection)
         {
-            m_Builder = builder;
+            m_PaneWindow = paneWindow;
             m_Selection = selection;
 
             AddToClassList("unity-builder-viewport");
@@ -96,7 +96,7 @@ namespace Unity.UI.Builder
             m_ViewportWrapper = this.Q("viewport-wrapper");
             m_Viewport = this.Q("viewport");
             m_Canvas = this.Q<BuilderCanvas>("canvas");
-            m_Canvas.document = builder.document;
+            m_Canvas.document = paneWindow.document;
             m_SharedStylesAndDocumentElement = this.Q("shared-styles-and-document");
             m_DocumentElement = this.Q("document");
             m_PickOverlay = this.Q("pick-overlay");
@@ -126,6 +126,9 @@ namespace Unity.UI.Builder
         protected override void ExecuteDefaultAction(EventBase evt)
         {
             base.ExecuteDefaultAction(evt);
+
+            if (pane == null)
+                return;
 
             pane.subTitle = m_SubTitle;
         }
@@ -308,9 +311,9 @@ namespace Unity.UI.Builder
 
         void SetInnerSelection(VisualElement selectedElement)
         {
-            m_BuilderResizer.Activate(m_Selection, m_Builder.document.visualTreeAsset, selectedElement);
-            m_BuilderMover.Activate(m_Selection, m_Builder.document.visualTreeAsset, selectedElement);
-            m_BuilderAnchorer.Activate(m_Selection, m_Builder.document.visualTreeAsset, selectedElement);
+            m_BuilderResizer.Activate(m_Selection, m_PaneWindow.document.visualTreeAsset, selectedElement);
+            m_BuilderMover.Activate(m_Selection, m_PaneWindow.document.visualTreeAsset, selectedElement);
+            m_BuilderAnchorer.Activate(m_Selection, m_PaneWindow.document.visualTreeAsset, selectedElement);
         }
 
         void ClearInnerSelection()

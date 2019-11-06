@@ -25,7 +25,7 @@ namespace Unity.UI.Builder
 
         static List<string> s_NameSpacesToAvoid = new List<string>() { "Unity", "UnityEngine", "UnityEditor" };
 
-        Builder m_Builder;
+        BuilderPaneWindow m_PaneWindow;
         VisualElement m_DocumentElement;
         BuilderSelection m_Selection;
         BuilderLibraryDragger m_Dragger;
@@ -281,7 +281,7 @@ namespace Unity.UI.Builder
             }
         }
 
-        void ItemMouseEnter(MouseEnterEvent evt)
+        void OnItemMouseEnter(MouseEnterEvent evt)
         {
             var box = evt.target as VisualElement;
             var item = box.GetProperty(BuilderConstants.LibraryItemLinkedManipulatorVEPropertyName) as LibraryTreeItem;
@@ -301,18 +301,18 @@ namespace Unity.UI.Builder
             m_TooltipPreview.style.top = this.pane.resolvedStyle.top;
         }
 
-        void ItemMouseLeave(MouseLeaveEvent evt)
+        void OnItemMouseLeave(MouseLeaveEvent evt)
         {
             m_TooltipPreview.Clear();
             m_TooltipPreview.Hide();
         }
 
         public BuilderLibrary(
-            Builder builder, BuilderViewport viewport,
+            BuilderPaneWindow paneWindow, BuilderViewport viewport,
             BuilderSelection selection, BuilderLibraryDragger dragger,
             BuilderTooltipPreview tooltipPreview)
         {
-            m_Builder = builder;
+            m_PaneWindow = paneWindow;
             m_DocumentElement = viewport.documentElement;
             m_Selection = selection;
             m_Dragger = dragger;
@@ -445,7 +445,11 @@ namespace Unity.UI.Builder
             treeView.rootItems = items;
             treeView.makeItem = () => MakeItem(); // This is apparently more optimal than "= MakeItem;".
             treeView.bindItem = (e, i) => BindItem(e, i);
+#if UNITY_2020_1_OR_NEWER
+            treeView.onItemsChosen += (s) => OnItemsChosen(s);
+#else
             treeView.onItemChosen += (s) => OnItemChosen(s);
+#endif
             treeView.Refresh();
 
             // Make sure the Hierarchy View gets focus when the pane gets focused.
@@ -460,10 +464,13 @@ namespace Unity.UI.Builder
         {
             var box = new VisualElement();
             box.AddToClassList(k_TreeItemClassName);
-            m_Dragger.RegisterCallbacksOnTarget(box);
+            m_Dragger?.RegisterCallbacksOnTarget(box);
 
-            box.RegisterCallback<MouseEnterEvent>(ItemMouseEnter);
-            box.RegisterCallback<MouseLeaveEvent>(ItemMouseLeave);
+            if (m_TooltipPreview != null)
+            {
+                box.RegisterCallback<MouseEnterEvent>(OnItemMouseEnter);
+                box.RegisterCallback<MouseLeaveEvent>(OnItemMouseLeave);
+            }
 
             var label = new Label();
             label.AddToClassList(k_TreeItemLabelClassName);
@@ -490,7 +497,7 @@ namespace Unity.UI.Builder
 
             // If this is the uxml file entry of the currently open file, don't allow
             // the user to instantiate it (infinite recursion) or re-open it.
-            if (builderItem.sourceAsset == m_Builder.document.visualTreeAsset)
+            if (builderItem.sourceAsset == m_PaneWindow.document.visualTreeAsset)
             {
                 row.SetEnabled(false);
                 row.AddToClassList(BuilderConstants.LibraryCurrentlyOpenFileItemClassName);
@@ -516,10 +523,21 @@ namespace Unity.UI.Builder
             element.SetProperty(BuilderConstants.LibraryItemLinkedManipulatorVEPropertyName, builderItem);
         }
 
+#if UNITY_2020_1_OR_NEWER
+        void OnItemsChosen(IEnumerable<ITreeViewItem> selectedItems)
+#else
         void OnItemChosen(ITreeViewItem selectedItem)
+#endif
         {
+#if UNITY_2020_1_OR_NEWER
+            if (selectedItems == null || selectedItems.Count() == 0)
+                return;
+
+            var selectedItem = selectedItems.First();
+#else
             if (selectedItem == null)
                 return;
+#endif
 
             var item = selectedItem as LibraryTreeItem;
             if (item.makeVisualElement == null)
@@ -527,7 +545,7 @@ namespace Unity.UI.Builder
 
             // If this is the uxml file entry of the currently open file, don't allow
             // the user to instantiate it (infinite recursion) or re-open it.
-            if (item.name == m_Builder.document.uxmlFileName)
+            if (item.name == m_PaneWindow.document.uxmlFileName)
                 return;
 
             var newElement = item.makeVisualElement();
@@ -537,10 +555,10 @@ namespace Unity.UI.Builder
             m_DocumentElement.Add(newElement);
 
             if (item.makeElementAsset == null)
-                BuilderAssetUtilities.AddElementToAsset(m_Builder.document, newElement);
+                BuilderAssetUtilities.AddElementToAsset(m_PaneWindow.document, newElement);
             else
                 BuilderAssetUtilities.AddElementToAsset(
-                    m_Builder.document, newElement, item.makeElementAsset);
+                    m_PaneWindow.document, newElement, item.makeElementAsset);
 
             // TODO: ListView bug. Does not refresh selection pseudo states after a
             // call to Refresh().
@@ -560,7 +578,7 @@ namespace Unity.UI.Builder
                 previouslyOpenFileItem.RemoveFromClassList(BuilderConstants.LibraryCurrentlyOpenFileItemClassName);
             }
 
-            var vta = m_Builder.document.visualTreeAsset;
+            var vta = m_PaneWindow.document.visualTreeAsset;
             this.Query(className: k_TreeItemClassName).ForEach((e) =>
             {
                 var item =
@@ -584,7 +602,7 @@ namespace Unity.UI.Builder
             if (item.sourceAsset == null)
                 return;
 
-            m_Builder.LoadDocument(item.sourceAsset);
+            m_PaneWindow.LoadDocument(item.sourceAsset);
         }
     }
 }

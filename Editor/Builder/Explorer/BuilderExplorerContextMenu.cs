@@ -7,7 +7,7 @@ namespace Unity.UI.Builder
 {
     internal class BuilderExplorerContextMenu
     {
-        Builder m_Builder;
+        BuilderPaneWindow m_PaneWindow;
         BuilderSelection m_Selection;
 
         bool m_WeStartedTheDrag;
@@ -15,9 +15,9 @@ namespace Unity.UI.Builder
         List<ManipulatorActivationFilter> activators { get; set; }
         ManipulatorActivationFilter m_CurrentActivator;
 
-        public BuilderExplorerContextMenu(Builder builder, BuilderSelection selection)
+        public BuilderExplorerContextMenu(BuilderPaneWindow paneWindow, BuilderSelection selection)
         {
-            m_Builder = builder;
+            m_PaneWindow = paneWindow;
             m_Selection = selection;
 
             m_WeStartedTheDrag = false;
@@ -118,9 +118,9 @@ namespace Unity.UI.Builder
                 {
                     m_Selection.Select(null, item);
                     if (item.IsPartOfCurrentDocument() || item.GetStyleComplexSelector() != null)
-                        m_Builder.commandHandler.PerformActionOnSelection(
-                            m_Builder.commandHandler.CopyElement,
-                            m_Builder.commandHandler.ClearCopyBuffer);
+                        m_PaneWindow.commandHandler.PerformActionOnSelection(
+                            m_PaneWindow.commandHandler.CopyElement,
+                            m_PaneWindow.commandHandler.ClearCopyBuffer);
                 },
                 isValidTarget
                     ? DropdownMenuAction.Status.Normal
@@ -131,7 +131,7 @@ namespace Unity.UI.Builder
                 a =>
                 {
                     m_Selection.Select(null, item);
-                    m_Builder.commandHandler.Paste();
+                    m_PaneWindow.commandHandler.Paste();
                 },
                 string.IsNullOrEmpty(EditorGUIUtility.systemCopyBuffer)
                     ? DropdownMenuAction.Status.Disabled
@@ -160,10 +160,10 @@ namespace Unity.UI.Builder
                 {
                     m_Selection.Select(null, item);
                     if (item.IsPartOfCurrentDocument() || item.GetStyleComplexSelector() != null)
-                        m_Builder.commandHandler.PerformActionOnSelection(
-                            m_Builder.commandHandler.DuplicateElement,
-                            m_Builder.commandHandler.ClearCopyBuffer,
-                            m_Builder.commandHandler.Paste);
+                        m_PaneWindow.commandHandler.PerformActionOnSelection(
+                            m_PaneWindow.commandHandler.DuplicateElement,
+                            m_PaneWindow.commandHandler.ClearCopyBuffer,
+                            m_PaneWindow.commandHandler.Paste);
                 },
                 isValidTarget
                     ? DropdownMenuAction.Status.Normal
@@ -175,8 +175,8 @@ namespace Unity.UI.Builder
                 "Delete",
                 a =>
                 {   m_Selection.Select(null, item);
-                    m_Builder.commandHandler.DeleteElement(item);
-                    m_Builder.commandHandler.ClearSelectionNotify();
+                    m_PaneWindow.commandHandler.DeleteElement(item);
+                    m_PaneWindow.commandHandler.ClearSelectionNotify();
                 },
                 isValidTarget
                     ? DropdownMenuAction.Status.Normal

@@ -12,7 +12,7 @@ namespace Unity.UI.Builder
     {
         BuilderInspector m_Inspector;
         BuilderSelection m_Selection;
-        Builder m_Builder;
+        BuilderPaneWindow m_PaneWindow;
         BuilderInspectorMatchingSelectors m_MatchingSelectors;
 
         PersistedFoldout m_InheritedStylesSection;
@@ -38,7 +38,7 @@ namespace Unity.UI.Builder
         {
             m_Inspector = inspector;
             m_Selection = inspector.selection;
-            m_Builder = inspector.builder;
+            m_PaneWindow = inspector.paneWindow;
             m_MatchingSelectors = matchingSelectors;
 
             m_InheritedStylesSection = m_Inspector.Q<PersistedFoldout>("inspector-inherited-styles-foldout");
@@ -166,7 +166,7 @@ namespace Unity.UI.Builder
 
             // Update VisualTreeAsset.
             BuilderAssetUtilities.AddStyleClassToElementInAsset(
-                m_Builder.document, currentVisualElement, className);
+                m_PaneWindow.document, currentVisualElement, className);
 
             // We actually want to get the notification back and refresh ourselves.
             m_Selection.NotifyOfHierarchyChange(null);
@@ -179,7 +179,7 @@ namespace Unity.UI.Builder
 
             // Create new selector in main StyleSheet.
             var selectorString = "." + className;
-            var mainStyleSheet = m_Builder.document.mainStyleSheet;
+            var mainStyleSheet = m_PaneWindow.document.mainStyleSheet;
             var selectorsRootElement = BuilderSharedStyles.GetSelectorContainerElement(m_Selection.documentElement);
             var newSelector = BuilderSharedStyles.CreateNewSelector(selectorsRootElement, mainStyleSheet, selectorString);
 
@@ -189,11 +189,11 @@ namespace Unity.UI.Builder
 
             // Update VisualTreeAsset.
             BuilderAssetUtilities.AddStyleClassToElementInAsset(
-                m_Builder.document, currentVisualElement, className);
+                m_PaneWindow.document, currentVisualElement, className);
 
             // Overwrite Undo Message.
             Undo.RegisterCompleteObjectUndo(
-                new Object[] { m_Builder.document.visualTreeAsset, m_Builder.document.mainStyleSheet },
+                new Object[] { m_PaneWindow.document.visualTreeAsset, m_PaneWindow.document.mainStyleSheet },
                 BuilderConstants.CreateStyleClassUndoMessage);
 
             // We actually want to get the notification back and refresh ourselves.
@@ -214,7 +214,7 @@ namespace Unity.UI.Builder
 
             // Update VisualTreeAsset.
             BuilderAssetUtilities.RemoveStyleClassToElementInAsset(
-                m_Builder.document, currentVisualElement, className);
+                m_PaneWindow.document, currentVisualElement, className);
 
             // We actually want to get the notification back and refresh ourselves.
             m_Selection.NotifyOfHierarchyChange(null);
@@ -250,7 +250,11 @@ namespace Unity.UI.Builder
             if (BuilderSharedStyles.IsSelectorElement(currentVisualElement))
                 return;
 
-            var documentRootElement = m_Builder.documentRootElement;
+            var builderWindow = m_PaneWindow as Builder;
+            if (builderWindow == null)
+                return;
+
+            var documentRootElement = builderWindow.documentRootElement;
 
             foreach (var className in currentVisualElement.GetClasses())
             {
@@ -294,7 +298,7 @@ namespace Unity.UI.Builder
             if (selectorElement == null)
             {
                 var selectorsRootElement = BuilderSharedStyles.GetSelectorContainerElement(m_Selection.documentElement);
-                var mainStyleSheet = m_Builder.document.mainStyleSheet;
+                var mainStyleSheet = m_PaneWindow.document.mainStyleSheet;
                 BuilderSharedStyles.CreateNewSelector(selectorsRootElement, mainStyleSheet, selectorString);
 
                 m_Selection.NotifyOfStylingChange();

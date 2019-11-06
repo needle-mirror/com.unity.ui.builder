@@ -65,7 +65,7 @@ namespace Unity.UI.Builder
         static readonly string s_UssClassName = "unity-builder-inspector";
 
         // External References
-        Builder m_Builder;
+        BuilderPaneWindow m_PaneWindow;
         BuilderSelection m_Selection;
 
         // Current Selection
@@ -79,8 +79,8 @@ namespace Unity.UI.Builder
         Label m_NothingSelectedSection;
 
         public BuilderSelection selection => m_Selection;
-        public BuilderDocument document => m_Builder.document;
-        public Builder builder => m_Builder;
+        public BuilderDocument document => m_PaneWindow.document;
+        public BuilderPaneWindow paneWindow => m_PaneWindow;
 
         public StyleSheet styleSheet
         {
@@ -91,7 +91,7 @@ namespace Unity.UI.Builder
 
                 if (BuilderSharedStyles.IsSelectorElement(currentVisualElement) ||
                     BuilderSharedStyles.IsSelectorsContainerElement(currentVisualElement))
-                    return m_Builder.document.mainStyleSheet;
+                    return m_PaneWindow.document.mainStyleSheet;
 
                 return visualTreeAsset.inlineSheet;
             }
@@ -99,7 +99,7 @@ namespace Unity.UI.Builder
 
         public VisualTreeAsset visualTreeAsset
         {
-            get { return m_Builder.document.visualTreeAsset; }
+            get { return m_PaneWindow.document.visualTreeAsset; }
         }
 
         public StyleRule currentRule
@@ -141,14 +141,14 @@ namespace Unity.UI.Builder
             set { m_CurrentVisualElement = value; }
         }
 
-        public BuilderInspector(Builder builder, BuilderSelection selection)
+        public BuilderInspector(BuilderPaneWindow paneWindow, BuilderSelection selection)
         {
             // Yes, we give ourselves a view data key. Don't do this at home!
             viewDataKey = "unity-ui-builder-inspector";
 
             // Init External References
             m_Selection = selection;
-            m_Builder = builder;
+            m_PaneWindow = paneWindow;
 
             // Load Template
             var template = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(

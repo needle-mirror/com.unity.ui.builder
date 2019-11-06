@@ -306,7 +306,7 @@ namespace Unity.UI.Builder
                 vta.RegisterTemplate(templateName, path);
 
 #if UNITY_2020_1_OR_NEWER
-            var templateAsset = new TemplateAsset(templateName, BuilderConstants.UxmlTagTypeName);
+            var templateAsset = new TemplateAsset(templateName, BuilderConstants.UxmlInstanceTypeName);
 #else
             var templateAsset = new TemplateAsset(templateName);
 #endif

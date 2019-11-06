@@ -119,7 +119,11 @@ namespace Unity.UI.Builder
             m_TreeView = new TreeView(m_TreeRootItems, 20, MakeItem, FillItem);
             m_TreeView.viewDataKey = "unity-builder-explorer-tree";
             m_TreeView.style.flexGrow = 1;
+#if UNITY_2020_1_OR_NEWER
+            m_TreeView.onSelectionChange += OnSelectionChange;
+#else
             m_TreeView.onSelectionChanged += OnSelectionChange;
+#endif
 
             m_Container.Add(m_TreeView);
 
@@ -325,7 +329,11 @@ namespace Unity.UI.Builder
 
             if (m_TreeView != null)
             {
+#if UNITY_2020_1_OR_NEWER
+                foreach (TreeViewItem<VisualElement> selectedItem in m_TreeView.selectedItems)
+#else
                 foreach (TreeViewItem<VisualElement> selectedItem in m_TreeView.currentSelection)
+#endif
                 {
                     var documentElement = selectedItem.data;
                     HighlightAllRelatedDocumentElements(documentElement);
@@ -371,12 +379,20 @@ namespace Unity.UI.Builder
             hierarchyHasChanged = false;
         }
 
+#if UNITY_2020_1_OR_NEWER
+        void OnSelectionChange(IEnumerable<ITreeViewItem> items)
+#else
         void OnSelectionChange(List<ITreeViewItem> items)
+#endif
         {
             if (m_SelectElementCallback == null)
                 return;
 
+#if UNITY_2020_1_OR_NEWER
+            if (items.Count() == 0)
+#else
             if (items.Count == 0)
+#endif
             {
                 m_SelectElementCallback(null);
                 return;
@@ -494,7 +510,11 @@ namespace Unity.UI.Builder
             if (item == null)
                 return;
 
+#if UNITY_2020_1_OR_NEWER
+            m_TreeView.SetSelection(item.id);
+#else
             m_TreeView.SelectItem(item.id);
+#endif
 
             if (string.IsNullOrEmpty(query))
                 return;

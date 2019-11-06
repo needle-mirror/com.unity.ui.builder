@@ -62,11 +62,15 @@ namespace Unity.UI.Builder
         {
             m_Inspector = inspector;
             m_Document = inspector.document;
-            m_Canvas = inspector.builder.canvas;
+            m_CanvasInspector = m_Inspector.Q("canvas-inspector");
+
+            var builderWindow = inspector.paneWindow as Builder;
+            if (builderWindow == null)
+                return;
+
+            m_Canvas = builderWindow.canvas;
 
             m_CameraModeEnabled = false;
-
-            m_CanvasInspector = m_Inspector.Q("canvas-inspector");
 
             // Size Fields
             m_CanvasWidth = root.Q<IntegerField>("canvas-width");

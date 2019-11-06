@@ -12,10 +12,10 @@ namespace Unity.UI.Builder
         string m_ClassNameBeingDragged;
 
         public BuilderClassDragger(
-            Builder builder,
+            BuilderPaneWindow paneWindow,
             VisualElement root, BuilderSelection selection,
             BuilderViewport viewport, BuilderParentTracker parentTracker)
-            : base(builder, root, selection, viewport, parentTracker)
+            : base(paneWindow, root, selection, viewport, parentTracker)
         {
 
         }
@@ -47,7 +47,7 @@ namespace Unity.UI.Builder
 
             // Update VisualTreeAsset.
             BuilderAssetUtilities.AddStyleClassToElementInAsset(
-                builder.document, destination, className);
+                paneWindow.document, destination, className);
 
             selection.NotifyOfHierarchyChange(null);
             selection.NotifyOfStylingChange(null);

@@ -17,10 +17,10 @@ namespace Unity.UI.Builder
         VisualElement m_TargetElementToReparent;
 
         public BuilderHierarchyDragger(
-            Builder builder,
+            BuilderPaneWindow paneWindow,
             VisualElement root, BuilderSelection selection,
             BuilderViewport viewport, BuilderParentTracker parentTracker)
-            : base(builder, root, selection, viewport, parentTracker)
+            : base(paneWindow, root, selection, viewport, parentTracker)
         {
 
         }
@@ -105,7 +105,7 @@ namespace Unity.UI.Builder
             index = m_DragPreviewLastParent.IndexOf(m_TargetElementToReparent);
 
             BuilderAssetUtilities.ReparentElementInAsset(
-                builder.document, elementToReparent, newParent, index);
+                paneWindow.document, elementToReparent, newParent, index);
 
             selection.NotifyOfHierarchyChange(null);
         }

@@ -47,7 +47,7 @@ namespace Unity.UI.Builder
         Action m_NextPostStylingAction;
 
         VisualElement m_Root;
-        Builder m_Builder;
+        BuilderPaneWindow m_PaneWindow;
         VisualElement m_DocumentElement;
         VisualElement m_DummyElementForStyleChangeNotifications;
 
@@ -89,13 +89,13 @@ namespace Unity.UI.Builder
 
         public bool isEmpty { get { return m_Selection.Count == 0; } }
 
-        public BuilderSelection(VisualElement root, Builder builder)
+        public BuilderSelection(VisualElement root, BuilderPaneWindow paneWindow)
         {
             m_Notifiers = new List<IBuilderSelectionNotifier>();
             m_Selection = new List<VisualElement>();
 
             m_Root = root;
-            m_Builder = builder;
+            m_PaneWindow = paneWindow;
 
             m_DummyElementForStyleChangeNotifications = new VisualElement();
             m_DummyElementForStyleChangeNotifications.name = "unity-dummy-element-for-style-change-notifications";
@@ -114,6 +114,17 @@ namespace Unity.UI.Builder
                 m_Notifiers.Add(notifier);
         }
 
+        public void AddNotifier(IBuilderSelectionNotifier notifier)
+        {
+            if (!m_Notifiers.Contains(notifier))
+                m_Notifiers.Add(notifier);
+        }
+
+        public void RemoveNotifier(IBuilderSelectionNotifier notifier)
+        {
+            m_Notifiers.Remove(notifier);
+        }
+
         public void Select(IBuilderSelectionNotifier source, VisualElement ve)
         {
             if (ve == null)
@@ -124,13 +135,13 @@ namespace Unity.UI.Builder
                 if (sel == null)
                     continue;
 
-                BuilderAssetUtilities.RemoveElementFromSelectionInAsset(m_Builder.document, sel);
+                BuilderAssetUtilities.RemoveElementFromSelectionInAsset(m_PaneWindow.document, sel);
             }
 
             m_Selection.Clear();
 
             m_Selection.Add(ve);
-            BuilderAssetUtilities.AddElementToSelectionInAsset(m_Builder.document, ve);
+            BuilderAssetUtilities.AddElementToSelectionInAsset(m_PaneWindow.document, ve);
 
             NotifyOfSelectionChange(source);
         }
@@ -143,7 +154,7 @@ namespace Unity.UI.Builder
             m_Selection.Add(ve);
 
             if (undo)
-                BuilderAssetUtilities.AddElementToSelectionInAsset(m_Builder.document, ve);
+                BuilderAssetUtilities.AddElementToSelectionInAsset(m_PaneWindow.document, ve);
 
             NotifyOfSelectionChange(source);
         }
@@ -151,7 +162,7 @@ namespace Unity.UI.Builder
         public void RemoveFromSelection(IBuilderSelectionNotifier source, VisualElement ve)
         {
             m_Selection.Remove(ve);
-            BuilderAssetUtilities.RemoveElementFromSelectionInAsset(m_Builder.document, ve);
+            BuilderAssetUtilities.RemoveElementFromSelectionInAsset(m_PaneWindow.document, ve);
 
             NotifyOfSelectionChange(source);
         }
@@ -163,7 +174,7 @@ namespace Unity.UI.Builder
 
             if (undo)
                 foreach (var sel in m_Selection)
-                    BuilderAssetUtilities.RemoveElementFromSelectionInAsset(m_Builder.document, sel);
+                    BuilderAssetUtilities.RemoveElementFromSelectionInAsset(m_PaneWindow.document, sel);
 
             m_Selection.Clear();
 
@@ -190,7 +201,7 @@ namespace Unity.UI.Builder
             VisualElementAsset vea = element?.GetVisualElementAsset();
             if (vea != null && vea.ruleIndex >= 0 && changeType.HasFlag(BuilderHierarchyChangeType.InlineStyle))
             {
-                var vta = m_Builder.document.visualTreeAsset;
+                var vta = m_PaneWindow.document.visualTreeAsset;
                 var rule = vta.GetOrCreateInlineStyleRule(vea);
 
 #if UNITY_2020_1_OR_NEWER
@@ -217,11 +228,12 @@ namespace Unity.UI.Builder
 #endif
             }
 
-            m_Builder.document.RefreshStyle(m_DocumentElement);
+            if (m_DocumentElement != null)
+                m_PaneWindow.document.RefreshStyle(m_DocumentElement);
 
             // This is so anyone interested can refresh their use of this UXML with
             // the latest (unsaved to disk) changes.
-            EditorUtility.SetDirty(m_Builder.document.visualTreeAsset);
+            EditorUtility.SetDirty(m_PaneWindow.document.visualTreeAsset);
 
             foreach (var notifier in m_Notifiers)
                 if (notifier != source)
@@ -233,7 +245,8 @@ namespace Unity.UI.Builder
             if (m_Notifiers == null || m_Notifiers.Count == 0)
                 return;
 
-            m_Builder.document.RefreshStyle(m_DocumentElement);
+            if (m_DocumentElement != null)
+                m_PaneWindow.document.RefreshStyle(m_DocumentElement);
 
             m_CurrentNotifier = source;
             m_CurrentStyleList = styles;
@@ -245,7 +258,8 @@ namespace Unity.UI.Builder
             if (m_Notifiers == null || m_Notifiers.Count == 0)
                 return;
 
-            m_Builder.document.RefreshStyle(m_DocumentElement);
+            if (m_DocumentElement != null)
+                m_PaneWindow.document.RefreshStyle(m_DocumentElement);
 
             foreach (var notifier in m_Notifiers)
                 if (notifier != source)
@@ -257,7 +271,7 @@ namespace Unity.UI.Builder
             // This is so anyone interested can refresh their use of this USS with
             // the latest (unsaved to disk) changes.
             //RetainedMode.FlagStyleSheetChange(); // Works but TOO SLOW.
-            EditorUtility.SetDirty(m_Builder.document.mainStyleSheet);
+            EditorUtility.SetDirty(m_PaneWindow.document.mainStyleSheet);
 
             foreach (var notifier in m_Notifiers)
                 if (notifier != m_CurrentNotifier)

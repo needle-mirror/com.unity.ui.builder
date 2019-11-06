@@ -4,6 +4,11 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.8.4] - 2019-11-05
+
+- (2020.1) Fixed UXML Template Instances created in the UI Builder not properly being saved to the UXML asset.
+- (2020.1) Fixed VisualElements created from the Library not getting added to the generated UXML.
+
 ## [0.8.3] - 2019-10-10
 
 - Fixed inability to type a Canvas size in the Canvas Inspector because the min-value validation would kick in on every key press.

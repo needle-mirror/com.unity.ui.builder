@@ -5,18 +5,19 @@ using UnityEngine.UIElements;
 using UnityEditor.UIElements;
 using UnityEditor.StyleSheets;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace Unity.UI.Builder
 {
     internal class BuilderCommandHandler
     {
-        Builder m_Builder;
-        BuilderExplorer m_Explorer;
-        BuilderViewport m_Viewport;
+        BuilderPaneWindow m_PaneWindow;
         BuilderToolbar m_Toolbar;
         BuilderSelection m_Selection;
 
         VisualElement m_CutElement;
+
+        List<BuilderPaneContent> m_Panes = new List<BuilderPaneContent>();
 
         bool m_ControlWasPressed;
         IVisualElementScheduledItem m_ControlUnpressScheduleItem;
@@ -27,36 +28,31 @@ namespace Unity.UI.Builder
         long m_LastFrameCount;
 
         public BuilderCommandHandler(
-            Builder builder,
-            BuilderExplorer explorer,
-            BuilderViewport viewport,
-            BuilderToolbar toolbar,
+            BuilderPaneWindow paneWindow,
             BuilderSelection selection)
         {
-            m_Builder = builder;
-            m_Explorer = explorer;
-            m_Viewport = viewport;
-            m_Toolbar = toolbar;
+            m_PaneWindow = paneWindow;
+            m_Toolbar = null;
             m_Selection = selection;
         }
 
         public void OnEnable()
         {
-            var root = m_Builder.rootVisualElement;
+            var root = m_PaneWindow.rootVisualElement;
             root.focusable = true; // We want commands to work anywhere in the builder.
 
-            m_Explorer.primaryFocusable.RegisterCallback<ValidateCommandEvent>(OnCommandValidate);
-            m_Explorer.primaryFocusable.RegisterCallback<ExecuteCommandEvent>(OnCommandExecute);
-            m_Viewport.primaryFocusable.RegisterCallback<ValidateCommandEvent>(OnCommandValidate);
-            m_Viewport.primaryFocusable.RegisterCallback<ExecuteCommandEvent>(OnCommandExecute);
+            foreach (var pane in m_Panes)
+            {
+                pane.primaryFocusable.RegisterCallback<ValidateCommandEvent>(OnCommandValidate);
+                pane.primaryFocusable.RegisterCallback<ExecuteCommandEvent>(OnCommandExecute);
 
-            // Make sure Delete key works on Mac keyboards.
-            m_Explorer.primaryFocusable.RegisterCallback<KeyDownEvent>(OnDelete);
-            m_Viewport.primaryFocusable.RegisterCallback<KeyDownEvent>(OnDelete);
+                // Make sure Delete key works on Mac keyboards.
+                pane.primaryFocusable.RegisterCallback<KeyDownEvent>(OnDelete);
+            }
 
             // Ctrl+S to save.
-            m_Builder.rootVisualElement.RegisterCallback<KeyUpEvent>(OnSaveDocument);
-            m_ControlUnpressScheduleItem = m_Builder.rootVisualElement.schedule.Execute(UnsetControlFlag);
+            m_PaneWindow.rootVisualElement.RegisterCallback<KeyUpEvent>(OnSaveDocument);
+            m_ControlUnpressScheduleItem = m_PaneWindow.rootVisualElement.schedule.Execute(UnsetControlFlag);
 
             // Undo/Redo
             Undo.undoRedoPerformed += OnUndoRedo;
@@ -67,15 +63,15 @@ namespace Unity.UI.Builder
 
         public void OnDisable()
         {
-            m_Explorer.primaryFocusable.UnregisterCallback<ValidateCommandEvent>(OnCommandValidate);
-            m_Explorer.primaryFocusable.UnregisterCallback<ExecuteCommandEvent>(OnCommandExecute);
-            m_Viewport.primaryFocusable.UnregisterCallback<ValidateCommandEvent>(OnCommandValidate);
-            m_Viewport.primaryFocusable.UnregisterCallback<ExecuteCommandEvent>(OnCommandExecute);
+            foreach (var pane in m_Panes)
+            {
+                pane.primaryFocusable.UnregisterCallback<ValidateCommandEvent>(OnCommandValidate);
+                pane.primaryFocusable.UnregisterCallback<ExecuteCommandEvent>(OnCommandExecute);
 
-            m_Explorer.primaryFocusable.UnregisterCallback<KeyDownEvent>(OnDelete);
-            m_Viewport.primaryFocusable.UnregisterCallback<KeyDownEvent>(OnDelete);
+                pane.primaryFocusable.UnregisterCallback<KeyDownEvent>(OnDelete);
+            }
 
-            m_Builder.rootVisualElement.UnregisterCallback<KeyUpEvent>(OnSaveDocument);
+            m_PaneWindow.rootVisualElement.UnregisterCallback<KeyUpEvent>(OnSaveDocument);
 
             // Undo/Redo
             Undo.undoRedoPerformed -= OnUndoRedo;
@@ -84,8 +80,21 @@ namespace Unity.UI.Builder
             EditorApplication.wantsToQuit -= UnityWantsToQuit;
         }
 
+        public void RegisterPane(BuilderPaneContent paneContent)
+        {
+            m_Panes.Add(paneContent);
+        }
+
+        public void RegisterToolbar(BuilderToolbar toolbar)
+        {
+            m_Toolbar = toolbar;
+        }
+
         bool UnityWantsToQuit()
         {
+            if (m_Toolbar == null)
+                return true;
+
             var allowQuitting = m_Toolbar.CheckForUnsavedChanges();
             return allowQuitting;
         }
@@ -124,7 +133,7 @@ namespace Unity.UI.Builder
 
         void OnUndoRedo()
         {
-            m_Builder.OnEnableAfterAllSerialization();
+            m_PaneWindow.OnEnableAfterAllSerialization();
         }
 
         void UnsetControlFlag()
@@ -135,6 +144,9 @@ namespace Unity.UI.Builder
 
         void OnSaveDocument(KeyUpEvent evt)
         {
+            if (m_Toolbar == null)
+                return;
+
             if (evt.keyCode == KeyCode.LeftCommand ||
                 evt.keyCode == KeyCode.RightCommand ||
                 evt.keyCode == KeyCode.LeftControl ||
@@ -214,7 +226,7 @@ namespace Unity.UI.Builder
             if (vea != null)
             {
                 EditorGUIUtility.systemCopyBuffer =
-                    VisualTreeAssetToUXML.GenerateUXML(m_Builder.document.visualTreeAsset, null, vea);
+                    VisualTreeAssetToUXML.GenerateUXML(m_PaneWindow.document.visualTreeAsset, null, vea);
                 return;
             }
 
@@ -222,7 +234,7 @@ namespace Unity.UI.Builder
             if (selector != null)
             {
                 EditorGUIUtility.systemCopyBuffer =
-                    StyleSheetToUss.ToUssString(m_Builder.document.mainStyleSheet, selector);
+                    StyleSheetToUss.ToUssString(m_PaneWindow.document.mainStyleSheet, selector);
                 return;
             }
         }
@@ -237,9 +249,9 @@ namespace Unity.UI.Builder
             if (!m_Selection.isEmpty)
                 parent = m_Selection.selection.First().parent?.GetVisualElementAsset();
 
-            BuilderAssetUtilities.TransferAssetToAsset(m_Builder.document, parent, pasteVta);
+            BuilderAssetUtilities.TransferAssetToAsset(m_PaneWindow.document, parent, pasteVta);
 
-            m_Builder.document.AddStyleSheetToAllRootElements();
+            m_PaneWindow.document.AddStyleSheetToAllRootElements();
 
             ScriptableObject.DestroyImmediate(pasteVta);
         }
@@ -250,7 +262,7 @@ namespace Unity.UI.Builder
             var importer = new BuilderStyleSheetImporter(); // Cannot be cached because the StyleBuilder never gets reset.
             importer.Import(pasteStyleSheet, copyBuffer);
 
-            BuilderAssetUtilities.TransferAssetToAsset(m_Builder.document, pasteStyleSheet);
+            BuilderAssetUtilities.TransferAssetToAsset(m_PaneWindow.document, pasteStyleSheet);
 
             ScriptableObject.DestroyImmediate(pasteStyleSheet);
         }
@@ -277,9 +289,9 @@ namespace Unity.UI.Builder
                 EditorGUIUtility.systemCopyBuffer = null;
             }
 
-            m_Builder.OnEnableAfterAllSerialization();
+            m_PaneWindow.OnEnableAfterAllSerialization();
 
-            m_Builder.document.hasUnsavedChanges = true;
+            m_PaneWindow.document.hasUnsavedChanges = true;
         }
 
         public void DeleteElement(VisualElement element)
@@ -291,19 +303,19 @@ namespace Unity.UI.Builder
             if (BuilderSharedStyles.IsSelectorElement(element))
             {
                 Undo.RegisterCompleteObjectUndo(
-                    m_Builder.document.mainStyleSheet, BuilderConstants.DeleteSelectorUndoMessage);
+                    m_PaneWindow.document.mainStyleSheet, BuilderConstants.DeleteSelectorUndoMessage);
 
                 var selectorStr = BuilderSharedStyles.GetSelectorString(element);
-                m_Builder.document.mainStyleSheet.RemoveSelector(selectorStr);
+                m_PaneWindow.document.mainStyleSheet.RemoveSelector(selectorStr);
             }
             else
             {
-                BuilderAssetUtilities.DeleteElementFromAsset(m_Builder.document, element);
+                BuilderAssetUtilities.DeleteElementFromAsset(m_PaneWindow.document, element);
             }
 
             element.RemoveFromHierarchy();
 
-            m_Builder.document.hasUnsavedChanges = true;
+            m_PaneWindow.document.hasUnsavedChanges = true;
         }
 
         public void ClearCopyBuffer()

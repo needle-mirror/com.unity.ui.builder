@@ -62,6 +62,11 @@ namespace Unity.UI.Builder
             var veParent = ve.parent;
             var veaParent = veParent == null ? null : veParent.GetVisualElementAsset();
 
+#if UNITY_2020_1_OR_NEWER
+            if (veaParent == null)
+                veaParent = document.visualTreeAsset.GetRootUXMLElement(); // UXML Root Element
+#endif
+
             var vea = makeVisualElementAsset(document.visualTreeAsset, veaParent);
             ve.SetProperty(BuilderConstants.ElementLinkedVisualElementAssetVEPropertyName, vea);
 
