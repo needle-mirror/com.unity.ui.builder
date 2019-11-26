@@ -19,6 +19,7 @@ namespace Unity.UI.Builder
         VisualElement m_Viewport;
         BuilderCanvas m_Canvas;
         VisualElement m_SharedStylesAndDocumentElement;
+        VisualElement m_StyleSelectorElementContainer;
         VisualElement m_DocumentElement;
         VisualElement m_PickOverlay;
         VisualElement m_HighlightOverlay;
@@ -32,11 +33,8 @@ namespace Unity.UI.Builder
 
         List<VisualElement> m_MatchingExplorerItems = new List<VisualElement>();
 
-        public VisualElement toolbar
-        {
-            get { return m_Toolbar; }
-        }
-
+        public VisualElement toolbar => m_Toolbar;
+        public VisualElement viewportWrapper => m_ViewportWrapper;
         public BuilderCanvas canvas => m_Canvas;
 
         string m_SubTitle;
@@ -57,27 +55,13 @@ namespace Unity.UI.Builder
             }
         }
 
-        public BuilderParentTracker parentTracker
-        {
-            get { return m_BuilderParentTracker; }
-        }
-
-        public BuilderResizer resizer
-        {
-            get { return m_BuilderResizer; }
-        }
-
-        public BuilderMover mover
-        {
-            get { return m_BuilderMover; }
-        }
-
-        public BuilderAnchorer anchorer
-        {
-            get { return m_BuilderAnchorer; }
-        }
+        public BuilderParentTracker parentTracker => m_BuilderParentTracker;
+        public BuilderResizer resizer => m_BuilderResizer;
+        public BuilderMover mover => m_BuilderMover;
+        public BuilderAnchorer anchorer => m_BuilderAnchorer;
 
         public VisualElement sharedStylesAndDocumentElement => m_SharedStylesAndDocumentElement;
+        public VisualElement styleSelectorElementContainer => m_StyleSelectorElementContainer;
         public VisualElement documentElement => m_DocumentElement;
         public VisualElement pickOverlay => m_PickOverlay;
         public VisualElement highlightOverlay => m_HighlightOverlay;
@@ -98,6 +82,7 @@ namespace Unity.UI.Builder
             m_Canvas = this.Q<BuilderCanvas>("canvas");
             m_Canvas.document = paneWindow.document;
             m_SharedStylesAndDocumentElement = this.Q("shared-styles-and-document");
+            m_StyleSelectorElementContainer = this.Q(BuilderConstants.StyleSelectorElementContainerName);
             m_DocumentElement = this.Q("document");
             m_PickOverlay = this.Q("pick-overlay");
             m_HighlightOverlay = this.Q("highlight-overlay");

@@ -16,11 +16,15 @@ namespace Unity.UI.Builder
         BuilderUxmlPreview m_UxmlPreview;
         BuilderUssPreview m_UssPreview;
 
+        HighlightOverlayPainter m_HighlightOverlayPainter;
+
         public BuilderSelection selection => m_Selection;
 
         public BuilderViewport viewport => m_Viewport;
         public VisualElement documentRootElement => m_Viewport.documentElement;
         public BuilderCanvas canvas => m_Viewport.canvas;
+
+        public HighlightOverlayPainter highlightOverlayPainter => m_HighlightOverlayPainter;
 
         [MenuItem("Window/UI/UI Builder")]
         public static void ShowWindow()
@@ -40,11 +44,15 @@ namespace Unity.UI.Builder
             builderTemplate.CloneTree(root);
             saveDialogTemplate.CloneTree(root);
 
+            // Create overlay painter.
+            m_HighlightOverlayPainter = new HighlightOverlayPainter();
+
             // Fetch the save dialog.
             var dialog = root.Q<ModalPopup>("save-dialog");
 
-            // Fetch the tooltip preview.
-            var tooltipPreview = root.Q<BuilderTooltipPreview>("tooltip-preview");
+            // Fetch the tooltip previews.
+            var styleSheetsPaneTooltipPreview = root.Q<BuilderTooltipPreview>("stylesheets-pane-tooltip-preview");
+            var libraryTooltipPreview = root.Q<BuilderTooltipPreview>("library-tooltip-preview");
 
             // Create selection.
             m_Selection = new BuilderSelection(root, this);
@@ -52,22 +60,26 @@ namespace Unity.UI.Builder
             // Create viewport first.
             m_Viewport = new BuilderViewport(this, selection);
             selection.documentElement = m_Viewport.documentElement;
+            var overlayHelper = viewport.Q<OverlayPainterHelperElement>();
+            overlayHelper.painter = m_HighlightOverlayPainter;
 
             // Create the rest of the panes.
             var classDragger = new BuilderClassDragger(this, root, selection, m_Viewport, m_Viewport.parentTracker);
             var hierarchyDragger = new BuilderHierarchyDragger(this, root, selection, m_Viewport, m_Viewport.parentTracker);
             var contextMenuManipulator = new BuilderExplorerContextMenu(this, selection);
-            var explorer = new BuilderExplorer(m_Viewport, selection, classDragger, hierarchyDragger, contextMenuManipulator);
-            var libraryDragger = new BuilderLibraryDragger(this, root, selection, m_Viewport, m_Viewport.parentTracker, explorer.container, tooltipPreview);
-            m_Library = new BuilderLibrary(this, m_Viewport, selection, libraryDragger, tooltipPreview);
+            var styleSheetsPane = new BuilderStyleSheets(m_Viewport, selection, classDragger, hierarchyDragger, contextMenuManipulator, m_HighlightOverlayPainter, styleSheetsPaneTooltipPreview);
+            var hierarchy = new BuilderHierarchy(m_Viewport, selection, classDragger, hierarchyDragger, contextMenuManipulator, m_HighlightOverlayPainter);
+            var libraryDragger = new BuilderLibraryDragger(this, root, selection, m_Viewport, m_Viewport.parentTracker, hierarchy.container, libraryTooltipPreview);
+            m_Library = new BuilderLibrary(this, m_Viewport, selection, libraryDragger, libraryTooltipPreview);
             m_Inspector = new BuilderInspector(this, selection);
-            m_Toolbar = new BuilderToolbar(this, selection, dialog, m_Viewport, explorer, m_Library, m_Inspector, tooltipPreview);
+            m_Toolbar = new BuilderToolbar(this, selection, dialog, m_Viewport, hierarchy, m_Library, m_Inspector, libraryTooltipPreview);
             m_UxmlPreview = new BuilderUxmlPreview(this);
             m_UssPreview = new BuilderUssPreview(this);
             root.Q("viewport").Add(m_Viewport);
             m_Viewport.toolbar.Add(m_Toolbar);
             root.Q("library").Add(m_Library);
-            root.Q("explorer").Add(explorer);
+            root.Q("style-sheets").Add(styleSheetsPane);
+            root.Q("hierarchy").Add(hierarchy);
             root.Q("uxml-preview").Add(m_UxmlPreview);
             root.Q("uss-preview").Add(m_UssPreview);
             root.Q("inspector").Add(m_Inspector);
@@ -77,7 +89,8 @@ namespace Unity.UI.Builder
             {
                 document,
                 m_Viewport,
-                explorer,
+                styleSheetsPane,
+                hierarchy,
                 m_Inspector,
                 m_UxmlPreview,
                 m_UssPreview,
@@ -88,7 +101,8 @@ namespace Unity.UI.Builder
             });
 
             // Command Handler
-            commandHandler.RegisterPane(explorer);
+            commandHandler.RegisterPane(styleSheetsPane);
+            commandHandler.RegisterPane(hierarchy);
             commandHandler.RegisterPane(m_Viewport);
             commandHandler.RegisterToolbar(m_Toolbar);
 

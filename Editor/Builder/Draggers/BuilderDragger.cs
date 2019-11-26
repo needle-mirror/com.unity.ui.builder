@@ -185,6 +185,20 @@ namespace Unity.UI.Builder
             return true;
         }
 
+        bool IsElementTheScrollView(VisualElement pickedElement)
+        {
+            if (pickedElement == null)
+                return false;
+
+            if (pickedElement is ScrollView)
+                return true;
+
+            if (pickedElement.ClassListContains(ScrollView.viewportUssClassName))
+                return true;
+
+            return false;
+        }
+
         bool TryToPickInHierarchy(Vector2 mousePosition)
         {
             if (builderHierarchyRoot == null)
@@ -199,7 +213,7 @@ namespace Unity.UI.Builder
             var supportsDragBetweenElements = SupportsDragBetweenElements();
 
             var pickedElement = Panel.PickAllWithoutValidatingLayout(builderHierarchyRoot, mousePosition);
-            if (!pickedElement.ClassListContains(ScrollView.viewportUssClassName))
+            if (!IsElementTheScrollView(pickedElement))
             {
                 while (true)
                 {
@@ -227,7 +241,7 @@ namespace Unity.UI.Builder
                 linkedCanvasPickedElement = pickedElement.GetProperty(BuilderConstants.ExplorerItemElementLinkVEPropertyName) as VisualElement;
             }
             if (pickedElement != null &&
-                !pickedElement.ClassListContains(ScrollView.viewportUssClassName) &&
+                !IsElementTheScrollView(pickedElement) &&
                 linkedCanvasPickedElement.GetVisualElementAsset() == null)
                 pickedElement = null;
 
@@ -245,7 +259,7 @@ namespace Unity.UI.Builder
             // The hover style class may not be applied to the hover element itself. We need
             // to find the correct parent.
             m_LastRowHoverElement = m_LastHoverElement;
-            if (!pickedElement.ClassListContains(ScrollView.viewportUssClassName))
+            if (!IsElementTheScrollView(pickedElement))
             {
                 while (m_LastRowHoverElement != null && m_LastRowHoverElement.name != s_TreeViewItemName)
                     m_LastRowHoverElement = m_LastRowHoverElement.parent;
@@ -421,7 +435,7 @@ namespace Unity.UI.Builder
         void GetPickedElementFromHoverElement(out VisualElement pickedElement, out int index)
         {
             index = -1;
-            if (m_LastRowHoverElement.ClassListContains(ScrollView.viewportUssClassName))
+            if (IsElementTheScrollView(m_LastRowHoverElement))
                 pickedElement = m_Canvas;
             else if (m_LastHoverElement.ClassListContains(BuilderConstants.ExplorerItemReorderZoneClassName))
             {

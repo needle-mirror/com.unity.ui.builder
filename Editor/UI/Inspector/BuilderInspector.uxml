@@ -3,6 +3,7 @@
     <Template name="CanvasInspector" path="Packages/com.unity.ui.builder/Editor/UI/Inspector/CanvasInspector.uxml" />
 
     <!-- Local Styles Section Templates -->
+    <Template name="NewSelectorHelpTips" path="Packages/com.unity.ui.builder/Editor/UI/Explorer/BuilderStyleSheetsNewSelectorHelpTips.uxml" />
     <Template name="DisplaySection" path="Packages/com.unity.ui.builder/Editor/UI/Inspector/StyleSectionsDisplay.uxml" />
     <Template name="PositionSection" path="Packages/com.unity.ui.builder/Editor/UI/Inspector/StyleSectionsPosition.uxml" />
     <Template name="FlexSection" path="Packages/com.unity.ui.builder/Editor/UI/Inspector/StyleSectionsFlex.uxml" />
@@ -42,17 +43,9 @@
 
             <TextField name="add-new-selector-field" label="Selector" />
             <Button name="add-new-selector-button" text="Create New USS Selector" />
-            <Label class="unity-builder-inspector__selector-example" text="Remember to add a dot (.) to class-based selectors (ie: .my-button-type). Full selector syntax:" />
-            <Label class="unity-builder-inspector__selector-example-code" text="ElementCSharpType (no symbols)" />
-            <Label class="unity-builder-inspector__selector-example-code" text="#elementNameOrId (start with #)" />
-            <Label class="unity-builder-inspector__selector-example-code" text=".styleClassName (start with .)" />
-            <Label class="unity-builder-inspector__selector-example-code" text=".parent > .directChild" />
-            <Label class="unity-builder-inspector__selector-example-code" text=".parent .child (at any depth)" />
-            <Label class="unity-builder-inspector__selector-example-code" text=".normal:hover (only on mouse over)" />
-            <Label class="unity-builder-inspector__selector-example-code" text=".normal:focus (only when in focus)" />
-            <Label class="unity-builder-inspector__selector-example" text="Example:" />
-            <Label class="unity-builder-inspector__selector-example-code" text="TextField.yellow:hover Label#foo" />
-            <Label class="unity-builder-inspector__selector-example" text="(match on all Labels named 'foo' inside TextFields that have the .yellow style class and have the mouse currently over them)" />
+            <VisualElement class="unity-builder-inspector__selector-example">
+                <Instance template="NewSelectorHelpTips" />
+            </VisualElement>
         </uib:PersistedFoldout>
 
         <!-- Style Selector Controls -->

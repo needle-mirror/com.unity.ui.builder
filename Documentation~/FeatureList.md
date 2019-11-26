@@ -10,27 +10,30 @@
 1. Open documents, the current selection, and unsaved changes survive domain reload.
 1. Double-clicking a `.uxml` asset in the Project opens it with UI Builder.
 1. Previously open document is re-opened after a Unity Editor restart.
+1. Renaming, moving, or deleting a `.uxml` or `.uss` that is currently open in the UI Builder will give you the option to abort the operation or reset the Builder and lose any unsaved changes.
 
-## Explorer
+## StyleSheets
 
-### StyleSheet
-
-1. Can select the main StyleSheet via the "StyleSheet" Explorer item. This displays its dedicated Inspector.
-1. Selectors with .classNames get pills for each class created in the Explorer.
-1. In the Explorer, you can select selectors by clicking on the row or a class pill.
-1. Can drag a style class pill from the Explorer onto an element in the Viewport to add the class.
-1. Can drag a style class pill from the Explorer onto an element in the Hierarchy to add the class.
+1. Can select the main StyleSheet via the root item that should have the name of the .uss file. This displays its dedicated Inspector.
+1. Selectors get draggable style class pills for each selector part that is a style class name.
+1. In the StyleSheets pane, you can select selectors by clicking on the row or a style class pill.
+1. Can drag a style class pill from the StyleSheets pane onto an element in the Viewport to add the class.
+1. Can drag a style class pill from the StyleSheets pane onto an element in the Hierarchy to add the class.
 1. Dragging a style class onto an element inside a template instance or C# type in the Viewport adds it to the parent instance or C# element.
 1. Dragging a style class onto an element inside a template instance or C# type in the Hierarchy does nothing.
-1. Below all selectors there's a field that lets you create new selectors (by pressing Enter).
-    1. If **Class** mode is selected, a new `.class` selector is added and you have options for the pseudo states to add.
-    1. If **Complex** mode is selected, the raw string is used for the full selector name, and the pseudo state MaskField should not be visible.
-1. When selecting or hovering over a style selector in the Explorer, all elements in the Canvas that match the selector are highlighted.
+1. In the toolbar of the StyleSheets pane there's a field that lets you create new selectors.
+    1. After the field is focused, the explanation text is replaced with a default `.` and the cursor is set right after the `.` to let you quickly add a class-based selector.
+    1. To commit and add your new selector, you can click on the **Add** button or press **Enter**.
+    1. You can discover and append `:pseudoStates` from the **States** menu.
+    1. While the text field is selected, you should see a large tooltip displaying the selector cheatsheet.
+1. When selecting or hovering over a style selector in the StyleSheets pane, all elements in the Canvas that match the selector are highlighted.
 1. With a selector selected, you can use standard short-cuts or the Edit menu to copy/paste/duplicate/delete it. You can also copy/paste the USS for the selector to/from a text file.
-1. Right-clicking anywhere in the Hierarchy opens the Copy/Paste/Duplicate/Delete context menu.
+1. Right-clicking anywhere in the StyleSheets pane opens the Copy/Paste/Duplicate/Delete context menu.
+1. Selecting an element or a the main document (VisualTreeAsset) should deselect any selected tree items in the StyleSheets pane.
 
-### Hierarchy
+## Hierarchy
 
+1. The root items should display the currently loaded .uxml filename.
 1. Can click to select an element.
 1. Can drag element onto other elements in the Hierarchy to re-parent.
 1. Can drag an element between other elements to reorder, with live preview in the Canvas.
@@ -43,6 +46,7 @@
 1. With an element selected, you can use the standard short-cuts and Edit menu to copy/paste/duplicate/delete it. You can also copy/paste the UXML for the element to/from a text file.
 1. Right-clicking anywhere in the Hierarchy opens the Copy/Paste/Duplicate/Delete/Rename context menu.
 1. Can double-click on an item to rename it.
+1. Selecting an style selector or a the main StyleSheet in the StyleSheets pane should deselect any selected tree items in the Hierarchy.
 
 ## Library
 
@@ -67,13 +71,13 @@
 
 ### Toolbar
 
-1. Selecting **File > New** clears the selection, the Viewport canvas, the Explorer, and all undo/redo stack operations for the previous document. A prompt is displayed if there are unsaved changes.
+1. Selecting **File > New** clears the selection, the Viewport canvas, the StyleSheets pane, the Hierarchy, and all undo/redo stack operations for the previous document. A prompt is displayed if there are unsaved changes.
 1. Selecting **File > Save** asks for new file names for USS and UXML if it is the first save, otherwise, it overwrites the previously saved/loaded files.
 1. Saving should work even if the opened assets have been moved or renamed (in which case, the UI Builder should update the USS Style paths inside the UXML document).
 1. Selecting **File > Save As...** always asks for a new file name and saves as a copy of the current document.
 1. Selecting **File > Open...** displays an Open File Dialog and lets you select a `.uxml` asset inside your Project.
 1. Dragging a `.uxml` asset onto the Object Field loads that file.
-1. Can preview Light/Dark/Runtime themes inside the Canvas via the **Theme** popup field, independent from the current Editor Theme. **Default Theme** uses the current Editor Theme, while the other options force a theme to be used in the Canvas. If the `com.unity.ui.runtime` package is not installed, the Runtime theme will be substituted by the Light Editor theme.
+1. Can preview Light/Dark/Runtime themes inside the Canvas via the **Theme** popup field, independent from the current Editor Theme. **Default Theme** uses the current Editor Theme, while the other options force a theme to be used in the Canvas. If the runtime package is not installed, the Runtime theme will be substituted by the Light Editor theme.
 1. Pressing **Preview** toggles _Preview_ mode, where you can no longer select elements by clicking them in the Viewport. Instead, Viewport elements receive regular mouse and focus events.
 
 ### Save Dialog
@@ -98,10 +102,10 @@
 1. Canvas size is restored after Domain Reload or Window reload. It is reset when opening a new document.
 1. When changing Width or Height in the Inspector, the corresponding resize handles in the canvas are highlighted.
 1. When hovering over elements in the Canvas, the corresponding entry in the Hierarchy is highlighted.
-1. When hovering over elements in the Canvas, all Explorer entries of style selectors that match this element are highlighted.
+1. When hovering over elements in the Canvas, all StyleSheets pane entries of style selectors that match this element are highlighted.
 1. If the Canvas is bigger than the Viewport, a **Fit Canvas** button appears that resizes the Canvas to fit in the Viewport.
 1. Canvas size is remembered for each asset and restored when loading the asset. It also means it survives Editor restarts.
-1. Clicking the **Hierarchy** item in the Explorer displays the Canvas options in the Inspector:
+1. Clicking the root item (with the .uxml filename) in the Hierarchy displays the Canvas options in the Inspector:
     1. Can see and change the Canvas height and width.
     1. Can set the custom Canvas background color/image Opacity.
     1. Can set the Canvas background to be a solid color via the Color Background mode.
@@ -131,7 +135,7 @@
 
 ### StyleSheet Inspector
 
-1. Only visible if the selection is a StyleSheet (by selecting the **StyleSheet** section header in the Explorer).
+1. Only visible if the selection is a StyleSheet (by selecting the root item in the StyleSheets pane).
 1. Can create new Selectors by entering text in the **Selector** field and pressing Enter (or the **Create** button).
 1. Shows quick help on selectors.
 
@@ -145,7 +149,7 @@
 1. Only visible if the selection is an element in the current document.
 1. Shows all valid attributes for the selected element, given its C# type.
 1. Attributes already set to a non-default value are highlighted with the same styling as Prefab overrides.
-1. Changing attributes updates the Explorer, the Viewport, and the UXML Preview and changes are immediate.
+1. Changing attributes updates the Hierarchy (or the StyleSheets pane), the Viewport, and the UXML Preview and changes are immediate.
 1. Right-clicking **Unset** on an attribute removes it from the UXML tag, resets the value to the element-defined default, and resets the override styling.
 
 ### StyleSheet Section

@@ -129,11 +129,6 @@
     background-color: rgb(145, 145, 145);
 }
 
-/* In 2019.3, N*, all labels are washed out. Not sure why. This is a the fix. */
-.unity-builder-class-pill .unity-label {
-    color: rgb(1, 1, 1);
-}
-
 .unity-builder-class-pill:hover {
     background-color: rgb(105, 105, 105);
 }
@@ -213,6 +208,50 @@
 /* Tooltip Preview                                                           */
 /*****************************************************************************/
 
+.unity-builder-tooltip-preview {
+    background-color: rgb(182, 182, 182);
+}
+
 .unity-builder-tooltip-preview__enabler {
     border-color: rgb(68, 68, 68);
+}
+
+/*****************************************************************************/
+/* Code                                                                      */
+/*****************************************************************************/
+
+.unity-builder-code-label {
+    color: rgb(80, 80, 80);
+}
+
+.unity-builder-code-label--element-type {
+    color: rgb(0, 0, 0);
+}
+
+.unity-list-view:focus > .unity-list-view__item--selected .unity-builder-code-label--element-type {
+    color: rgb(255, 255, 255);
+}
+
+.unity-builder-code-label--element-name {
+    color: rgb(0, 51, 160);
+}
+
+.unity-list-view:focus > .unity-list-view__item--selected .unity-builder-code-label--element-name {
+    color: rgb(190, 211, 255);
+}
+
+.unity-builder-code-label--element-class-name {
+    color: rgb(143, 64, 0);
+}
+
+.unity-list-view:focus > .unity-list-view__item--selected .unity-builder-code-label--element-class-name {
+    color: #ffcba0;
+}
+
+.unity-builder-code-label--element-pseudo-state {
+    color: rgb(30, 105, 0);
+}
+
+.unity-list-view:focus > .unity-list-view__item--selected .unity-builder-code-label--element-pseudo-state {
+    color: rgb(60, 212, 0);
 }

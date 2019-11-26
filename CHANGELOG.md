@@ -4,6 +4,26 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.9.0] - 2019-11-25
+
+- Explorer:
+    - Split up the Hierarchy and StyleSheets sections into their own separate panes.
+    - Moved the new selector controls that were previously at the bottom of all the selectors in the StyleSheet section to a new toolbar in the newly separate StyleSheets pane.
+    - Removed the "Class/Complex" modes in the new selector controls. The field now always allows for any type of selector, it just starts off with a "." already typed for you - defaulting to the style class selector.
+    - The new selector States dropdown is no longer a mode. It is now menu of pseudo states which are appended to the current selector string.
+    - The new selector field will now properly reset and refocus after adding a selector to allow for easy chaining of new selector creation.
+    - The new selector toolbar now has an explicit Add button to not just rely on Enter being pressed to create the new selector.
+    - When the new selector field has focus, the selector writing cheatsheet, previously available in the Inspector when selecting the StyleSheet, will now appear as a tooltip.
+    - The StyleSheets explorer now fully colorizes all parts of each selector using the same color scheme as the Hierarchy.
+    - What previously where the main tree view items for "the StyleSheet" and "the Hierarchy" still exist in the corresponding new pane as the sole root items, but now they display the filename they correspond to.
+- Other:
+    - All style class pills in the StyleSheets pane and in the Inspector will now have yellow text to match the class names in the Hierarchy.
+    - Renaming, moving, or deleting a `.uxml` or `.uss` that is currently open in the UI Builder will now give you the option to abort the operation or reset the Builder and lose any unsaved changes.
+- Fixes:
+    - The UI Builder no longer explodes if a UXML or USS file currently open is deleted or renamed.
+    - Changing the value of compound fields like margin or padding will properly reset the "fake" new VisualElement size and border.
+    - Fixed not being able to drag elements into the empty part of the Hierarchy pane.
+
 ## [0.8.4] - 2019-11-05
 
 - (2020.1) Fixed UXML Template Instances created in the UI Builder not properly being saved to the UXML asset.

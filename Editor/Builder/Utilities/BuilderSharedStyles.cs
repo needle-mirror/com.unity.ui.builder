@@ -120,8 +120,6 @@ namespace Unity.UI.Builder
                 var ssVE = CreateNewSelectorElement(complexSelector);
                 selectorContainerElement.Add(ssVE);
             }
-
-            selectorContainerElement.Add(new BuilderExplorerNewSelectorElement(styleSheet));
         }
 
         internal static StyleComplexSelector CreateNewSelector(VisualElement selectorContainerElement, StyleSheet styleSheet, string selectorStr)
@@ -129,10 +127,6 @@ namespace Unity.UI.Builder
             var complexSelector = styleSheet.AddSelector(selectorStr);
             var ssVE = CreateNewSelectorElement(complexSelector);
             selectorContainerElement.Add(ssVE);
-
-            // The In-Explorer add new selector element should always come last.
-            var inExplorerAddNewSelectorElement = selectorContainerElement.Q<BuilderExplorerNewSelectorElement>();
-            inExplorerAddNewSelectorElement.BringToFront();
 
             return complexSelector;
         }

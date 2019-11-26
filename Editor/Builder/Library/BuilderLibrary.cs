@@ -11,7 +11,7 @@ using UnityEngine.UIElements;
 
 namespace Unity.UI.Builder
 {
-    internal class BuilderLibrary : BuilderPaneContent
+    internal class BuilderLibrary : BuilderPaneContent, IBuilderAssetModificationProcessor
     {
         static readonly string s_UssClassName = "unity-builder-library";
 
@@ -297,7 +297,7 @@ namespace Unity.UI.Builder
 
             m_TooltipPreview.Show();
 
-            m_TooltipPreview.style.left = this.pane.resolvedStyle.width + 20;
+            m_TooltipPreview.style.left = this.pane.resolvedStyle.width + BuilderConstants.TooltipPreviewYOffset;
             m_TooltipPreview.style.top = this.pane.resolvedStyle.top;
         }
 
@@ -320,17 +320,22 @@ namespace Unity.UI.Builder
 
             AddToClassList(s_UssClassName);
 
-            BuilderAssetModificationProcessor.OnAssetChange = OnBeforeAssetChange;
+            BuilderAssetModificationProcessor.Register(this);
 
             RefreshTreeView();
         }
 
-        void OnBeforeAssetChange()
+        public void OnAssetChange()
         {
             // AssetDatabase.FindAllAssets(filter) will return outdated assets if
             // we refresh immediately.
             this.schedule.Execute(OnAfterAssetChange);
         }
+
+        public AssetMoveResult OnWillMoveAsset(string sourcePath, string destinationPath) => AssetMoveResult.DidNotMove;
+        
+        public AssetDeleteResult OnWillDeleteAsset(string assetPath, RemoveAssetOptions option) =>
+            AssetDeleteResult.DidNotDelete;
 
         void OnAfterAssetChange()
         {

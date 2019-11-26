@@ -37,9 +37,15 @@ namespace Unity.UI.Builder
         protected override bool StartDrag(VisualElement target, Vector2 mousePosition, VisualElement pill)
         {
             m_TargetElementToReparent = target.GetProperty(BuilderConstants.ExplorerItemElementLinkVEPropertyName) as VisualElement;
-            pill.Q<Label>().text = string.IsNullOrEmpty(m_TargetElementToReparent.name)
+            var pillLabel = pill.Q<Label>();
+            pillLabel.text = string.IsNullOrEmpty(m_TargetElementToReparent.name)
                 ? m_TargetElementToReparent.GetType().Name
                 : m_TargetElementToReparent.name;
+
+            // TODO: Clean this by having different draggers for Hierarchy and StyleSheets panes.
+            // For now, just remove the yellow text color from pill if dragger element corresponds to a VisualTreeAsset.
+            if (m_TargetElementToReparent.GetVisualElementAsset() != null)
+                pillLabel.RemoveFromClassList(BuilderConstants.ElementClassNameClassName);
 
             m_OldParent = m_TargetElementToReparent.parent;
             m_OldIndex = m_OldParent.IndexOf(m_TargetElementToReparent);

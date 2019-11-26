@@ -367,6 +367,9 @@ namespace Unity.UI.Builder
                         NotifyStyleChanges();
                     }
 
+                    // Remove temporary min-size class on VisualElement.
+                    currentVisualElement.RemoveMinSizeSpecialElement();
+
                     m_Inspector.StylingChanged(foldoutElement.bindingPathArray.ToList());
                 }
                 else

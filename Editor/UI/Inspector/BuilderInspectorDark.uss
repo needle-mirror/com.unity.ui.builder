@@ -7,10 +7,6 @@
     background-color: rgb(78, 78, 78);
 }
 
-.unity-builder-inspector__selector-example-code {
-    color: rgb(153, 153, 153);
-}
-
 .unity-builder-inspector__style-category-foldout > .unity-foldout__header {
     background-color: rgb(34, 34, 34);
 }

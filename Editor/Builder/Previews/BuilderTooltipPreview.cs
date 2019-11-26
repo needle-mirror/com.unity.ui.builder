@@ -12,6 +12,8 @@ namespace Unity.UI.Builder
         VisualElement m_Enabler;
         VisualElement m_Container;
 
+        public bool isShowing => m_Enabler.resolvedStyle.display == DisplayStyle.Flex;
+
         public new class UxmlFactory : UxmlFactory<BuilderTooltipPreview, UxmlTraits> { }
 
         public new class UxmlTraits : BindableElement.UxmlTraits { }

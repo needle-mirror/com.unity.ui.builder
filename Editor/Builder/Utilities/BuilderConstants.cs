@@ -16,6 +16,7 @@ namespace Unity.UI.Builder
         public static readonly float CanvasMinWidth = 100;
         public static readonly float CanvasMinHeight = 100;
         public static readonly int ClassNameInPillMaxLength = 25;
+        public static readonly float TooltipPreviewYOffset = 20;
 
         // Paths
         public static readonly string UIBuilderPackagePath = "Packages/" + BuilderPackageName + "/Editor/UI";
@@ -25,6 +26,14 @@ namespace Unity.UI.Builder
 
         // Global Style Class Names
         public static readonly string HiddenStyleClassName = "unity-builder-hidden";
+        public static readonly string ElementTypeClassName = "unity-builder-code-label--element-type";
+        public static readonly string ElementNameClassName = "unity-builder-code-label--element-name";
+        public static readonly string ElementClassNameClassName = "unity-builder-code-label--element-class-name";
+        public static readonly string ElementPseudoStateClassName = "unity-builder-code-label--element-pseudo-state";
+
+        // Random Symbols
+        public static readonly string SingleSpace = " ";
+        public static readonly string TripleSpace = "   "; // Don't ask.
 
         //
         // Elements
@@ -33,9 +42,6 @@ namespace Unity.UI.Builder
         // Special Element Names
         public static readonly string StyleSelectorElementContainerName = "__unity-selector-container-element";
         public static readonly string StyleSelectorElementName = "__unity-selector-element";
-
-        // Special Element Style Class Names
-        public static readonly string PaneContentPleaseRefocusElementClassName = "unity-builder--please-refocus";
 
         // Element Linked VE Property Names
         public static readonly string ElementLinkedStyleSheetVEPropertyName = "__unity-ui-builder-linked-stylesheet";
@@ -106,6 +112,9 @@ namespace Unity.UI.Builder
         public static readonly string ExplorerItemRenameTextfieldClassName = "unity-builder-explorer__rename-textfield";
         public static readonly string ExplorerItemNameLabelClassName = "unity-builder-explorer__name-label";
         public static readonly string ExplorerItemTypeLabelClassName = "unity-builder-explorer__type-label";
+        public static readonly string ExplorerItemLabelContClassName = "unity-builder-explorer-tree-item-label-cont";
+        public static readonly string ExplorerItemLabelClassName = "unity-builder-explorer-tree-item-label";
+        public static readonly string ExplorerStyleSheetsPaneClassName = "unity-builder-stylesheets-pane";
 
         // Explorer Messages
         public static readonly string ExplorerInExplorerNewClassSelectorInfoMessage = "Add new selector...";
@@ -182,18 +191,30 @@ namespace Unity.UI.Builder
         public static readonly string NewDocumentsDialogMessage = "New UI Documents";
 
         //
-        // Save Dialog
+        // Dialogs
         //
+
+        // Generic Dialog Messages
+        public static readonly string DialogOkOption = "Ok";
+        public static readonly string DialogCancelOption = "Cancel";
+        public static readonly string DialogDiscardOption = "Discard";
+        public static readonly string DialogAbortActionOption = "Abort {0}";
 
         // Save Dialog Messages
         public static readonly string SaveDialogChooseUxmlPathDialogTitle = "Choose UXML File Location";
         public static readonly string SaveDialogChooseUssPathDialogTitle = "Choose USS File Location";
         public static readonly string SaveDialogDiscardChangesPromptTitle = "UI Builder: Discard unsaved changes?";
         public static readonly string SaveDialogDiscardChangesPromptMessage = "Are you sure you want to discard unsaved changes on the current UI documents?";
-        public static readonly string SaveDialogDiscardChangesPromptDiscardOption = "Discard";
         public static readonly string SaveDialogDiscardChangesPromptGoBackOption = "Go Back";
         public static readonly string SaveDialogInvalidPathMessage = "Can only save in the 'Assets/' or 'Packages/' folders.";
-
+        
+        // Error Dialog Messages
+        public static readonly string ErrorDialogNotice = "UI Builder: Notice";
+        public static readonly string ErrorIncompatibleFileActionMessage =
+            "You are about to {0}:\n\n{1}\n\nwhich is currently open in the UI Builder. " +
+            "If you {0} the file, the UI Builder document will close, " +
+            "and you will lose any unsaved changes. Would you like to {0} the file anyway?";
+        
         //
         // UXML/USS
         //
@@ -215,6 +236,11 @@ namespace Unity.UI.Builder
         public static readonly string UxmlTagTypeName = "UnityEngine.UIElements.UXML";
         public static readonly string UxmlInstanceTypeName = "UnityEngine.UIElements.Instance";
 #endif
+
+        // USS
+        public static readonly string UssSelectorNameSymbol = "#";
+        public static readonly string UssSelectorClassNameSymbol = ".";
+        public static readonly string UssSelectorPseudoStateSymbol = ":";
 
         // Styles
         public static readonly List<string> SpecialSnowflakeLengthSytles = new List<string>()

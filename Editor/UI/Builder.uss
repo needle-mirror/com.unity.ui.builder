@@ -153,7 +153,6 @@
 }
 
 .unity-builder-explorer__new-selector-item {
-    flex-grow: 1;
     flex-direction: row;
 }
 
@@ -168,22 +167,22 @@
     margin-bottom: 1px;
 }
 
-.unity-builder-explorer__new-selector-state-mask {
-    padding-top: 1px;
-    padding-bottom: 0;
-    margin-left: 0;
-    margin-right: 0;
-    margin-bottom: 0;
-    width: 68px;
+.unity-builder-stylesheets__toolbar-add-pseudo-state-menu {
+    padding-top: 2px;
 }
 
-.unity-builder-explorer__new-selector-mode-enum {
-    padding-top: 1px;
+.unity-builder-stylesheets__toolbar-add-new-selector {
+    padding-top: 3px;
     padding-bottom: 0;
-    margin-left: 1px;
-    margin-right: 1px;
-    margin-bottom: 0;
-    width: 68px;
+    margin-top: 0;
+    margin-bottom: 1px;
+}
+
+.unity-builder-stylesheets-pane .unity-builder-explorer-tree-item-label {
+    padding-left: 0;
+    padding-right: 0;
+    margin-right: 0;
+    margin-left: 0;
 }
 
 /*****************************************************************************/
@@ -431,12 +430,14 @@
     right: -20px;
 }
 
-.unity-builder-canvas__container--dark {
+.unity-builder-viewport__canvas-layer.unity-builder-canvas__container--dark,
+.unity-builder-tooltip-preview.unity-builder-canvas__container--dark {
     color: #D9D9D9;
     background-color: rgb(56, 56, 56);
 }
 
-.unity-builder-canvas__container--light {
+.unity-builder-viewport__canvas-layer.unity-builder-canvas__container--light,
+.unity-builder-tooltip-preview.unity-builder-canvas__container--light {
     color: #000;
     background-color: rgb(182, 182, 182);
 }
@@ -982,7 +983,7 @@
     min-width: 250px;
     max-width: 400px;
     min-height: 20px;
-    max-height: 200px;
+    max-height: 250px;
     padding: 8px;
 }
 
@@ -993,4 +994,33 @@
 .unity-builder-tooltip-preview .unity-base-field__label {
     min-width: 0px;
     width: 100px;
+}
+
+/*****************************************************************************/
+/* Code                                                                      */
+/*****************************************************************************/
+
+.unity-builder-code-row {
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.unity-builder-code-row--padded {
+    margin-top: 10px;
+}
+
+.unity-builder-inspector__selector-example {
+    padding: 10px;
+}
+
+.unity-builder-code-label {
+    padding: 0;
+    white-space: normal;
+}
+
+.unity-builder-code-label--code {
+    margin-top: 4px;
+    padding: 0;
+    -unity-font: resource("Consola");
+    font-size: 13px;
 }

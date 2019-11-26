@@ -10,7 +10,7 @@ using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 
 namespace Unity.UI.Builder
 {
-    internal class BuilderToolbar : VisualElement
+    internal class BuilderToolbar : VisualElement, IBuilderAssetModificationProcessor
     {
         BuilderPaneWindow m_PaneWindow;
         BuilderSelection m_Selection;
@@ -115,6 +115,60 @@ namespace Unity.UI.Builder
                 m_BuilderPackageVersion = null;
             else
                 m_BuilderPackageVersion = packageInfo.version;
+
+            RegisterCallback<AttachToPanelEvent>(RegisterCallbacks);
+        }
+        
+        void RegisterCallbacks(AttachToPanelEvent evt)
+        {
+            RegisterCallback<DetachFromPanelEvent>(UnregisterCallbacks);
+            BuilderAssetModificationProcessor.Register(this);
+        }
+        
+        void UnregisterCallbacks(DetachFromPanelEvent evt)
+        {
+            UnregisterCallback<DetachFromPanelEvent>(UnregisterCallbacks);
+            BuilderAssetModificationProcessor.Unregister(this);
+        }
+        
+        public void OnAssetChange() { }
+        
+        public AssetDeleteResult OnWillDeleteAsset(string assetPath, RemoveAssetOptions option)
+        {
+            if (IsFileActionCompatible(assetPath, "delete"))
+                return AssetDeleteResult.DidNotDelete;
+            else
+                return AssetDeleteResult.FailedDelete;
+        }
+        
+        public AssetMoveResult OnWillMoveAsset(string sourcePath, string destinationPath)
+        {
+            if (IsFileActionCompatible(sourcePath, "move"))
+                return AssetMoveResult.DidNotMove;
+            else
+                return AssetMoveResult.FailedMove;
+        }
+
+        bool IsFileActionCompatible(string assetPath, string actionName)
+        {
+            if (assetPath.Equals(document.ussPath) || assetPath.Equals(document.uxmlPath))
+            {
+                var fileName = Path.GetFileName(assetPath);
+                var acceptAction = DialogsUtility.DisplayDialog(BuilderConstants.ErrorDialogNotice,
+                    string.Format(BuilderConstants.ErrorIncompatibleFileActionMessage, actionName, fileName),
+                    BuilderConstants.DialogDiscardOption, 
+                    string.Format(BuilderConstants.DialogAbortActionOption, actionName.ToPascalCase()));
+
+                if (acceptAction)
+                {
+                    document.hasUnsavedChanges = false;
+                    NewDocument();
+                }
+                
+                return acceptAction;
+            }
+
+            return true;
         }
 
         void DrawSaveDialogValidationMessage()
@@ -127,7 +181,6 @@ namespace Unity.UI.Builder
             m_SaveDialogValidationBoxMessage = message;
             m_SaveDialogValidationBox.style.display = DisplayStyle.Flex;
             m_SaveDialogSaveButton.SetEnabled(false);
-
         }
 
         void ClearSaveDialogValidationMessage()
@@ -153,10 +206,10 @@ namespace Unity.UI.Builder
         {
             if (document.hasUnsavedChanges)
             {
-                if (!EditorUtility.DisplayDialog(
+                if (!DialogsUtility.DisplayDialog(
                     BuilderConstants.SaveDialogDiscardChangesPromptTitle,
                     BuilderConstants.SaveDialogDiscardChangesPromptMessage,
-                    BuilderConstants.SaveDialogDiscardChangesPromptDiscardOption,
+                    BuilderConstants.DialogDiscardOption,
                     BuilderConstants.SaveDialogDiscardChangesPromptGoBackOption))
                 {
                     return false;

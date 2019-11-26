@@ -198,6 +198,34 @@
 /* Tooltip Preview                                                           */
 /*****************************************************************************/
 
+.unity-builder-tooltip-preview {
+    background-color: rgb(56, 56, 56);
+}
+
 .unity-builder-tooltip-preview__enabler {
     border-color: rgb(129, 129, 129);
+}
+
+/*****************************************************************************/
+/* Code                                                                      */
+/*****************************************************************************/
+
+.unity-builder-code-label {
+    color: rgb(153, 153, 153);
+}
+
+.unity-builder-code-label--element-type {
+    color: rgb(255, 255, 255);
+}
+
+.unity-builder-code-label--element-name {
+    color: #93B3F8;
+}
+
+.unity-builder-code-label--element-class-name {
+    color: rgb(200, 200, 100);
+}
+
+.unity-builder-code-label--element-pseudo-state {
+    color: rgb(48, 168, 0);
 }

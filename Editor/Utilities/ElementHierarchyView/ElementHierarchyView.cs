@@ -52,8 +52,6 @@ namespace Unity.UI.Builder
         BuilderHierarchyDragger m_HierarchyDragger;
         BuilderExplorerContextMenu m_ContextMenuManipulator;
 
-        StringBuilder m_SelectorStrBuilder;
-
         public VisualElement container
         {
             get { return m_Container; }
@@ -66,15 +64,13 @@ namespace Unity.UI.Builder
             BuilderHierarchyDragger hierarchyDragger,
             BuilderExplorerContextMenu contextMenuManipulator,
             Action<VisualElement> selectElementCallback,
-            OverlayPainterHelperElement helperElement = null)
+            HighlightOverlayPainter highlightOverlayPainter)
         {
             m_DocumentRootElement = documentRootElement;
             m_Selection = selection;
             m_ClassDragger = classDragger;
             m_HierarchyDragger = hierarchyDragger;
             m_ContextMenuManipulator = contextMenuManipulator;
-
-            m_SelectorStrBuilder = new StringBuilder();
 
             this.focusable = true;
 
@@ -93,7 +89,7 @@ namespace Unity.UI.Builder
                     ClearSelection();
             });
 
-            m_TreeViewHoverOverlay = new HighlightOverlayPainter();
+            m_TreeViewHoverOverlay = highlightOverlayPainter;
 
             m_Container = new VisualElement();
             m_Container.name = "explorer-container";
@@ -110,9 +106,6 @@ namespace Unity.UI.Builder
 
             m_ClassPillTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
                 BuilderConstants.UIBuilderPackagePath + "/BuilderClassPill.uxml");
-
-            if (helperElement != null)
-                helperElement.painter = m_TreeViewHoverOverlay;
 
             // Create TreeView.
             m_TreeRootItems = new List<ITreeViewItem>();
@@ -132,6 +125,9 @@ namespace Unity.UI.Builder
 
         public void DrawOverlay()
         {
+            if (m_TreeViewHoverOverlay == null)
+                return;
+
             m_TreeViewHoverOverlay.Draw();
         }
 
@@ -169,13 +165,18 @@ namespace Unity.UI.Builder
 
             // Create main label container.
             var labelCont = new VisualElement();
-            labelCont.AddToClassList("unity-builder-explorer-tree-item-label-cont");
+            labelCont.AddToClassList(BuilderConstants.ExplorerItemLabelContClassName);
             explorerItem.Add(labelCont);
 
             if (BuilderSharedStyles.IsSelectorsContainerElement(documentElement))
             {
-                var ssLabel = new Label("StyleSheet");
-                ssLabel.AddToClassList("unity-builder-explorer-tree-item-label");
+                var styleSheetAsset = documentElement.GetStyleSheet();
+                var styleSheetFileName = AssetDatabase.GetAssetPath(styleSheetAsset);
+                var styleSheetAssetName = string.IsNullOrEmpty(styleSheetFileName)
+                    ? BuilderConstants.ToolbarUnsavedFileDisplayMessage + BuilderConstants.UssExtension
+                    : Path.GetFileName(styleSheetFileName);
+                var ssLabel = new Label(styleSheetAssetName);
+                ssLabel.AddToClassList(BuilderConstants.ExplorerItemLabelClassName);
                 ssLabel.AddToClassList("unity-debugger-tree-item-type");
                 row.AddToClassList(BuilderConstants.ExplorerHeaderRowClassName);
                 labelCont.Add(ssLabel);
@@ -185,46 +186,51 @@ namespace Unity.UI.Builder
             {
                 var selectorParts = BuilderSharedStyles.GetSelectorParts(documentElement);
 
-                Action<string> addSimpleLabel = (str) =>
-                {
-                    var selectorPartLabel = new Label(str);
-                    selectorPartLabel.AddToClassList("unity-builder-explorer-tree-item-label");
-                    selectorPartLabel.AddToClassList("unity-debugger-tree-item-type");
-                    labelCont.Add(selectorPartLabel);
-                };
-
                 foreach (var partStr in selectorParts)
                 {
-                    if (!partStr.StartsWith("."))
+                    if (partStr.StartsWith(BuilderConstants.UssSelectorClassNameSymbol))
                     {
-                        m_SelectorStrBuilder.Append(partStr);
-                        continue;
-                    }
+                        m_ClassPillTemplate.CloneTree(labelCont);
+                        var pill = labelCont.contentContainer.ElementAt(labelCont.childCount - 1);
+                        var pillLabel = pill.Q<Label>("class-name-label");
+                        pill.AddToClassList("unity-debugger-tree-item-pill");
+                        pill.SetProperty(BuilderConstants.ExplorerStyleClassPillClassNameVEPropertyName, partStr);
+                        pill.userData = documentElement;
 
-                    if (m_SelectorStrBuilder.Length != 0)
+                        // Add ellipsis if the class name is too long.
+                        var partStrShortened = BuilderNameUtilities.CapStringLengthAndAddEllipsis(partStr, BuilderConstants.ClassNameInPillMaxLength);
+                        pillLabel.text = partStrShortened;
+
+                        m_ClassDragger.RegisterCallbacksOnTarget(pill);
+                    }
+                    else if (partStr.StartsWith(BuilderConstants.UssSelectorNameSymbol))
                     {
-                        addSimpleLabel(m_SelectorStrBuilder.ToString());
-                        m_SelectorStrBuilder.Clear();
+                        var selectorPartLabel = new Label(partStr);
+                        selectorPartLabel.AddToClassList(BuilderConstants.ExplorerItemLabelClassName);
+                        selectorPartLabel.AddToClassList(BuilderConstants.ElementNameClassName);
+                        labelCont.Add(selectorPartLabel);
                     }
-
-                    m_ClassPillTemplate.CloneTree(labelCont);
-                    var pill = labelCont.contentContainer.ElementAt(labelCont.childCount - 1);
-                    var pillLabel = pill.Q<Label>("class-name-label");
-                    pill.AddToClassList("unity-debugger-tree-item-pill");
-                    pill.SetProperty(BuilderConstants.ExplorerStyleClassPillClassNameVEPropertyName, partStr);
-                    pill.userData = documentElement;
-
-                    // Add ellipsis if the class name is too long.
-                    var partStrShortened = BuilderNameUtilities.CapStringLengthAndAddEllipsis(partStr, BuilderConstants.ClassNameInPillMaxLength);
-                    pillLabel.text = partStrShortened;
-
-                    m_ClassDragger.RegisterCallbacksOnTarget(pill);
-                }
-
-                if (m_SelectorStrBuilder.Length != 0)
-                {
-                    addSimpleLabel(m_SelectorStrBuilder.ToString());
-                    m_SelectorStrBuilder.Clear();
+                    else if (partStr.StartsWith(BuilderConstants.UssSelectorPseudoStateSymbol))
+                    {
+                        var selectorPartLabel = new Label(partStr);
+                        selectorPartLabel.AddToClassList(BuilderConstants.ExplorerItemLabelClassName);
+                        selectorPartLabel.AddToClassList(BuilderConstants.ElementPseudoStateClassName);
+                        labelCont.Add(selectorPartLabel);
+                    }
+                    else if (partStr == BuilderConstants.SingleSpace)
+                    {
+                        var selectorPartLabel = new Label(BuilderConstants.TripleSpace);
+                        selectorPartLabel.AddToClassList(BuilderConstants.ExplorerItemLabelClassName);
+                        selectorPartLabel.AddToClassList(BuilderConstants.ElementTypeClassName);
+                        labelCont.Add(selectorPartLabel);
+                    }
+                    else
+                    {
+                        var selectorPartLabel = new Label(partStr);
+                        selectorPartLabel.AddToClassList(BuilderConstants.ExplorerItemLabelClassName);
+                        selectorPartLabel.AddToClassList(BuilderConstants.ElementTypeClassName);
+                        labelCont.Add(selectorPartLabel);
+                    }
                 }
 
                 // Register right-click events for context menu actions.
@@ -234,8 +240,12 @@ namespace Unity.UI.Builder
             }
             else if (BuilderSharedStyles.IsDocumentElement(documentElement))
             {
-                var ssLabel = new Label("Hierarchy");
-                ssLabel.AddToClassList("unity-builder-explorer-tree-item-label");
+                var uxmlAsset = documentElement.GetVisualTreeAsset();
+                var uxmlAssetName = string.IsNullOrEmpty(uxmlAsset.name)
+                    ? BuilderConstants.ToolbarUnsavedFileDisplayMessage
+                    : uxmlAsset.name;
+                var ssLabel = new Label(uxmlAssetName + BuilderConstants.UxmlExtension);
+                ssLabel.AddToClassList(BuilderConstants.ExplorerItemLabelClassName);
                 ssLabel.AddToClassList("unity-debugger-tree-item-type");
                 row.AddToClassList(BuilderConstants.ExplorerHeaderRowClassName);
                 labelCont.Add(ssLabel);
@@ -257,18 +267,17 @@ namespace Unity.UI.Builder
                 elementInfoVisibilityState.HasFlag(BuilderExplorer.BuilderElementInfoVisibilityState.TypeName))
             {
                 var typeLabel = new Label(documentElement.typeName);
-                typeLabel.AddToClassList("unity-builder-explorer-tree-item-label");
-                typeLabel.AddToClassList("unity-debugger-tree-item-type");
-                typeLabel.AddToClassList(BuilderConstants.ExplorerItemTypeLabelClassName);
+                typeLabel.AddToClassList(BuilderConstants.ExplorerItemLabelClassName);
+                typeLabel.AddToClassList(BuilderConstants.ElementTypeClassName);
                 labelCont.Add(typeLabel);
             }
 
             // Element name label.
             var nameLabel = new Label();
-            nameLabel.AddToClassList("unity-builder-explorer-tree-item-label");
-            nameLabel.AddToClassList("unity-debugger-tree-item-name");
+            nameLabel.AddToClassList(BuilderConstants.ExplorerItemLabelClassName);
             nameLabel.AddToClassList("unity-debugger-tree-item-name-label");
             nameLabel.AddToClassList(BuilderConstants.ExplorerItemNameLabelClassName);
+            nameLabel.AddToClassList(BuilderConstants.ElementNameClassName);
             if (!string.IsNullOrEmpty(documentElement.name))
                 nameLabel.text = "#" + documentElement.name;
             labelCont.Add(nameLabel);
@@ -283,12 +292,12 @@ namespace Unity.UI.Builder
                 foreach (var ussClass in documentElement.GetClasses())
                 {
                     var classLabelCont = new VisualElement();
-                    classLabelCont.AddToClassList("unity-builder-explorer-tree-item-label-cont");
+                    classLabelCont.AddToClassList(BuilderConstants.ExplorerItemLabelContClassName);
                     explorerItem.Add(classLabelCont);
 
                     var classLabel = new Label("." + ussClass);
-                    classLabel.AddToClassList("unity-builder-explorer-tree-item-label");
-                    classLabel.AddToClassList("unity-debugger-tree-item-classlist");
+                    classLabel.AddToClassList(BuilderConstants.ExplorerItemLabelClassName);
+                    classLabel.AddToClassList(BuilderConstants.ElementClassNameClassName);
                     classLabel.AddToClassList("unity-debugger-tree-item-classlist-label");
 
                     classLabelCont.Add(classLabel);
@@ -301,8 +310,8 @@ namespace Unity.UI.Builder
             {
                 var pathStr = Path.GetFileName(path);
                 var label = new Label(pathStr);
-                label.AddToClassList("unity-builder-explorer-tree-item-label");
-                label.AddToClassList("unity-debugger-tree-item-type");
+                label.AddToClassList(BuilderConstants.ExplorerItemLabelClassName);
+                label.AddToClassList(BuilderConstants.ElementTypeClassName);
                 label.AddToClassList("unity-builder-explorer-tree-item-template-path"); // Just make it look a bit shaded.
                 labelCont.Add(label);
             }
@@ -313,6 +322,9 @@ namespace Unity.UI.Builder
 
         void HighlightItemInTargetWindow(VisualElement documentElement)
         {
+            if (m_TreeViewHoverOverlay == null)
+                return;
+
             m_TreeViewHoverOverlay.AddOverlay(documentElement);
             var panel = documentElement.panel;
             panel?.visualTree.MarkDirtyRepaint();
@@ -320,11 +332,17 @@ namespace Unity.UI.Builder
 
         public void ClearHighlightOverlay()
         {
+            if (m_TreeViewHoverOverlay == null)
+                return;
+
             m_TreeViewHoverOverlay.ClearOverlay();
         }
 
         public void ResetHighlightOverlays()
         {
+            if (m_TreeViewHoverOverlay == null)
+                return;
+
             m_TreeViewHoverOverlay.ClearOverlay();
 
             if (m_TreeView != null)
@@ -356,13 +374,10 @@ namespace Unity.UI.Builder
 
             ResetHighlightOverlays();
 
-            if (rootVisualElement.childCount == 0)
-                return;
-
             m_CurrentPanelDebug = rootVisualElement.panel;
 
             int nextId = 1;
-            m_TreeRootItems = GetTreeItemsFromVisualTree(rootVisualElement, ref nextId);
+            m_TreeRootItems = GetTreeItemsFromVisualTreeIncludingParent(rootVisualElement, ref nextId);
 
             // Clear selection which would otherwise persist via view data persistence.
             m_TreeView?.ClearSelection();
@@ -553,6 +568,27 @@ namespace Unity.UI.Builder
 
                 break;
             }
+        }
+
+        IList<ITreeViewItem> GetTreeItemsFromVisualTreeIncludingParent(VisualElement parent, ref int nextId)
+        {
+            if (parent == null)
+                return null;
+
+            var items = new List<ITreeViewItem>();
+            var id = nextId;
+            nextId++;
+
+            var item = new TreeViewItem<VisualElement>(id, parent);
+            items.Add(item);
+
+            var childItems = GetTreeItemsFromVisualTree(parent, ref nextId);
+            if (childItems == null)
+                return items;
+
+            item.AddChildren(childItems);
+
+            return items;
         }
 
         IList<ITreeViewItem> GetTreeItemsFromVisualTree(VisualElement parent, ref int nextId)

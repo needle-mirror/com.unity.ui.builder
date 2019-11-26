@@ -2,14 +2,14 @@ using UnityEditor;
 
 namespace Unity.UI.Builder
 {
-    internal class BuilderExplorerWindow : BuilderPaneWindow
+    internal class BuilderStyleSheetsWindow : BuilderPaneWindow
     {
-        BuilderExplorer m_Explorer;
+        BuilderStyleSheets m_StyleSheetsPane;
 
-        //[MenuItem("Window/UI/UI Builder Explorer")]
+        //[MenuItem("Window/UI/UI Builder StyleSheets")]
         public static void ShowWindow()
         {
-            GetWindowAndInit<BuilderExplorerWindow>("UI Builder Explorer");
+            GetWindowAndInit<BuilderStyleSheetsWindow>("UI Builder StyleSheets");
         }
 
         public override void CreateUI()
@@ -27,27 +27,27 @@ namespace Unity.UI.Builder
             var hierarchyDragger = new BuilderHierarchyDragger(this, root, selection, viewport, viewport.parentTracker);
             var contextMenuManipulator = new BuilderExplorerContextMenu(this, selection);
 
-            m_Explorer = new BuilderExplorer(viewport, selection, classDragger, hierarchyDragger, contextMenuManipulator);
+            m_StyleSheetsPane = new BuilderStyleSheets(viewport, selection, classDragger, hierarchyDragger, contextMenuManipulator, null, null);
 
-            selection.AddNotifier(m_Explorer);
+            selection.AddNotifier(m_StyleSheetsPane);
 
-            root.Add(m_Explorer);
+            root.Add(m_StyleSheetsPane);
 
             // Command Handler
-            commandHandler.RegisterPane(m_Explorer);
+            commandHandler.RegisterPane(m_StyleSheetsPane);
         }
 
         public override void ClearUI()
         {
-            if (m_Explorer == null)
+            if (m_StyleSheetsPane == null)
                 return;
 
             var selection = document.primaryViewportWindow?.selection;
             if (selection != null)
-                selection.RemoveNotifier(m_Explorer);
+                selection.RemoveNotifier(m_StyleSheetsPane);
 
-            m_Explorer.RemoveFromHierarchy();
-            m_Explorer = null;
+            m_StyleSheetsPane.RemoveFromHierarchy();
+            m_StyleSheetsPane = null;
         }
     }
 }

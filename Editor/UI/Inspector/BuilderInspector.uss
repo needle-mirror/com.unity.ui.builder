@@ -85,17 +85,6 @@
     -unity-font-style: italic;
 }
 
-.unity-builder-inspector__selector-example {
-    margin-top: 10px;
-    white-space: normal;
-}
-
-.unity-builder-inspector__selector-example-code {
-    margin-top: 4px;
-    -unity-font: resource("Consola");
-    font-size: 13px;
-}
-
 .unity-builder-inspector-blue-override-box {
     width: 4px;
 }

@@ -9,17 +9,20 @@
             1 0 0 0
             =
             1 0 0 0 -->
-        <uib:TwoPaneSplitView name="left-column" style="min-width: 200px;" fixed-pane-index="0" fixed-pane-initial-size="300" orientation="vertical">
-            <!-- Explorer
+        <uib:TwoPaneSplitView name="left-column" style="min-width: 200px;" fixed-pane-index="0" fixed-pane-initial-size="450" orientation="vertical">
+            <!-- Left Column (StyleSheets + Hierarchy)
                 1 0 0 0
-
-                0 0 0 0 -->
-            <uib:BuilderPane name="explorer" title="Explorer" style="min-height: 200px;" />
+                =
+                1 0 0 0 -->
+            <uib:TwoPaneSplitView name="explorer" style="min-height: 350px;" fixed-pane-index="0" fixed-pane-initial-size="200" orientation="vertical">
+                <uib:BuilderPane name="style-sheets" title="StyleSheets" style="min-height: 100px;" />
+                <uib:BuilderPane name="hierarchy" title="Hierarchy" style="min-height: 100px;" class="unity-builder-pane__splitter-obstructed" />
+            </uib:TwoPaneSplitView>
             <!-- Library
                 0 0 0 0
 
                 1 0 0 0 -->
-            <uib:BuilderPane name="library" title="Library" style="min-height: 200px;" class="unity-builder-pane__splitter-obstructed" />
+            <uib:BuilderPane name="library" title="Library" style="min-height: 100px;" class="unity-builder-pane__splitter-obstructed" />
         </uib:TwoPaneSplitView>
         <!-- Left Column (Explorer + Library) -->
 
@@ -69,7 +72,8 @@
         <!-- Middle + Right Column -->
 
     </uib:TwoPaneSplitView>
-    <!-- / Main Split View -->
+    <!-- Main Split View -->
 
-    <uib:BuilderTooltipPreview name="tooltip-preview" />
+    <uib:BuilderTooltipPreview name="stylesheets-pane-tooltip-preview" />
+    <uib:BuilderTooltipPreview name="library-tooltip-preview" />
 </UXML>
