@@ -5,21 +5,29 @@ namespace Unity.UI.Builder
 {
     internal class BuilderUssPreview : BuilderCodePreview, IBuilderSelectionNotifier
     {
-        BuilderPaneWindow m_PaneWindow;
-
-        public BuilderUssPreview(BuilderPaneWindow paneWindow)
+        public BuilderUssPreview(BuilderPaneWindow paneWindow):base(paneWindow)
         {
-            m_PaneWindow = paneWindow;
+           
+        }
+
+        protected override void OnAttachToPanelDefaultAction()
+        {
+            base.OnAttachToPanelDefaultAction();
             RefreshUSS();
         }
 
-        public void RefreshUSS()
+        void RefreshUSS()
         {
-            var uss = string.Empty;
-            if (m_PaneWindow.document != null && m_PaneWindow.document.mainStyleSheet != null)
-                uss = m_PaneWindow.document.mainStyleSheet.GenerateUSS();
-
-            SetText(uss);
+            if (hasDocument)
+            {
+                SetText(document.mainStyleSheet.GenerateUSS());
+                SetTargetAsset(document.mainStyleSheet);
+            }
+            else
+            {
+                SetText(string.Empty);
+                SetTargetAsset(null);
+            }
         }
 
         public void HierarchyChanged(VisualElement element, BuilderHierarchyChangeType changeType)
@@ -36,5 +44,7 @@ namespace Unity.UI.Builder
         {
             RefreshUSS();
         }
+
+        protected override string previewAssetExtension => BuilderConstants.UssExtension;
     }
 }

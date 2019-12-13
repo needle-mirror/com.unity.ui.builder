@@ -25,7 +25,7 @@ namespace Unity.UI.Builder
 
             var classDragger = new BuilderClassDragger(this, root, selection, viewport, viewport.parentTracker);
             var hierarchyDragger = new BuilderHierarchyDragger(this, root, selection, viewport, viewport.parentTracker);
-            var contextMenuManipulator = new BuilderExplorerContextMenu(this, selection);
+            var contextMenuManipulator = new BuilderElementContextMenu(this, selection);
 
             m_HierarchyPane = new BuilderHierarchy(viewport, selection, classDragger, hierarchyDragger, contextMenuManipulator, null);
 

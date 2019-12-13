@@ -32,7 +32,7 @@ namespace Unity.UI.Builder
             BuilderSelection selection,
             BuilderClassDragger classDragger,
             BuilderHierarchyDragger hierarchyDragger,
-            BuilderExplorerContextMenu contextMenuManipulator,
+            BuilderElementContextMenu contextMenuManipulator,
             HighlightOverlayPainter highlightOverlayPainter,
             BuilderTooltipPreview tooltipPreview)
             : base(

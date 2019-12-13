@@ -11,7 +11,7 @@
 
     <!-- Font Size -->
     <uib:BuilderStyleRow binding-path="font-size">
-        <uie:IntegerField label="Size" tooltip="font-size" />
+        <uib:DimensionStyleField label="Size" tooltip="font-size" />
     </uib:BuilderStyleRow>
 
     <!-- Color -->

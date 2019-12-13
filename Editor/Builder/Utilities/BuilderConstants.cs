@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using UnityEngine;
 
 namespace Unity.UI.Builder
 {
@@ -17,6 +18,8 @@ namespace Unity.UI.Builder
         public static readonly float CanvasMinHeight = 100;
         public static readonly int ClassNameInPillMaxLength = 25;
         public static readonly float TooltipPreviewYOffset = 20;
+        public static readonly float ViewportInitialZoom = 1.0f;
+        public static readonly Vector2 ViewportInitialContentOffset = new Vector2(20.0f, 20.0f);
 
         // Paths
         public static readonly string UIBuilderPackagePath = "Packages/" + BuilderPackageName + "/Editor/UI";
@@ -34,6 +37,7 @@ namespace Unity.UI.Builder
         // Random Symbols
         public static readonly string SingleSpace = " ";
         public static readonly string TripleSpace = "   "; // Don't ask.
+        public static readonly string SubtitlePrefix = " - ";
 
         //
         // Elements
@@ -49,6 +53,7 @@ namespace Unity.UI.Builder
         public static readonly string ElementLinkedVisualTreeAssetVEPropertyName = "__unity-ui-builder-linked-visual-tree-asset";
         public static readonly string ElementLinkedVisualElementAssetVEPropertyName = "__unity-ui-builder-linked-visual-element-asset";
         public static readonly string ElementLinkedExplorerItemVEPropertyName = "__unity-ui-builder-linked-explorer-item-element";
+        public static readonly string ElementLinkedDocumentVisualElementVEPropertyName = "__unity-ui-builder-linked-document-visual-element";
 
         //
         // Inspector
@@ -82,6 +87,7 @@ namespace Unity.UI.Builder
         public static readonly string AddStyleClassValidationSpaces = "Class names cannot contain spaces.";
         public static readonly string AddStyleClassValidationSpacialCharacters = "Class names can only contain letters, numbers, underscores, and dashes.";
         public static readonly string ContextMenuUnsetMessage = "Unset";
+        public static readonly string ContextMenuUnsetAllMessage = "Unset All";
         public static readonly string FontCannotBeNoneMessage = "UI Builder: Font cannot be set to none.";
         public static readonly string InspectorClassPillDoubleClickToCreate = "Double-click to create new USS selector.";
         public static readonly string InspectorClassPillDoubleClickToSelect = "Double-click to select and edit USS selector.";
@@ -199,13 +205,14 @@ namespace Unity.UI.Builder
         public static readonly string DialogCancelOption = "Cancel";
         public static readonly string DialogDiscardOption = "Discard";
         public static readonly string DialogAbortActionOption = "Abort {0}";
+        public static readonly string DialogSaveActionOption = "Save";
+        public static readonly string DialogDontSaveActionOption = "Don't Save";
 
         // Save Dialog Messages
         public static readonly string SaveDialogChooseUxmlPathDialogTitle = "Choose UXML File Location";
         public static readonly string SaveDialogChooseUssPathDialogTitle = "Choose USS File Location";
-        public static readonly string SaveDialogDiscardChangesPromptTitle = "UI Builder: Discard unsaved changes?";
-        public static readonly string SaveDialogDiscardChangesPromptMessage = "Are you sure you want to discard unsaved changes on the current UI documents?";
-        public static readonly string SaveDialogDiscardChangesPromptGoBackOption = "Go Back";
+        public static readonly string SaveDialogSaveChangesPromptTitle = "UI Builder: Document Have Been Modified";
+        public static readonly string SaveDialogSaveChangesPromptMessage = "Do you want to save changes you made?";
         public static readonly string SaveDialogInvalidPathMessage = "Can only save in the 'Assets/' or 'Packages/' folders.";
         
         // Error Dialog Messages

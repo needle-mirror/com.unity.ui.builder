@@ -50,7 +50,7 @@ namespace Unity.UI.Builder
         BuilderSelection m_Selection;
         BuilderClassDragger m_ClassDragger;
         BuilderHierarchyDragger m_HierarchyDragger;
-        BuilderExplorerContextMenu m_ContextMenuManipulator;
+        BuilderElementContextMenu m_ContextMenuManipulator;
 
         public VisualElement container
         {
@@ -62,7 +62,7 @@ namespace Unity.UI.Builder
             BuilderSelection selection,
             BuilderClassDragger classDragger,
             BuilderHierarchyDragger hierarchyDragger,
-            BuilderExplorerContextMenu contextMenuManipulator,
+            BuilderElementContextMenu contextMenuManipulator,
             Action<VisualElement> selectElementCallback,
             HighlightOverlayPainter highlightOverlayPainter)
         {
@@ -118,6 +118,10 @@ namespace Unity.UI.Builder
             m_TreeView.onSelectionChanged += OnSelectionChange;
 #endif
 
+#if UNITY_2019_3_OR_NEWER
+            m_TreeView.RegisterCallback<MouseDownEvent>(OnLeakedMouseClick);
+#endif
+
             m_Container.Add(m_TreeView);
 
             m_ContextMenuManipulator.RegisterCallbacksOnTarget(m_Container);
@@ -151,7 +155,7 @@ namespace Unity.UI.Builder
             // Get target element (in the document).
             var documentElement = (item as TreeViewItem<VisualElement>).data;
             documentElement.SetProperty(BuilderConstants.ElementLinkedExplorerItemVEPropertyName, explorerItem);
-            explorerItem.userData = documentElement;
+            explorerItem.SetProperty(BuilderConstants.ElementLinkedDocumentVisualElementVEPropertyName, documentElement);
             row.userData = documentElement;
 
             // If we have a FillItem callback (override), we call it and stop creating the rest of the item.
@@ -172,9 +176,7 @@ namespace Unity.UI.Builder
             {
                 var styleSheetAsset = documentElement.GetStyleSheet();
                 var styleSheetFileName = AssetDatabase.GetAssetPath(styleSheetAsset);
-                var styleSheetAssetName = string.IsNullOrEmpty(styleSheetFileName)
-                    ? BuilderConstants.ToolbarUnsavedFileDisplayMessage + BuilderConstants.UssExtension
-                    : Path.GetFileName(styleSheetFileName);
+                var styleSheetAssetName = BuilderAssetUtilities.GetStyleSheetAssetName(styleSheetAsset);
                 var ssLabel = new Label(styleSheetAssetName);
                 ssLabel.AddToClassList(BuilderConstants.ExplorerItemLabelClassName);
                 ssLabel.AddToClassList("unity-debugger-tree-item-type");
@@ -238,13 +240,11 @@ namespace Unity.UI.Builder
 
                 return;
             }
-            else if (BuilderSharedStyles.IsDocumentElement(documentElement))
+            
+            if (BuilderSharedStyles.IsDocumentElement(documentElement))
             {
                 var uxmlAsset = documentElement.GetVisualTreeAsset();
-                var uxmlAssetName = string.IsNullOrEmpty(uxmlAsset.name)
-                    ? BuilderConstants.ToolbarUnsavedFileDisplayMessage
-                    : uxmlAsset.name;
-                var ssLabel = new Label(uxmlAssetName + BuilderConstants.UxmlExtension);
+                var ssLabel = new Label(BuilderAssetUtilities.GetVisualTreeAssetAssetName(uxmlAsset));
                 ssLabel.AddToClassList(BuilderConstants.ExplorerItemLabelClassName);
                 ssLabel.AddToClassList("unity-debugger-tree-item-type");
                 row.AddToClassList(BuilderConstants.ExplorerHeaderRowClassName);
@@ -394,6 +394,17 @@ namespace Unity.UI.Builder
             hierarchyHasChanged = false;
         }
 
+#if UNITY_2019_3_OR_NEWER
+        void OnLeakedMouseClick(MouseDownEvent evt)
+        {
+            if (!(evt.target is ScrollView))
+                return;
+
+            m_TreeView.ClearSelection();
+            evt.StopPropagation();
+        }
+#endif
+
 #if UNITY_2020_1_OR_NEWER
         void OnSelectionChange(IEnumerable<ITreeViewItem> items)
 #else
@@ -456,7 +467,7 @@ namespace Unity.UI.Builder
                 ClearHighlightOverlay();
 
                 var explorerItem = e.target as VisualElement;
-                var documentElement = explorerItem.userData as VisualElement;
+                var documentElement = explorerItem?.GetProperty(BuilderConstants.ElementLinkedDocumentVisualElementVEPropertyName) as VisualElement;
                 HighlightAllRelatedDocumentElements(documentElement);
             });
             element.RegisterCallback<MouseLeaveEvent>((e) =>
@@ -527,6 +538,7 @@ namespace Unity.UI.Builder
 
 #if UNITY_2020_1_OR_NEWER
             m_TreeView.SetSelection(item.id);
+            m_TreeView.ScrollToItem(item.id);
 #else
             m_TreeView.SelectItem(item.id);
 #endif

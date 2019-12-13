@@ -8,7 +8,8 @@ namespace Unity.UI.Builder
     {
         public string UxmlGuid;
         public string UxmlPath;
-
+        public int CanvasX;
+        public int CanvasY;
         public int CanvasWidth;
         public int CanvasHeight;
 

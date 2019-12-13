@@ -71,6 +71,8 @@ namespace Unity.UI.Builder
             var oppositeStyle = GetOppositeStyle(primaryStyle);
             var lengthStyle = GetLengthStyle(primaryStyle);
 
+            delta /= canvas.zoomScale;
+
             if (!IsNoneOrAuto(oppositeStyle) && !IsNoneOrAuto(primaryStyle))
             {
                 SetStyleSheetValue(primaryStyle, onStartDragPrimary - delta);

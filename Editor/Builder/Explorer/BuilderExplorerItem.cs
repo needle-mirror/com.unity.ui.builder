@@ -1,6 +1,4 @@
 using UnityEngine.UIElements;
-using System.Linq;
-using System.Collections.Generic;
 using UnityEditor;
 
 namespace Unity.UI.Builder
@@ -46,7 +44,7 @@ namespace Unity.UI.Builder
 
         public void ActivateRenameElementMode()
         {
-            var documentElement = this.userData as VisualElement;
+            var documentElement = GetProperty(BuilderConstants.ElementLinkedDocumentVisualElementVEPropertyName) as VisualElement;
             if (!documentElement.IsPartOfCurrentDocument())
                 return;
 

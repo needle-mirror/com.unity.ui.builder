@@ -17,6 +17,7 @@ namespace Unity.UI.Builder
         VisualElement m_Toolbar;
         VisualElement m_ViewportWrapper;
         VisualElement m_Viewport;
+        VisualElement m_Surface;
         BuilderCanvas m_Canvas;
         VisualElement m_SharedStylesAndDocumentElement;
         VisualElement m_StyleSelectorElementContainer;
@@ -26,10 +27,12 @@ namespace Unity.UI.Builder
         BuilderParentTracker m_BuilderParentTracker;
         BuilderResizer m_BuilderResizer;
         BuilderMover m_BuilderMover;
+        BuilderZoomer m_BuilderZoomer;
+        BuilderPanner m_BuilderPanner;
         BuilderAnchorer m_BuilderAnchorer;
-        Button m_FitCanvasButton;
 
         BuilderSelection m_Selection;
+        BuilderElementContextMenu m_ContextMenuManipulator;
 
         List<VisualElement> m_MatchingExplorerItems = new List<VisualElement>();
 
@@ -55,10 +58,51 @@ namespace Unity.UI.Builder
             }
         }
 
+        private float m_ZoomScale = 1.0f;
+        public float zoomScale
+        {
+            get { return m_ZoomScale; }
+            set
+            {
+                if (m_ZoomScale == value)
+                    return;
+
+                m_ZoomScale = value;
+                if (m_PaneWindow.document)
+                    m_PaneWindow.document.viewportZoomScale = value;
+                m_Canvas.zoomScale = value;
+                m_PaneWindow.document.RefreshStyle(m_DocumentElement);
+            }
+        }
+
+        private Vector2 m_ContentOffset = Vector2.zero;
+
+        public Vector2 contentOffset
+        {
+            get { return m_ContentOffset; }
+            set
+            {
+                if (m_ContentOffset == value)
+                    return;
+
+                m_ContentOffset = value;
+                if (m_PaneWindow.document)
+                    m_PaneWindow.document.viewportContentOffset = value;
+                UpdateSurface();
+            }
+        }
+
+        void UpdateSurface()
+        {
+            m_Surface.style.left = m_ContentOffset.x;
+            m_Surface.style.top = m_ContentOffset.y;
+        }
+
         public BuilderParentTracker parentTracker => m_BuilderParentTracker;
         public BuilderResizer resizer => m_BuilderResizer;
         public BuilderMover mover => m_BuilderMover;
         public BuilderAnchorer anchorer => m_BuilderAnchorer;
+        public BuilderZoomer zoomer => m_BuilderZoomer;
 
         public VisualElement sharedStylesAndDocumentElement => m_SharedStylesAndDocumentElement;
         public VisualElement styleSelectorElementContainer => m_StyleSelectorElementContainer;
@@ -66,10 +110,11 @@ namespace Unity.UI.Builder
         public VisualElement pickOverlay => m_PickOverlay;
         public VisualElement highlightOverlay => m_HighlightOverlay;
 
-        public BuilderViewport(BuilderPaneWindow paneWindow, BuilderSelection selection)
+        public BuilderViewport(BuilderPaneWindow paneWindow, BuilderSelection selection, BuilderElementContextMenu contextMenuManipulator)
         {
             m_PaneWindow = paneWindow;
             m_Selection = selection;
+            m_ContextMenuManipulator = contextMenuManipulator;
 
             AddToClassList("unity-builder-viewport");
 
@@ -79,22 +124,22 @@ namespace Unity.UI.Builder
             m_Toolbar = this.Q("toolbar");
             m_ViewportWrapper = this.Q("viewport-wrapper");
             m_Viewport = this.Q("viewport");
+            m_Surface = this.Q("viewport-surface");
+            m_Surface.pickingMode = PickingMode.Ignore;
             m_Canvas = this.Q<BuilderCanvas>("canvas");
             m_Canvas.document = paneWindow.document;
             m_SharedStylesAndDocumentElement = this.Q("shared-styles-and-document");
             m_StyleSelectorElementContainer = this.Q(BuilderConstants.StyleSelectorElementContainerName);
             m_DocumentElement = this.Q("document");
+            m_Canvas.documentElement = m_DocumentElement;
             m_PickOverlay = this.Q("pick-overlay");
             m_HighlightOverlay = this.Q("highlight-overlay");
             m_BuilderParentTracker = this.Q<BuilderParentTracker>("parent-tracker");
             m_BuilderResizer = this.Q<BuilderResizer>("resizer");
             m_BuilderMover = this.Q<BuilderMover>("mover");
             m_BuilderAnchorer = this.Q<BuilderAnchorer>("anchorer");
-            m_FitCanvasButton = this.Q<Button>("fit-canvas-button");
-
-            m_FitCanvasButton.clickable.clicked += FitCanvas;
-            m_Canvas.RegisterCallback<GeometryChangedEvent>(VerifyCanvasStillFitsViewport);
-            m_Viewport.RegisterCallback<GeometryChangedEvent>(VerifyCanvasStillFitsViewport);
+            m_BuilderZoomer = new BuilderZoomer(this);
+            m_BuilderPanner = new BuilderPanner(this);
 
             m_BuilderMover.parentTracker = m_BuilderParentTracker;
 
@@ -102,10 +147,29 @@ namespace Unity.UI.Builder
             m_PickOverlay.RegisterCallback<MouseMoveEvent>(OnHover);
             m_PickOverlay.RegisterCallback<MouseLeaveEvent>(OnMouseLeave);
             m_Viewport.RegisterCallback<MouseDownEvent>(OnMissPick);
+            
+            m_ContextMenuManipulator?.RegisterCallbacksOnTarget(m_Viewport);
 
             // Make sure this gets focus when the pane gets focused.
             primaryFocusable = this;
-            this.focusable = true;
+            focusable = true;
+
+            // Restore the zoom scale
+            zoomScale = paneWindow.document.viewportZoomScale;
+            contentOffset = paneWindow.document.viewportContentOffset;
+        }
+
+        private void ResetViewTransform()
+        {
+            contentOffset = BuilderConstants.ViewportInitialContentOffset;
+            zoomScale = BuilderConstants.ViewportInitialZoom;
+        }
+
+        public void ResetView()
+        {
+            ResetViewTransform();
+            canvas.ResetSize();
+            CenterCanvas();
         }
 
         protected override void ExecuteDefaultAction(EventBase evt)
@@ -118,53 +182,31 @@ namespace Unity.UI.Builder
             pane.subTitle = m_SubTitle;
         }
 
-        void FitCanvas()
+        public void FitCanvas()
         {
-            var maxCanvasWidth = m_Viewport.resolvedStyle.width - s_CanvasViewportMinWidthDiff;
-            var maxCanvasHeight = m_Viewport.resolvedStyle.height - s_CanvasViewportMinHeightDiff;
+            const float kMargin = 8f;
 
-            var currentWidth = m_Canvas.resolvedStyle.width;
-            var currentHeight = m_Canvas.resolvedStyle.height;
+            ResetViewTransform();
+            m_Canvas.x = m_Canvas.y = 0.0f;
+
+            var maxCanvasWidth = m_Viewport.resolvedStyle.width - s_CanvasViewportMinWidthDiff - 2 * kMargin;
+            var maxCanvasHeight = m_Viewport.resolvedStyle.height - s_CanvasViewportMinHeightDiff - 2 * kMargin;
+
+            var currentWidth = m_Canvas.width;
+            var currentHeight = m_Canvas.height;
 
             if (currentWidth > maxCanvasWidth)
                 m_Canvas.width = maxCanvasWidth;
 
             if (currentHeight > maxCanvasHeight)
                 m_Canvas.height = maxCanvasHeight;
+
+            CenterCanvas();
         }
 
-        void VerifyCanvasStillFitsViewport(GeometryChangedEvent evt)
+        void CenterCanvas()
         {
-            float viewportWidth;
-            float viewportHeight;
-
-            float canvasWidth;
-            float canvasHeight;
-
-            if (evt.target == m_Viewport)
-            {
-                viewportWidth = evt.newRect.width;
-                viewportHeight = evt.newRect.height;
-
-                canvasWidth = m_Canvas.resolvedStyle.width;
-                canvasHeight = m_Canvas.resolvedStyle.height;
-            }
-            else
-            {
-                viewportWidth = m_Viewport.resolvedStyle.width;
-                viewportHeight = m_Viewport.resolvedStyle.height;
-
-                canvasWidth = evt.newRect.width;
-                canvasHeight = evt.newRect.height;
-            }
-
-            var maxCanvasWidth = viewportWidth - s_CanvasViewportMinWidthDiff;
-            var maxCanvasHeight = viewportHeight - s_CanvasViewportMinHeightDiff;
-
-            if (canvasWidth > maxCanvasWidth || canvasHeight > maxCanvasHeight)
-                m_FitCanvasButton.style.display = DisplayStyle.Flex;
-            else
-                m_FitCanvasButton.style.display = DisplayStyle.None;
+            contentOffset = new Vector2((m_Viewport.resolvedStyle.width - m_Canvas.width) / 2, (m_Viewport.resolvedStyle.height - m_Canvas.height) / 2);
         }
 
         VisualElement PickElement(Vector2 mousePosition)
@@ -185,6 +227,10 @@ namespace Unity.UI.Builder
 
         void OnPick(MouseDownEvent evt)
         {
+            // Do not prevent zoom and pan
+            if (evt.button == 2 || (evt.ctrlKey && evt.altKey || (evt.button == (int)MouseButton.RightMouse && evt.altKey)))
+                return;
+
             var pickedElement = PickElement(evt.mousePosition);
 
             if (pickedElement != null)
@@ -198,7 +244,20 @@ namespace Unity.UI.Builder
                 m_Selection.ClearSelection(this);
             }
 
-            evt.StopPropagation();
+            if (evt.button == (int) MouseButton.RightMouse)
+            {
+                if (pickedElement != null && m_ContextMenuManipulator != null)
+                {
+                    pickedElement.SetProperty(BuilderConstants.ElementLinkedDocumentVisualElementVEPropertyName, pickedElement);
+                    m_ContextMenuManipulator.RegisterCallbacksOnTarget(pickedElement);
+                    m_ContextMenuManipulator.DisplayContextMenu(evt, pickedElement);
+                    evt.StopPropagation();
+                }
+            }
+            else
+            {
+                evt.StopPropagation();
+            }
         }
 
         void ClearMatchingExplorerItems()
@@ -267,6 +326,9 @@ namespace Unity.UI.Builder
 
         void OnMouseLeave(MouseLeaveEvent evt)
         {
+            if (evt.button == 2)
+                return;
+
             parentTracker.Deactivate();
 
             ClearMatchingExplorerItems();

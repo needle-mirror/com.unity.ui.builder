@@ -22,5 +22,20 @@ namespace Unity.UI.Builder
 
             return newStyleSheet;
         }
+
+        public static StyleValueKeyword ConvertStyleKeyword(StyleKeyword keyword)
+        {
+            switch (keyword)
+            {
+                case StyleKeyword.Auto:
+                    return StyleValueKeyword.Auto;
+                case StyleKeyword.None:
+                    return StyleValueKeyword.None;
+                case StyleKeyword.Initial:
+                    return StyleValueKeyword.Initial;
+            }
+
+            return StyleValueKeyword.Auto;
+        }
     }
 }

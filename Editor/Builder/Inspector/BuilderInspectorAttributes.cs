@@ -377,6 +377,43 @@ namespace Unity.UI.Builder
                 UnsetAttributeProperty,
                 DropdownMenuAction.AlwaysEnabled,
                 evt.target);
+            
+            evt.menu.AppendAction(
+                BuilderConstants.ContextMenuUnsetAllMessage,
+                UnsetAllAttributes,
+                DropdownMenuAction.AlwaysEnabled,
+                evt.target);
+        }
+
+        void UnsetAllAttributes(DropdownMenuAction action)
+        {
+            var attributeList = currentVisualElement.GetAttributeDescriptions();
+
+            // Undo/Redo
+            Undo.RegisterCompleteObjectUndo(m_Inspector.visualTreeAsset, BuilderConstants.ChangeAttributeValueUndoMessage);
+            
+            foreach (var attribute in attributeList)
+            {
+                if (attribute?.name == null)
+                    continue;
+                
+                // Unset value in asset.
+                var vea = currentVisualElement.GetVisualElementAsset();
+                vea.RemoveAttribute(attribute.name);
+            }
+            
+            var fields = m_AttributesSection.Query<BindableElement>().Where(e => !string.IsNullOrEmpty(e.bindingPath)).ToList();
+            foreach (var fieldElement in fields)
+            {
+                // Reset UI value.
+                ResetAttributeFieldToDefault(fieldElement);
+            }
+
+            // Call Init();
+            CallInitOnElement();
+
+            // Notify of changes.
+            m_Selection.NotifyOfHierarchyChange(m_Inspector);
         }
 
         void UnsetAttributeProperty(DropdownMenuAction action)

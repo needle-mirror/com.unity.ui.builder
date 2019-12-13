@@ -94,6 +94,14 @@
     background-color: rgb(36, 36, 36);
 }
 
+.unity-builder-code__open-source-file-button {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/CodePreview/Go To Dashboard");
+}
+
+.unity-builder-code__open-source-file-button:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/CodePreview/Go To Dashboard");
+}
+
 .unity-builder-code__code-line-numbers {
     color: rgb(100, 100, 100);
 }

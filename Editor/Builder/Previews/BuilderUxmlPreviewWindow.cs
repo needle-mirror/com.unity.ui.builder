@@ -1,5 +1,3 @@
-using UnityEditor;
-
 namespace Unity.UI.Builder
 {
     internal class BuilderUxmlPreviewWindow : BuilderPaneWindow

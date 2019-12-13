@@ -284,8 +284,8 @@ namespace Unity.UI.Builder
             m_CanvasWidth.isDelayed = false;
             m_CanvasHeight.isDelayed = false;
 
-            m_CanvasWidth.SetValueWithoutNotify((int)evt.newRect.width);
-            m_CanvasHeight.SetValueWithoutNotify((int)evt.newRect.height);
+            m_CanvasWidth.SetValueWithoutNotify((int)m_Canvas.width);
+            m_CanvasHeight.SetValueWithoutNotify((int)m_Canvas.height);
 
             m_CanvasWidth.isDelayed = true;
             m_CanvasHeight.isDelayed = true;
@@ -308,7 +308,7 @@ namespace Unity.UI.Builder
             }
 
             settings.CanvasWidth = newValue;
-            m_Canvas.style.width = newValue;
+            m_Canvas.width = newValue;
             UpdateCameraRects();
             PostSettingsChange();
         }
@@ -329,7 +329,7 @@ namespace Unity.UI.Builder
             }
 
             settings.CanvasHeight = newValue;
-            m_Canvas.style.height = newValue;
+            m_Canvas.height = newValue;
             UpdateCameraRects();
             PostSettingsChange();
         }
@@ -392,8 +392,8 @@ namespace Unity.UI.Builder
             if (settings.CanvasBackgroundImage == null)
                 return;
 
-            m_Canvas.style.width = settings.CanvasBackgroundImage.width;
-            m_Canvas.style.height = settings.CanvasBackgroundImage.height;
+            m_Canvas.width = settings.CanvasBackgroundImage.width;
+            m_Canvas.height = settings.CanvasBackgroundImage.height;
         }
 
         void OnBackgroundCameraChange(ChangeEvent<Object> evt)

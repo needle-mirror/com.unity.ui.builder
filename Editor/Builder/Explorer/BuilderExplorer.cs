@@ -35,7 +35,7 @@ namespace Unity.UI.Builder
 
         BuilderClassDragger m_ClassDragger;
         BuilderHierarchyDragger m_HierarchyDragger;
-        BuilderExplorerContextMenu m_ContextMenuManipulator;
+        BuilderElementContextMenu m_ContextMenuManipulator;
 
         public VisualElement container
         {
@@ -47,7 +47,7 @@ namespace Unity.UI.Builder
             BuilderSelection selection,
             BuilderClassDragger classDragger,
             BuilderHierarchyDragger hierarchyDragger,
-            BuilderExplorerContextMenu contextMenuManipulator,
+            BuilderElementContextMenu contextMenuManipulator,
             VisualElement documentElementRoot,
             HighlightOverlayPainter highlightOverlayPainter,
             string toolbarUxmlPath)

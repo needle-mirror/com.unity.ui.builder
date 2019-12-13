@@ -8,9 +8,10 @@
 1. Can copy/paste elements to and from a text file as valid UXML.
 1. Can undo/redo changes to styles, hierarchy, and selection.
 1. Open documents, the current selection, and unsaved changes survive domain reload.
-1. Double-clicking a `.uxml` asset in the Project opens it with UI Builder.
+1. Double-clicking a `.uxml` asset in the Project opens it with UI Builder. Double-clicking a `.uxml` that is already opened in UI Builder window will open the file in the default IDE.
 1. Previously open document is re-opened after a Unity Editor restart.
 1. Renaming, moving, or deleting a `.uxml` or `.uss` that is currently open in the UI Builder will give you the option to abort the operation or reset the Builder and lose any unsaved changes.
+1. A dialog to Save/DontSave/Cancel will be shown if there are unsaved changes in the UI Builder, even if the UI Builder window is not open.
 
 ## StyleSheets
 
@@ -76,7 +77,9 @@
 1. Saving should work even if the opened assets have been moved or renamed (in which case, the UI Builder should update the USS Style paths inside the UXML document).
 1. Selecting **File > Save As...** always asks for a new file name and saves as a copy of the current document.
 1. Selecting **File > Open...** displays an Open File Dialog and lets you select a `.uxml` asset inside your Project.
-1. Dragging a `.uxml` asset onto the Object Field loads that file.
+1. Can select a zoom level from the **100%** dropdown. Can also zoom via the mouse scroll wheel and Alt + RightClick + Mouse Move.
+1. Can reset the view and the canvas size via the **Reset** button.
+1. Can reset the view and make sure the canvas fits the viewport with the **Fit Canvas** button.
 1. Can preview Light/Dark/Runtime themes inside the Canvas via the **Theme** popup field, independent from the current Editor Theme. **Default Theme** uses the current Editor Theme, while the other options force a theme to be used in the Canvas. If the runtime package is not installed, the Runtime theme will be substituted by the Light Editor theme.
 1. Pressing **Preview** toggles _Preview_ mode, where you can no longer select elements by clicking them in the Viewport. Instead, Viewport elements receive regular mouse and focus events.
 
@@ -90,8 +93,9 @@
 
 ### Canvas
 
-1. Can be resized via handles on the right, left, and bottom.
+1. Can be resized via handles on the right and bottom.
 1. Canvas has a minimum size.
+1. Right-clicking an element in the Canvas opens the Copy/Paste/Duplicate/Delete/Rename context menu.
 1. Can click to select element.
 1. Selecting an element inside a template instance or C# type selects the parent instance or C# element.
 1. Relative position elements have bottom, right, and bottom-right handles that change inline `height` and `width` styles.
@@ -103,7 +107,6 @@
 1. When changing Width or Height in the Inspector, the corresponding resize handles in the canvas are highlighted.
 1. When hovering over elements in the Canvas, the corresponding entry in the Hierarchy is highlighted.
 1. When hovering over elements in the Canvas, all StyleSheets pane entries of style selectors that match this element are highlighted.
-1. If the Canvas is bigger than the Viewport, a **Fit Canvas** button appears that resizes the Canvas to fit in the Viewport.
 1. Canvas size is remembered for each asset and restored when loading the asset. It also means it survives Editor restarts.
 1. Clicking the root item (with the .uxml filename) in the Hierarchy displays the Canvas options in the Inspector:
     1. Can see and change the Canvas height and width.
@@ -112,6 +115,13 @@
     1. Can set the Canvas background to be an image, can set the ScaleMode of the image, and can have the Canvas resize to match the image via the **Fit Canvas to Image** button.
     1. Can set the Canvas background to be a render texture for a chosen Camera.
     1. All of these settings are remembered next time you open the same UXML document.
+
+### Viewport Surface
+
+1. Can pan by holding down middle mouse button in the Viewport and moving the mouse.
+1. Can pan by holding down Ctrl + Alt + LeftClick and moving the mouse.
+1. Can zoom in and out witht he mouse scrollwheel.
+1. Can zoom in and out by holding down Alt + RightClick and moving the mouse right and left.
 
 ## Previews
 
@@ -125,11 +135,15 @@
 1. Custom C# elements not in the `UnityEngine.UIElements` and `UnityEditor.UIElements` namespaces have no namespace alias and appear as their full type.
 1. (2019.3+) A relative path to a `.uss` asset is used in the `src` attribute of the `<Style>` tag if the asset is in the same folder as the main asset, or a subfolder of that folder. Otherwise, an absolute path is used.
 1. (2019.3+) A relative path to a `.uxml` asset is used in the `src` attribute of the `<Template>` tag if the asset is in the same folder as the main asset, or a subfolder of that folder. Otherwise, an absolute path is used.
+1. Pane header displays the name of the `.uxml` asset being previewed.
+1. If asset is saved on disk, a button to open the `.uxml` asset in the default IDE will appear in the top-right corner of the pane header.
 
 ### USS
 
 1. Updates on all StyleSheet/Selector changes.
 1. Dimension (Length) styles have the unit added to the USS (`px`). (No support for `%` yet.)
+1. Pane header displays the name of the `.uss` asset being previewed.
+1. If asset is saved on disk, a button to open the `.uss` asset in the default IDE will appear in the top-right corner of the pane header.
 
 ## Inspector
 
@@ -151,6 +165,7 @@
 1. Attributes already set to a non-default value are highlighted with the same styling as Prefab overrides.
 1. Changing attributes updates the Hierarchy (or the StyleSheets pane), the Viewport, and the UXML Preview and changes are immediate.
 1. Right-clicking **Unset** on an attribute removes it from the UXML tag, resets the value to the element-defined default, and resets the override styling.
+1. Right-clicking **Unset All** on an attribute is the same as **Unset** except it unsets all set attributes.
 
 ### StyleSheet Section
 
@@ -172,4 +187,8 @@
 1. All style value types are supported.
 1. Sub-section foldout expanded states are preserved between selection changes and domain reload.
 1. Right-clicking **Unset** on an style field removes it from the UXML inline style or StyleSheet, resets the value to default, and resets the override styling.
+1. Right-clicking **Unset All** on a style field is the same as **Unset** except it unsets all overridden style fields.
 1. Align section toggle button strips change icons depending on the value of the flex-direction style.
+1. Length style fields have a dropdown to select **Keyword** or **Unit**.
+1. (2019.3+) Some Length style fields support the `%` **Unit**.
+1. Foldout style fields (like Margin and Padding) properly add the unit or keyword for each child style property.

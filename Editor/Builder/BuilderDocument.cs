@@ -47,6 +47,12 @@ namespace Unity.UI.Builder
         CanvasTheme m_CurrentCanvasTheme;
 
         [SerializeField]
+        float m_ViewportScale = BuilderConstants.ViewportInitialZoom;
+
+        [SerializeField]
+        Vector2 m_ViewportContentOffset = BuilderConstants.ViewportInitialContentOffset;
+
+        [SerializeField]
         BuilderDocumentSettings m_Settings;
 
         WeakReference<IBuilderViewportWindow> m_PrimaryViewportWindow = new WeakReference<IBuilderViewportWindow>(null);
@@ -169,6 +175,18 @@ namespace Unity.UI.Builder
             }
         }
 
+        public float viewportZoomScale
+        {
+            get { return m_ViewportScale; }
+            set { m_ViewportScale = value; }
+        }
+
+        public Vector2 viewportContentOffset
+        {
+            get { return m_ViewportContentOffset; }
+            set { m_ViewportContentOffset = value; }
+        }
+
         string diskJsonFolderPath
         {
             get
@@ -202,6 +220,7 @@ namespace Unity.UI.Builder
         {
             hasUnsavedChanges = false;
             EditorApplication.playModeStateChanged += PlayModeStateChange;
+            EditorApplication.wantsToQuit += UnityWantsToQuit;
             Clear();
         }
 
@@ -263,6 +282,47 @@ namespace Unity.UI.Builder
             mainStyleSheet.FixRuleReferences();
             documentElement.IncrementVersion((VersionChangeType) (-1));
         }
+        
+        public bool CheckForUnsavedChanges()
+        {
+            if (!hasUnsavedChanges)
+                return true;
+
+            var option = BuilderDialogsUtility.DisplayDialogComplex(
+                BuilderConstants.SaveDialogSaveChangesPromptTitle,
+                BuilderConstants.SaveDialogSaveChangesPromptMessage,
+                BuilderConstants.DialogSaveActionOption,
+                BuilderConstants.DialogCancelOption,
+                BuilderConstants.DialogDontSaveActionOption);
+
+            switch (option)
+            {
+                // Save
+                case 0:
+                    if (!string.IsNullOrEmpty(uxmlPath) && !string.IsNullOrEmpty(ussPath))
+                    {
+                        SaveNewDocument(uxmlPath, ussPath, null, false);
+                        return true;
+                    }
+                    else
+                    {
+                        var builderWindow = Builder.ActiveWindow;
+                        if(builderWindow == null)
+                            builderWindow = Builder.ShowWindow();
+                        
+                        builderWindow.toolbar.PromptSaveDocumentDialog();
+                        return false;
+                    }
+                // Cancel
+                case 1:
+                    return false;
+                // Don't Save
+                case 2:
+                    return true;
+            }
+
+            return true;
+        }
 
         void RestoreAssetsFromBackup()
         {
@@ -286,6 +346,8 @@ namespace Unity.UI.Builder
         {
             ClearUndo();
         }
+
+        bool UnityWantsToQuit() => CheckForUnsavedChanges();
 
         void ClearUndo()
         {

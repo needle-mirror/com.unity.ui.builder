@@ -41,7 +41,7 @@ namespace Unity.UI.Builder
             m_Selection = new BuilderSelection(root, this);
 
             // Create viewport first.
-            m_Viewport = new BuilderViewport(this, selection);
+            m_Viewport = new BuilderViewport(this, selection, null);
             selection.documentElement = m_Viewport.documentElement;
 
             // Create the rest of the panes.

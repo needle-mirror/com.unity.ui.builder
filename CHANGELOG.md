@@ -4,6 +4,19 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.10.0] - 2019-12-13
+
+- Added zoom and pan support in the Viewport. There are view reset buttons and a zoom levels menu in the Viewport toolbar.
+- Added support for changing the Length style unit.
+- Added support for `%` unit (in 2019.3+).
+- Added support for keywords on numeric style fields in the Inspector.
+- Added element context menu on the Canvas elements - same one as the Hierarchy context menu.
+- Added **Unset All** option to the Attributes and Local Styles fields of the Inspector.
+- Added name of uxml/uss file to the header of the UXML/USS Preview panes.
+- Added button to the top-right of the UXML and USS Preview panes to open the source file (if saved) in the default IDE.
+- A dialog to Save/DontSave/Cancel will now be shown if there are unsaved changes in the UI Builder, even if the UI Builder window is not open.
+- (2019.3+) Fixed not being able to clear selection by clicking in empty space in the Hierarchy or StyleSheets panes.
+
 ## [0.9.0] - 2019-11-25
 
 - Explorer:

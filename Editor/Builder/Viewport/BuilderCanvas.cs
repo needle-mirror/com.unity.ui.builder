@@ -48,33 +48,127 @@ namespace Unity.UI.Builder
             }
         }
 
-        public float width
+        public VisualElement documentElement { get; set; }
+
+        private float m_X;
+        private float m_Y;
+        private float m_Width;
+        private float m_Height;
+        private float m_ZoomScale = 1.0f;
+
+        public float x
         {
-            get { return resolvedStyle.width; }
+            get
+            {
+                return m_X;
+            }
             set
             {
-                style.width = value;
+                if (m_X == value)
+                    return;
 
+                m_X = value;
+                if (document != null)
+                {
+                    document.settings.CanvasX = (int)value;
+                    document.SaveSettingsToDisk();
+                }
+
+                UpdateRenderSize();
+            }
+        }
+        public float y
+        {
+            get
+            {
+                return m_Y;
+            }
+            set
+            {
+                if (m_Y == value)
+                    return;
+
+                m_Y = value;
+                if (document != null)
+                {
+                    document.settings.CanvasY = (int)value;
+                    document.SaveSettingsToDisk();
+                }
+
+                UpdateRenderSize();
+            }
+        }
+        public float width
+        {
+            get
+            {
+                return m_Width;
+            }
+            set
+            {
+                if (m_Width == value)
+                    return;
+
+                m_Width = value;
                 if (document != null)
                 {
                     document.settings.CanvasWidth = (int)value;
                     document.SaveSettingsToDisk();
                 }
+
+                UpdateRenderSize();
             }
         }
-
         public float height
         {
-            get { return resolvedStyle.height; }
+            get
+            {
+                return m_Height;
+            }
             set
             {
-                style.height = value;
+                if (m_Height == value)
+                    return;
 
+                m_Height = value;
                 if (document != null)
                 {
                     document.settings.CanvasHeight = (int)value;
                     document.SaveSettingsToDisk();
                 }
+
+                UpdateRenderSize();
+            }
+        }
+
+        public float zoomScale
+        {
+            get { return m_ZoomScale; }
+            set
+            {
+                if (m_ZoomScale == value)
+                    return;
+
+                m_ZoomScale = value;
+                UpdateRenderSize();
+            }
+        }
+
+        void UpdateRenderSize()
+        {
+            var newWidth = m_Width * m_ZoomScale;
+            var newHeight = m_Height * m_ZoomScale;
+
+            style.left = m_X * m_ZoomScale;
+            style.top = m_Y * m_ZoomScale;
+            style.width = newWidth;
+            style.height = newHeight;
+
+            if (documentElement != null)
+            {
+                documentElement.transform.scale = new Vector3(m_ZoomScale, m_ZoomScale, 1);
+                documentElement.style.right = -(m_Width - newWidth);
+                documentElement.style.bottom = -(m_Height - newHeight);
             }
         }
 
@@ -90,16 +184,22 @@ namespace Unity.UI.Builder
             m_HandleElements.Add("left-handle", this.Q("left-handle"));
             m_HandleElements.Add("bottom-handle", this.Q("bottom-handle"));
             m_HandleElements.Add("right-handle", this.Q("right-handle"));
+            m_HandleElements.Add("top-handle", this.Q("top-handle"));
 
             m_HandleElements.Add("bottom-left-handle", this.Q("bottom-left-handle"));
             m_HandleElements.Add("bottom-right-handle", this.Q("bottom-right-handle"));
+            m_HandleElements.Add("top-left-handle", this.Q("top-left-handle"));
+            m_HandleElements.Add("top-right-handle", this.Q("top-right-handle"));
 
             m_HandleElements["left-handle"].AddManipulator(new Manipulator(OnStartDrag, OnEndDrag, OnDragLeft));
             m_HandleElements["bottom-handle"].AddManipulator(new Manipulator(OnStartDrag, OnEndDrag, OnDragBottom));
             m_HandleElements["right-handle"].AddManipulator(new Manipulator(OnStartDrag, OnEndDrag, OnDragRight));
+            m_HandleElements["top-handle"].AddManipulator(new Manipulator(OnStartDrag, OnEndDrag, OnDragTop));
 
             m_HandleElements["bottom-left-handle"].AddManipulator(new Manipulator(OnStartDrag, OnEndDrag, OnDragBottomLeft));
             m_HandleElements["bottom-right-handle"].AddManipulator(new Manipulator(OnStartDrag, OnEndDrag, OnDragBottomRight));
+            m_HandleElements["top-left-handle"].AddManipulator(new Manipulator(OnStartDrag, OnEndDrag, OnDragTopLeft));
+            m_HandleElements["top-right-handle"].AddManipulator(new Manipulator(OnStartDrag, OnEndDrag, OnDragTopRight));
 
             m_DragHoverCoverLayer = this.Q("drag-hover-cover-layer");
 
@@ -113,18 +213,25 @@ namespace Unity.UI.Builder
         {
             if (document == null || document.settings.CanvasWidth < BuilderConstants.CanvasMinWidth)
             {
-                width = BuilderConstants.CanvasInitialWidth;
-                height = BuilderConstants.CanvasInitialHeight;
+                ResetSize();
                 return;
             }
+            x = document.settings.CanvasX;
+            y = document.settings.CanvasY;
+            width = document.settings.CanvasWidth;
+            height = document.settings.CanvasHeight;
+        }
 
-            style.width = document.settings.CanvasWidth;
-            style.height = document.settings.CanvasHeight;
+        public void ResetSize()
+        {
+            x = y = 0.0f;
+            width = BuilderConstants.CanvasInitialWidth;
+            height = BuilderConstants.CanvasInitialHeight;
         }
 
         void OnStartDrag(VisualElement handle)
         {
-            m_ThisRectOnStartDrag = this.layout;
+            m_ThisRectOnStartDrag = new Rect(x, y, width * zoomScale, height * zoomScale);
 
             m_DragHoverCoverLayer.style.display = DisplayStyle.Flex;
             m_DragHoverCoverLayer.style.cursor = handle.computedStyle.cursor;
@@ -138,23 +245,36 @@ namespace Unity.UI.Builder
 
         void OnDragLeft(Vector2 diff)
         {
-            var newWidth = m_ThisRectOnStartDrag.width - (diff.x * 2);
+            var newWidth = (m_ThisRectOnStartDrag.width - diff.x) / m_ZoomScale;
+            var oldWidth = width;
+
             newWidth = Mathf.Max(newWidth, BuilderConstants.CanvasMinWidth);
             width = newWidth;
+            x -= width - oldWidth;
         }
 
         void OnDragBottom(Vector2 diff)
         {
             var newHeight = m_ThisRectOnStartDrag.height + diff.y;
             newHeight = Mathf.Max(newHeight, BuilderConstants.CanvasMinHeight);
-            height = newHeight;
+            height = newHeight / m_ZoomScale;
         }
 
         void OnDragRight(Vector2 diff)
         {
-            var newWidth = m_ThisRectOnStartDrag.width + (diff.x * 2);
+            var newWidth = m_ThisRectOnStartDrag.width + diff.x;
             newWidth = Mathf.Max(newWidth, BuilderConstants.CanvasMinWidth);
-            width = newWidth;
+            width = newWidth / m_ZoomScale;
+        }
+
+        void OnDragTop(Vector2 diff)
+        {
+            var oldHeight = height;
+            var newHeight = (m_ThisRectOnStartDrag.height - diff.y) / m_ZoomScale;
+
+            newHeight = Mathf.Max(newHeight, BuilderConstants.CanvasMinHeight);
+            height = newHeight;
+            y -= height - oldHeight;
         }
 
         void OnDragBottomLeft(Vector2 diff)
@@ -166,6 +286,18 @@ namespace Unity.UI.Builder
         void OnDragBottomRight(Vector2 diff)
         {
             OnDragBottom(diff);
+            OnDragRight(diff);
+        }
+
+        void OnDragTopLeft(Vector2 diff)
+        {
+            OnDragTop(diff);
+            OnDragLeft(diff);
+        }
+
+        void OnDragTopRight(Vector2 diff)
+        {
+            OnDragTop(diff);
             OnDragRight(diff);
         }
 

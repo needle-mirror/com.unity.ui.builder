@@ -1,5 +1,7 @@
 using System;
+using System.IO;
 using UnityEditor;
+using UnityEngine;
 using UnityEngine.UIElements;
 using Object = UnityEngine.Object;
 
@@ -218,6 +220,24 @@ namespace Unity.UI.Builder
                 var vea = ve.GetVisualElementAsset();
                 vea.Deselect();
             }
+        }
+        
+        public static string GetVisualTreeAssetAssetName(VisualTreeAsset visualTreeAsset) =>
+            GetAssetName(visualTreeAsset, BuilderConstants.UxmlExtension);
+        
+        public static string GetStyleSheetAssetName(StyleSheet styleSheet) =>
+            GetAssetName(styleSheet, BuilderConstants.UssExtension);
+
+        public static string GetAssetName(ScriptableObject asset, string extension)
+        {
+            if (asset == null)
+                return BuilderConstants.ToolbarUnsavedFileDisplayMessage + extension;
+
+            var assetPath = AssetDatabase.GetAssetPath(asset);
+            if(string.IsNullOrEmpty(assetPath))
+                return BuilderConstants.ToolbarUnsavedFileDisplayMessage + extension;
+           
+            return Path.GetFileName(assetPath);
         }
     }
 }

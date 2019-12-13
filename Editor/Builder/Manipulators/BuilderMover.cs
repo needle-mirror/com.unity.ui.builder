@@ -71,6 +71,8 @@ namespace Unity.UI.Builder
         {
             if (IsNoneOrAuto(trackedStyle) && !force)
                 return;
+            
+            delta /= canvas.zoomScale;
 
             var styleName = GetStyleName(trackedStyle);
             SetStyleSheetValue(styleName, onStartDragPrimary + delta);

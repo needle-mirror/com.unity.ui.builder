@@ -14,26 +14,17 @@ namespace Unity.UI.Builder
 
         TextField m_TextField;
         IntegerField m_DraggerIntegerField;
-        string m_LastValidInput;
         public List<string> fieldValues = new List<string>(); // Keeps track of child field values inputted from the header field
 
         public static readonly string textUssClassName = BuilderConstants.FoldoutFieldPropertyName + "__textfield";
         static readonly string k_DraggerFieldUssClassName = BuilderConstants.FoldoutFieldPropertyName + "__dragger-field";
-        static readonly string k_FieldStringSeparator = " "; // Formatting the header field with multiple values
+        static readonly char k_FieldStringSeparator = ' '; // Formatting the header field with multiple values
 
         public TextField headerInputField
         {
             get
             {
                 return m_TextField;
-            }
-        }
-
-        public string lastValidInput
-        {
-            get
-            {
-                return m_LastValidInput;
             }
         }
 
@@ -53,65 +44,42 @@ namespace Unity.UI.Builder
             header.hierarchy.Add(m_TextField);
         }
 
-        // IS VALID INPUT IF:
-        // - one int: e.g. 0 OR 4
-        //    - Usage: This one value will be the same for all four attributes (e.g. left, top, right, bottom)
-        // - four ints separated by commas: e.g. 3, 5, 3, 3
-        //    - Usage: Each int corresponds respectively to the left, top, right, and bottom attributes
-        public bool IsValidInput(string input)
+        public void UpdateFromChildFields()
         {
-            var splitBy = new char[]{ ' ' };
-            string[] inputArray = input.Split(splitBy);
+            var styleFields = this.Query<StyleFieldBase>().ToList();
 
-            if (inputArray.Length == 1)
+            bool allTheSame = true;
+            string singleValue = string.Empty;
+            string cumulativeValue = string.Empty;
+
+            for (int i = 0; i < styleFields.Count; ++i)
             {
-                if (int.TryParse(input, out int intResult))
-                {
-                    fieldValues.Clear();
-                    while (fieldValues.Count != bindingPathArray.Length)
-                        fieldValues.Add(intResult.ToString());
-                    return true;
-                }
-                return false;
+                if (i == 0)
+                    singleValue = styleFields[i].value;
+                else if (singleValue != styleFields[i].value)
+                    allTheSame = false;
+
+                if (i != 0)
+                    cumulativeValue += k_FieldStringSeparator;
+
+                cumulativeValue += styleFields[i].value;
             }
 
-            if (inputArray.Length != m_BindingPathArray.Length)
-                return false;
+            if (allTheSame)
+                m_TextField.SetValueWithoutNotify(singleValue);
+            else
+                m_TextField.SetValueWithoutNotify(cumulativeValue);
 
-            var newValues = new List<string>();
-            for (int i = 0; i < inputArray.Length; i++)
+            if (styleFields.Count > 0 && (styleFields[0] is StyleField<int> || styleFields[0] is StyleField<float>))
             {
-                if (!int.TryParse(inputArray[i], out int intResult))
-                        return false;
-                newValues.Add(intResult.ToString());
+                var intField = styleFields[0] as StyleField<int>;
+                var floatField = styleFields[0] as StyleField<float>;
+
+                if (intField != null)
+                    m_DraggerIntegerField.SetValueWithoutNotify(intField.innerValue);
+                else
+                    m_DraggerIntegerField.SetValueWithoutNotify((int)floatField.innerValue);
             }
-
-            fieldValues = newValues;
-            return true;
-        }
-
-        public void UpdateFromChildField(string bindingPath, string newValue)
-        {
-            while (fieldValues.Count != bindingPathArray.Length)
-                fieldValues.Add("auto");
-
-            var fieldIndex = Array.IndexOf(bindingPathArray, bindingPath);
-            fieldValues[fieldIndex] = newValue;
-
-            m_LastValidInput = GetFormattedInputString();
-            m_TextField.SetValueWithoutNotify(m_LastValidInput);
-
-            int.TryParse(fieldValues[0], out int intValue);
-            m_DraggerIntegerField.SetValueWithoutNotify(intValue);
-        }
-
-        public string GetFormattedInputString()
-        {
-            if (fieldValues.Count == bindingPathArray.Length &&
-                fieldValues.All(o => o == fieldValues[0]))
-                return fieldValues[0].ToString();
-
-            return String.Join(k_FieldStringSeparator, fieldValues);
         }
 
         void OnDraggerFieldUpdate(ChangeEvent<int> evt)

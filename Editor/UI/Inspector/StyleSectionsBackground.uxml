@@ -31,22 +31,22 @@
 
             <!-- Unity Slice Left -->
             <uib:BuilderStyleRow binding-path="-unity-slice-left">
-                <uie:IntegerField label="Left" tooltip="-unity-slice-left" />
+                <uib:IntegerStyleField label="Left" tooltip="-unity-slice-left" />
             </uib:BuilderStyleRow>
 
             <!-- Unity Slice Top -->
             <uib:BuilderStyleRow binding-path="-unity-slice-top">
-                <uie:IntegerField label="Top" tooltip="-unity-slice-top" />
+                <uib:IntegerStyleField label="Top" tooltip="-unity-slice-top" />
             </uib:BuilderStyleRow>
 
             <!-- Unity Slice Right -->
             <uib:BuilderStyleRow binding-path="-unity-slice-right">
-                <uie:IntegerField label="Right" tooltip="-unity-slice-right" />
+                <uib:IntegerStyleField label="Right" tooltip="-unity-slice-right" />
             </uib:BuilderStyleRow>
 
             <!-- Unity Slice Bottom -->
             <uib:BuilderStyleRow binding-path="-unity-slice-bottom">
-                <uie:IntegerField label="Bottom" tooltip="-unity-slice-bottom" />
+                <uib:IntegerStyleField label="Bottom" tooltip="-unity-slice-bottom" />
             </uib:BuilderStyleRow>
         </uib:FoldoutNumberField>
     </uib:BuilderStyleRow>

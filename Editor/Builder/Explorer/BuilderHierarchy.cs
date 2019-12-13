@@ -1,8 +1,4 @@
-using System;
 using UnityEngine.UIElements;
-using System.Linq;
-using System.Collections.Generic;
-using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 
@@ -20,7 +16,7 @@ namespace Unity.UI.Builder
             BuilderSelection selection,
             BuilderClassDragger classDragger,
             BuilderHierarchyDragger hierarchyDragger,
-            BuilderExplorerContextMenu contextMenuManipulator,
+            BuilderElementContextMenu contextMenuManipulator,
             HighlightOverlayPainter highlightOverlayPainter)
             : base(
                   viewport,

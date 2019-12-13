@@ -11,22 +11,22 @@
 
             <!-- Margin Left -->
             <uib:BuilderStyleRow binding-path="margin-left">
-                <uie:IntegerField label="Left" tooltip="margin-left" />
+                <uib:DimensionStyleField label="Left" tooltip="margin-left" />
             </uib:BuilderStyleRow>
 
             <!-- Margin Right -->
             <uib:BuilderStyleRow binding-path="margin-right">
-                <uie:IntegerField label="Right" tooltip="margin-right" />
+                <uib:DimensionStyleField label="Right" tooltip="margin-right" />
             </uib:BuilderStyleRow>
 
             <!-- Margin Top -->
             <uib:BuilderStyleRow binding-path="margin-top">
-                <uie:IntegerField label="Top" tooltip="margin-top" />
+                <uib:DimensionStyleField label="Top" tooltip="margin-top" />
             </uib:BuilderStyleRow>
 
             <!-- Margin Bottom -->
             <uib:BuilderStyleRow binding-path="margin-bottom">
-                <uie:IntegerField label="Bottom" tooltip="margin-bottom" />
+                <uib:DimensionStyleField label="Bottom" tooltip="margin-bottom" />
             </uib:BuilderStyleRow>
         </uib:FoldoutNumberField>
     </uib:BuilderStyleRow>
@@ -43,22 +43,22 @@
 
             <!-- Padding Left -->
             <uib:BuilderStyleRow binding-path="padding-left">
-                <uie:IntegerField label="Left" tooltip="padding-left" />
+                <uib:DimensionStyleField label="Left" tooltip="padding-left" />
             </uib:BuilderStyleRow>
 
             <!-- Padding Right -->
             <uib:BuilderStyleRow binding-path="padding-right">
-                <uie:IntegerField label="Right" tooltip="padding-right" />
+                <uib:DimensionStyleField label="Right" tooltip="padding-right" />
             </uib:BuilderStyleRow>
 
             <!-- Padding Top -->
             <uib:BuilderStyleRow binding-path="padding-top">
-                <uie:IntegerField label="Top" tooltip="padding-top" />
+                <uib:DimensionStyleField label="Top" tooltip="padding-top" />
             </uib:BuilderStyleRow>
 
             <!-- Padding Bottom -->
             <uib:BuilderStyleRow binding-path="padding-bottom">
-                <uie:IntegerField label="Bottom" tooltip="padding-bottom" />
+                <uib:DimensionStyleField label="Bottom" tooltip="padding-bottom" />
             </uib:BuilderStyleRow>
         </uib:FoldoutNumberField>
     </uib:BuilderStyleRow>

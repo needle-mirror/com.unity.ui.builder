@@ -7,6 +7,7 @@ using System.Linq;
 using UnityEditor.UIElements;
 using Object = UnityEngine.Object;
 using UnityEngine.Assertions;
+using UnityEditor;
 
 #if UNITY_2019_3_OR_NEWER
 using UnityEngine.UIElements.StyleSheets;
@@ -116,10 +117,25 @@ namespace Unity.UI.Builder
                 var uiField = fieldElement as PercentSlider;
                 uiField.RegisterValueChangedCallback(e => OnFieldValueChange(e, styleName));
             }
+            else if (val is StyleFloat && fieldElement is NumericStyleField)
+            {
+                var uiField = fieldElement as NumericStyleField;
+                uiField.RegisterValueChangedCallback(e => OnNumericStyleFieldValueChange(e, styleName));
+            }
+            else if (val is StyleFloat && fieldElement is DimensionStyleField)
+            {
+                var uiField = fieldElement as DimensionStyleField;
+                uiField.RegisterValueChangedCallback(e => OnDimensionStyleFieldValueChange(e, styleName));
+            }
             else if (val is StyleInt && fieldElement is IntegerField)
             {
                 var uiField = fieldElement as IntegerField;
                 uiField.RegisterValueChangedCallback(e => OnFieldValueChange(e, styleName));
+            }
+            else if (val is StyleInt && fieldElement is IntegerStyleField)
+            {
+                var uiField = fieldElement as IntegerStyleField;
+                uiField.RegisterValueChangedCallback(e => OnIntegerStyleFieldValueChange(e, styleName));
             }
             else if (val is StyleLength && fieldElement is IntegerField)
             {
@@ -129,6 +145,11 @@ namespace Unity.UI.Builder
 #else
                 uiField.RegisterValueChangedCallback(e => OnFieldValueChange(e, styleName));
 #endif
+            }
+            else if (val is StyleLength && fieldElement is DimensionStyleField)
+            {
+                var uiField = fieldElement as DimensionStyleField;
+                uiField.RegisterValueChangedCallback(e => OnDimensionStyleFieldValueChange(e, styleName));
             }
             else if (val is StyleColor && fieldElement is ColorField)
             {
@@ -234,17 +255,14 @@ namespace Unity.UI.Builder
 
         public void BindStyleField(BuilderStyleRow styleRow, FoldoutNumberField foldoutElement)
         {
-            var intFields = foldoutElement.Query<IntegerField>().ToList();
+            var intFields = foldoutElement.Query<StyleFieldBase>().ToList();
 
             foreach (var field in intFields)
             {
                 field.SetProperty(BuilderConstants.FoldoutFieldPropertyName, foldoutElement);
                 field.RegisterValueChangedCallback((evt) =>
                 {
-                    var row = field.GetProperty(BuilderConstants.InspectorLinkedStyleRowVEPropertyName) as BuilderStyleRow;
-                    if (row != null && !string.IsNullOrEmpty(row.bindingPath))
-                        foldoutElement.UpdateFromChildField(row.bindingPath, field.value.ToString());
-
+                    foldoutElement.UpdateFromChildFields();
                     foldoutElement.header.AddToClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
                 });
 
@@ -298,83 +316,43 @@ namespace Unity.UI.Builder
 
         void FoldoutNumberFieldOnValueChange(ChangeEvent<string> evt)
         {
+            var newValue = evt.newValue;
             var target = evt.target as TextField;
             var foldoutElement = target.GetFirstAncestorOfType<FoldoutNumberField>();
 
-            if (!string.IsNullOrEmpty(evt.newValue))
+            var splitBy = new char[] { ' ' };
+            string[] inputArray = newValue.Split(splitBy);
+            var styleFields = foldoutElement.Query<StyleFieldBase>().ToList();
+
+            if (inputArray.Length == 1 && styleFields.Count > 0)
             {
-                if (foldoutElement.IsValidInput(evt.newValue))
+                var newCommonValue = inputArray[0];
+                var newCommonValueWithUnit = newValue;
+
+                for (int i = 0; i < styleFields.Count; ++i)
                 {
-                    foldoutElement.header.AddToClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
-                    foldoutElement.headerInputField.value = foldoutElement.GetFormattedInputString();
-                    for (int i = 0; i < foldoutElement.bindingPathArray.Length; i++)
+                    if (i == 0 && styleFields[0] is DimensionStyleField)
                     {
-                        var styleName = foldoutElement.bindingPathArray[i];
-
-                        var styleProperty = GetStylePropertyByStyleName(styleName);
-
-#if UNITY_2019_3_OR_NEWER
-                        var field = FindStylePropertyInfo(styleName);
-
-                        // We don't care which element we get the value for here as we're only interested
-                        // in the type of Enum it might be (and for validation), but not it's actual value.
-                        var val = field?.GetValue(foldoutElement.computedStyle, null);
-
-                        if ((val != null && val is StyleLength) ||
-                            BuilderConstants.SpecialSnowflakeLengthSytles.Contains(foldoutElement.bindingPathArray[i]))
-                        {
-                            var newValue = 0;
-                            // TryParse to check if fieldValue is not a style string like "auto"
-                            if (Int32.TryParse(foldoutElement.fieldValues[i], out newValue))
-                            {
-                                var isNewValue = styleProperty.values.Length == 0;
-
-                                // If the current style property is saved as a float instead of a dimension,
-                                // it means it's a user file where they left out the unit. We need to resave
-                                // it here as a dimension to create final proper uss.
-                                if (!isNewValue && styleProperty.values[0].valueType != StyleValueType.Dimension)
-                                {
-                                    styleProperty.values = new StyleValueHandle[0];
-                                    isNewValue = true;
-                                }
-
-                                var dimension = new Dimension();
-                                dimension.unit = Dimension.Unit.Pixel;
-                                dimension.value = newValue;
-
-                                if (isNewValue)
-                                    styleSheet.AddValue(styleProperty, dimension);
-                                else // TODO: Assume only one value.
-                                    styleSheet.SetValue(styleProperty.values[0], dimension);
-                            }
-                        }
-                        else
-#endif
-                        {
-                            var newValue = 0;
-                            // TryParse to check if fieldValue is not a style string like "auto"
-                            if (Int32.TryParse(foldoutElement.fieldValues[i], out newValue))
-                            {
-                                var convertedFloat = (float)newValue;
-
-                                if (styleProperty.values.Length == 0)
-                                    styleSheet.AddValue(styleProperty, convertedFloat);
-                                else // TODO: Assume only one value.
-                                    styleSheet.SetValue(styleProperty.values[0], convertedFloat);
-                            }
-                        }
-
-                        NotifyStyleChanges();
+                        styleFields[i].value = newCommonValueWithUnit;
+                        newCommonValueWithUnit = styleFields[i].value;
+                        continue;
                     }
 
-                    // Remove temporary min-size class on VisualElement.
-                    currentVisualElement.RemoveMinSizeSpecialElement();
-
-                    m_Inspector.StylingChanged(foldoutElement.bindingPathArray.ToList());
+                    if (styleFields[i] is DimensionStyleField)
+                        styleFields[i].value = newCommonValueWithUnit;
+                    else
+                        styleFields[i].value = newCommonValue;
                 }
-                else
-                    foldoutElement.headerInputField.SetValueWithoutNotify(foldoutElement.lastValidInput);
             }
+            else
+            {
+                for (int i = 0; i < Mathf.Min(inputArray.Length, styleFields.Count); ++i)
+                {
+                    styleFields[i].value = inputArray[i];
+                }
+            }
+
+            foldoutElement.UpdateFromChildFields();
 
             evt.StopPropagation();
         }
@@ -447,6 +425,38 @@ namespace Unity.UI.Builder
 
                 uiField.SetValueWithoutNotify(value);
             }
+            else if (val is StyleFloat && fieldElement is NumericStyleField)
+            {
+                var style = (StyleFloat)val;
+                var uiField = fieldElement as NumericStyleField;
+
+                var value = (int)style.value;
+                if (styleProperty != null)
+                {
+                    var styleValue = styleProperty.values[0];
+                    if (styleValue.valueType == StyleValueType.Keyword)
+                    {
+                        var keyword = styleSheet.GetKeyword(styleValue);
+                        uiField.keyword = keyword;
+                    }
+                    else if (styleValue.valueType == StyleValueType.Float)
+                    {
+                        var number = styleSheet.GetFloat(styleValue);
+                        uiField.SetValueWithoutNotify(number.ToString());
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("StyleValueType " + styleValue.valueType.ToString() + " not compatible with StyleFloat.");
+                    }
+                }
+                else
+                {
+                    if (style.keyword != StyleKeyword.Undefined)
+                        uiField.keyword = StyleSheetUtilities.ConvertStyleKeyword(style.keyword);
+                    else
+                        uiField.SetValueWithoutNotify(value.ToString());
+                }
+            }
             else if (val is StyleInt && fieldElement is IntegerField)
             {
                 var style = (StyleInt)val;
@@ -458,10 +468,47 @@ namespace Unity.UI.Builder
 
                 uiField.SetValueWithoutNotify(value);
             }
+            else if (val is StyleInt && fieldElement is IntegerStyleField)
+            {
+                var style = (StyleInt)val;
+                var uiField = fieldElement as IntegerStyleField;
+
+                var value = style.value;
+                if (styleProperty != null)
+                {
+                    var styleValue = styleProperty.values[0];
+                    if (styleValue.valueType == StyleValueType.Keyword)
+                    {
+                        var keyword = styleSheet.GetKeyword(styleValue);
+                        uiField.keyword = keyword;
+                    }
+                    else if (styleValue.valueType == StyleValueType.Float)
+                    {
+                        var number = styleSheet.GetFloat(styleValue);
+                        uiField.SetValueWithoutNotify(number.ToString());
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("StyleValueType " + styleValue.valueType.ToString() + " not compatible with StyleFloat.");
+                    }
+                }
+                else
+                {
+                    if (style.keyword != StyleKeyword.Undefined)
+                        uiField.keyword = StyleSheetUtilities.ConvertStyleKeyword(style.keyword);
+                    else
+                        uiField.SetValueWithoutNotify(value.ToString());
+                }
+            }
             else if (val is StyleLength && fieldElement is IntegerField)
             {
                 var style = (StyleLength)val;
                 var uiField = fieldElement as IntegerField;
+
+                // If the styleProperty exists for this length but it's a keyword,
+                // just ignore it. IntegerField cannot represent keywords.
+                if (styleProperty != null && style.keyword != StyleKeyword.Undefined)
+                    styleProperty = null;
 
                 var value = (int)style.value.value;
                 if (styleProperty != null)
@@ -472,6 +519,86 @@ namespace Unity.UI.Builder
 #endif
 
                 uiField.SetValueWithoutNotify(value);
+            }
+            else if (val is StyleFloat && fieldElement is DimensionStyleField)
+            {
+                var style = (StyleFloat)val;
+                var uiField = fieldElement as DimensionStyleField;
+
+                var value = (int)style.value;
+                if (styleProperty != null)
+                {
+                    var styleValue = styleProperty.values[0];
+                    if (styleValue.valueType == StyleValueType.Keyword)
+                    {
+                        var keyword = styleSheet.GetKeyword(styleValue);
+                        uiField.keyword = keyword;
+                    }
+#if UNITY_2019_3_OR_NEWER
+                    else if (styleValue.valueType == StyleValueType.Dimension)
+                    {
+                        var dimension = styleSheet.GetDimension(styleValue);
+                        uiField.unit = dimension.unit;
+                        uiField.length = dimension.value;
+                    }
+#endif
+                    else if (styleValue.valueType == StyleValueType.Float)
+                    {
+                        var length = styleSheet.GetFloat(styleValue);
+                        uiField.SetValueWithoutNotify(length.ToString() + DimensionStyleField.defaultUnit);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("StyleValueType " + styleValue.valueType.ToString() + " not compatible with StyleFloat.");
+                    }
+                }
+                else
+                {
+                    if (style.keyword != StyleKeyword.Undefined)
+                        uiField.keyword = StyleSheetUtilities.ConvertStyleKeyword(style.keyword);
+                    else
+                        uiField.SetValueWithoutNotify(value.ToString());
+                }
+            }
+            else if (val is StyleLength && fieldElement is DimensionStyleField)
+            {
+                var style = (StyleLength)val;
+                var uiField = fieldElement as DimensionStyleField;
+
+                var value = (int)style.value.value;
+                if (styleProperty != null)
+                {
+                    var styleValue = styleProperty.values[0];
+                    if (styleValue.valueType == StyleValueType.Keyword)
+                    {
+                        var keyword = styleSheet.GetKeyword(styleValue);
+                        uiField.keyword = keyword;
+                    }
+#if UNITY_2019_3_OR_NEWER
+                    else if (styleValue.valueType == StyleValueType.Dimension)
+                    {
+                        var dimension = styleSheet.GetDimension(styleValue);
+                        uiField.unit = dimension.unit;
+                        uiField.length = dimension.value;
+                    }
+#endif
+                    else if (styleValue.valueType == StyleValueType.Float)
+                    {
+                        var length = styleSheet.GetFloat(styleValue);
+                        uiField.SetValueWithoutNotify(length.ToString() + DimensionStyleField.defaultUnit);
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("StyleValueType " + styleValue.valueType.ToString() + " not compatible with StyleLength.");
+                    }
+                }
+                else
+                {
+                    if (style.keyword != StyleKeyword.Undefined)
+                        uiField.keyword = StyleSheetUtilities.ConvertStyleKeyword(style.keyword);
+                    else
+                        uiField.SetValueWithoutNotify(value.ToString());
+                }
             }
             else if (val is StyleColor && fieldElement is ColorField)
             {
@@ -595,6 +722,12 @@ namespace Unity.UI.Builder
                     styleField.RemoveFromClassList(BuilderConstants.InspectorLocalStyleResetClassName);
                 }
             }
+
+            var foldout = fieldElement.GetProperty(BuilderConstants.FoldoutFieldPropertyName) as FoldoutNumberField;
+            if (foldout != null)
+            {
+                foldout.UpdateFromChildFields();
+            }
         }
 
         public void RefreshStyleField(FoldoutField foldoutElement)
@@ -618,50 +751,10 @@ namespace Unity.UI.Builder
                 if (field == null)
                     continue;
 
-                var val = field.GetValue(currentVisualElement.computedStyle, null);
-                if (val is StyleFloat)
+                if (styleProperty != null)
                 {
-                    var style = (StyleFloat)val;
-                    var value = style.value;
-
-                    if (styleProperty != null)
-                    {
-                        isDirty = true;
-                        value = styleSheet.GetFloat(styleProperty.values[0]);
-                    }
-
-                    foldoutElement.UpdateFromChildField(path, value.ToString());
-                }
-                else if (val is StyleInt)
-                {
-                    var style = (StyleInt)val;
-                    var value = style.value;
-
-                    if (styleProperty != null)
-                    {
-                        isDirty = true;
-                        value = styleSheet.GetInt(styleProperty.values[0]);
-                    }
-
-                    foldoutElement.UpdateFromChildField(path, value.ToString());
-                }
-                else if (val is StyleLength)
-                {
-                    var style = (StyleLength)val;
-                    var value = (int)style.value.value;
-
-                    if (styleProperty != null)
-                    {
-                        isDirty = true;
-
-#if UNITY_2019_3_OR_NEWER
-                        value = (int)styleSheet.GetDimension(styleProperty.values[0]).value;
-#else
-                        value = styleSheet.GetInt(styleProperty.values[0]);
-#endif
-                    }
-
-                    foldoutElement.UpdateFromChildField(path, value.ToString());
+                    isDirty = true;
+                    break;
                 }
             }
 
@@ -717,75 +810,91 @@ namespace Unity.UI.Builder
                 UnsetStyleProperty,
                 DropdownMenuAction.AlwaysEnabled,
                 evt.target);
+            
+            evt.menu.AppendAction(
+                BuilderConstants.ContextMenuUnsetAllMessage,
+                UnsetAllStyleProperties,
+                DropdownMenuAction.AlwaysEnabled,
+                evt.target);
         }
 
+        void UnsetAllStyleProperties(DropdownMenuAction action)
+        {
+            var fields = new List<VisualElement>();
+            foreach (var pair in m_StyleFields)
+            {
+                var styleFields = pair.Value;
+                fields.AddRange(styleFields);
+            }
+
+            UnsetStyleProperties(fields);
+            NotifyStyleChanges();
+        }
+        
         void UnsetStyleProperty(DropdownMenuAction action)
         {
-            var listToUnset = (action.userData as VisualElement).userData;
-            if (listToUnset != null && listToUnset is List<BindableElement>)
+            var listToUnset = (action.userData as VisualElement)?.userData;
+            if (listToUnset != null && listToUnset is List<BindableElement> bindableElements)
             {
-                foreach (var bindableElement in listToUnset as List<BindableElement>)
-                {
-                    var beStyleName = bindableElement.GetProperty(BuilderConstants.InspectorStylePropertyNameVEPropertyName) as string;
-                    m_Inspector.schedule.Execute(() =>
-                    {
-                        RefreshStyleField(beStyleName, bindableElement);
-                        updateStyleCategoryFoldoutOverrides?.Invoke();
-                    });
-                    styleSheet.RemoveProperty(currentRule, beStyleName);
-                }
-
+                UnsetStyleProperties(bindableElements);
                 NotifyStyleChanges();
                 return;
             }
 
             var fieldElement = action.userData as VisualElement;
-            var styleName = fieldElement.GetProperty(BuilderConstants.InspectorStylePropertyNameVEPropertyName) as string;
-
-            // TODO: The computed style still has the old (set) value at this point.
-            // We need to reset the field with the value after styling has been
-            // recomputed. Just execute next frame for now.
-            m_Inspector.schedule.Execute(() =>
-            {
-                RefreshStyleField(styleName, fieldElement);
-                updateStyleCategoryFoldoutOverrides?.Invoke();
-            });
-
-            styleSheet.RemoveProperty(currentRule, styleName);
-
-            var foldout = fieldElement.GetProperty(BuilderConstants.FoldoutFieldPropertyName) as FoldoutField;
-            if (foldout != null)
-            {
-                // Check if the unset element was the header field.
-                if (fieldElement.ClassListContains(BuilderConstants.FoldoutFieldHeaderClassName))
-                {
-                    foreach (var path in foldout.bindingPathArray)
-                    {
-                        foreach (var linkedField in m_StyleFields[path])
-                            m_Inspector.schedule.Execute(() =>
-                            {
-                                RefreshStyleField(path, linkedField);
-                                updateStyleCategoryFoldoutOverrides?.Invoke();
-                            });
-                        styleSheet.RemoveProperty(currentRule, path);
-                    }
-
-                    m_Inspector.schedule.Execute(() =>
-                    {
-                        RefreshStyleField(foldout);
-                        updateStyleCategoryFoldoutOverrides?.Invoke();
-                    });
-                }
-                else
-                    // The unset element was a child of a FoldoutNumberField
-                    m_Inspector.schedule.Execute(() =>
-                    {
-                        RefreshStyleField(foldout);
-                        updateStyleCategoryFoldoutOverrides?.Invoke();
-                    });
-            }
-
+            UnsetStyleProperties(new List<VisualElement>{ fieldElement });
             NotifyStyleChanges();
+        }
+        
+         void UnsetStyleProperties(IEnumerable<VisualElement> fields) 
+         {
+            foreach (var fieldElement in fields)
+            {
+                var styleName = fieldElement.GetProperty(BuilderConstants.InspectorStylePropertyNameVEPropertyName) as string;
+
+                // TODO: The computed style still has the old (set) value at this point.
+                // We need to reset the field with the value after styling has been
+                // recomputed. Just execute next frame for now.
+                m_Inspector.schedule.Execute(() =>
+                {
+                    RefreshStyleField(styleName, fieldElement);
+                    updateStyleCategoryFoldoutOverrides?.Invoke();
+                });
+
+                styleSheet.RemoveProperty(currentRule, styleName);
+                
+                var foldout = fieldElement.GetProperty(BuilderConstants.FoldoutFieldPropertyName) as FoldoutField;
+                if (foldout != null)
+                {
+                    // Check if the unset element was the header field.
+                    if (fieldElement.ClassListContains(BuilderConstants.FoldoutFieldHeaderClassName))
+                    {
+                        foreach (var path in foldout.bindingPathArray)
+                        {
+                            foreach (var linkedField in m_StyleFields[path])
+                                m_Inspector.schedule.Execute(() =>
+                                {
+                                    RefreshStyleField(path, linkedField);
+                                    updateStyleCategoryFoldoutOverrides?.Invoke();
+                                });
+                            styleSheet.RemoveProperty(currentRule, path);
+                        }
+
+                        m_Inspector.schedule.Execute(() =>
+                        {
+                            RefreshStyleField(foldout);
+                            updateStyleCategoryFoldoutOverrides?.Invoke();
+                        });
+                    }
+                    else
+                        // The unset element was a child of a FoldoutNumberField
+                        m_Inspector.schedule.Execute(() =>
+                        {
+                            RefreshStyleField(foldout);
+                            updateStyleCategoryFoldoutOverrides?.Invoke();
+                        });
+                }
+            }
         }
 
         void NotifyStyleChanges(List<string> styles = null)
@@ -846,45 +955,123 @@ namespace Unity.UI.Builder
                 updateStyleCategoryFoldoutOverrides();
         }
 
-#if UNITY_2019_3_OR_NEWER
-        void OnFieldDimensionChange(ChangeEvent<int> e, string styleName)
+        void OnFieldKeywordChange(StyleValueKeyword keyword, VisualElement target, string styleName)
         {
             var styleProperty = GetStylePropertyByStyleName(styleName);
             var isNewValue = styleProperty.values.Length == 0;
 
-            // If the current style property is saved as a float instead of a dimension,
-            // it means it's a user file where they left out the unit. We need to resave
-            // it here as a dimension to create final proper uss.
+            // If the current style property is saved as a different type than the new style type,
+            // we need to resave it here as the new type. We do this by just removing the current value.
+            if (!isNewValue && styleProperty.values[0].valueType != StyleValueType.Keyword)
+            {
+                Undo.RegisterCompleteObjectUndo(styleSheet, BuilderConstants.ChangeUIStyleValueUndoMessage);
+
+                styleProperty.values = new StyleValueHandle[0];
+                isNewValue = true;
+            }
+
+            if (isNewValue)
+                styleSheet.AddValue(styleProperty, keyword, BuilderConstants.ChangeUIStyleValueUndoMessage);
+            else // TODO: Assume only one value.
+            {
+                Undo.RegisterCompleteObjectUndo(styleSheet, BuilderConstants.ChangeUIStyleValueUndoMessage);
+
+                var styleValue = styleProperty.values[0];
+                styleValue.valueIndex = (int)keyword;
+                styleProperty.values[0] = styleValue;
+            }
+
+            PostStyleFieldSteps(target, styleName, isNewValue);
+        }
+
+#if UNITY_2019_3_OR_NEWER
+        void OnFieldDimensionChangeImpl(float newValue, Dimension.Unit newUnit, VisualElement target, string styleName)
+        {
+            var styleProperty = GetStylePropertyByStyleName(styleName);
+            var isNewValue = styleProperty.values.Length == 0;
+
+            // If the current style property is saved as a different type than the new style type,
+            // we need to resave it here as the new type. We do this by just removing the current value.
             if (!isNewValue && styleProperty.values[0].valueType != StyleValueType.Dimension)
             {
+                Undo.RegisterCompleteObjectUndo(styleSheet, BuilderConstants.ChangeUIStyleValueUndoMessage);
+
                 styleProperty.values = new StyleValueHandle[0];
                 isNewValue = true;
             }
 
             var dimension = new Dimension();
-            dimension.unit = Dimension.Unit.Pixel;
-            dimension.value = e.newValue;
+            dimension.unit = newUnit;
+            dimension.value = newValue;
 
             if (isNewValue)
                 styleSheet.AddValue(styleProperty, dimension);
             else // TODO: Assume only one value.
                 styleSheet.SetValue(styleProperty.values[0], dimension);
 
-            PostStyleFieldSteps(e.target as VisualElement, styleName, isNewValue);
+            PostStyleFieldSteps(target, styleName, isNewValue);
+        }
+
+        void OnFieldDimensionChange(ChangeEvent<int> e, string styleName)
+        {
+            OnFieldDimensionChangeImpl(e.newValue, Dimension.Unit.Pixel, e.target as VisualElement, styleName);
         }
 #endif
 
-        void OnFieldValueChange(ChangeEvent<int> e, string styleName)
+        void OnDimensionStyleFieldValueChange(ChangeEvent<string> e, string styleName)
+        {
+            var dimensionStyleField = e.target as DimensionStyleField;
+
+            if (dimensionStyleField.isKeyword)
+            {
+                OnFieldKeywordChange(
+                    dimensionStyleField.keyword,
+                    dimensionStyleField,
+                    styleName);
+            }
+            else
+            {
+#if UNITY_2019_3_OR_NEWER
+                OnFieldDimensionChangeImpl(
+                    dimensionStyleField.length,
+                    dimensionStyleField.unit,
+                    dimensionStyleField,
+                    styleName);
+#else
+                OnFieldValueChangeImpl(
+                    dimensionStyleField.length,
+                    dimensionStyleField,
+                    styleName);
+#endif
+            }
+        }
+
+        void OnFieldValueChangeImpl(int newValue, VisualElement target, string styleName)
         {
             var styleProperty = GetStylePropertyByStyleName(styleName);
             var isNewValue = styleProperty.values.Length == 0;
 
-            if (isNewValue)
-                styleSheet.AddValue(styleProperty, e.newValue);
-            else // TODO: Assume only one value.
-                styleSheet.SetValue(styleProperty.values[0], e.newValue);
+            // If the current style property is saved as a different type than the new style type,
+            // we need to resave it here as the new type. We do this by just removing the current value.
+            if (!isNewValue && styleProperty.values[0].valueType != StyleValueType.Float)
+            {
+                Undo.RegisterCompleteObjectUndo(styleSheet, BuilderConstants.ChangeUIStyleValueUndoMessage);
 
-            PostStyleFieldSteps(e.target as VisualElement, styleName, isNewValue);
+                styleProperty.values = new StyleValueHandle[0];
+                isNewValue = true;
+            }
+
+            if (isNewValue)
+                styleSheet.AddValue(styleProperty, newValue);
+            else // TODO: Assume only one value.
+                styleSheet.SetValue(styleProperty.values[0], newValue);
+
+            PostStyleFieldSteps(target, styleName, isNewValue);
+        }
+
+        void OnFieldValueChange(ChangeEvent<int> e, string styleName)
+        {
+            OnFieldValueChangeImpl(e.newValue, e.target as VisualElement, styleName);
         }
 
         void OnFieldValueChangeIntToFloat(ChangeEvent<int> e, string styleName)
@@ -902,17 +1089,72 @@ namespace Unity.UI.Builder
             PostStyleFieldSteps(e.target as VisualElement, styleName, isNewValue);
         }
 
-        void OnFieldValueChange(ChangeEvent<float> e, string styleName)
+        void OnFieldValueChangeImpl(float newValue, VisualElement target, string styleName)
         {
             var styleProperty = GetStylePropertyByStyleName(styleName);
             var isNewValue = styleProperty.values.Length == 0;
 
-            if (isNewValue)
-                styleSheet.AddValue(styleProperty, e.newValue);
-            else // TODO: Assume only one value.
-                styleSheet.SetValue(styleProperty.values[0], e.newValue);
+            // If the current style property is saved as a different type than the new style type,
+            // we need to resave it here as the new type. We do this by just removing the current value.
+            if (!isNewValue && styleProperty.values[0].valueType != StyleValueType.Float)
+            {
+                Undo.RegisterCompleteObjectUndo(styleSheet, BuilderConstants.ChangeUIStyleValueUndoMessage);
 
-            PostStyleFieldSteps(e.target as VisualElement, styleName, isNewValue);
+                styleProperty.values = new StyleValueHandle[0];
+                isNewValue = true;
+            }
+
+            if (isNewValue)
+                styleSheet.AddValue(styleProperty, newValue);
+            else // TODO: Assume only one value.
+                styleSheet.SetValue(styleProperty.values[0], newValue);
+
+            PostStyleFieldSteps(target, styleName, isNewValue);
+        }
+
+        void OnFieldValueChange(ChangeEvent<float> e, string styleName)
+        {
+            OnFieldValueChangeImpl(e.newValue, e.target as VisualElement, styleName);
+        }
+
+        void OnNumericStyleFieldValueChange(ChangeEvent<string> e, string styleName)
+        {
+            var numericStyleField = e.target as NumericStyleField;
+
+            if (numericStyleField.isKeyword)
+            {
+                OnFieldKeywordChange(
+                    numericStyleField.keyword,
+                    numericStyleField,
+                    styleName);
+            }
+            else
+            {
+                OnFieldValueChangeImpl(
+                    numericStyleField.number,
+                    numericStyleField,
+                    styleName);
+            }
+        }
+
+        void OnIntegerStyleFieldValueChange(ChangeEvent<string> e, string styleName)
+        {
+            var styleField = e.target as IntegerStyleField;
+
+            if (styleField.isKeyword)
+            {
+                OnFieldKeywordChange(
+                    styleField.keyword,
+                    styleField,
+                    styleName);
+            }
+            else
+            {
+                OnFieldValueChangeImpl(
+                    styleField.number,
+                    styleField,
+                    styleName);
+            }
         }
 
         void OnFieldValueChange(ChangeEvent<Color> e, string styleName)

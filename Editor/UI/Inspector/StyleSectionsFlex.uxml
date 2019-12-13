@@ -1,7 +1,7 @@
 <UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:uib="Unity.UI.Builder">
     <!-- Flex Basis -->
     <uib:BuilderStyleRow binding-path="flex-basis">
-        <uie:IntegerField label="Basis" tooltip="flex-basis" />
+        <uib:DimensionStyleField label="Basis" tooltip="flex-basis" />
     </uib:BuilderStyleRow>
 
     <!-- Flex -->
@@ -9,10 +9,10 @@
         <Label class="unity-builder-double-field-label" />
         
         <!-- Flex Shrink -->
-        <uie:FloatField label="Shrink" tooltip="flex-shrink" binding-path="flex-shrink" class="unity-builder-double-field" />
+        <uib:NumericStyleField label="Shrink" tooltip="flex-shrink" binding-path="flex-shrink" class="unity-builder-double-field" />
 
         <!-- Flex Grow -->
-        <uie:FloatField label="Grow" tooltip="flex-grow" binding-path="flex-grow" class="unity-builder-double-field" />
+        <uib:NumericStyleField label="Grow" tooltip="flex-grow" binding-path="flex-grow" class="unity-builder-double-field" />
     </uib:BuilderStyleRow>
 
     <!-- Flex Direction -->

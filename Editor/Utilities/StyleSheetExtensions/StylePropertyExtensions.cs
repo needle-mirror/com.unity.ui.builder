@@ -25,11 +25,28 @@ namespace Unity.UI.Builder
         }
 
         internal static StyleValueHandle AddValue(
+            this StyleSheet styleSheet, StyleProperty property, StyleValueKeyword value, string undoMessage = null)
+        {
+            // Undo/Redo
+            if (string.IsNullOrEmpty(undoMessage))
+                undoMessage = BuilderConstants.ChangeUIStyleValueUndoMessage;
+            Undo.RegisterCompleteObjectUndo(styleSheet, undoMessage);
+
+            // Add value data to data array.
+            var index = styleSheet.AddValueToArray(value);
+
+            // Add value object to property.
+            var newValue = styleSheet.AddValueHandle(property, index, StyleValueType.Keyword);
+
+            return newValue;
+        }
+
+        internal static StyleValueHandle AddValue(
             this StyleSheet styleSheet, StyleProperty property, float value, string undoMessage = null)
         {
             // Undo/Redo
             if (string.IsNullOrEmpty(undoMessage))
-                undoMessage = "Change UI Style Value";
+                undoMessage = BuilderConstants.ChangeUIStyleValueUndoMessage;
             Undo.RegisterCompleteObjectUndo(styleSheet, undoMessage);
 
             // Add value data to data array.
@@ -47,7 +64,7 @@ namespace Unity.UI.Builder
         {
             // Undo/Redo
             if (string.IsNullOrEmpty(undoMessage))
-                undoMessage = "Change UI Style Value";
+                undoMessage = BuilderConstants.ChangeUIStyleValueUndoMessage;
             Undo.RegisterCompleteObjectUndo(styleSheet, undoMessage);
 
             // Add value data to data array.
@@ -63,7 +80,7 @@ namespace Unity.UI.Builder
         internal static StyleValueHandle AddValue(this StyleSheet styleSheet, StyleProperty property, Color value)
         {
             // Undo/Redo
-            Undo.RegisterCompleteObjectUndo(styleSheet, "Change UI Style Value");
+            Undo.RegisterCompleteObjectUndo(styleSheet, BuilderConstants.ChangeUIStyleValueUndoMessage);
 
             // Add value data to data array.
             var index = styleSheet.AddValueToArray(value);
@@ -77,7 +94,7 @@ namespace Unity.UI.Builder
         internal static StyleValueHandle AddValue(this StyleSheet styleSheet, StyleProperty property, string value)
         {
             // Undo/Redo
-            Undo.RegisterCompleteObjectUndo(styleSheet, "Change UI Style Value");
+            Undo.RegisterCompleteObjectUndo(styleSheet, BuilderConstants.ChangeUIStyleValueUndoMessage);
 
             // Add value data to data array.
             var index = styleSheet.AddValueToArray(value);
@@ -91,7 +108,7 @@ namespace Unity.UI.Builder
         internal static StyleValueHandle AddValue(this StyleSheet styleSheet, StyleProperty property, Object value)
         {
             // Undo/Redo
-            Undo.RegisterCompleteObjectUndo(styleSheet, "Change UI Style Value");
+            Undo.RegisterCompleteObjectUndo(styleSheet, BuilderConstants.ChangeUIStyleValueUndoMessage);
 
             // Determine real asset type.
             var resourcePath = BuilderAssetUtilities.GetResourcesPathForAsset(value);
@@ -109,7 +126,7 @@ namespace Unity.UI.Builder
         internal static StyleValueHandle AddValue(this StyleSheet styleSheet, StyleProperty property, Enum value)
         {
             // Undo/Redo
-            Undo.RegisterCompleteObjectUndo(styleSheet, "Change UI Style Value");
+            Undo.RegisterCompleteObjectUndo(styleSheet, BuilderConstants.ChangeUIStyleValueUndoMessage);
 
             // Add value data to data array.
             var index = styleSheet.AddValueToArray(value);
@@ -123,7 +140,7 @@ namespace Unity.UI.Builder
         internal static StyleValueHandle AddValueAsEnum(this StyleSheet styleSheet, StyleProperty property, string value)
         {
             // Undo/Redo
-            Undo.RegisterCompleteObjectUndo(styleSheet, "Change UI Style Value");
+            Undo.RegisterCompleteObjectUndo(styleSheet, BuilderConstants.ChangeUIStyleValueUndoMessage);
 
             // Add value data to data array.
             var index = styleSheet.AddValueToArray(value);
@@ -137,7 +154,7 @@ namespace Unity.UI.Builder
         internal static void RemoveValue(this StyleSheet styleSheet, StyleProperty property, StyleValueHandle valueHandle)
         {
             // Undo/Redo
-            Undo.RegisterCompleteObjectUndo(styleSheet, "Change UI Style Value");
+            Undo.RegisterCompleteObjectUndo(styleSheet, BuilderConstants.ChangeUIStyleValueUndoMessage);
 
             // We just leave the values in their data array. If we really wanted to remove them
             // we would have to the indicies of all values.

@@ -5,17 +5,17 @@ using UnityEngine.UIElements;
 
 namespace Unity.UI.Builder
 {
-    internal class BuilderExplorerContextMenu
+    internal class BuilderElementContextMenu
     {
-        BuilderPaneWindow m_PaneWindow;
-        BuilderSelection m_Selection;
+        readonly BuilderPaneWindow m_PaneWindow;
+        readonly BuilderSelection m_Selection;
 
         bool m_WeStartedTheDrag;
 
-        List<ManipulatorActivationFilter> activators { get; set; }
+        List<ManipulatorActivationFilter> activators { get; }
         ManipulatorActivationFilter m_CurrentActivator;
 
-        public BuilderExplorerContextMenu(BuilderPaneWindow paneWindow, BuilderSelection selection)
+        public BuilderElementContextMenu(BuilderPaneWindow paneWindow, BuilderSelection selection)
         {
             m_PaneWindow = paneWindow;
             m_Selection = selection;
@@ -68,16 +68,21 @@ namespace Unity.UI.Builder
 
             if (!CanStopManipulation(evt))
                 return;
-
-            if (target.elementPanel != null && target.elementPanel.contextualMenuManager != null)
-            {
-                target.elementPanel.contextualMenuManager.DisplayMenu(evt, target);
-                evt.PreventDefault();
-            }
+            
+            DisplayContextMenu(evt, target);
 
             target.ReleaseMouse();
             m_WeStartedTheDrag = false;
             evt.StopPropagation();
+        }
+
+        public void DisplayContextMenu(EventBase triggerEvent, VisualElement target)
+        {
+            if (target.elementPanel?.contextualMenuManager != null)
+            {
+                target.elementPanel.contextualMenuManager.DisplayMenu(triggerEvent, target);
+                triggerEvent.PreventDefault();
+            }
         }
 
         bool CanStartManipulation(IMouseEvent evt)
@@ -106,9 +111,9 @@ namespace Unity.UI.Builder
 
         public void BuildElementContextualMenu(ContextualMenuPopulateEvent evt, VisualElement target)
         {
-            var item = target.userData as VisualElement;
-
-            var isValidTarget = item != null && (item.IsPartOfCurrentDocument() || item.GetStyleComplexSelector() != null);
+            var documentElement = target.GetProperty(BuilderConstants.ElementLinkedDocumentVisualElementVEPropertyName) as VisualElement;
+            
+            var isValidTarget = documentElement != null && (documentElement.IsPartOfCurrentDocument() || documentElement.GetStyleComplexSelector() != null);
             if (isValidTarget)
                 evt.StopImmediatePropagation();
 
@@ -116,8 +121,8 @@ namespace Unity.UI.Builder
                 "Copy",
                 a =>
                 {
-                    m_Selection.Select(null, item);
-                    if (item.IsPartOfCurrentDocument() || item.GetStyleComplexSelector() != null)
+                    m_Selection.Select(null, documentElement);
+                    if (documentElement.IsPartOfCurrentDocument() || documentElement.GetStyleComplexSelector() != null)
                         m_PaneWindow.commandHandler.PerformActionOnSelection(
                             m_PaneWindow.commandHandler.CopyElement,
                             m_PaneWindow.commandHandler.ClearCopyBuffer);
@@ -130,7 +135,7 @@ namespace Unity.UI.Builder
                 "Paste",
                 a =>
                 {
-                    m_Selection.Select(null, item);
+                    m_Selection.Select(null, documentElement);
                     m_PaneWindow.commandHandler.Paste();
                 },
                 string.IsNullOrEmpty(EditorGUIUtility.systemCopyBuffer)
@@ -143,14 +148,15 @@ namespace Unity.UI.Builder
                 "Rename",
                 a =>
                 {
-                    m_Selection.Select(null, item);
-                    var itemElement = item.GetProperty(BuilderConstants.ElementLinkedExplorerItemVEPropertyName) as BuilderExplorerItem;
-                    if (itemElement == null)
+                    m_Selection.Select(null, documentElement);
+                    var explorerItemElement = documentElement.GetProperty(BuilderConstants.ElementLinkedExplorerItemVEPropertyName) as BuilderExplorerItem;
+                    if (explorerItemElement == null)
                         return;
 
-                    itemElement.ActivateRenameElementMode();
+                    explorerItemElement.ActivateRenameElementMode();
+
                 },
-                item != null && item.IsPartOfCurrentDocument()
+                documentElement != null && documentElement.IsPartOfCurrentDocument()
                     ? DropdownMenuAction.Status.Normal
                     : DropdownMenuAction.Status.Disabled);
 
@@ -158,8 +164,8 @@ namespace Unity.UI.Builder
                 "Duplicate",
                 a =>
                 {
-                    m_Selection.Select(null, item);
-                    if (item.IsPartOfCurrentDocument() || item.GetStyleComplexSelector() != null)
+                    m_Selection.Select(null, documentElement);
+                    if (documentElement.IsPartOfCurrentDocument() || documentElement.GetStyleComplexSelector() != null)
                         m_PaneWindow.commandHandler.PerformActionOnSelection(
                             m_PaneWindow.commandHandler.DuplicateElement,
                             m_PaneWindow.commandHandler.ClearCopyBuffer,
@@ -174,8 +180,8 @@ namespace Unity.UI.Builder
             evt.menu.AppendAction(
                 "Delete",
                 a =>
-                {   m_Selection.Select(null, item);
-                    m_PaneWindow.commandHandler.DeleteElement(item);
+                {   m_Selection.Select(null, documentElement);
+                    m_PaneWindow.commandHandler.DeleteElement(documentElement);
                     m_PaneWindow.commandHandler.ClearSelectionNotify();
                 },
                 isValidTarget

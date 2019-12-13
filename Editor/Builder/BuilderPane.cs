@@ -11,7 +11,9 @@ namespace Unity.UI.Builder
 
         Label m_Title;
         Label m_SubTitle;
+        Label m_SubTitlePrefix;
         VisualElement m_Container;
+        VisualElement m_Toolbar;
 
         public new class UxmlFactory : UxmlFactory<BuilderPane, UxmlTraits> {}
 
@@ -33,15 +35,21 @@ namespace Unity.UI.Builder
 
         public string title
         {
-            get { return m_Title.text; }
-            set { m_Title.text = value; }
+            get => m_Title.text;
+            set => m_Title.text = value;
         }
 
         public string subTitle
         {
-            get { return m_SubTitle.text; }
-            set { m_SubTitle.text = value; }
+            get => m_SubTitle.text;
+            set
+            {
+                m_SubTitle.text = value;
+                m_SubTitlePrefix.style.display = string.IsNullOrEmpty(m_SubTitle.text) ? DisplayStyle.None : DisplayStyle.Flex;
+            }
         }
+
+        public VisualElement toolbar => m_Toolbar;
 
         public BuilderPane()
         {
@@ -53,9 +61,13 @@ namespace Unity.UI.Builder
 
             m_Title = this.Q<Label>("title");
             m_SubTitle = this.Q<Label>("sub-title");
+            m_SubTitlePrefix = this.Q<Label>("sub-title-prefix");
             m_Container = this.Q("content-container");
-
+            m_Toolbar = this.Q("toolbar");
+            
             focusable = true;
+            m_SubTitlePrefix.text = BuilderConstants.SubtitlePrefix;
+            subTitle = string.Empty;
         }
 
         public override VisualElement contentContainer => m_Container;

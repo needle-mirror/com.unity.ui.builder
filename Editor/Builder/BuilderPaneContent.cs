@@ -66,9 +66,14 @@ namespace Unity.UI.Builder
 
             if (evt.eventTypeId == AttachToPanelEvent.TypeId())
             {
-                m_Pane = GetFirstAncestorOfType<BuilderPane>();
-                m_Pane?.RegisterCallback<FocusEvent>(OnPaneFocus);
+                OnAttachToPanelDefaultAction();
             }
+        }
+
+        protected virtual void OnAttachToPanelDefaultAction()
+        {
+            m_Pane = GetFirstAncestorOfType<BuilderPane>();
+            m_Pane?.RegisterCallback<FocusEvent>(OnPaneFocus);
         }
 
         void OnDetachFromPanel(DetachFromPanelEvent evt)

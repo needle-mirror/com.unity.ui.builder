@@ -3,8 +3,6 @@ using UnityEngine.UIElements;
 using System.IO;
 using UnityEditor;
 using UnityEditor.UIElements;
-using System.Linq;
-using UnityEditor.PackageManager;
 using Object = UnityEngine.Object;
 using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 
@@ -22,6 +20,9 @@ namespace Unity.UI.Builder
         BuilderTooltipPreview m_TooltipPreview;
 
         ToolbarMenu m_FileMenu;
+        ToolbarMenu m_ZoomMenu;
+        ToolbarButton m_ResetButton;
+        ToolbarButton m_FitCanvasButton;
         ToolbarMenu m_CanvasThemeMenu;
 
         TextField m_SaveDialogUxmlPathField;
@@ -96,6 +97,18 @@ namespace Unity.UI.Builder
             m_FileMenu = this.Q<ToolbarMenu>("file-menu");
             SetUpFileMenu();
 
+            // Zoom Menu
+            m_ZoomMenu = this.Q<ToolbarMenu>("zoom-menu");
+            SetUpZoomMenu();
+
+            // Reset button
+            m_ResetButton = this.Q<ToolbarButton>("reset-button");
+            m_ResetButton.clickable.clicked += () => m_Viewport.ResetView();
+
+            // Fit canvas
+            m_FitCanvasButton = this.Q<ToolbarButton>("fit-canvas-button");
+            m_FitCanvasButton.clickable.clicked += () => m_Viewport.FitCanvas();
+
             // Preview Button
             var previewButton = this.Q<ToolbarToggle>("preview-button");
             previewButton.RegisterValueChangedCallback(TogglePreviewMode);
@@ -154,7 +167,7 @@ namespace Unity.UI.Builder
             if (assetPath.Equals(document.ussPath) || assetPath.Equals(document.uxmlPath))
             {
                 var fileName = Path.GetFileName(assetPath);
-                var acceptAction = DialogsUtility.DisplayDialog(BuilderConstants.ErrorDialogNotice,
+                var acceptAction = BuilderDialogsUtility.DisplayDialog(BuilderConstants.ErrorDialogNotice,
                     string.Format(BuilderConstants.ErrorIncompatibleFileActionMessage, actionName, fileName),
                     BuilderConstants.DialogDiscardOption, 
                     string.Format(BuilderConstants.DialogAbortActionOption, actionName.ToPascalCase()));
@@ -201,24 +214,7 @@ namespace Unity.UI.Builder
                 DisplaySaveDialogValidationMessage(BuilderConstants.SaveDialogInvalidPathMessage);
             }
         }
-
-        public bool CheckForUnsavedChanges()
-        {
-            if (document.hasUnsavedChanges)
-            {
-                if (!DialogsUtility.DisplayDialog(
-                    BuilderConstants.SaveDialogDiscardChangesPromptTitle,
-                    BuilderConstants.SaveDialogDiscardChangesPromptMessage,
-                    BuilderConstants.DialogDiscardOption,
-                    BuilderConstants.SaveDialogDiscardChangesPromptGoBackOption))
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
+        
         void OnUxmlPathFieldChange(ChangeEvent<string> evt)
         {
             if (m_HasModifiedUssPathManually)
@@ -282,14 +278,14 @@ namespace Unity.UI.Builder
 
         void NewDocument()
         {
-            if (!CheckForUnsavedChanges())
+            if (!document.CheckForUnsavedChanges())
                 return;
 
             m_Selection.ClearSelection(null);
 
             document.NewDocument(m_Viewport.documentElement);
 
-            m_Viewport.canvas.SetSizeFromDocumentSettings();
+            m_Viewport.ResetView();
             m_Inspector?.canvasInspector.Refresh();
 
             m_Selection.NotifyOfHierarchyChange(document);
@@ -302,7 +298,7 @@ namespace Unity.UI.Builder
 
         void NewTestDocument()
         {
-            if (!CheckForUnsavedChanges())
+            if (!document.CheckForUnsavedChanges())
                 return;
 
             var testAsset = BuilderConstants.UIBuilderPackagePath +
@@ -468,7 +464,7 @@ namespace Unity.UI.Builder
         {
             var visualTreeAsset = evt.newValue as VisualTreeAsset;
 
-            if (!CheckForUnsavedChanges())
+            if (!document.CheckForUnsavedChanges())
                 return;
 
             LoadDocumentInternal(visualTreeAsset);
@@ -476,7 +472,7 @@ namespace Unity.UI.Builder
 
         public bool LoadDocument(VisualTreeAsset visualTreeAsset)
         {
-            if (!CheckForUnsavedChanges())
+            if (!document.CheckForUnsavedChanges())
                 return false;
 
             LoadDocumentInternal(visualTreeAsset);
@@ -557,6 +553,27 @@ namespace Unity.UI.Builder
 
                 LoadDocument(asset);
             });
+        }
+
+        static string GetTextForZoomScale(float scale)
+        {
+            return (int) (scale * 100) + "%";
+        }
+
+        void UpdateZoomMenuText()
+        {
+            m_ZoomMenu.text = GetTextForZoomScale(m_Viewport.zoomScale);
+        }
+        
+        void SetUpZoomMenu()
+        {
+            foreach (var zoomScale in m_Viewport.zoomer.zoomScaleValues)
+            {
+                m_ZoomMenu.menu.AppendAction(GetTextForZoomScale(zoomScale), a => { m_Viewport.zoomScale = zoomScale; }
+                    , a => (m_Viewport.zoomScale == zoomScale) ? DropdownMenuAction.Status.Checked : DropdownMenuAction.Status.Normal);
+            }
+            m_Viewport.canvas.RegisterCallback<GeometryChangedEvent>(e => UpdateZoomMenuText());
+            UpdateZoomMenuText();
         }
 
         void SetUpCanvasThemeMenu()
@@ -700,7 +717,6 @@ namespace Unity.UI.Builder
 
         void SetViewportSubTitle()
         {
-            var subTitle = " - ";
             var newFileName = document.uxmlFileName;
 
             if (string.IsNullOrEmpty(newFileName))
@@ -709,10 +725,10 @@ namespace Unity.UI.Builder
             if (document.hasUnsavedChanges)
                 newFileName = newFileName + "*";
 
-            subTitle = subTitle + newFileName;
+            var subTitle = newFileName;
 
             if (!string.IsNullOrEmpty(m_BuilderPackageVersion))
-                subTitle = subTitle + " - UI Builder " + m_BuilderPackageVersion;
+                subTitle += $"{BuilderConstants.SubtitlePrefix}UI Builder {m_BuilderPackageVersion}";
 
             m_Viewport.subTitle = subTitle;
         }

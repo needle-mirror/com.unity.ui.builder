@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using System.Linq;
+using UnityEditor;
 using UnityEditor.Callbacks;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -19,17 +20,31 @@ namespace Unity.UI.Builder
         HighlightOverlayPainter m_HighlightOverlayPainter;
 
         public BuilderSelection selection => m_Selection;
-
         public BuilderViewport viewport => m_Viewport;
+        public BuilderToolbar toolbar => m_Toolbar;
         public VisualElement documentRootElement => m_Viewport.documentElement;
         public BuilderCanvas canvas => m_Viewport.canvas;
 
         public HighlightOverlayPainter highlightOverlayPainter => m_HighlightOverlayPainter;
 
         [MenuItem("Window/UI/UI Builder")]
-        public static void ShowWindow()
+        public static Builder ShowWindow()
         {
-            GetWindowAndInit<Builder>(BuilderConstants.BuilderWindowTitle);
+            return GetWindowAndInit<Builder>(BuilderConstants.BuilderWindowTitle);
+        }
+
+        public static Builder ActiveWindow
+        {
+            get
+            {
+                var builderWindows =  Resources.FindObjectsOfTypeAll<Builder>();
+                if (builderWindows.Length > 0)
+                {
+                    return builderWindows.First();
+                }
+
+                return null;
+            }
         }
 
         public override void CreateUI()
@@ -57,8 +72,11 @@ namespace Unity.UI.Builder
             // Create selection.
             m_Selection = new BuilderSelection(root, this);
 
+            // Create Element Context Menu Manipulator 
+            var contextMenuManipulator = new BuilderElementContextMenu(this, selection);
+
             // Create viewport first.
-            m_Viewport = new BuilderViewport(this, selection);
+            m_Viewport = new BuilderViewport(this, selection, contextMenuManipulator);
             selection.documentElement = m_Viewport.documentElement;
             var overlayHelper = viewport.Q<OverlayPainterHelperElement>();
             overlayHelper.painter = m_HighlightOverlayPainter;
@@ -66,7 +84,6 @@ namespace Unity.UI.Builder
             // Create the rest of the panes.
             var classDragger = new BuilderClassDragger(this, root, selection, m_Viewport, m_Viewport.parentTracker);
             var hierarchyDragger = new BuilderHierarchyDragger(this, root, selection, m_Viewport, m_Viewport.parentTracker);
-            var contextMenuManipulator = new BuilderExplorerContextMenu(this, selection);
             var styleSheetsPane = new BuilderStyleSheets(m_Viewport, selection, classDragger, hierarchyDragger, contextMenuManipulator, m_HighlightOverlayPainter, styleSheetsPaneTooltipPreview);
             var hierarchy = new BuilderHierarchy(m_Viewport, selection, classDragger, hierarchyDragger, contextMenuManipulator, m_HighlightOverlayPainter);
             var libraryDragger = new BuilderLibraryDragger(this, root, selection, m_Viewport, m_Viewport.parentTracker, hierarchy.container, libraryTooltipPreview);
@@ -138,8 +155,15 @@ namespace Unity.UI.Builder
             if (asset == null)
                 return false;
 
-            var builder = GetWindowAndInit<Builder>(BuilderConstants.BuilderWindowTitle);
+            // Already open uxml document will be opened by the default editor.
+            var builderWindow = ActiveWindow;
+            if (builderWindow != null)
+            {
+                if (builderWindow.document.visualTreeAsset == asset)
+                    return false;
+            }
 
+            var builder = GetWindowAndInit<Builder>(BuilderConstants.BuilderWindowTitle);
             builder.LoadDocument(asset);
 
             return true;

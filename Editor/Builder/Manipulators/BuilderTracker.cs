@@ -12,6 +12,8 @@ namespace Unity.UI.Builder
         protected VisualElement m_Target;
         BuilderCanvas m_Canvas;
 
+        public BuilderCanvas canvas => m_Canvas;
+
         public BuilderTracker()
         {
             m_Target = null;
@@ -47,7 +49,7 @@ namespace Unity.UI.Builder
             else
             {
                 SetStylesFromTargetStyles();
-                ResizeSelfFromTarget(m_Target.layout);
+                ResizeSelfFromTarget(m_Target.rect);
             }
         }
 
@@ -69,7 +71,8 @@ namespace Unity.UI.Builder
         void OnInitialStylesResolved(GeometryChangedEvent evt)
         {
             SetStylesFromTargetStyles();
-            m_Target.UnregisterCallback<GeometryChangedEvent>(OnInitialStylesResolved);
+            if (m_Target != null)
+                m_Target.UnregisterCallback<GeometryChangedEvent>(OnInitialStylesResolved);
         }
 
         protected virtual void SetStylesFromTargetStyles()
@@ -77,7 +80,7 @@ namespace Unity.UI.Builder
 
         void OnExternalTargetResize(GeometryChangedEvent evt)
         {
-            ResizeSelfFromTarget(m_Target.layout);
+            ResizeSelfFromTarget(m_Target.rect);
         }
 
         void OnCanvasResize(GeometryChangedEvent evt)
@@ -85,7 +88,7 @@ namespace Unity.UI.Builder
             if (m_Target == null)
                 return;
 
-            ResizeSelfFromTarget(m_Target.layout);
+            ResizeSelfFromTarget(m_Target.rect);
         }
 
         void OnTargetDeletion(DetachFromPanelEvent evt)
@@ -105,7 +108,7 @@ namespace Unity.UI.Builder
             targetRect.width = targetRect.width + (targetMarginLeft + targetMarginRight);
             targetRect.height = targetRect.height + (targetMarginTop + targetMarginBottom);
 
-            var selfRect = m_Target.hierarchy.parent.ChangeCoordinatesTo(this.hierarchy.parent, targetRect);
+            var selfRect = m_Target.ChangeCoordinatesTo(this.hierarchy.parent, targetRect);
 
             var top = selfRect.y;
             var left = selfRect.x;
@@ -132,7 +135,7 @@ namespace Unity.UI.Builder
                 return;
 
             SetStylesFromTargetStyles();
-            ResizeSelfFromTarget(m_Target.layout);
+            ResizeSelfFromTarget(m_Target.rect);
         }
 
         public virtual void StylingChanged(List<string> styles)
@@ -141,7 +144,7 @@ namespace Unity.UI.Builder
                 return;
 
             SetStylesFromTargetStyles();
-            ResizeSelfFromTarget(m_Target.layout);
+            ResizeSelfFromTarget(m_Target.rect);
         }
     }
 }

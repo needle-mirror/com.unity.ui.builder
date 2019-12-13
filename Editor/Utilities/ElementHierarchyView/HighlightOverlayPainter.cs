@@ -72,14 +72,15 @@ namespace Unity.UI.Builder
 
         void FillHighlightRects(VisualElement ve)
         {
+            var viewport = ve.GetFirstAncestorOfType<BuilderViewport>();
             var style = ve.resolvedStyle;
             Rect contentRect = ve.LocalToWorld(ve.contentRect);
 
             // Paddings
-            float paddingLeft = style.paddingLeft;
-            float paddingRight = style.paddingRight;
-            float paddingBottom = style.paddingBottom;
-            float paddingTop = style.paddingTop;
+            float paddingLeft = style.paddingLeft * viewport.zoomScale;
+            float paddingRight = style.paddingRight * viewport.zoomScale;
+            float paddingBottom = style.paddingBottom * viewport.zoomScale;
+            float paddingTop = style.paddingTop * viewport.zoomScale;
 
             Rect paddingLeftRect = Rect.zero;
             Rect paddingRightRect = Rect.zero;
@@ -104,10 +105,10 @@ namespace Unity.UI.Builder
             m_PaddingRects[3] = paddingBottomRect;
 
             // Borders
-            float borderLeft = style.borderLeftWidth;
-            float borderRight = style.borderRightWidth;
-            float borderBottom = style.borderBottomWidth;
-            float borderTop = style.borderTopWidth;
+            float borderLeft = style.borderLeftWidth * viewport.zoomScale;
+            float borderRight = style.borderRightWidth * viewport.zoomScale;
+            float borderBottom = style.borderBottomWidth * viewport.zoomScale;
+            float borderTop = style.borderTopWidth * viewport.zoomScale;
 
             Rect borderLeftRect = Rect.zero;
             Rect borderRightRect = Rect.zero;
@@ -132,10 +133,10 @@ namespace Unity.UI.Builder
             m_BorderRects[3] = borderBottomRect;
 
             // Margins
-            float marginLeft = style.marginLeft;
-            float marginRight = style.marginRight;
-            float marginBotton = style.marginBottom;
-            float marginTop = style.marginTop;
+            float marginLeft = style.marginLeft * viewport.zoomScale;
+            float marginRight = style.marginRight * viewport.zoomScale;
+            float marginBotton = style.marginBottom * viewport.zoomScale;
+            float marginTop = style.marginTop * viewport.zoomScale;
 
             Rect marginLeftRect = Rect.zero;
             Rect marginRightRect = Rect.zero;

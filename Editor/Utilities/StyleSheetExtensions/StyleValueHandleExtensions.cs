@@ -17,6 +17,8 @@ namespace Unity.UI.Builder
             var index = 0;
             switch (valueHandle.valueType)
             {
+                case StyleValueType.Keyword:
+                    index = to.AddValueToArray(from.GetKeyword(valueHandle)); break;
                 case StyleValueType.Float:
                     index = to.AddValueToArray(from.GetFloat(valueHandle)); break;
 #if UNITY_2019_3_OR_NEWER
@@ -36,6 +38,11 @@ namespace Unity.UI.Builder
             }
 
             return index;
+        }
+
+        public static int AddValueToArray(this StyleSheet styleSheet, StyleValueKeyword value)
+        {
+            return (int)value;
         }
 
         public static int AddValueToArray(this StyleSheet styleSheet, float value)
@@ -98,6 +105,11 @@ namespace Unity.UI.Builder
             return values.Count - 1;
         }
 
+        public static StyleValueKeyword GetKeyword(this StyleSheet styleSheet, StyleValueHandle valueHandle)
+        {
+            return styleSheet.ReadKeyword(valueHandle);
+        }
+
         public static int GetInt(this StyleSheet styleSheet, StyleValueHandle valueHandle)
         {
             return (int)styleSheet.floats[valueHandle.valueIndex];
@@ -142,6 +154,11 @@ namespace Unity.UI.Builder
         public static string GetEnum(this StyleSheet styleSheet, StyleValueHandle valueHandle)
         {
             return styleSheet.ReadEnum(valueHandle);
+        }
+
+        public static void SetValue(this StyleSheet styleSheet, StyleValueHandle valueHandle, StyleValueKeyword value)
+        {
+            throw new InvalidOperationException("Style value cannot be set if its a keyword!");
         }
 
         public static void SetValue(this StyleSheet styleSheet, StyleValueHandle valueHandle, float value)

@@ -1,10 +1,11 @@
 using UnityEngine.UIElements;
 using System.Linq;
+using UnityEditor;
 using UnityEngine;
 
 namespace Unity.UI.Builder
 {
-    internal class BuilderCodePreview : BuilderPaneContent
+    internal abstract class BuilderCodePreview : BuilderPaneContent
     {
         static readonly string s_UssClassName = "unity-builder-code-preview";
         static readonly string s_CodeScrollViewClassName = "unity-builder-code__scroll-view";
@@ -16,7 +17,8 @@ namespace Unity.UI.Builder
         static readonly string s_CodeInputClassName = "unity-builder-code__input";
         static readonly string s_CodeCodeOuterContainerClassName = "unity-builder-code__code_outer_container";
         static readonly string s_CodeCodeContainerClassName = "unity-builder-code__code_container";
-
+        static readonly string s_CodeOpenSourceFileClassName = "unity-builder-code__open-source-file-button";
+        
         ScrollView m_ScrollView;
 
         VisualElement m_Container;
@@ -24,9 +26,15 @@ namespace Unity.UI.Builder
         VisualElement m_CodeOuterContainer;
         TextField m_Code;
         Label m_LineNumbers;
+        
+        private Button m_OpenTargetAssetSourceButton;
+        ScriptableObject m_TargetAsset;
+        BuilderPaneWindow m_PaneWindow;
 
-        public BuilderCodePreview()
+        public BuilderCodePreview(BuilderPaneWindow paneWindow)
         {
+            m_PaneWindow = paneWindow;
+            
             m_ScrollView = new ScrollView(ScrollViewMode.VerticalAndHorizontal);
             m_ScrollView.AddToClassList(s_CodeScrollViewClassName);
             Add(m_ScrollView);
@@ -74,6 +82,40 @@ namespace Unity.UI.Builder
             SetText(string.Empty);
         }
 
+        protected override void OnAttachToPanelDefaultAction()
+        {
+            base.OnAttachToPanelDefaultAction();
+            
+            m_OpenTargetAssetSourceButton = new Button(OnOpenSourceFileButtonClick);
+            m_OpenTargetAssetSourceButton.AddToClassList(s_CodeOpenSourceFileClassName);
+            pane.toolbar.Add(m_OpenTargetAssetSourceButton);
+        }
+
+        protected abstract string previewAssetExtension { get; }
+
+        string targetAssetPath
+        {
+            get
+            {
+                if (m_TargetAsset == null)
+                    return string.Empty;
+
+                return AssetDatabase.GetAssetPath(m_TargetAsset);
+            }
+        }
+
+        private bool isTargetAssetAvailableOnDisk => !string.IsNullOrEmpty(targetAssetPath);
+        protected bool hasDocument => m_PaneWindow != null && m_PaneWindow.document != null;
+        protected BuilderDocument document => m_PaneWindow.document;
+
+        void OnOpenSourceFileButtonClick()
+        {
+            if(!isTargetAssetAvailableOnDisk)
+                return;
+            
+            AssetDatabase.OpenAsset(m_TargetAsset);
+        }
+
         void BlockEvent(KeyUpEvent evt)
         {
             // Allow copy/paste.
@@ -94,7 +136,17 @@ namespace Unity.UI.Builder
             evt.StopImmediatePropagation();
         }
 
-        public void SetText(string text)
+        protected void SetTargetAsset(ScriptableObject targetAsset)
+        {
+            if(pane == null)
+                return;
+            
+            m_TargetAsset = targetAsset;
+            pane.subTitle = BuilderAssetUtilities.GetAssetName(targetAsset, previewAssetExtension);
+            m_OpenTargetAssetSourceButton.style.display = isTargetAssetAvailableOnDisk ? DisplayStyle.Flex : DisplayStyle.None;
+        }
+        
+        protected void SetText(string text)
         {
             var lineCount = text.Count(x => x == '\n') + 1;
             string lineNumbersText = "";

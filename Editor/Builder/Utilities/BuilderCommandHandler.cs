@@ -56,9 +56,6 @@ namespace Unity.UI.Builder
 
             // Undo/Redo
             Undo.undoRedoPerformed += OnUndoRedo;
-
-            // Quitting
-            EditorApplication.wantsToQuit += UnityWantsToQuit;
         }
 
         public void OnDisable()
@@ -75,9 +72,6 @@ namespace Unity.UI.Builder
 
             // Undo/Redo
             Undo.undoRedoPerformed -= OnUndoRedo;
-
-            // Quitting
-            EditorApplication.wantsToQuit -= UnityWantsToQuit;
         }
 
         public void RegisterPane(BuilderPaneContent paneContent)
@@ -88,15 +82,6 @@ namespace Unity.UI.Builder
         public void RegisterToolbar(BuilderToolbar toolbar)
         {
             m_Toolbar = toolbar;
-        }
-
-        bool UnityWantsToQuit()
-        {
-            if (m_Toolbar == null)
-                return true;
-
-            var allowQuitting = m_Toolbar.CheckForUnsavedChanges();
-            return allowQuitting;
         }
 
         public void OnCommandValidate(ValidateCommandEvent evt)

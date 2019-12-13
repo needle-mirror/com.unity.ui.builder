@@ -6,21 +6,21 @@
 
     <!-- Left -->
     <uib:BuilderStyleRow binding-path="left">
-        <uie:IntegerField label="Left" tooltip="left" />
+        <uib:DimensionStyleField label="Left" tooltip="left" />
     </uib:BuilderStyleRow>
 
     <!-- Top -->
     <uib:BuilderStyleRow binding-path="top">
-        <uie:IntegerField label="Top" tooltip="top" />
+        <uib:DimensionStyleField label="Top" tooltip="top" />
     </uib:BuilderStyleRow>
 
     <!-- Right -->
     <uib:BuilderStyleRow binding-path="right">
-        <uie:IntegerField label="Right" tooltip="right" />
+        <uib:DimensionStyleField label="Right" tooltip="right" />
     </uib:BuilderStyleRow>
 
     <!-- Bottom -->
     <uib:BuilderStyleRow binding-path="bottom">
-        <uie:IntegerField label="Bottom" tooltip="bottom" />
+        <uib:DimensionStyleField label="Bottom" tooltip="bottom" />
     </uib:BuilderStyleRow>
 </UXML>
