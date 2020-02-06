@@ -34,8 +34,9 @@ namespace Unity.UI.Builder
 
         static void OnWillCreateAsset(string assetPath)
         {
-            if (!IsUxml(assetPath)) return;
-            
+            if (!IsUxml(assetPath))
+                return;
+
             foreach (var modificationProcessor in m_ModificationProcessors)
                 modificationProcessor.OnAssetChange();
         }

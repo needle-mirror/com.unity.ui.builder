@@ -166,11 +166,11 @@
 /*****************************************************************************/
 
 .unity-builder-resizer__side__inner {
-    background-color: rgb(80, 118, 150);
+    background-color: rgb(112, 164, 207);
 }
 
 .unity-builder-resizer__corner__inner {
-    background-color: rgb(47, 114, 168);
+    background-color: rgb(63, 146, 214);
 }
 
 .unity-builder-resizer__side.unity-builder-transformer--active .unity-builder-resizer__side__inner,

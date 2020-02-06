@@ -1,13 +1,23 @@
 {
     "name": "Unity.UI.Builder.EditorTests",
     "references": [
-        "Unity.2D.Sprite.Editor"
-    ],
-    "optionalUnityReferences": [
-        "TestAssemblies"
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner",
+        "Unity.UI.Builder.Editor"
     ],
     "includePlatforms": [
         "Editor"
     ],
-    "excludePlatforms": []
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
 }

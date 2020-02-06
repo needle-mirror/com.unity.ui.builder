@@ -20,7 +20,7 @@ namespace Unity.UI.Builder
         BuilderTooltipPreview m_TooltipPreview;
 
         bool m_FieldFocusedFromStandby;
-        bool m_NewSelectorJustCreated;
+        bool m_ShouldRefocusSelectorFieldOnBlur;
 
         static readonly List<string> kNewSelectorPseudoStatesNames = new List<string>()
         {
@@ -69,9 +69,9 @@ namespace Unity.UI.Builder
                 var input = evt.target as VisualElement;
                 var field = input.parent as TextField;
                 m_FieldFocusedFromStandby = true;
-                if (field.text == BuilderConstants.ExplorerInExplorerNewClassSelectorInfoMessage || m_NewSelectorJustCreated)
+                if (field.text == BuilderConstants.ExplorerInExplorerNewClassSelectorInfoMessage || m_ShouldRefocusSelectorFieldOnBlur)
                 {
-                    m_NewSelectorJustCreated = false;
+                    m_ShouldRefocusSelectorFieldOnBlur = false;
                     field.value = BuilderConstants.UssSelectorClassNameSymbol;
                 }
 
@@ -107,7 +107,7 @@ namespace Unity.UI.Builder
             {
                 var input = evt.target as VisualElement;
                 var field = input.parent as TextField;
-                if (m_NewSelectorJustCreated)
+                if (m_ShouldRefocusSelectorFieldOnBlur)
                 {
                     field.schedule.Execute(PostEnterRefocus);
                     evt.PreventDefault();
@@ -169,13 +169,37 @@ namespace Unity.UI.Builder
 
         void CreateNewSelector()
         {
-            var field = m_NewSelectorTextField;
-            var newValue = field.text;
-
+            var newValue = m_NewSelectorTextField.text;
             if (newValue == BuilderConstants.ExplorerInExplorerNewClassSelectorInfoMessage)
                 return;
-
+            
+            m_ShouldRefocusSelectorFieldOnBlur = true;
+            
             var newSelectorStr = newValue;
+            if (newSelectorStr.StartsWith(BuilderConstants.UssSelectorClassNameSymbol))
+            {
+                newSelectorStr = BuilderConstants.UssSelectorClassNameSymbol + newSelectorStr.TrimStart(BuilderConstants.UssSelectorClassNameSymbol[0]);
+            }
+
+            if (string.IsNullOrEmpty(newSelectorStr))
+                return;
+            
+            if(newSelectorStr.Length == 1 && (
+                    newSelectorStr.StartsWith(BuilderConstants.UssSelectorClassNameSymbol)
+                    || newSelectorStr.StartsWith("-")
+                    || newSelectorStr.StartsWith("_")))
+                return;
+                
+            if (!BuilderNameUtilities.StyleSelectorRegex.IsMatch(newSelectorStr))
+            {
+                Builder.ShowWarning(BuilderConstants.StyleSelectorValidationSpacialCharacters);
+                m_NewSelectorTextField.schedule.Execute(() =>
+                {
+                    m_NewSelectorTextField.SetValueWithoutNotify(newValue);
+                    m_NewSelectorTextField.SelectAll();
+                });
+                return;
+            }
 
             var selectorContainerElement = m_Viewport.styleSelectorElementContainer;
             var styleSheet = selectorContainerElement.GetStyleSheet();
@@ -183,8 +207,6 @@ namespace Unity.UI.Builder
 
             m_Selection.NotifyOfHierarchyChange();
             m_Selection.NotifyOfStylingChange();
-
-            m_NewSelectorJustCreated = true;
         }
 
         void SetUpPseudoStatesMenu()

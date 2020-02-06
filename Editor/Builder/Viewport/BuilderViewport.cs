@@ -165,6 +165,13 @@ namespace Unity.UI.Builder
             zoomScale = BuilderConstants.ViewportInitialZoom;
         }
 
+        public void SetViewFromDocumentSetting()
+        {
+            contentOffset = m_PaneWindow.document.viewportContentOffset;
+            zoomScale = m_PaneWindow.document.viewportZoomScale;
+            canvas.SetSizeFromDocumentSettings();
+        }
+
         public void ResetView()
         {
             ResetViewTransform();

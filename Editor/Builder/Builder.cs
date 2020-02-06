@@ -47,6 +47,17 @@ namespace Unity.UI.Builder
             }
         }
 
+        private static GUIContent s_WarningContent;
+
+        public static void ShowWarning(string message)
+        {
+            if(s_WarningContent == null)
+                s_WarningContent = new GUIContent(string.Empty, EditorGUIUtility.FindTexture("console.warnicon"));
+            
+            s_WarningContent.text = message;
+            ActiveWindow.ShowNotification(s_WarningContent, 4);
+        }
+        
         public override void CreateUI()
         {
             var root = rootVisualElement;

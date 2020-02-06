@@ -142,9 +142,9 @@ namespace Unity.UI.Builder
 
             m_CurrentFilter = ElementHierarchySearchBarFilter.All;
 
-            if (query.StartsWith("#"))
+            if (query.StartsWith(BuilderConstants.UssSelectorNameSymbol))
                 m_CurrentFilter = ElementHierarchySearchBarFilter.Name;
-            else if (query.StartsWith("."))
+            else if (query.StartsWith(BuilderConstants.UssSelectorClassNameSymbol))
                 m_CurrentFilter = ElementHierarchySearchBarFilter.Class;
 
             if ((m_CurrentFilter & ElementHierarchySearchBarFilter.All) != ElementHierarchySearchBarFilter.All)

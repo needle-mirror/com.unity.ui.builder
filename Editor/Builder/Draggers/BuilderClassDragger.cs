@@ -36,7 +36,7 @@ namespace Unity.UI.Builder
             return true;
         }
 
-        protected override void PerformAction(VisualElement destination, int index = -1)
+        protected override void PerformAction(VisualElement destination, DestinationPane pane, int index = -1)
         {
             if (BuilderSharedStyles.IsDocumentElement(destination))
                 return;

@@ -22,8 +22,9 @@ namespace Unity.UI.Builder
         public static readonly Vector2 ViewportInitialContentOffset = new Vector2(20.0f, 20.0f);
 
         // Paths
-        public static readonly string UIBuilderPackagePath = "Packages/" + BuilderPackageName + "/Editor/UI";
-        public static readonly string UtilitiesPath = "Packages/" + BuilderPackageName + "/Editor/Utilities";
+        public static readonly string UIBuilderPackageRootPath = "Packages/" + BuilderPackageName;
+        public static readonly string UIBuilderPackagePath = UIBuilderPackageRootPath + "/Editor/UI";
+        public static readonly string UtilitiesPath = UIBuilderPackageRootPath + "/Editor/Utilities";
         public static readonly string InspectorUssPathNoExt = UIBuilderPackagePath + "/Inspector/BuilderInspector";
         public static readonly string RuntimeThemeUSSPath = "Packages/com.unity.ui.runtime/USS/Default.uss.asset";
 
@@ -68,6 +69,7 @@ namespace Unity.UI.Builder
         public static readonly string BuilderStyleRowBlueOverrideBoxClassName = "unity-builder-inspector-blue-override-box";
         public static readonly string FoldoutFieldPropertyName = "unity-foldout-field";
         public static readonly string FoldoutFieldHeaderClassName = FoldoutFieldPropertyName + "__header";
+        public static readonly string InspectorMultiLineTextFieldClassName = "unity-builder-inspector__multi-line-text-field";
         public static readonly string InspectorFlexColumnModeClassName = "unity-builder-inspector--flex-column";
         public static readonly string InspectorFlexColumnReverseModeClassName = "unity-builder-inspector--flex-column-reverse";
         public static readonly string InspectorFlexRowModeClassName = "unity-builder-inspector--flex-row";
@@ -83,9 +85,9 @@ namespace Unity.UI.Builder
         public static readonly string InspectorLinkedAttributeDescriptionVEPropertyName = "__unity-ui-builder-attribute-description";
 
         // Inspector Messages
-        public static readonly string AddStyleClassValidationStartsWithDot = "Class names cannot start with a dot as that is how you reference them in USS.";
         public static readonly string AddStyleClassValidationSpaces = "Class names cannot contain spaces.";
         public static readonly string AddStyleClassValidationSpacialCharacters = "Class names can only contain letters, numbers, underscores, and dashes.";
+        public static readonly string ContextMenuSetMessage = "Set";
         public static readonly string ContextMenuUnsetMessage = "Unset";
         public static readonly string ContextMenuUnsetAllMessage = "Unset All";
         public static readonly string FontCannotBeNoneMessage = "UI Builder: Font cannot be set to none.";
@@ -211,17 +213,31 @@ namespace Unity.UI.Builder
         // Save Dialog Messages
         public static readonly string SaveDialogChooseUxmlPathDialogTitle = "Choose UXML File Location";
         public static readonly string SaveDialogChooseUssPathDialogTitle = "Choose USS File Location";
-        public static readonly string SaveDialogSaveChangesPromptTitle = "UI Builder: Document Have Been Modified";
+        public static readonly string SaveDialogSaveChangesPromptTitle = "UI Builder: Document Has Been Modified";
         public static readonly string SaveDialogSaveChangesPromptMessage = "Do you want to save changes you made?";
+        public static readonly string SaveDialogExternalChangesPromptTitle = "UI Builder: Document Has Been Modified in External Editor";
+        public static readonly string SaveDialogExternalChangesPromptMessage = "Unsaved changes in the UI Builder will be lost.\nPlease avoid changing files externally while they are open in the Builder.";
         public static readonly string SaveDialogInvalidPathMessage = "Can only save in the 'Assets/' or 'Packages/' folders.";
-        
+
         // Error Dialog Messages
         public static readonly string ErrorDialogNotice = "UI Builder: Notice";
         public static readonly string ErrorIncompatibleFileActionMessage =
             "You are about to {0}:\n\n{1}\n\nwhich is currently open in the UI Builder. " +
             "If you {0} the file, the UI Builder document will close, " +
             "and you will lose any unsaved changes. Would you like to {0} the file anyway?";
-        
+
+        //
+        // Messages
+        //
+
+        // Warnings
+        public static readonly string ClassNameValidationSpacialCharacters = "Class name can only contain letters, numbers, underscores, and dashes.";
+        public static readonly string AttributeValidationSpacialCharacters = "{0} attribute can only contain letters, numbers, underscores, and dashes.";
+        public static readonly string BindingPathAttributeValidationSpacialCharacters = "{0} attribute can only contain letters, numbers, underscores, dots and dashes.";
+        public static readonly string StyleSelectorValidationSpacialCharacters = "Style Selector can only contain letters, numbers, underscores, dots, spaces and dashes.";
+        public static readonly string TypeAttributeInvalidTypeMessage = "{0} attribute is an invalid type. Make sure to include assembly name.";
+        public static readonly string TypeAttributeMustDeriveFromMessage = "{0} attribute type must derive from {1}";
+
         //
         // UXML/USS
         //

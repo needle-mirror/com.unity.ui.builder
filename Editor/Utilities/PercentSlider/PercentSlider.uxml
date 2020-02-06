@@ -3,6 +3,7 @@
         <SliderInt
             name="unity-slider"
             class="unity-percent-slider__slider"
+            step-size="1"
             low-value="0"
             high-value="100" />
         <uie:IntegerField

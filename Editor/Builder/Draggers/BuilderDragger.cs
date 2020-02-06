@@ -7,6 +7,12 @@ namespace Unity.UI.Builder
 {
     internal class BuilderDragger
     {
+        protected enum DestinationPane
+        {
+            Hierarchy,
+            Viewport
+        };
+
         static readonly string s_DraggerPreviewClassName = "unity-builder-dragger-preview";
         static readonly string s_DraggedPreviewClassName = "unity-builder-dragger-preview--dragged";
 
@@ -35,6 +41,8 @@ namespace Unity.UI.Builder
         protected BuilderPaneWindow paneWindow { get { return m_PaneWindow; } }
         protected BuilderSelection selection { get { return m_Selection; } }
 
+        protected BuilderViewport Viewport { get; set; }
+
         List<ManipulatorActivationFilter> activators { get; set; }
         ManipulatorActivationFilter m_CurrentActivator;
 
@@ -45,6 +53,7 @@ namespace Unity.UI.Builder
         {
             m_PaneWindow = paneWindow;
             m_Root = root;
+            Viewport = viewport;
             m_Canvas = viewport.documentElement;
             m_Selection = selection;
             m_ParentTracker = parentTracker;
@@ -75,7 +84,7 @@ namespace Unity.UI.Builder
 
         }
 
-        protected virtual void PerformAction(VisualElement destination, int index = -1)
+        protected virtual void PerformAction(VisualElement destination, DestinationPane pane, int index = -1)
         {
 
         }
@@ -315,12 +324,18 @@ namespace Unity.UI.Builder
 
         void OnMouseDown(MouseDownEvent evt)
         {
+            var target = evt.currentTarget as VisualElement;
+            if (m_WeStartedTheDrag && target.HasMouseCapture())
+            {
+                evt.StopImmediatePropagation();
+                evt.PreventDefault();
+                return;
+            }
+            
             if (!CanStartManipulation(evt))
                 return;
-
-            var target = evt.currentTarget as VisualElement;
+            
             var stopEvent = StopEventOnMouseDown();
-
             if (stopEvent)
                 evt.StopImmediatePropagation();
 
@@ -409,7 +424,7 @@ namespace Unity.UI.Builder
 
                     if (m_Canvas.ContainsPoint(localCanvasMouse))
                     {
-                        PerformAction(m_LastHoverElement);
+                        PerformAction(m_LastHoverElement, DestinationPane.Viewport);
                     }
                     else if (builderHierarchyRoot.ContainsPoint(localHierarchyMouse))
                     {
@@ -417,7 +432,7 @@ namespace Unity.UI.Builder
                         int index;
                         GetPickedElementFromHoverElement(out newParent, out index);
 
-                        PerformAction(newParent, index);
+                        PerformAction(newParent, DestinationPane.Hierarchy, index);
                     }
                 }
 

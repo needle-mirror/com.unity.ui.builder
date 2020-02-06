@@ -37,6 +37,9 @@ namespace Unity.UI.Builder
         protected override bool StartDrag(VisualElement target, Vector2 mousePosition, VisualElement pill)
         {
             m_TargetElementToReparent = target.GetProperty(BuilderConstants.ExplorerItemElementLinkVEPropertyName) as VisualElement;
+            if (!m_TargetElementToReparent.IsPartOfCurrentDocument())
+                return false;
+
             var pillLabel = pill.Q<Label>();
             pillLabel.text = string.IsNullOrEmpty(m_TargetElementToReparent.name)
                 ? m_TargetElementToReparent.GetType().Name
@@ -94,7 +97,7 @@ namespace Unity.UI.Builder
                 newParent.Insert(index, elementToReparent);
         }
 
-        protected override void PerformAction(VisualElement destination, int index = -1)
+        protected override void PerformAction(VisualElement destination, DestinationPane pane, int index = -1)
         {
             m_TargetElementToReparent.RemoveFromClassList(s_DragPreviewElementClassName);
 

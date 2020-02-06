@@ -1,5 +1,7 @@
+using System;
 using UnityEngine.UIElements;
 using UnityEditor;
+using UnityEngine;
 
 namespace Unity.UI.Builder
 {
@@ -45,7 +47,7 @@ namespace Unity.UI.Builder
         public void ActivateRenameElementMode()
         {
             var documentElement = GetProperty(BuilderConstants.ElementLinkedDocumentVisualElementVEPropertyName) as VisualElement;
-            if (!documentElement.IsPartOfCurrentDocument())
+            if (!documentElement.IsPartOfCurrentDocument() || BuilderSharedStyles.IsDocumentElement(documentElement))
                 return;
 
             FocusOnRenameTextField();
@@ -93,30 +95,37 @@ namespace Unity.UI.Builder
 
             renameTextfield.RegisterValueChangedCallback((e) =>
             {
-                documentElement.name = e.newValue;
                 var vea = documentElement.GetVisualElementAsset();
-                vea.SetAttributeValue("name", e.newValue);
-
+                var value = e.newValue;
+                
                 if (!string.IsNullOrEmpty(e.newValue))
-                    nameLabel.text = "#" + e.newValue;
+                {
+                    value = value.Trim();
+                    value = value.TrimStart('#');
+                    if (!BuilderNameUtilities.AttributeRegex.IsMatch(value))
+                    {
+                        Builder.ShowWarning(string.Format(BuilderConstants.AttributeValidationSpacialCharacters, "Name"));
+                        renameTextfield.schedule.Execute(() =>
+                        {
+                            FocusOnRenameTextField();
+                            renameTextfield.SetValueWithoutNotify(value);
+                        });
+                        e.StopPropagation();
+                        return;
+                    }
+
+                    nameLabel.text = BuilderConstants.UssSelectorNameSymbol + value;
+                }
                 else
+                {
                     nameLabel.text = e.newValue;
+                }
+
+                documentElement.name = value;
+                vea.SetAttributeValue("name", value);
 
                 e.StopPropagation();
-
                 selection.NotifyOfHierarchyChange();
-            });
-
-            renameTextfield.RegisterCallback<BlurEvent>((e) =>
-            {
-                nameLabel.RemoveFromClassList(BuilderConstants.HiddenStyleClassName);
-                renameTextfield.AddToClassList(BuilderConstants.HiddenStyleClassName);
-
-                renameTextfield.SetValueWithoutNotify(string.IsNullOrEmpty(documentElement.name)
-                    ? documentElement.typeName
-                    : documentElement.name);
-
-                e.StopPropagation();
             });
 
             return renameTextfield;

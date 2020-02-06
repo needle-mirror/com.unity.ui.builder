@@ -101,7 +101,7 @@ namespace Unity.UI.Builder
                 m_DragPreviewLastParent.Insert(index, m_DragPreviewElement);
         }
 
-        protected override void PerformAction(VisualElement destination, int index = -1)
+        protected override void PerformAction(VisualElement destination, DestinationPane pane, int index = -1)
         {
             m_DragPreviewElement.RemoveFromClassList(s_DragPreviewElementClassName);
 
@@ -131,6 +131,10 @@ namespace Unity.UI.Builder
             // This will stop the ResetDragPreviewElement() from calling
             // RemoveFromHierarchy() on it.
             m_DragPreviewElement = null;
+
+            // If we dragged into the Viewport, focus the Viewport.
+            if (pane == DestinationPane.Viewport)
+                Viewport.pane.Focus();
         }
 
         protected override void EndDrag()

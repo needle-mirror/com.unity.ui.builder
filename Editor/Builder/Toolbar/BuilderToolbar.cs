@@ -78,6 +78,8 @@ namespace Unity.UI.Builder
 
             m_SaveDialogUxmlPathField.RegisterValueChangedCallback(OnUxmlPathFieldChange);
             m_SaveDialogUssPathField.RegisterValueChangedCallback(OnUssPathFieldChange);
+            m_SaveDialogUxmlPathField.RegisterCallback<KeyUpEvent>(OnSaveDialogEnterPress);
+            m_SaveDialogUssPathField.RegisterCallback<KeyUpEvent>(OnSaveDialogEnterPress);
 
             m_SaveDialogSaveButton.clickable.clicked += SaveDocument;
             m_SaveDialogCancelButton.clickable.clicked += m_SaveDialog.Hide;
@@ -101,10 +103,6 @@ namespace Unity.UI.Builder
             m_ZoomMenu = this.Q<ToolbarMenu>("zoom-menu");
             SetUpZoomMenu();
 
-            // Reset button
-            m_ResetButton = this.Q<ToolbarButton>("reset-button");
-            m_ResetButton.clickable.clicked += () => m_Viewport.ResetView();
-
             // Fit canvas
             m_FitCanvasButton = this.Q<ToolbarButton>("fit-canvas-button");
             m_FitCanvasButton.clickable.clicked += () => m_Viewport.FitCanvas();
@@ -119,7 +117,6 @@ namespace Unity.UI.Builder
             UpdateCanvasThemeMenuStatus();
 
             // Track unsaved changes state change.
-            document.unsavedChangesStateChanged = SetViewportSubTitle;
             SetViewportSubTitle();
 
             // Get Builder package version.
@@ -131,21 +128,21 @@ namespace Unity.UI.Builder
 
             RegisterCallback<AttachToPanelEvent>(RegisterCallbacks);
         }
-        
+
         void RegisterCallbacks(AttachToPanelEvent evt)
         {
             RegisterCallback<DetachFromPanelEvent>(UnregisterCallbacks);
             BuilderAssetModificationProcessor.Register(this);
         }
-        
+
         void UnregisterCallbacks(DetachFromPanelEvent evt)
         {
             UnregisterCallback<DetachFromPanelEvent>(UnregisterCallbacks);
             BuilderAssetModificationProcessor.Unregister(this);
         }
-        
+
         public void OnAssetChange() { }
-        
+
         public AssetDeleteResult OnWillDeleteAsset(string assetPath, RemoveAssetOptions option)
         {
             if (IsFileActionCompatible(assetPath, "delete"))
@@ -153,10 +150,14 @@ namespace Unity.UI.Builder
             else
                 return AssetDeleteResult.FailedDelete;
         }
-        
+
         public AssetMoveResult OnWillMoveAsset(string sourcePath, string destinationPath)
         {
-            if (IsFileActionCompatible(sourcePath, "move"))
+            var sourcePathDirectory = Path.GetDirectoryName(sourcePath);
+            var destinationPathDirectory =  Path.GetDirectoryName(destinationPath);
+
+            var actionName = sourcePathDirectory.Equals(destinationPathDirectory) ? "rename" : "move";
+            if (IsFileActionCompatible(sourcePath, actionName))
                 return AssetMoveResult.DidNotMove;
             else
                 return AssetMoveResult.FailedMove;
@@ -169,15 +170,12 @@ namespace Unity.UI.Builder
                 var fileName = Path.GetFileName(assetPath);
                 var acceptAction = BuilderDialogsUtility.DisplayDialog(BuilderConstants.ErrorDialogNotice,
                     string.Format(BuilderConstants.ErrorIncompatibleFileActionMessage, actionName, fileName),
-                    BuilderConstants.DialogDiscardOption, 
+                    BuilderConstants.DialogDiscardOption,
                     string.Format(BuilderConstants.DialogAbortActionOption, actionName.ToPascalCase()));
 
                 if (acceptAction)
-                {
-                    document.hasUnsavedChanges = false;
-                    NewDocument();
-                }
-                
+                    ForceNewDocument();
+
                 return acceptAction;
             }
 
@@ -214,7 +212,15 @@ namespace Unity.UI.Builder
                 DisplaySaveDialogValidationMessage(BuilderConstants.SaveDialogInvalidPathMessage);
             }
         }
-        
+
+        void OnSaveDialogEnterPress(KeyUpEvent evt)
+        {
+            if (evt.keyCode != KeyCode.Return)
+                return;
+
+            SaveDocument();
+        }
+
         void OnUxmlPathFieldChange(ChangeEvent<string> evt)
         {
             if (m_HasModifiedUssPathManually)
@@ -274,6 +280,12 @@ namespace Unity.UI.Builder
         void OnUssLocationButtonClick()
         {
             OpenSaveFileDialog(BuilderConstants.SaveDialogChooseUssPathDialogTitle, m_SaveDialogUssPathField, BuilderConstants.Uss);
+        }
+
+        internal void ForceNewDocument()
+        {
+            document.hasUnsavedChanges = false;
+            NewDocument();
         }
 
         void NewDocument()
@@ -378,6 +390,7 @@ namespace Unity.UI.Builder
                 m_SaveDialogUxmlPathField.SetValueWithoutNotify(
                     currentPath + GenerateNewDocumentName(BuilderConstants.Uxml, document.uxmlPath));
                 m_SaveDialogUxmlPathField.SetEnabled(true);
+                m_SaveDialogUxmlPathField.visualInput.Focus();
             }
             else
             {
@@ -422,7 +435,7 @@ namespace Unity.UI.Builder
 
             SaveDocument(uxmlPath, ussPath);
         }
-        
+
         void SaveDocument(string uxmlPath, string ussPath)
         {
             var viewportWindow = m_PaneWindow as IBuilderViewportWindow;
@@ -470,9 +483,9 @@ namespace Unity.UI.Builder
             LoadDocumentInternal(visualTreeAsset);
         }
 
-        public bool LoadDocument(VisualTreeAsset visualTreeAsset)
+        public bool LoadDocument(VisualTreeAsset visualTreeAsset, bool assetModifiedExternally = false)
         {
-            if (!document.CheckForUnsavedChanges())
+            if (!document.CheckForUnsavedChanges(assetModifiedExternally))
                 return false;
 
             LoadDocumentInternal(visualTreeAsset);
@@ -486,7 +499,7 @@ namespace Unity.UI.Builder
 
             document.LoadDocument(visualTreeAsset, m_Viewport.documentElement);
 
-            m_Viewport.canvas.SetSizeFromDocumentSettings();
+            m_Viewport.SetViewFromDocumentSetting();
             m_Inspector?.canvasInspector.Refresh();
 
             m_Selection.NotifyOfStylingChange(document);
@@ -497,6 +510,8 @@ namespace Unity.UI.Builder
             m_LastSavePath = Path.GetDirectoryName(document.uxmlPath);
 
             SetViewportSubTitle();
+
+            ChangeCanvasTheme(document.currentCanvasTheme);
         }
 
         void SetUpFileMenu()
@@ -513,19 +528,6 @@ namespace Unity.UI.Builder
                     NewTestDocument();
                 });
             }
-
-            m_FileMenu.menu.AppendSeparator();
-
-            m_FileMenu.menu.AppendAction("Save", a =>
-            {
-                PromptSaveDocumentDialog();
-            });
-            m_FileMenu.menu.AppendAction("Save As...", a =>
-            {
-                PromptSaveAsDocumentDialog();
-            });
-
-            m_FileMenu.menu.AppendSeparator();
 
             m_FileMenu.menu.AppendAction("Open...", a =>
             {
@@ -553,6 +555,17 @@ namespace Unity.UI.Builder
 
                 LoadDocument(asset);
             });
+
+            m_FileMenu.menu.AppendSeparator();
+
+            m_FileMenu.menu.AppendAction("Save", a =>
+            {
+                PromptSaveDocumentDialog();
+            });
+            m_FileMenu.menu.AppendAction("Save As...", a =>
+            {
+                PromptSaveAsDocumentDialog();
+            });
         }
 
         static string GetTextForZoomScale(float scale)
@@ -564,7 +577,7 @@ namespace Unity.UI.Builder
         {
             m_ZoomMenu.text = GetTextForZoomScale(m_Viewport.zoomScale);
         }
-        
+
         void SetUpZoomMenu()
         {
             foreach (var zoomScale in m_Viewport.zoomer.zoomScaleValues)
@@ -717,6 +730,9 @@ namespace Unity.UI.Builder
 
         void SetViewportSubTitle()
         {
+            // Have to keep refreshing this because it's a weak pointer.
+            document.unsavedChangesStateChanged = SetViewportSubTitle;
+
             var newFileName = document.uxmlFileName;
 
             if (string.IsNullOrEmpty(newFileName))

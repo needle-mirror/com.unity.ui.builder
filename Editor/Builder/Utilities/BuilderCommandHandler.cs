@@ -22,11 +22,13 @@ namespace Unity.UI.Builder
         bool m_ControlWasPressed;
         IVisualElementScheduledItem m_ControlUnpressScheduleItem;
 
+#if UNITY_2019_2
         // TODO: Hack. We need this because of a bug on Mac where we
         // get double command events.
         // Case: https://fogbugz.unity3d.com/f/cases/1180090/
         long m_LastFrameCount;
-
+#endif
+        
         public BuilderCommandHandler(
             BuilderPaneWindow paneWindow,
             BuilderSelection selection)
@@ -86,11 +88,14 @@ namespace Unity.UI.Builder
 
         public void OnCommandValidate(ValidateCommandEvent evt)
         {
+#if UNITY_2019_2
             // TODO: Hack. We need this because of a bug on Mac where we
             // get double command events.
+
             if (m_LastFrameCount == Time.frameCount)
                 return;
             m_LastFrameCount = Time.frameCount;
+#endif
 
             switch (evt.commandName)
             {
@@ -174,7 +179,7 @@ namespace Unity.UI.Builder
                         if (m_CutElement != null)
                         {
                             m_CutElement = null;
-                            EditorGUIUtility.systemCopyBuffer = null;
+                            BuilderEditorUtility.SystemCopyBuffer = null;
                         }
                     }
                     break;
@@ -210,7 +215,7 @@ namespace Unity.UI.Builder
             var vea = element.GetVisualElementAsset();
             if (vea != null)
             {
-                EditorGUIUtility.systemCopyBuffer =
+                BuilderEditorUtility.SystemCopyBuffer =
                     VisualTreeAssetToUXML.GenerateUXML(m_PaneWindow.document.visualTreeAsset, null, vea);
                 return;
             }
@@ -218,7 +223,7 @@ namespace Unity.UI.Builder
             var selector = element.GetStyleComplexSelector();
             if (selector != null)
             {
-                EditorGUIUtility.systemCopyBuffer =
+                BuilderEditorUtility.SystemCopyBuffer =
                     StyleSheetToUss.ToUssString(m_PaneWindow.document.mainStyleSheet, selector);
                 return;
             }
@@ -226,17 +231,23 @@ namespace Unity.UI.Builder
 
         void PasteUXML(string copyBuffer)
         {
-            VisualTreeAsset pasteVta = null;
             var importer = new BuilderVisualTreeAssetImporter(); // Cannot be cached because the StyleBuilder never gets reset.
-            importer.ImportXmlFromString(copyBuffer, out pasteVta);
+            importer.ImportXmlFromString(copyBuffer, out var pasteVta);
 
             VisualElementAsset parent = null;
             if (!m_Selection.isEmpty)
                 parent = m_Selection.selection.First().parent?.GetVisualElementAsset();
 
             BuilderAssetUtilities.TransferAssetToAsset(m_PaneWindow.document, parent, pasteVta);
-
             m_PaneWindow.document.AddStyleSheetToAllRootElements();
+
+            var selectionParentId = parent?.id ?? m_PaneWindow.document.visualTreeAsset.GetRootUXMLElement().id;
+            VisualElementAsset newSelectedItem = pasteVta.templateAssets.FirstOrDefault(tpl => tpl.parentId == selectionParentId);
+            if (newSelectedItem == null)
+                newSelectedItem = pasteVta.visualElementAssets.FirstOrDefault(asset => asset.parentId == selectionParentId);
+
+            m_Selection.ClearSelection(null);
+            newSelectedItem.Select();
 
             ScriptableObject.DestroyImmediate(pasteVta);
         }
@@ -249,12 +260,16 @@ namespace Unity.UI.Builder
 
             BuilderAssetUtilities.TransferAssetToAsset(m_PaneWindow.document, pasteStyleSheet);
 
+            m_Selection.ClearSelection(null);
+            var scs =  m_PaneWindow.document.mainStyleSheet.complexSelectors.Last();
+            BuilderAssetUtilities.AddStyleComplexSelectorToSelection(m_PaneWindow.document, scs);
+
             ScriptableObject.DestroyImmediate(pasteStyleSheet);
         }
 
         public void Paste()
         {
-            var copyBuffer = EditorGUIUtility.systemCopyBuffer;
+            var copyBuffer = BuilderEditorUtility.SystemCopyBuffer;
 
             if (string.IsNullOrEmpty(copyBuffer))
                 return;
@@ -271,10 +286,17 @@ namespace Unity.UI.Builder
             {
                 DeleteElement(m_CutElement);
                 m_CutElement = null;
-                EditorGUIUtility.systemCopyBuffer = null;
+                BuilderEditorUtility.SystemCopyBuffer = null;
             }
 
             m_PaneWindow.OnEnableAfterAllSerialization();
+
+            // TODO: ListView bug. Does not refresh selection pseudo states after a
+            // call to Refresh().
+            m_PaneWindow.rootVisualElement.schedule.Execute(() =>
+            {
+                m_Selection.Select(null, m_Selection.selection.First());
+            }).ExecuteLater(200);
 
             m_PaneWindow.document.hasUnsavedChanges = true;
         }
@@ -282,7 +304,8 @@ namespace Unity.UI.Builder
         public void DeleteElement(VisualElement element)
         {
             if (BuilderSharedStyles.IsSelectorsContainerElement(element) ||
-                BuilderSharedStyles.IsDocumentElement(element))
+                BuilderSharedStyles.IsDocumentElement(element) ||
+                !element.IsLinkedToAsset())
                 return;
 
             if (BuilderSharedStyles.IsSelectorElement(element))
@@ -305,7 +328,7 @@ namespace Unity.UI.Builder
 
         public void ClearCopyBuffer()
         {
-            EditorGUIUtility.systemCopyBuffer = null;
+            BuilderEditorUtility.SystemCopyBuffer = null;
         }
 
         public void ClearSelectionNotify()

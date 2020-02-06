@@ -62,7 +62,8 @@ namespace Unity.UI.Builder
 
         void RefreshSubFields()
         {
-            var intNewValue = (int)(value * 100);
+            var value100 = value * 100.0f;
+            var intNewValue = (int)Math.Round(value100, 0);
 
             mSlider.SetValueWithoutNotify(intNewValue);
             if (mSlider.elementPanel != null)

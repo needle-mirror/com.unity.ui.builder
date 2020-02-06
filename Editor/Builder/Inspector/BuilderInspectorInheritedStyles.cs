@@ -22,14 +22,8 @@ namespace Unity.UI.Builder
         TextField m_AddClassField;
         Button m_AddClassButton;
         Button m_CreateClassButton;
-
-        VisualElement m_AddClassValidationMessageContainer;
-
         VisualTreeAsset m_ClassPillTemplate;
-
-        string m_AddClassValidationMessage = string.Empty;
-        Regex m_AddClassValidationRegex;
-
+        
         VisualElement currentVisualElement => m_Inspector.currentVisualElement;
 
         public VisualElement root => m_InheritedStylesSection;
@@ -52,17 +46,11 @@ namespace Unity.UI.Builder
             m_AddClassButton = m_Inspector.Q<Button>("add-class-button");
             m_CreateClassButton = m_Inspector.Q<Button>("create-class-button");
 
-            m_AddClassValidationMessageContainer = m_Inspector.Q("add-class-validation-message-container");
-            m_AddClassValidationMessageContainer.Add(new IMGUIContainer(DrawAddClassValidationMessage));
-            m_AddClassValidationMessageContainer.style.display = DisplayStyle.None;
-
             m_ClassPillTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
                 BuilderConstants.UIBuilderPackagePath + "/BuilderClassPill.uxml");
 
             m_AddClassButton.clickable.clicked += AddStyleClass;
             m_CreateClassButton.clickable.clicked += ExtractLocalStylesToNewClass;
-
-            m_AddClassValidationRegex = new Regex(@"^[a-zA-Z0-9\-_]+$");
         }
 
         public void Enable()
@@ -85,11 +73,6 @@ namespace Unity.UI.Builder
             m_ClassListContainer.SetEnabled(false);
         }
 
-        void DrawAddClassValidationMessage()
-        {
-            EditorGUILayout.HelpBox(m_AddClassValidationMessage, MessageType.Info, true);
-        }
-
         void OnAddClassFieldChange(KeyUpEvent evt)
         {
             if (evt.keyCode != KeyCode.Return)
@@ -105,24 +88,18 @@ namespace Unity.UI.Builder
 
         bool VerifyNewClassNameIsValid(string className)
         {
-            ClearAddStyleValidationWarning();
-
             if (string.IsNullOrEmpty(className))
                 return false;
-
-            if (className.StartsWith("."))
+            
+            if (className.Contains(" "))
             {
-                DisplayAddStyleValidationWarning(BuilderConstants.AddStyleClassValidationStartsWithDot);
+                Builder.ShowWarning(BuilderConstants.AddStyleClassValidationSpaces);
                 return false;
             }
-            else if (className.Contains(" "))
+            
+            if (!BuilderNameUtilities.AttributeRegex.IsMatch(className))
             {
-                DisplayAddStyleValidationWarning(BuilderConstants.AddStyleClassValidationSpaces);
-                return false;
-            }
-            else if (!m_AddClassValidationRegex.IsMatch(className))
-            {
-                DisplayAddStyleValidationWarning(BuilderConstants.AddStyleClassValidationSpacialCharacters);
+                Builder.ShowWarning(BuilderConstants.ClassNameValidationSpacialCharacters);
                 return false;
             }
 
@@ -132,9 +109,12 @@ namespace Unity.UI.Builder
         void AddStyleClass()
         {
             var className = m_AddClassField.value;
-
+            className = className.TrimStart(BuilderConstants.UssSelectorClassNameSymbol[0]);
             if (!VerifyNewClassNameIsValid(className))
+            {
+                m_AddClassField.visualInput.Focus();
                 return;
+            }
 
             AddStyleClass(className);
         }
@@ -142,10 +122,14 @@ namespace Unity.UI.Builder
         void ExtractLocalStylesToNewClass()
         {
             var className = m_AddClassField.value;
+            className = className.TrimStart(BuilderConstants.UssSelectorClassNameSymbol[0]);
 
             if (!VerifyNewClassNameIsValid(className))
+            {
+                m_AddClassField.visualInput.Focus();
                 return;
-
+            }
+            
             ExtractLocalStylesToNewClass(className);
         }
 
@@ -178,7 +162,7 @@ namespace Unity.UI.Builder
             PreAddStyleClass(className);
 
             // Create new selector in main StyleSheet.
-            var selectorString = "." + className;
+            var selectorString = BuilderConstants.UssSelectorClassNameSymbol + className;
             var mainStyleSheet = m_PaneWindow.document.mainStyleSheet;
             var selectorsRootElement = BuilderSharedStyles.GetSelectorContainerElement(m_Selection.documentElement);
             var newSelector = BuilderSharedStyles.CreateNewSelector(selectorsRootElement, mainStyleSheet, selectorString);
@@ -220,19 +204,7 @@ namespace Unity.UI.Builder
             m_Selection.NotifyOfHierarchyChange(null);
             m_Selection.NotifyOfStylingChange(null);
         }
-
-        void DisplayAddStyleValidationWarning(string warningMessage)
-        {
-            m_AddClassValidationMessage = warningMessage;
-            m_AddClassValidationMessageContainer.style.display = DisplayStyle.Flex;
-        }
-
-        void ClearAddStyleValidationWarning()
-        {
-            m_AddClassValidationMessageContainer.style.display = DisplayStyle.None;
-            m_AddClassValidationMessage = string.Empty;
-        }
-
+        
         Clickable CreateClassPillClickableManipulator()
         {
             var clickable = new Clickable(OnClassPillDoubleClick);
@@ -244,8 +216,6 @@ namespace Unity.UI.Builder
 
         void RefreshClassListContainer()
         {
-            ClearAddStyleValidationWarning();
-
             m_ClassListContainer.Clear();
             if (BuilderSharedStyles.IsSelectorElement(currentVisualElement))
                 return;
@@ -265,13 +235,13 @@ namespace Unity.UI.Builder
 
                 // Add ellipsis if the class name is too long.
                 var classNameShortened = BuilderNameUtilities.CapStringLengthAndAddEllipsis(className, BuilderConstants.ClassNameInPillMaxLength);
-                pillLabel.text = "." + classNameShortened;
+                pillLabel.text = BuilderConstants.UssSelectorClassNameSymbol + classNameShortened;
 
                 pillDeleteButton.userData = className;
                 pillDeleteButton.clickable.clickedWithEventInfo += OnStyleClassDelete;
 
                 // See if the class is in document as its own selector.
-                var selector = BuilderSharedStyles.FindSelectorElement(documentRootElement, "." + className);
+                var selector = BuilderSharedStyles.FindSelectorElement(documentRootElement, BuilderConstants.UssSelectorClassNameSymbol + className);
                 pill.SetProperty(BuilderConstants.InspectorClassPillLinkedSelectorElementVEPropertyName, selector);
                 var clickable = CreateClassPillClickableManipulator();
                 pill.AddManipulator(clickable);
@@ -292,7 +262,7 @@ namespace Unity.UI.Builder
             var pill = evt.target as VisualElement;
             var pillDeleteButton = pill.Q<Button>("delete-class-button");
             var className = pillDeleteButton.userData as string;
-            var selectorString = "." + className;
+            var selectorString = BuilderConstants.UssSelectorClassNameSymbol + className;
             var selectorElement = pill.GetProperty(BuilderConstants.InspectorClassPillLinkedSelectorElementVEPropertyName) as VisualElement;
 
             if (selectorElement == null)

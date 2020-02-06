@@ -10,8 +10,11 @@ namespace Unity.UI.Builder
         public string UxmlPath;
         public int CanvasX;
         public int CanvasY;
-        public int CanvasWidth;
-        public int CanvasHeight;
+        public int CanvasWidth = (int)BuilderConstants.CanvasInitialWidth;
+        public int CanvasHeight = (int)BuilderConstants.CanvasInitialHeight;
+
+        public float ZoomScale = BuilderConstants.ViewportInitialZoom;
+        public Vector2 PanOffset = BuilderConstants.ViewportInitialContentOffset;
 
         public float CanvasBackgroundOpacity = 1.0f;
         public BuilderCanvasBackgroundMode CanvasBackgroundMode = BuilderCanvasBackgroundMode.None;

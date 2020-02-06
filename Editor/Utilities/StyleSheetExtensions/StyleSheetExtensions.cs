@@ -165,7 +165,7 @@ namespace Unity.UI.Builder
                         case StyleValueType.String: toStyleSheet.AddValue(newProperty, fromStyleSheet.GetString(value)); break;
                         case StyleValueType.Color: toStyleSheet.AddValue(newProperty, fromStyleSheet.GetColor(value)); break;
                         case StyleValueType.AssetReference: toStyleSheet.AddValue(newProperty, fromStyleSheet.GetAsset(value)); break;
-                        case StyleValueType.ResourcePath: toStyleSheet.AddValue(newProperty, fromStyleSheet.GetString(value)); break;
+                        case StyleValueType.ResourcePath: toStyleSheet.AddValue(newProperty, fromStyleSheet.GetAsset(value)); break;
                     }
                 }
             }

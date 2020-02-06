@@ -7,9 +7,9 @@ The **UI Builder** lets you visually create and edit UXML and USS UI assets for 
 ## Installation
 
 Unity versions supported:
-- **2019.2**: 2019.2.14f1 or newer
-- **2019.3**: 2019.3.0b12 or newer
-- **2020.1**: 2020.1.0a15 or newer
+- **2019.2**: 2019.2.20f1 or newer
+- **2019.3**: 2019.3.0f6 or newer
+- **2020.1**: 2020.1.0a22 or newer
 
 To install:
 1. Open the **Window > Package Manager**.
@@ -39,4 +39,4 @@ To install:
 * **Inherited Styles:** Add/remove style classes and see which selectors match the current element.
 * **Local Styles:** Override styles on the current element, inlined in the UXML document.
 
-For more info, see our [documentation page](Documentation~/UI.Builder.md).
+For more info, see our [documentation page](Documentation~/index.md).

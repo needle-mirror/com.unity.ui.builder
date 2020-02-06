@@ -101,23 +101,23 @@
 
 .unity-builder-explorer__reorder-zone {
     position: absolute;
-    left: 0px;
-    right: 0px;
+    left: 0;
+    right: 0;
     height: 5px;
 }
 
 .unity-builder-explorer__reorder-zone-above {
-    top: 0px;
+    top: 0;
 }
 
 .unity-builder-explorer__reorder-zone-below {
-    bottom: 0px;
+    bottom: 0;
 }
 
 .unity-builder-explorer__reorder-hover-bar {
     position: absolute;
-    left: 0px;
-    right: 0px;
+    left: 0;
+    right: 0;
     height: 2px;
 }
 
@@ -207,7 +207,7 @@
 .unity-builder-viewport__viewport-wrapper {
     flex-grow: 1;
     flex-shrink: 0;
-    border-width: 0px;
+    border-width: 0;
     overflow: hidden;
     border-width: 4px;
     border-color: initial;
@@ -215,11 +215,11 @@
 
 .unity-builder-viewport__viewport {
     position: absolute;
-    top: 0px;
-    left: 0px;
-    right: 0px;
-    bottom: 0px;
-    padding: 0px;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 0;
     flex-direction: column;
     align-content: center;
     align-items: flex-start;
@@ -240,10 +240,10 @@
 
 .unity-builder-viewport__canvas-layer {
     position: absolute;
-    top: 0px;
-    left: 0px;
-    right: 0px;
-    bottom: 0px;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
 }
 
 .unity-builder-viewport__shared-styles-and-document {
@@ -297,26 +297,26 @@
 
 .unity-builder-canvas__side--top {
     top: -22px; /* -4 from the .unity-builder-viewport__shared-styles-and-document margin: -4px; */
-    left: 0px;
-    right: 0px;
+    left: 0;
+    right: 0;
 }
 
 .unity-builder-canvas__side--left {
-    top: 0px;
+    top: 0;
     left: -22px; /* -4 from the .unity-builder-viewport__shared-styles-and-document margin: -4px; */
-    bottom: 0px;
+    bottom: 0;
 }
 
 .unity-builder-canvas__side--bottom {
-    left: 0px;
-    right: 0px;
+    left: 0;
+    right: 0;
     bottom: -22px; /* -4 from the .unity-builder-viewport__shared-styles-and-document margin: -4px; */
 }
 
 .unity-builder-canvas__side--right {
-    top: 0px;
+    top: 0;
     right: -22px; /* -4 from the .unity-builder-viewport__shared-styles-and-document margin: -4px; */
-    bottom: 0px;
+    bottom: 0;
 }
 
 .unity-builder-canvas__corner--top-left {
@@ -349,30 +349,30 @@
 
 .unity-builder-canvas__side--top .unity-builder-canvas__side__inner {
     height: 4px;
-    left: 0px;
-    right: 0px;
-    bottom: 0px;
+    left: 0;
+    right: 0;
+    bottom: 0;
 }
 
 .unity-builder-canvas__side--left .unity-builder-canvas__side__inner {
     width: 4px;
-    top: 0px;
-    bottom: 0px;
-    right: 0px;
+    top: 0;
+    bottom: 0;
+    right: 0;
 }
 
 .unity-builder-canvas__side--bottom .unity-builder-canvas__side__inner {
     height: 4px;
-    left: 0px;
-    right: 0px;
-    top: 0px;
+    left: 0;
+    right: 0;
+    top: 0;
 }
 
 .unity-builder-canvas__side--right .unity-builder-canvas__side__inner {
     width: 4px;
-    top: 0px;
-    bottom: 0px;
-    left: 0px;
+    top: 0;
+    bottom: 0;
+    left: 0;
 }
 
 .unity-builder-canvas__corner__inner {
@@ -382,31 +382,31 @@
 }
 
 .unity-builder-canvas__corner--top-left .unity-builder-canvas__corner__inner {
-    right: 0px;
-    bottom: 0px;
+    right: 0;
+    bottom: 0;
 }
 
 .unity-builder-canvas__corner--top-right .unity-builder-canvas__corner__inner {
-    left: 0px;
-    bottom: 0px;
+    left: 0;
+    bottom: 0;
 }
 
 .unity-builder-canvas__corner--bottom-left .unity-builder-canvas__corner__inner {
-    right: 0px;
-    top: 0px;
+    right: 0;
+    top: 0;
 }
 
 .unity-builder-canvas__corner--bottom-right .unity-builder-canvas__corner__inner {
-    left: 0px;
-    top: 0px;
+    left: 0;
+    top: 0;
 }
 
 .unity-builder-canvas__cursor-setter {
     position: absolute;
-    top: 0px;
-    left: 0px;
-    bottom: 0px;
-    right: 0px;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
 }
 
 .unity-builder-canvas__side--horizontal .unity-builder-canvas__cursor-setter {
@@ -578,10 +578,10 @@
 
 .unity-builder-class-pill__delete-button {
     height: 16px;
-    margin-right: 0px;
+    margin-right: 0;
     padding-bottom: 2px;
     margin-bottom: 2px;
-    margin-top: 0px;
+    margin-top: 0;
     -unity-text-align: middle-center;
 }
 
@@ -638,6 +638,10 @@
 
 .unity-builder__zoom-toolbar-menu {
     min-width: 60px;
+}
+
+.unity-builder-toolbar > .unity-toolbar-button {
+    padding-top: 3px;
 }
 
 /*****************************************************************************/
@@ -764,26 +768,26 @@
 
 .unity-builder-resizer__side--top {
     top: -12px;
-    left: 0px;
-    right: 0px;
+    left: 0;
+    right: 0;
 }
 
 .unity-builder-resizer__side--left {
-    top: 0px;
+    top: 0;
     left: -12px;
-    bottom: 0px;
+    bottom: 0;
 }
 
 .unity-builder-resizer__side--bottom {
-    left: 0px;
-    right: 0px;
+    left: 0;
+    right: 0;
     bottom: -12px;
 }
 
 .unity-builder-resizer__side--right {
-    top: 0px;
+    top: 0;
     right: -12px;
-    bottom: 0px;
+    bottom: 0;
 }
 
 .unity-builder-resizer__corner--top-left {
@@ -816,30 +820,30 @@
 
 .unity-builder-resizer__side--top .unity-builder-resizer__side__inner {
     height: 2px;
-    left: 0px;
-    right: 0px;
-    bottom: 0px;
+    left: 0;
+    right: 0;
+    bottom: 0;
 }
 
 .unity-builder-resizer__side--left .unity-builder-resizer__side__inner {
     width: 2px;
-    top: 0px;
-    bottom: 0px;
-    right: 0px;
+    top: 0;
+    bottom: 0;
+    right: 0;
 }
 
 .unity-builder-resizer__side--bottom .unity-builder-resizer__side__inner {
     height: 2px;
-    left: 0px;
-    right: 0px;
-    top: 0px;
+    left: 0;
+    right: 0;
+    top: 0;
 }
 
 .unity-builder-resizer__side--right .unity-builder-resizer__side__inner {
     width: 2px;
-    top: 0px;
-    bottom: 0px;
-    left: 0px;
+    top: 0;
+    bottom: 0;
+    left: 0;
 }
 
 .unity-builder-resizer__corner__inner {
@@ -849,31 +853,31 @@
 }
 
 .unity-builder-resizer__corner--top-left .unity-builder-resizer__corner__inner {
-    right: 0px;
-    bottom: 0px;
+    right: 0;
+    bottom: 0;
 }
 
 .unity-builder-resizer__corner--top-right .unity-builder-resizer__corner__inner {
-    left: 0px;
-    bottom: 0px;
+    left: 0;
+    bottom: 0;
 }
 
 .unity-builder-resizer__corner--bottom-left .unity-builder-resizer__corner__inner {
-    right: 0px;
-    top: 0px;
+    right: 0;
+    top: 0;
 }
 
 .unity-builder-resizer__corner--bottom-right .unity-builder-resizer__corner__inner {
-    left: 0px;
-    top: 0px;
+    left: 0;
+    top: 0;
 }
 
 .unity-builder-resizer__cursor-setter {
     position: absolute;
-    top: 0px;
-    left: 0px;
-    bottom: 0px;
-    right: 0px;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
 }
 
 .unity-builder-resizer__side--horizontal .unity-builder-resizer__cursor-setter {
@@ -927,26 +931,26 @@
 
 .unity-builder-anchorer--top {
     top: -24px;
-    left: 0px;
-    right: 0px;
+    left: 0;
+    right: 0;
 }
 
 .unity-builder-anchorer--left {
-    top: 0px;
+    top: 0;
     left: -24px;
-    bottom: 0px;
+    bottom: 0;
 }
 
 .unity-builder-anchorer--bottom {
-    left: 0px;
-    right: 0px;
+    left: 0;
+    right: 0;
     bottom: -24px;
 }
 
 .unity-builder-anchorer--right {
-    top: 0px;
+    top: 0;
     right: -24px;
-    bottom: 0px;
+    bottom: 0;
 }
 
 /*****************************************************************************/
@@ -955,10 +959,10 @@
 
 .unity-builder-dragger__overlay {
     position: absolute;
-    top: 0px;
-    left: 0px;
-    right: 0px;
-    bottom: 0px;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
 }
 
 .unity-builder-dragger__container {
@@ -975,6 +979,11 @@
     opacity: 0.5;
 }
 
+.unity-builder-dragger--being-dragged {
+    min-width: 100px;
+    min-height: 20px;
+}
+
 .unity-builder-dragger--being-dragged.unity-button {
     width: 100px;
 }
@@ -984,8 +993,14 @@
 }
 
 .unity-builder-dragger--being-dragged > .unity-base-field__label {
-    min-width: 0px;
+    min-width: 0;
     width: 80px;
+}
+
+.unity-builder-dragger--being-dragged .unity-composite-field__label {
+    min-width: 0;
+    width: 80px;
+    padding-left: 30px;
 }
 
 /*****************************************************************************/
@@ -1016,8 +1031,14 @@
 }
 
 .unity-builder-tooltip-preview .unity-base-field__label {
-    min-width: 0px;
+    min-width: 0;
     width: 100px;
+}
+
+.unity-builder-tooltip-preview .unity-composite-field__label {
+    min-width: 0;
+    width: 100px;
+    padding-left: 50px;
 }
 
 /*****************************************************************************/

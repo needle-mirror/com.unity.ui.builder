@@ -17,7 +17,7 @@ namespace Unity.UI.Builder
 
         protected override void ImmediateRepaint()
         {
-            m_Painter?.Draw();
+            m_Painter?.Draw(worldClip);
         }
     }
 }

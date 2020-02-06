@@ -314,6 +314,13 @@ namespace Unity.UI.Builder
                 new ContextualMenuManipulator(BuildStyleFieldContextualMenu));
         }
 
+        void DispatchChangeEvent<TValueType>(BaseField<TValueType> field)
+        {
+            var e = ChangeEvent<TValueType>.GetPooled(field.value, field.value);
+            e.target = field;
+            field.SendEvent(e);
+        }
+
         void FoldoutNumberFieldOnValueChange(ChangeEvent<string> evt)
         {
             var newValue = evt.newValue;
@@ -400,7 +407,7 @@ namespace Unity.UI.Builder
                 var value = style.value;
                 if (styleProperty != null)
                     value = styleSheet.GetFloat(styleProperty.values[0]);
-
+                
                 uiField.SetValueWithoutNotify(value);
             }
             else if (val is StyleFloat && fieldElement is IntegerField)
@@ -545,11 +552,11 @@ namespace Unity.UI.Builder
                     else if (styleValue.valueType == StyleValueType.Float)
                     {
                         var length = styleSheet.GetFloat(styleValue);
-                        uiField.SetValueWithoutNotify(length.ToString() + DimensionStyleField.defaultUnit);
+                        uiField.SetValueWithoutNotify(length + DimensionStyleField.defaultUnit);
                     }
                     else
                     {
-                        throw new InvalidOperationException("StyleValueType " + styleValue.valueType.ToString() + " not compatible with StyleFloat.");
+                        throw new InvalidOperationException("StyleValueType " + styleValue.valueType + " not compatible with StyleFloat.");
                     }
                 }
                 else
@@ -585,7 +592,7 @@ namespace Unity.UI.Builder
                     else if (styleValue.valueType == StyleValueType.Float)
                     {
                         var length = styleSheet.GetFloat(styleValue);
-                        uiField.SetValueWithoutNotify(length.ToString() + DimensionStyleField.defaultUnit);
+                        uiField.SetValueWithoutNotify(length + DimensionStyleField.defaultUnit);
                     }
                     else
                     {
@@ -612,7 +619,7 @@ namespace Unity.UI.Builder
                 // We keep falling into the alpha==0 trap. This patches the issue a little.
                 if (value.a < 0.1f)
                     value.a = 255.0f;
-
+                
                 uiField.SetValueWithoutNotify(value);
             }
             else if (val is StyleFont && fieldElement is ObjectField)
@@ -655,10 +662,33 @@ namespace Unity.UI.Builder
 
                 if (styleProperty != null)
                 {
-                    var enumStr = styleSheet.GetEnum(styleProperty.values[0]);
-                    var enumStrHungarian = BuilderNameUtilities.ConvertDashToHungarian(enumStr);
-                    var enumObj = Enum.Parse(enumValue.GetType(), enumStrHungarian);
-                    enumValue = enumObj as Enum;
+                    var styleValue = styleProperty.values[0];
+                    var enumStr = string.Empty;
+
+                    // Some keywords may conflict with the enum values. We have
+                    // to check for both here.
+                    // Ex: display: none;
+                    if (styleValue.valueType == StyleValueType.Keyword)
+                    {
+                        var keyword = styleSheet.GetKeyword(styleValue);
+                        enumStr = keyword.ToString();
+                    }
+                    else if (styleValue.valueType == StyleValueType.Enum)
+                    {
+                        enumStr = styleSheet.GetEnum(styleProperty.values[0]);
+                    }
+                    else
+                    {
+                        Debug.LogError("UIBuilder: Value type is enum but style property value type is not enum: " + styleProperty.name);
+                    }
+
+                    if (!string.IsNullOrEmpty(enumStr))
+                    {
+                        var enumStrHungarian = BuilderNameUtilities.ConvertDashToHungarian(enumStr);
+                        var enumObj = Enum.Parse(enumValue.GetType(), enumStrHungarian);
+                        if (enumObj is Enum enumEnum)
+                            enumValue = enumEnum;
+                    }
                 }
 
                 // The state of Flex Direction can affect many other Flex-related fields.
@@ -730,6 +760,80 @@ namespace Unity.UI.Builder
             }
         }
 
+        public void DispatchChangeEvent(string styleName, VisualElement fieldElement)
+        {
+            var field = FindStylePropertyInfo(styleName);
+            if (field == null)
+                return;
+
+            var val = field.GetValue(currentVisualElement.computedStyle, null);
+            var valType = val.GetType();
+
+            if (val is StyleFloat && fieldElement is FloatField floatField)
+            {
+                DispatchChangeEvent(floatField);
+            }
+            else if (val is StyleFloat && fieldElement is IntegerField integerField)
+            {
+                DispatchChangeEvent(integerField);
+            }
+            else if (val is StyleFloat && fieldElement is PercentSlider percentSlider)
+            {
+                DispatchChangeEvent(percentSlider);
+            }
+            else if (val is StyleFloat && fieldElement is NumericStyleField numericStyleField)
+            {
+                DispatchChangeEvent(numericStyleField);
+            }
+            else if (val is StyleInt && fieldElement is IntegerField intField)
+            {
+                DispatchChangeEvent(intField);
+            }
+            else if (val is StyleInt && fieldElement is IntegerStyleField integerStyleField)
+            {
+                DispatchChangeEvent(integerStyleField);
+            }
+            else if (val is StyleLength && fieldElement is IntegerField intLengthField)
+            {
+                DispatchChangeEvent(intLengthField);
+            }
+            else if (val is StyleFloat && fieldElement is DimensionStyleField dimensionFloatField)
+            {
+                DispatchChangeEvent(dimensionFloatField);
+            }
+            else if (val is StyleLength && fieldElement is DimensionStyleField dimensionLengthField)
+            {
+                DispatchChangeEvent(dimensionLengthField);
+            }
+            else if (val is StyleColor && fieldElement is ColorField colorField)
+            {
+                DispatchChangeEvent(colorField);
+            }
+            else if (val is StyleFont && fieldElement is ObjectField objectFontField)
+            {
+                DispatchChangeEvent(objectFontField);
+            }
+            else if (val is StyleBackground && fieldElement is ObjectField objectBackgroundField)
+            {
+                DispatchChangeEvent(objectBackgroundField);
+            }
+            else if (val is StyleCursor && fieldElement is ObjectField objectCursorField)
+            {
+                DispatchChangeEvent(objectCursorField);
+            }
+            else if (valType.IsGenericType && valType.GetGenericArguments()[0].IsEnum)
+            {
+                switch (fieldElement)
+                {
+                    case EnumField enumField:
+                        DispatchChangeEvent(enumField);
+                        break;
+                    case IToggleButtonStrip toggleButtonStrip:
+                        DispatchChangeEvent((BaseField<string>)toggleButtonStrip);
+                        break;
+                }
+            }
+        }
         public void RefreshStyleField(FoldoutField foldoutElement)
         {
             if (foldoutElement is FoldoutNumberField)
@@ -767,7 +871,6 @@ namespace Unity.UI.Builder
         void RefreshStyleFoldoutColorField(FoldoutColorField foldoutElement)
         {
             var isDirty = false;
-
             foreach (var path in foldoutElement.bindingPathArray)
             {
                 var cSharpStyleName = ConvertUssStyleNameToCSharpStyleName(path);
@@ -806,16 +909,96 @@ namespace Unity.UI.Builder
         void BuildStyleFieldContextualMenu(ContextualMenuPopulateEvent evt)
         {
             evt.menu.AppendAction(
+                BuilderConstants.ContextMenuSetMessage,
+                SetStyleProperty,
+                SetActionStatus,
+                evt.target);
+            
+            evt.menu.AppendAction(
                 BuilderConstants.ContextMenuUnsetMessage,
                 UnsetStyleProperty,
-                DropdownMenuAction.AlwaysEnabled,
+                UnsetActionStatus,
                 evt.target);
             
             evt.menu.AppendAction(
                 BuilderConstants.ContextMenuUnsetAllMessage,
                 UnsetAllStyleProperties,
-                DropdownMenuAction.AlwaysEnabled,
+                UnsetAllActionStatus,
                 evt.target);
+        }
+
+        DropdownMenuAction.Status UnsetAllActionStatus(DropdownMenuAction action)
+        {
+            if (currentRule.properties.Length == 0)
+                return DropdownMenuAction.Status.Disabled;
+            
+            return currentRule.properties.Any(property => !property.name.StartsWith("--")) 
+                ? DropdownMenuAction.Status.Normal 
+                : DropdownMenuAction.Status.Disabled;
+        }
+
+        DropdownMenuAction.Status UnsetActionStatus(DropdownMenuAction action)
+        {
+            return StyleActionStatus(action, property => property != null);
+        }
+        
+        DropdownMenuAction.Status StyleActionStatus(DropdownMenuAction action, Func<StyleProperty, bool> normalStatusCondition)
+        {
+            var fieldElement = action.userData as VisualElement;
+            var listToUnset = fieldElement?.userData;
+            if (listToUnset != null && listToUnset is List<BindableElement> bindableElements)
+            {
+                return CanUnsetStyleProperties(bindableElements, normalStatusCondition);
+            }
+            
+            return CanUnsetStyleProperties(new List<VisualElement>{ fieldElement }, normalStatusCondition);
+        }
+
+        DropdownMenuAction.Status SetActionStatus(DropdownMenuAction action)
+        {
+            if (action.userData is VisualElement fieldElement)
+            {
+                var styleName = fieldElement.GetProperty(BuilderConstants.InspectorStylePropertyNameVEPropertyName) as string;
+                if (styleName == "-unity-font")
+                    return DropdownMenuAction.Status.Disabled;
+            }
+
+            return StyleActionStatus(action, property => property == null);
+        }
+        
+        DropdownMenuAction.Status CanUnsetStyleProperties(IEnumerable<VisualElement> fields, Func<StyleProperty, bool> normalStatusCondition)
+        {
+            foreach (var fieldElement in fields)
+            {
+                StyleProperty styleProperty;
+                if (fieldElement.GetProperty(BuilderConstants.FoldoutFieldPropertyName) is FoldoutField foldout)
+                {
+                    // Check if the unset element was the header field.
+                    if (fieldElement.ClassListContains(BuilderConstants.FoldoutFieldHeaderClassName))
+                    {
+                        foreach (var path in foldout.bindingPathArray)
+                        {
+                            styleProperty = styleSheet.FindProperty(currentRule, path);
+                            if (normalStatusCondition(styleProperty))
+                            {
+                                Debug.Log(path);
+                                return DropdownMenuAction.Status.Normal;
+                            }
+                                
+                        }
+                    }
+                }
+                
+                var styleName = fieldElement.GetProperty(BuilderConstants.InspectorStylePropertyNameVEPropertyName) as string;
+                if (!string.IsNullOrEmpty(styleName))
+                {
+                    styleProperty = styleSheet.FindProperty(currentRule, styleName);
+                    if (normalStatusCondition(styleProperty))
+                        return DropdownMenuAction.Status.Normal;
+                }
+            }
+
+            return DropdownMenuAction.Status.Disabled;
         }
 
         void UnsetAllStyleProperties(DropdownMenuAction action)
@@ -830,7 +1013,48 @@ namespace Unity.UI.Builder
             UnsetStyleProperties(fields);
             NotifyStyleChanges();
         }
-        
+
+        void SetStyleProperty(DropdownMenuAction action)
+        {
+            var listToUnset = (action.userData as VisualElement)?.userData;
+            if (listToUnset != null && listToUnset is List<BindableElement> bindableElements)
+            {
+                SetStyleProperties(bindableElements);
+                NotifyStyleChanges();
+                return;
+            }
+
+            var fieldElement = action.userData as VisualElement;
+            SetStyleProperties(new List<VisualElement>{ fieldElement });
+            NotifyStyleChanges();
+        }
+
+        void SetStyleProperties(IEnumerable<VisualElement> fields) 
+        {
+            foreach (var fieldElement in fields)
+            {
+                var styleName = fieldElement.GetProperty(BuilderConstants.InspectorStylePropertyNameVEPropertyName) as string;
+                RefreshStyleField(styleName, fieldElement);
+                DispatchChangeEvent(styleName, fieldElement);
+
+                if (fieldElement.GetProperty(BuilderConstants.FoldoutFieldPropertyName) is FoldoutField foldout)
+                {
+                    // Check if the unset element was the header field.
+                    if (fieldElement.ClassListContains(BuilderConstants.FoldoutFieldHeaderClassName))
+                    {
+                        foreach (var path in foldout.bindingPathArray)
+                        {
+                            foreach (var linkedField in m_StyleFields[path])
+                            {
+                                RefreshStyleField(path, linkedField);
+                                DispatchChangeEvent(path, linkedField);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         void UnsetStyleProperty(DropdownMenuAction action)
         {
             var listToUnset = (action.userData as VisualElement)?.userData;
@@ -845,9 +1069,9 @@ namespace Unity.UI.Builder
             UnsetStyleProperties(new List<VisualElement>{ fieldElement });
             NotifyStyleChanges();
         }
-        
-         void UnsetStyleProperties(IEnumerable<VisualElement> fields) 
-         {
+
+        void UnsetStyleProperties(IEnumerable<VisualElement> fields) 
+        {
             foreach (var fieldElement in fields)
             {
                 var styleName = fieldElement.GetProperty(BuilderConstants.InspectorStylePropertyNameVEPropertyName) as string;
@@ -1182,6 +1406,16 @@ namespace Unity.UI.Builder
 
             var styleProperty = GetStylePropertyByStyleName(styleName);
             var isNewValue = styleProperty.values.Length == 0;
+
+            // If the current style property is saved as a different type than the new style type,
+            // we need to resave it here as the new type. We do this by just removing the current value.
+            if (!isNewValue && styleProperty.values[0].valueType != StyleValueType.Enum)
+            {
+                Undo.RegisterCompleteObjectUndo(styleSheet, BuilderConstants.ChangeUIStyleValueUndoMessage);
+
+                styleProperty.values = new StyleValueHandle[0];
+                isNewValue = true;
+            }
 
             if (field is IToggleButtonStrip)
             {

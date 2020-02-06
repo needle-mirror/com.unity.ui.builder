@@ -8,7 +8,7 @@ using System.IO;
 
 namespace Unity.UI.Builder
 {
-    internal class BuilderDocument : ScriptableObject, IBuilderSelectionNotifier, ISerializationCallbackReceiver
+    internal class BuilderDocument : ScriptableObject, IBuilderSelectionNotifier, ISerializationCallbackReceiver, IBuilderAssetPostprocessor
     {
         static readonly string s_DiskJsonFileName = "UIBuilderDocument.json";
         static readonly string s_DiskJsonFolderPath = "Library/UIBuilder";
@@ -24,6 +24,9 @@ namespace Unity.UI.Builder
 
         [SerializeField]
         VisualTreeAsset m_VisualTreeAssetBackup;
+
+        [SerializeField]
+        string m_OpenendVisualTreeAssetOldPath;
 
         // This is for automatic style path fixing after a uss file name change.
         [SerializeField]
@@ -42,15 +45,10 @@ namespace Unity.UI.Builder
 
         bool m_HasUnsavedChanges = false;
         WeakReference<Action> m_UnsavedChangesStateChangeCallback;
+        bool m_DocumentBeingSavedExplicitly = false;
 
         [SerializeField]
         CanvasTheme m_CurrentCanvasTheme;
-
-        [SerializeField]
-        float m_ViewportScale = BuilderConstants.ViewportInitialZoom;
-
-        [SerializeField]
-        Vector2 m_ViewportContentOffset = BuilderConstants.ViewportInitialContentOffset;
 
         [SerializeField]
         BuilderDocumentSettings m_Settings;
@@ -99,6 +97,11 @@ namespace Unity.UI.Builder
                 var fileName = Path.GetFileName(path);
                 return fileName;
             }
+        }
+
+        public string uxmlOldPath
+        {
+            get { return m_OpenendVisualTreeAssetOldPath; }
         }
 
         public string uxmlPath
@@ -177,14 +180,28 @@ namespace Unity.UI.Builder
 
         public float viewportZoomScale
         {
-            get { return m_ViewportScale; }
-            set { m_ViewportScale = value; }
+            get
+            {
+                return settings.ZoomScale;
+            }
+            set
+            {
+                settings.ZoomScale = value;
+                SaveSettingsToDisk();
+            }
         }
 
         public Vector2 viewportContentOffset
         {
-            get { return m_ViewportContentOffset; }
-            set { m_ViewportContentOffset = value; }
+            get
+            {
+                return settings.PanOffset;
+            }
+            set
+            {
+                settings.PanOffset = value;
+                SaveSettingsToDisk();
+            }
         }
 
         string diskJsonFolderPath
@@ -222,6 +239,16 @@ namespace Unity.UI.Builder
             EditorApplication.playModeStateChanged += PlayModeStateChange;
             EditorApplication.wantsToQuit += UnityWantsToQuit;
             Clear();
+        }
+
+        void OnEnable()
+        {
+            BuilderAssetPostprocessor.Register(this);
+        }
+
+        void OnDisable()
+        {
+            BuilderAssetPostprocessor.Unregister(this);
         }
 
         public void RegisterWindow(BuilderPaneWindow window)
@@ -282,46 +309,90 @@ namespace Unity.UI.Builder
             mainStyleSheet.FixRuleReferences();
             documentElement.IncrementVersion((VersionChangeType) (-1));
         }
-        
-        public bool CheckForUnsavedChanges()
+
+        public bool CheckForUnsavedChanges(bool assetModifiedExternally = false)
         {
             if (!hasUnsavedChanges)
                 return true;
 
-            var option = BuilderDialogsUtility.DisplayDialogComplex(
-                BuilderConstants.SaveDialogSaveChangesPromptTitle,
-                BuilderConstants.SaveDialogSaveChangesPromptMessage,
-                BuilderConstants.DialogSaveActionOption,
-                BuilderConstants.DialogCancelOption,
-                BuilderConstants.DialogDontSaveActionOption);
-
-            switch (option)
+            int option = -1;
+            if (assetModifiedExternally)
             {
-                // Save
-                case 0:
-                    if (!string.IsNullOrEmpty(uxmlPath) && !string.IsNullOrEmpty(ussPath))
-                    {
-                        SaveNewDocument(uxmlPath, ussPath, null, false);
-                        return true;
-                    }
-                    else
-                    {
-                        var builderWindow = Builder.ActiveWindow;
-                        if(builderWindow == null)
-                            builderWindow = Builder.ShowWindow();
-                        
-                        builderWindow.toolbar.PromptSaveDocumentDialog();
+                // TODO: Nothing can be done here yet, other than telling the user
+                // what just happened. Adding the ability to save unsaved changes
+                // after a file has been modified externally will require some
+                // major changes to the document flow.
+                BuilderDialogsUtility.DisplayDialog(
+                    BuilderConstants.SaveDialogExternalChangesPromptTitle,
+                    BuilderConstants.SaveDialogExternalChangesPromptMessage);
+
+                return true;
+            }
+            else
+            {
+                option = BuilderDialogsUtility.DisplayDialogComplex(
+                    BuilderConstants.SaveDialogSaveChangesPromptTitle,
+                    BuilderConstants.SaveDialogSaveChangesPromptMessage,
+                    BuilderConstants.DialogSaveActionOption,
+                    BuilderConstants.DialogCancelOption,
+                    BuilderConstants.DialogDontSaveActionOption);
+
+                switch (option)
+                {
+                    // Save
+                    case 0:
+                        if (!string.IsNullOrEmpty(uxmlPath) && !string.IsNullOrEmpty(ussPath))
+                        {
+                            SaveNewDocument(uxmlPath, ussPath, null, false);
+                            return true;
+                        }
+                        else
+                        {
+                            var builderWindow = Builder.ActiveWindow;
+                            if (builderWindow == null)
+                                builderWindow = Builder.ShowWindow();
+
+                            builderWindow.toolbar.PromptSaveDocumentDialog();
+                            return false;
+                        }
+                    // Cancel
+                    case 1:
                         return false;
-                    }
-                // Cancel
-                case 1:
-                    return false;
-                // Don't Save
-                case 2:
-                    return true;
+                    // Don't Save
+                    case 2:
+                        RestoreAssetsFromBackup();
+                        return true;
+                }
             }
 
             return true;
+        }
+
+        public void OnPostProcessAsset(string assetPath)
+        {
+            if (m_DocumentBeingSavedExplicitly)
+                return;
+
+            var newVisualTreeAsset = m_VisualTreeAsset;
+            var newMainStyleSheet = m_MainStyleSheet;
+            if (assetPath == uxmlOldPath)
+            {
+                newVisualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(assetPath);
+            }
+            else if (assetPath == ussOldPath)
+            {
+                newMainStyleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(assetPath);
+            }
+            else
+            {
+                return;
+            }
+
+            var builderWindow = Builder.ActiveWindow;
+            if (builderWindow == null)
+                builderWindow = Builder.ShowWindow();
+
+            builderWindow.toolbar.LoadDocument(newVisualTreeAsset, true);
         }
 
         void RestoreAssetsFromBackup()
@@ -359,8 +430,8 @@ namespace Unity.UI.Builder
         {
             ClearUndo();
 
-            RestoreAssetsFromBackup();
             ClearBackups();
+            m_OpenendVisualTreeAssetOldPath = string.Empty;
             m_OpenendMainStyleSheetOldPath = string.Empty;
 
             if (m_VisualTreeAsset != null)
@@ -391,11 +462,15 @@ namespace Unity.UI.Builder
         public void NewDocument(VisualElement documentRootElement)
         {
             Clear();
-            documentRootElement.Clear();
-            BuilderSharedStyles.GetSelectorContainerElement(documentRootElement).Clear();
 
-            // Re-run initializations and setup, even though there's nothing to clone.
-            ReloadDocumentToCanvas(documentRootElement);
+            if (documentRootElement != null)
+            {
+                documentRootElement.Clear();
+                BuilderSharedStyles.GetSelectorContainerElement(documentRootElement).Clear();
+
+                // Re-run initializations and setup, even though there's nothing to clone.
+                ReloadDocumentToCanvas(documentRootElement);
+            }
 
             hasUnsavedChanges = false;
 
@@ -421,11 +496,21 @@ namespace Unity.UI.Builder
                 visualTreeAsset.ReplaceStyleSheetPaths(ussOldPath, ussPath);
             }
 
+            // Need to save a backup before the AssetDatabase.Refresh().
             var tempVisualTreeAsset = m_VisualTreeAsset.DeepCopy();
             var tempMainStyleSheet = m_MainStyleSheet.DeepCopy();
 
             WriteToFiles(uxmlPath, ussPath);
-            AssetDatabase.Refresh();
+
+            m_DocumentBeingSavedExplicitly = true;
+            try
+            {
+                AssetDatabase.Refresh();
+            }
+            finally
+            {
+                m_DocumentBeingSavedExplicitly = false;
+            }
 
             var loadedVisualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(uxmlPath);
             var loadedStyleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(ussPath);
@@ -434,7 +519,7 @@ namespace Unity.UI.Builder
                 loadedVisualTreeAsset != m_VisualTreeAsset ||
                 loadedStyleSheet != m_MainStyleSheet;
 
-            if (needFullRefresh)
+            if (needFullRefresh && documentRootElement != null)
             {
                 NewDocument(documentRootElement);
 
@@ -473,6 +558,7 @@ namespace Unity.UI.Builder
 
             m_VisualTreeAsset.ConvertAllAssetReferencesToPaths();
 
+            m_OpenendVisualTreeAssetOldPath = uxmlPath;
             m_OpenendMainStyleSheetOldPath = ussPath;
 
             hasUnsavedChanges = false;
@@ -501,6 +587,9 @@ namespace Unity.UI.Builder
 
         void ReloadDocumentToCanvas(VisualElement documentElement)
         {
+            if (documentElement == null)
+                return;
+
             // Load the asset.
             documentElement.Clear();
             try
@@ -549,6 +638,7 @@ namespace Unity.UI.Builder
             }
             m_MainStyleSheet = styleSheet;
 
+            m_OpenendVisualTreeAssetOldPath = AssetDatabase.GetAssetPath(m_VisualTreeAsset);
             m_OpenendMainStyleSheetOldPath = AssetDatabase.GetAssetPath(styleSheet);
 
             hasUnsavedChanges = false;

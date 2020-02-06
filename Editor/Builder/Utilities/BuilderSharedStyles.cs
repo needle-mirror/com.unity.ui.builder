@@ -79,13 +79,13 @@ namespace Unity.UI.Builder
                             selectorParts.Add(selectorPart.value);
                             break;
                         case StyleSelectorType.Class:
-                            selectorParts.Add("." + selectorPart.value);
+                            selectorParts.Add(BuilderConstants.UssSelectorClassNameSymbol + selectorPart.value);
                             break;
                         case StyleSelectorType.PseudoClass:
-                            selectorParts.Add(":" + selectorPart.value);
+                            selectorParts.Add(BuilderConstants.UssSelectorPseudoStateSymbol + selectorPart.value);
                             break;
                         case StyleSelectorType.ID:
-                            selectorParts.Add("#" + selectorPart.value);
+                            selectorParts.Add(BuilderConstants.UssSelectorNameSymbol + selectorPart.value);
                             break;
                         default:
                             throw new ArgumentOutOfRangeException();

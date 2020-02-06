@@ -4,6 +4,46 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.10.1] - 2020-02-06
+
+- Improved handling of external changes made to the currently open UXML or USS asset. Unsaved changes will still be lost for now but the UI Builder will at least refresh itself properly after an external change.
+- Added character validation for new style selector in the StyleSheets pane.
+- Improved character validation when adding a style class to an element in the Inspector pane.
+- Added character validation to the Name, Binding Path, and View Data Key attributes of an element in the Inspector pane as you type.
+- Added type validation to the Type attribute, like on the ObjectField, with a bit of auto-completion.
+- Added multi-line support to the Text attribute in the Inspector.
+- Added the style fields' right-click menu option to **Set** a style (inline in UXML or in StyleSheet) at whatever default or inherited value it is at without having to modify it explicitly.
+- Style fields' right-click menu options **Set** and **Unset** will be grayed out if the respective action is not applicable (can't Set something that is already Set).
+- Added IMGUIContainer and all Toolbar controls to the Library.
+- Added better (looking) default values for Gradient Field and Curve Field when hovering them in the Library and when adding them to the document.
+- Copy/Paste and Duplicate will now focus the newly created element.
+- Dragging an element from the Library into the Canvas will now focus the Viewport, letting you immediately delete it.
+- When the Save Dialog appears, the UXML path field will automatically get focus.
+- Pressing Enter in the UXML or USS fields of the Save Dialog will be equivalent to pressing the Save button.
+- When editing name of element in Hierarchy, clicking somewhere else will now commit the change (if the new name is valid).
+- Removed **Reset** button from Toolbar.
+- Removed UI Builder's own assets and types from showing up in the Library.
+- Element highlight while hovering the StyleSheets and Hierarchy pane will now be clipped by the Viewport and will no longer show on top of other panes.
+- Fixed a bug where the UXML or USS Preview pane header would appear duplicated.
+- Fixed special symbols in attribute values, like `\t \n & < > ' "`, not being escaped properly when generating the UXML.
+- Fixed extracting local style overrides to new USS selector not properly extracting `resource()`-type paths.
+- Fixed console errors when turning on Camera render texture background mode for the Canvas on new documents.
+- Fixed SliderInt console errors when added to document and having the Step Size attribute not working.
+- Fixed Opacity style percent field incorrectly casting the integer input values to float, causing a 5 to turn into a 4.
+- Fixed ProgressBar Low Value and High Value attributes not being read properly from the element when displaying the Attributes inspector.
+- Fixed `display: none` in a StyleSheet rule not being properly read by the Builder, causing console errors when showing the Inspector of the rule.
+- Fixed the Type attribute on the ObjectField immediately invalidating the UXML on first input character, causing import errors, and making it unusable.
+- Fixed Slider default label saying SliderInt.
+- Fixed tooltip and drag preview for Bounds and Bounds (Int) to not appear squished.
+- Fixed zoom and pan not being remembered per document.
+- Fixed being able to delete and move elements inside a C# element or UXML template instance.
+- Fixed canvas theme not being re-applied when loading a document.
+- Fixed Toolbar document name not getting the * for unsaved changes right after a save and a modification to inline styles.
+- Fixed no preview showing up while dragging a ListView, ScrollView, or IMGUIContainer.
+- Fixed double-clicking the .uxml document entry in the Hierarchy causing an error in the Console.
+- Fixed asset rename/move warning dialogs to show the type of action being done (was always showing as a move).
+- Fixed dragging from Hierarchy using right-click causing the preview tooltip to stay on screen when mouse button is released.
+
 ## [0.10.0] - 2019-12-13
 
 - Added zoom and pan support in the Viewport. There are view reset buttons and a zoom levels menu in the Viewport toolbar.

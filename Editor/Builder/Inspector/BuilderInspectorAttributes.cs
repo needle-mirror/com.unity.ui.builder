@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -75,7 +76,6 @@ namespace Unity.UI.Builder
         BuilderStyleRow CreateAttributeRow(UxmlAttributeDescription attribute)
         {
             var attributeType = attribute.GetType();
-            var vea = currentVisualElement.GetVisualElementAsset();
 
             // Generate field label.
             var fieldLabel = BuilderNameUtilities.ConvertDashToHuman(attribute.name);
@@ -84,7 +84,25 @@ namespace Unity.UI.Builder
             if (attribute is UxmlStringAttributeDescription)
             {
                 var uiField = new TextField(fieldLabel);
-                uiField.RegisterValueChangedCallback(OnAttributeValueChange);
+                if (attribute.name.Equals("name") || attribute.name.Equals("view-data-key"))
+                    uiField.RegisterValueChangedCallback(e =>
+                    {
+                        OnValidatedAttributeValueChange(e, BuilderNameUtilities.AttributeRegex, BuilderConstants.AttributeValidationSpacialCharacters);
+                    });
+                else if (attribute.name.Equals("binding-path"))
+                    uiField.RegisterValueChangedCallback(e =>
+                    {
+                        OnValidatedAttributeValueChange(e, BuilderNameUtilities.BindingPathAttributeRegex, BuilderConstants.BindingPathAttributeValidationSpacialCharacters);
+                    });
+                else
+                    uiField.RegisterValueChangedCallback(OnAttributeValueChange);
+
+                if (attribute.name.Equals("text"))
+                {
+                    uiField.multiline = true;
+                    uiField.AddToClassList(BuilderConstants.InspectorMultiLineTextFieldClassName);
+                }
+
                 fieldElement = uiField;
             }
             else if (attribute is UxmlFloatAttributeDescription)
@@ -121,6 +139,18 @@ namespace Unity.UI.Builder
             {
                 var uiField = new ColorField(fieldLabel);
                 uiField.RegisterValueChangedCallback(OnAttributeValueChange);
+                fieldElement = uiField;
+            }
+            else if (attributeType.IsGenericType &&
+                !attributeType.GetGenericArguments()[0].IsEnum &&
+                attributeType.GetGenericArguments()[0] is Type)
+            {
+                var uiField = new TextField(fieldLabel);
+                uiField.isDelayed = true;
+                uiField.RegisterValueChangedCallback(e =>
+                {
+                    OnValidatedTypeAttributeChange(e, attributeType.GetGenericArguments()[0]);
+                });
                 fieldElement = uiField;
             }
             else if (attributeType.IsGenericType && attributeType.GetGenericArguments()[0].IsEnum)
@@ -192,6 +222,13 @@ namespace Unity.UI.Builder
                     return scrollView.showVertical;
                 }
             }
+            else if (currentVisualElement is ObjectField objectField)
+            {
+                if (attributeName == "type")
+                {
+                    return objectField.objectType;
+                }
+            }
 
             return null;
         }
@@ -204,7 +241,7 @@ namespace Unity.UI.Builder
             var veType = currentVisualElement.GetType();
             var camel = BuilderNameUtilities.ConvertDashToCamel(attribute.name);
 
-            var fieldInfo = veType.GetProperty(camel, BindingFlags.Instance | BindingFlags.Public | BindingFlags.IgnoreCase);
+            var fieldInfo = veType.GetProperty(camel, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.IgnoreCase);
 
             object veValueAbstract = null;
             if (fieldInfo == null)
@@ -241,7 +278,10 @@ namespace Unity.UI.Builder
             }
             else if (attribute is UxmlIntAttributeDescription && fieldElement is IntegerField)
             {
-                (fieldElement as IntegerField).SetValueWithoutNotify((int)veValueAbstract);
+                if (veValueAbstract is int)
+                    (fieldElement as IntegerField).SetValueWithoutNotify((int)veValueAbstract);
+                else if (veValueAbstract is float)
+                    (fieldElement as IntegerField).SetValueWithoutNotify(Convert.ToInt32(veValueAbstract));
             }
             else if (attribute is UxmlLongAttributeDescription && fieldElement is LongField)
             {
@@ -254,6 +294,16 @@ namespace Unity.UI.Builder
             else if (attribute is UxmlColorAttributeDescription && fieldElement is ColorField)
             {
                 (fieldElement as ColorField).SetValueWithoutNotify((Color)veValueAbstract);
+            }
+            else if (attributeType.IsGenericType &&
+                !attributeType.GetGenericArguments()[0].IsEnum &&
+                attributeType.GetGenericArguments()[0] is Type &&
+                fieldElement is TextField textField &&
+                veValueAbstract is Type veTypeValue)
+            {
+                var fullTypeName = veTypeValue.AssemblyQualifiedName;
+                var fullTypeNameSplit = fullTypeName.Split(',');
+                textField.SetValueWithoutNotify($"{fullTypeNameSplit[0]},{fullTypeNameSplit[1]}");
             }
             else if (attributeType.IsGenericType &&
                 attributeType.GetGenericArguments()[0].IsEnum &&
@@ -277,22 +327,31 @@ namespace Unity.UI.Builder
             {
                 (fieldElement as TextField).SetValueWithoutNotify(veValueAbstract.ToString());
             }
-
-            // Determine if overridden.
+            
             styleRow.RemoveFromClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
+            if (IsAttributeOverriden(attribute))
+                styleRow.AddToClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
+        }
+
+        bool IsAttributeOverriden(UxmlAttributeDescription attribute)
+        {
+            var vea = currentVisualElement.GetVisualElementAsset();
             if (vea != null && attribute.name == "picking-mode")
             {
                 var veaAttributeValue = vea.GetAttributeValue(attribute.name);
-                if (veaAttributeValue != null && veaAttributeValue.ToLower() != attribute.defaultValueAsString.ToLower())
-                    styleRow.AddToClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
+                if (veaAttributeValue != null &&
+                    veaAttributeValue.ToLower() != attribute.defaultValueAsString.ToLower())
+                    return true;
             }
             else if (attribute.name == "name")
             {
                 if (!string.IsNullOrEmpty(currentVisualElement.name))
-                    styleRow.AddToClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
+                    return true;
             }
             else if (vea != null && vea.HasAttribute(attribute.name))
-                styleRow.AddToClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
+                return true;
+
+            return false;
         }
 
         void ResetAttributeFieldToDefault(BindableElement fieldElement)
@@ -346,6 +405,18 @@ namespace Unity.UI.Builder
                 f.SetValueWithoutNotify(a.defaultValue);
             }
             else if (attributeType.IsGenericType &&
+                !attributeType.GetGenericArguments()[0].IsEnum &&
+                attributeType.GetGenericArguments()[0] is Type &&
+                fieldElement is TextField)
+            {
+                var a = attribute as TypedUxmlAttributeDescription<Type>;
+                var f = fieldElement as TextField;
+                if (a.defaultValue == null)
+                    f.SetValueWithoutNotify(string.Empty);
+                else
+                    f.SetValueWithoutNotify(a.defaultValue.ToString());
+            }
+            else if (attributeType.IsGenericType &&
                 attributeType.GetGenericArguments()[0].IsEnum &&
                 fieldElement is EnumField)
             {
@@ -375,20 +446,44 @@ namespace Unity.UI.Builder
             evt.menu.AppendAction(
                 BuilderConstants.ContextMenuUnsetMessage,
                 UnsetAttributeProperty,
-                DropdownMenuAction.AlwaysEnabled,
+                action =>
+                {
+                    var fieldElement = action.userData as BindableElement;
+                    if (fieldElement == null) 
+                        return DropdownMenuAction.Status.Disabled;
+                    
+                    var attributeName = fieldElement.bindingPath;
+                    var vea = currentVisualElement.GetVisualElementAsset();
+                    return vea.HasAttribute(attributeName) 
+                        ? DropdownMenuAction.Status.Normal 
+                        : DropdownMenuAction.Status.Disabled;
+                },
                 evt.target);
             
             evt.menu.AppendAction(
                 BuilderConstants.ContextMenuUnsetAllMessage,
                 UnsetAllAttributes,
-                DropdownMenuAction.AlwaysEnabled,
+                action =>
+                {
+                    var attributeList = currentVisualElement.GetAttributeDescriptions();
+                    foreach (var attribute in attributeList)
+                    {
+                        if (attribute?.name == null)
+                            continue;
+                
+                        if(IsAttributeOverriden(attribute))
+                            return DropdownMenuAction.Status.Normal;
+                    }
+
+                    return DropdownMenuAction.Status.Disabled;
+                },
                 evt.target);
         }
 
         void UnsetAllAttributes(DropdownMenuAction action)
         {
             var attributeList = currentVisualElement.GetAttributeDescriptions();
-
+            
             // Undo/Redo
             Undo.RegisterCompleteObjectUndo(m_Inspector.visualTreeAsset, BuilderConstants.ChangeAttributeValueUndoMessage);
             
@@ -420,6 +515,7 @@ namespace Unity.UI.Builder
         {
             var fieldElement = action.userData as BindableElement;
             var attributeName = fieldElement.bindingPath;
+            
 
             // Undo/Redo
             Undo.RegisterCompleteObjectUndo(m_Inspector.visualTreeAsset, BuilderConstants.ChangeAttributeValueUndoMessage);
@@ -442,6 +538,65 @@ namespace Unity.UI.Builder
         {
             var field = evt.target as TextField;
             PostAttributeValueChange(field, evt.newValue);
+        }
+
+        void OnValidatedTypeAttributeChange(ChangeEvent<string> evt, Type desiredType)
+        {
+            var field = evt.target as TextField;
+            var typeName = evt.newValue;
+            var fullTypeName = typeName;
+            if (!string.IsNullOrEmpty(typeName))
+            {
+                var type = Type.GetType(fullTypeName, false);
+
+                // Try some auto-fixes.
+                if (type == null)
+                {
+                    fullTypeName = typeName + ", UnityEngine.CoreModule";
+                    type = Type.GetType(fullTypeName, false);
+                }
+                if (type == null)
+                {
+                    fullTypeName = typeName + ", UnityEditor";
+                    type = Type.GetType(fullTypeName, false);
+                }
+                if (type == null && typeName.Contains("."))
+                {
+                    var split = typeName.Split('.');
+                    fullTypeName = typeName + $", {split[0]}.{split[1]}Module";
+                    type = Type.GetType(fullTypeName, false);
+                }
+
+                if (type == null)
+                {
+                    Builder.ShowWarning(string.Format(BuilderConstants.TypeAttributeInvalidTypeMessage, field.label));
+                    evt.StopPropagation();
+                    return;
+                }
+                else if (!desiredType.IsAssignableFrom(type))
+                {
+                    Builder.ShowWarning(string.Format(BuilderConstants.TypeAttributeMustDeriveFromMessage, field.label, desiredType.FullName));
+                    evt.StopPropagation();
+                    return;
+                }
+            }
+
+            field.SetValueWithoutNotify(fullTypeName);
+            PostAttributeValueChange(field, fullTypeName);
+        }
+
+        void OnValidatedAttributeValueChange(ChangeEvent<string> evt, Regex regex, string message)
+        {
+            var field = evt.target as TextField;
+            if (!string.IsNullOrEmpty(evt.newValue) && !regex.IsMatch(evt.newValue))
+            {
+                Builder.ShowWarning(string.Format(message, field.label));
+                field.SetValueWithoutNotify(evt.previousValue);
+                evt.StopPropagation();
+                return;
+            }
+
+            OnAttributeValueChange(evt);
         }
 
         void OnAttributeValueChange(ChangeEvent<float> evt)

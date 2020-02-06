@@ -148,6 +148,19 @@ namespace Unity.UI.Builder
             vea.RemoveStyleClass(className);
         }
 
+        public static void AddStyleComplexSelectorToSelection(BuilderDocument document, StyleComplexSelector scs)
+        {
+            var selectionProp = document.mainStyleSheet.AddProperty(
+                scs,
+                BuilderConstants.SelectedStyleRulePropertyName,
+                BuilderConstants.ChangeSelectionUndoMessage);
+
+            // Need to add at least one dummy value because lots of code will die
+            // if it encounters a style property with no values.
+            document.mainStyleSheet.AddValue(
+                selectionProp, 42.0f, BuilderConstants.ChangeSelectionUndoMessage);
+        }
+
         public static void AddElementToSelectionInAsset(BuilderDocument document, VisualElement ve)
         {
             if (BuilderSharedStyles.IsSelectorsContainerElement(ve))
@@ -159,15 +172,7 @@ namespace Unity.UI.Builder
             else if (BuilderSharedStyles.IsSelectorElement(ve))
             {
                 var scs = ve.GetStyleComplexSelector();
-                var selectionProp = document.mainStyleSheet.AddProperty(
-                    scs,
-                    BuilderConstants.SelectedStyleRulePropertyName,
-                    BuilderConstants.ChangeSelectionUndoMessage);
-
-                // Need to add at least one dummy value because lots of code will die
-                // if it encounters a style property with no values.
-                document.mainStyleSheet.AddValue(
-                    selectionProp, 42.0f, BuilderConstants.ChangeSelectionUndoMessage);
+                AddStyleComplexSelectorToSelection(document, scs);
             }
             else if (BuilderSharedStyles.IsDocumentElement(ve))
             {

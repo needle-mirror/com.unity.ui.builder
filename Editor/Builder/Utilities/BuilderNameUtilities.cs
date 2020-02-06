@@ -71,5 +71,9 @@ namespace Unity.UI.Builder
             strShortened += "...";
             return strShortened;
         }
+
+        public static Regex AttributeRegex { get; } = new Regex(@"^[a-zA-Z0-9\-_]+$");
+        public static Regex StyleSelectorRegex { get; } = new Regex(@"^[a-zA-Z0-9\-_:#>. ]+$");
+        public static Regex BindingPathAttributeRegex { get; } = new Regex(@"^[a-zA-Z0-9\-_.]+$");
     }
 }

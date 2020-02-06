@@ -8,6 +8,7 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
+using Toolbar = UnityEditor.UIElements.Toolbar;
 
 namespace Unity.UI.Builder
 {
@@ -197,6 +198,10 @@ namespace Unity.UI.Builder
                 if (!Unsupported.IsDeveloperMode() && split.Count() > 0 && s_NameSpacesToAvoid.Contains(split[0]))
                     continue;
 
+                // Avoid adding UI Builder's own types, even in internal mode.
+                if (split.Count() >= 3 && split[0] == "Unity" && split[1] == "UI" && split[2] == "Builder")
+                    continue;
+
                 AddCategoriesToStack(sourceCategory, categoryStack, split);
 
                 var asset = new VisualElementAsset(known.uxmlQualifiedName);
@@ -257,6 +262,9 @@ namespace Unity.UI.Builder
                 var prettyPath = assetPath;
                 prettyPath = Path.GetDirectoryName(prettyPath);
                 prettyPath = prettyPath.Replace('\\', '/');
+                if (prettyPath.StartsWith(BuilderConstants.UIBuilderPackageRootPath))
+                    continue;
+
                 var split = prettyPath.Split('/');
                 AddCategoriesToStack(projectCategory, categoryStack, split);
 
@@ -350,9 +358,6 @@ namespace Unity.UI.Builder
         void RefreshTreeView()
         {
             Clear();
-
-            var choices = new List<string> { "First", "Second", "Third" };
-
             LibraryTreeItem.ResetNextId();
             var items = new List<ITreeViewItem>();
 
@@ -390,7 +395,7 @@ namespace Unity.UI.Builder
                     new LibraryTreeItem("Float", () => new FloatField("Float Field") { value = 42.2f }),
                     new LibraryTreeItem("Long", () => new LongField("Long Field") { value = 42 }),
                     new LibraryTreeItem("Min-Max Slider", () => new MinMaxSlider("Min/Max Slider", 0, 20, -10, 40) { value = new Vector2(10, 12) }),
-                    new LibraryTreeItem("Slider", () => new Slider("SliderInt", 0, 100) { value = 42 }),
+                    new LibraryTreeItem("Slider", () => new Slider("Slider", 0, 100) { value = 42 }),
                     new LibraryTreeItem("Progress Bar", () => new ProgressBar() { title = "my-progress", value = 22 } ),
                     new LibraryTreeItem("Vector2", () => new Vector2Field("Vec2 Field")),
                     new LibraryTreeItem("Vector3", () => new Vector3Field("Vec3 Field")),
@@ -406,8 +411,20 @@ namespace Unity.UI.Builder
                 new LibraryTreeItem("Value Fields", () => null, null, new List<TreeViewItem<string>>()
                 {
                     new LibraryTreeItem("Color", () => new ColorField("Color") { value = Color.cyan }),
-                    new LibraryTreeItem("Curve", () => new CurveField("Curve")),
-                    new LibraryTreeItem("Gradient", () => new GradientField("Gradient"))
+                    new LibraryTreeItem("Curve", () => new CurveField("Curve") {
+                        value = new AnimationCurve(new Keyframe[] { new Keyframe(0, 0), new Keyframe(5, 8), new Keyframe(10, 4) })
+                    }),
+                    new LibraryTreeItem("Gradient", () => new GradientField("Gradient") {
+                        value = new Gradient()
+                        {
+                            colorKeys = new GradientColorKey[]
+                            {
+                                new GradientColorKey(Color.red, 0),
+                                new GradientColorKey(Color.blue, 10),
+                                new GradientColorKey(Color.green, 20)
+                            }
+                        }
+                    })
                 }),
                 new LibraryTreeItem("Choice Fields", () => null, null, new List<TreeViewItem<string>>()
                 {
@@ -424,7 +441,21 @@ namespace Unity.UI.Builder
                 new LibraryTreeItem("Containers", () => null, null, new List<TreeViewItem<string>>()
                 {
                     new LibraryTreeItem("ScrollView", () => new ScrollView()),
-                    new LibraryTreeItem("ListView", () => new ListView())
+                    new LibraryTreeItem("ListView", () => new ListView()),
+                    new LibraryTreeItem("IMGUIContainer", () => new IMGUIContainer()),
+                }),
+                new LibraryTreeItem("Toolbar", () => null, null, new List<TreeViewItem<string>>()
+                {
+                    new LibraryTreeItem("Toolbar", () => new Toolbar()),
+                    new LibraryTreeItem("Toolbar Menu", () => new ToolbarMenu()),
+                    new LibraryTreeItem("Toolbar Button", () => new ToolbarButton { text = "Button" }),
+                    new LibraryTreeItem("Toolbar Spacer", () => new ToolbarSpacer()),
+                    new LibraryTreeItem("Toolbar Toggle", () => new ToolbarToggle { label = "Toggle" }),
+#if UNITY_2019_3_OR_NEWER
+                    new LibraryTreeItem("Toolbar Breadcrumbs", () => new ToolbarBreadcrumbs()),
+#endif
+                    new LibraryTreeItem("Toolbar Search Field", () => new ToolbarSearchField ()),
+                    new LibraryTreeItem("Toolbar Popup Search Field", () => new ToolbarPopupSearchField ()),
                 }),
                 new LibraryTreeItem("Inspectors", () => null, null, new List<TreeViewItem<string>>()
                 {

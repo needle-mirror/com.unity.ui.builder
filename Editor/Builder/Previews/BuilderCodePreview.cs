@@ -85,10 +85,13 @@ namespace Unity.UI.Builder
         protected override void OnAttachToPanelDefaultAction()
         {
             base.OnAttachToPanelDefaultAction();
-            
-            m_OpenTargetAssetSourceButton = new Button(OnOpenSourceFileButtonClick);
-            m_OpenTargetAssetSourceButton.AddToClassList(s_CodeOpenSourceFileClassName);
-            pane.toolbar.Add(m_OpenTargetAssetSourceButton);
+
+            if (m_OpenTargetAssetSourceButton == null)
+            {
+                m_OpenTargetAssetSourceButton = new Button(OnOpenSourceFileButtonClick);
+                m_OpenTargetAssetSourceButton.AddToClassList(s_CodeOpenSourceFileClassName);
+                pane.toolbar.Add(m_OpenTargetAssetSourceButton);
+            }
         }
 
         protected abstract string previewAssetExtension { get; }

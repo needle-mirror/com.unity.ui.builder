@@ -1,17 +1,17 @@
-<UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:uib="Unity.UI.Builder">
-    <Template name="SampleSection" path="Packages/com.unity.ui.builder/Editor/UI/SampleDocument/BuilderSampleCanvasSection.uxml" />
-    <VisualElement>
-        <Style path="Packages/com.unity.ui.builder/Editor/UI/SampleDocument/BuilderSampleCanvas.uss" />
-        <Label text="Canvas Contents:" class="canvas-contents" />
-        <VisualElement name="sample-canvas" style="border-width: 20px; border-color: rgb(160, 96, 0);">
-            <Button name="canvas-button" text="Canvas Button!" class="sample-button canvas-button" />
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:uib="Unity.UI.Builder">
+    <ui:Template name="SampleSection" src="BuilderSampleCanvasSection.uxml" />
+    <ui:VisualElement>
+        <Style src="BuilderSampleCanvas.uss" />
+        <ui:Label text="Canvas Contents:" class="canvas-contents" />
+        <ui:VisualElement name="sample-canvas" style="border-width: 20px; border-color: rgb(160, 96, 0);">
+            <ui:Button name="canvas-button" text="Canvas Button!" class="sample-button canvas-button" />
             <uie:IntegerField view-data-key="view-key" picking-mode="ignore" name="canvas-field" label="Some Integer Field" value="42" />
-        </VisualElement>
-        <Instance name="vanilla-section" template="SampleSection" />
-        <Instance name="overridden-section" template="SampleSection">
-            <Style path="Packages/com.unity.ui.builder/Editor/UI/SampleDocument/BuilderSampleCanvasSection.uss" />
+        </ui:VisualElement>
+        <ui:Instance name="vanilla-section" template="SampleSection" />
+        <ui:Instance name="overridden-section" template="SampleSection">
+            <Style src="BuilderSampleCanvasSection.uss" />
             <AttributeOverrides element-name="section-text-field" label="label overridden!" text="text overridden!" />
-        </Instance>
+        </ui:Instance>
         <uib:BuilderAttributesTestElement
             string-attr="my-string"
             float-attr="4.2"
@@ -21,5 +21,9 @@
             bool-attr="true"
             color-attr="#CA7C03FF"
             enum-attr="Good" />
-    </VisualElement>
-</UXML>
+        <ui:Label class="hidden-label" text="SHOULD NOT SEE THIS" />
+    </ui:VisualElement>
+    <ui:Label text="Multi-Line Label:&#10;line 1&#10;line 2&#10;&#x9;tabbed line 3&#10;line 4 with symbols: &quot;jd&amp;&amp;&quot;&apos;&lt;&gt;&apos;">
+        <Style src="BuilderSampleCanvas.uss" />
+    </ui:Label>
+</ui:UXML>

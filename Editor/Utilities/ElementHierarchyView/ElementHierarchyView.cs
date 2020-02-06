@@ -127,14 +127,6 @@ namespace Unity.UI.Builder
             m_ContextMenuManipulator.RegisterCallbacksOnTarget(m_Container);
         }
 
-        public void DrawOverlay()
-        {
-            if (m_TreeViewHoverOverlay == null)
-                return;
-
-            m_TreeViewHoverOverlay.Draw();
-        }
-
         void ActivateSearchBar(ExecuteCommandEvent evt)
         {
             Debug.Log(evt.commandName);
@@ -279,7 +271,7 @@ namespace Unity.UI.Builder
             nameLabel.AddToClassList(BuilderConstants.ExplorerItemNameLabelClassName);
             nameLabel.AddToClassList(BuilderConstants.ElementNameClassName);
             if (!string.IsNullOrEmpty(documentElement.name))
-                nameLabel.text = "#" + documentElement.name;
+                nameLabel.text = BuilderConstants.UssSelectorNameSymbol + documentElement.name;
             labelCont.Add(nameLabel);
 
             // Textfield to rename element in hierarchy.
@@ -295,7 +287,7 @@ namespace Unity.UI.Builder
                     classLabelCont.AddToClassList(BuilderConstants.ExplorerItemLabelContClassName);
                     explorerItem.Add(classLabelCont);
 
-                    var classLabel = new Label("." + ussClass);
+                    var classLabel = new Label(BuilderConstants.UssSelectorClassNameSymbol + ussClass);
                     classLabel.AddToClassList(BuilderConstants.ExplorerItemLabelClassName);
                     classLabel.AddToClassList(BuilderConstants.ElementClassNameClassName);
                     classLabel.AddToClassList("unity-debugger-tree-item-classlist-label");

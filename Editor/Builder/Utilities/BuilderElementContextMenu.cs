@@ -138,7 +138,7 @@ namespace Unity.UI.Builder
                     m_Selection.Select(null, documentElement);
                     m_PaneWindow.commandHandler.Paste();
                 },
-                string.IsNullOrEmpty(EditorGUIUtility.systemCopyBuffer)
+                string.IsNullOrEmpty(BuilderEditorUtility.SystemCopyBuffer)
                     ? DropdownMenuAction.Status.Disabled
                     : DropdownMenuAction.Status.Normal);
 

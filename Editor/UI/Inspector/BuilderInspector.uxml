@@ -89,8 +89,6 @@
                     <Button name="create-class-button" text="Extract Inlined Styles to New Class" class="unity-builder-inspector__add-class-button" />
                 </VisualElement>
 
-                <VisualElement name="add-class-validation-message-container" />
-
                 <VisualElement name="class-list-container" class="unity-builder-inspector__class-list-container" />
             </uib:PersistedFoldout>
 

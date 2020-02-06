@@ -8,6 +8,7 @@ namespace Unity.UI.Builder
         static readonly string s_UssClassName = "unity-builder-tooltip-preview";
         static readonly string s_EnablerClassName = "unity-builder-tooltip-preview__enabler";
         static readonly string s_ContainerClassName = "unity-builder-tooltip-preview__container";
+        public static readonly string s_EnabledElementName = "enabler";
 
         VisualElement m_Enabler;
         VisualElement m_Container;
@@ -25,7 +26,7 @@ namespace Unity.UI.Builder
             AddToClassList(s_UssClassName);
 
             m_Enabler = new VisualElement();
-            m_Enabler.name = "enabler";
+            m_Enabler.name = s_EnabledElementName;
             m_Enabler.AddToClassList(s_EnablerClassName);
             hierarchy.Add(m_Enabler);
 
