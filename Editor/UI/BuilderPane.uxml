@@ -4,6 +4,7 @@
         <Label name="sub-title-prefix" class="unity-builder-pane__sub-title-prefix" />
         <Label name="sub-title" class="unity-builder-pane__sub-title" />
         <VisualElement name="toolbar" class="unity-builder-pane__toolbar" />
+        <uie:ToolbarMenu name="ellipsis-menu" class="unity-builder__toolbar-setting-menu" />
     </VisualElement>
     <VisualElement name="content-container" class="unity-builder-pane__content-container">
 

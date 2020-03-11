@@ -147,6 +147,7 @@ namespace Unity.UI.Builder
             m_PickOverlay.RegisterCallback<MouseMoveEvent>(OnHover);
             m_PickOverlay.RegisterCallback<MouseLeaveEvent>(OnMouseLeave);
             m_Viewport.RegisterCallback<MouseDownEvent>(OnMissPick);
+            m_Viewport.RegisterCallback<GeometryChangedEvent>(OnGeometryChanged);
             
             m_ContextMenuManipulator?.RegisterCallbacksOnTarget(m_Viewport);
 
@@ -211,6 +212,29 @@ namespace Unity.UI.Builder
             CenterCanvas();
         }
 
+        void OnGeometryChanged(GeometryChangedEvent evt)
+        {
+            // We use the GeometryChangedEvent to detect that the viewport is visible and has been
+            // initialized properly (i.e.: m_Viewport.resolvedStyle has valid values).
+            // But since GeometryChangedEvent is called also for resizing, added some logic to make sure
+            // we only center the canvas on opening the window.
+            
+            bool viewportNowVisible = evt.oldRect != Rect.zero;
+            
+            if (string.IsNullOrEmpty(m_PaneWindow.document.uxmlFileName) &&
+                !m_PaneWindow.document.hasUnsavedChanges && viewportNowVisible)
+            {
+                CenterCanvas();
+            }
+
+            // Now that the UI Builder is being rendered, the canvas has been centered (if needed)
+            // and we can unregister.
+            if (viewportNowVisible)
+            {
+                m_Viewport.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
+            }
+        }
+        
         void CenterCanvas()
         {
             contentOffset = new Vector2((m_Viewport.resolvedStyle.width - m_Canvas.width) / 2, (m_Viewport.resolvedStyle.height - m_Canvas.height) / 2);

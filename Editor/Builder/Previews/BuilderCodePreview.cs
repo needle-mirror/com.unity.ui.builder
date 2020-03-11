@@ -139,13 +139,13 @@ namespace Unity.UI.Builder
             evt.StopImmediatePropagation();
         }
 
-        protected void SetTargetAsset(ScriptableObject targetAsset)
+        protected void SetTargetAsset(ScriptableObject targetAsset, bool hasUnsavedChanges)
         {
             if(pane == null)
                 return;
             
             m_TargetAsset = targetAsset;
-            pane.subTitle = BuilderAssetUtilities.GetAssetName(targetAsset, previewAssetExtension);
+            pane.subTitle = BuilderAssetUtilities.GetAssetName(targetAsset, previewAssetExtension, hasUnsavedChanges);
             m_OpenTargetAssetSourceButton.style.display = isTargetAssetAvailableOnDisk ? DisplayStyle.Flex : DisplayStyle.None;
         }
         

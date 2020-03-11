@@ -24,9 +24,20 @@ namespace Unity.UI.Builder
             var lastResourcesSubstring = assetPath.LastIndexOf(resourcesFolder) + resourcesFolder.Length;
             assetPath = assetPath.Substring(lastResourcesSubstring);
             var lastExtDot = assetPath.LastIndexOf(".");
+
+            if (lastExtDot == -1)
+            {
+                return null;
+            }
+
             assetPath = assetPath.Substring(0, lastExtDot);
 
             return assetPath;
+        }
+
+        public static bool IsBuiltinPath(string assetPath)
+        {
+            return assetPath == "Resources/unity_builtin_extra";
         }
 
         public static VisualElementAsset AddElementToAsset(
@@ -227,13 +238,13 @@ namespace Unity.UI.Builder
             }
         }
         
-        public static string GetVisualTreeAssetAssetName(VisualTreeAsset visualTreeAsset) =>
-            GetAssetName(visualTreeAsset, BuilderConstants.UxmlExtension);
+        public static string GetVisualTreeAssetAssetName(VisualTreeAsset visualTreeAsset, bool hasUnsavedChanges) =>
+            GetAssetName(visualTreeAsset, BuilderConstants.UxmlExtension, hasUnsavedChanges);
         
-        public static string GetStyleSheetAssetName(StyleSheet styleSheet) =>
-            GetAssetName(styleSheet, BuilderConstants.UssExtension);
+        public static string GetStyleSheetAssetName(StyleSheet styleSheet, bool hasUnsavedChanges) =>
+            GetAssetName(styleSheet, BuilderConstants.UssExtension, hasUnsavedChanges);
 
-        public static string GetAssetName(ScriptableObject asset, string extension)
+        public static string GetAssetName(ScriptableObject asset, string extension, bool hasUnsavedChanges)
         {
             if (asset == null)
                 return BuilderConstants.ToolbarUnsavedFileDisplayMessage + extension;
@@ -242,7 +253,7 @@ namespace Unity.UI.Builder
             if(string.IsNullOrEmpty(assetPath))
                 return BuilderConstants.ToolbarUnsavedFileDisplayMessage + extension;
            
-            return Path.GetFileName(assetPath);
+            return Path.GetFileName(assetPath) + (hasUnsavedChanges ? BuilderConstants.ToolbarUnsavedFileSuffix : "");
         }
     }
 }

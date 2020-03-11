@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 
 namespace Unity.UI.Builder.EditorTests
 {
-    internal static class UIETestEvents
+    static class UIETestEvents
     {
         // In order for tests to run without an EditorWindow but still be able to send
         // events, we sometimes need to force the event type. IMGUI::GetEventType() (native) will
@@ -45,10 +45,11 @@ namespace Unity.UI.Builder.EditorTests
             Duplicate
         }
 
-        public static void ExecuteCommand(EditorWindow window, Command command)
+        public static IEnumerator ExecuteCommand(EditorWindow window, Command command)
         {
             var evt = MakeCommandEvent(EventType.ExecuteCommand, command.ToString());
             window.rootVisualElement.SendEvent(evt);
+            yield return UIETestHelpers.Pause(1);
         }
 
         internal static class Mouse
@@ -82,7 +83,7 @@ namespace Unity.UI.Builder.EditorTests
                 yield return SimulateClick(target, button, modifiers, 2);
             }
 
-            private static IEnumerator SimulateClick(VisualElement target, MouseButton button , EventModifiers modifiers, int clickCount)
+            static IEnumerator SimulateClick(VisualElement target, MouseButton button , EventModifiers modifiers, int clickCount)
             {
                 var root = UIETestHelpers.GetRoot(target);
                 var mouseDown = MakeEvent(EventType.MouseDown, target.worldBound.center, button, modifiers, clickCount);
@@ -94,7 +95,7 @@ namespace Unity.UI.Builder.EditorTests
                 yield return UIETestHelpers.Pause(1);
             }
 
-            public static EventBase SimulateScroll(Vector2 delta, Vector2 position)
+            public static IEnumerator SimulateScroll(Vector2 delta, Vector2 position)
             {
                 var evt = new Event
                 {
@@ -103,28 +104,25 @@ namespace Unity.UI.Builder.EditorTests
                     mousePosition = position
                 };
 
-                return UIETestEvents.MakeEvent(evt);
+                UIETestEvents.MakeEvent(evt);
+                yield return UIETestHelpers.Pause(1);
             }
 
-            public static void SimulateMouseEvent(EditorWindow window, EventType eventType, Vector2 position, MouseButton button = MouseButton.LeftMouse)
+            public static IEnumerator SimulateMouseEvent(EditorWindow window, EventType eventType, Vector2 position, MouseButton button = MouseButton.LeftMouse, EventModifiers modifiers = EventModifiers.None)
             {
-                var mouseEvent = MakeEvent(eventType, position, button);
+                var mouseEvent = MakeEvent(eventType, position, button, modifiers);
                 window.rootVisualElement.SendEvent(mouseEvent);
+                yield return UIETestHelpers.Pause(1);
             }
 
             public static IEnumerator SimulateDragAndDrop(EditorWindow window, Vector2 positionFrom, Vector2 positionTo, MouseButton button = MouseButton.LeftMouse)
             {
-                var mouseDown = MakeEvent(EventType.MouseDown, positionFrom, button);
-                window.rootVisualElement.SendEvent(mouseDown);
-
-                yield return SimulateMoveMove(window, positionFrom, positionTo, button);
-
-                var mouseUp = MakeEvent(EventType.MouseUp, positionTo, button);
-                window.rootVisualElement.SendEvent(mouseUp);
-                yield return UIETestHelpers.Pause(1);
+                yield return SimulateMouseEvent(window, EventType.MouseDown, positionFrom, button);
+                yield return SimulateMouseMove(window, positionFrom, positionTo, button);
+                yield return SimulateMouseEvent(window, EventType.MouseUp, positionTo, button);
             }
 
-            public static IEnumerator SimulateMoveMove(EditorWindow window, Vector2 positionFrom, Vector2 positionTo, MouseButton button = MouseButton.LeftMouse)
+            public static IEnumerator SimulateMouseMove(EditorWindow window, Vector2 positionFrom, Vector2 positionTo, MouseButton button = MouseButton.LeftMouse, EventModifiers modifiers = EventModifiers.None)
             {
                 const int dragSamples = 10;
                 const int moveFramesDelay = 1;
@@ -142,7 +140,8 @@ namespace Unity.UI.Builder.EditorTests
                         type = EventType.MouseMove,
                         mousePosition = currentMousePosition,
                         delta = normalizedDirection,
-                        button = (int) button
+                        button = (int) button,
+                        modifiers = modifiers
                     };
 
                     window.rootVisualElement.SendEvent(UIETestEvents.MakeEvent(moveEvt));
@@ -180,8 +179,11 @@ namespace Unity.UI.Builder.EditorTests
 
             public static EventBase SimulateKeyDown(KeyCode code, EventModifiers modifiers = EventModifiers.None) => MakeEvent(EventType.KeyDown, code, modifiers);
 
-            public static void SimulateKeyDown(EditorWindow window, KeyCode code, EventModifiers modifiers = EventModifiers.None)
-                => SimulateKeyDown(window.rootVisualElement, code, modifiers);
+            public static IEnumerator SimulateKeyDown(EditorWindow window, KeyCode code, EventModifiers modifiers = EventModifiers.None)
+            {
+                SimulateKeyDown(window.rootVisualElement, code, modifiers);
+                yield return UIETestHelpers.Pause(1);
+            }
 
             public static void SimulateKeyDown(VisualElement visualElement, KeyCode code,  EventModifiers modifiers = EventModifiers.None)
             {

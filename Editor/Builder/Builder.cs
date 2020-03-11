@@ -122,6 +122,7 @@ namespace Unity.UI.Builder
                 m_Inspector,
                 m_UxmlPreview,
                 m_UssPreview,
+                m_Toolbar,
                 m_Viewport.parentTracker,
                 m_Viewport.resizer,
                 m_Viewport.mover,

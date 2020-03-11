@@ -50,6 +50,10 @@
     background-image: resource("com.unity.ui.builder/Icons/Light/_Menu");
 }
 
+.unity-builder__toolbar-setting-menu:hover {
+    background-color: #E4E4E4;
+}
+
 .unity-builder-explorer__item--hover {
     background-color: #b2b2b2;
 }

@@ -70,10 +70,16 @@ namespace Unity.UI.Builder
             }
         }
 
+        protected virtual void InitEllipsisMenu()
+        {
+            // Override this method to add Actions to the pane's ellipsis menu.
+        }
+
         protected virtual void OnAttachToPanelDefaultAction()
         {
             m_Pane = GetFirstAncestorOfType<BuilderPane>();
             m_Pane?.RegisterCallback<FocusEvent>(OnPaneFocus);
+            InitEllipsisMenu();
         }
 
         void OnDetachFromPanel(DetachFromPanelEvent evt)

@@ -1,13 +1,21 @@
 using System.Collections;
+using System.IO;
+using System.Net;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.TestTools;
 using UnityEngine.UIElements;
 
 namespace Unity.UI.Builder.EditorTests
 {
-    internal class BuilderIntegrationTest
+    abstract class BuilderIntegrationTest
     {
+        protected const string k_TestUXMLFileName = "MyVisualTreeAsset.uxml";
+        protected const string k_TestUXMLFilePath = "Assets/" + k_TestUXMLFileName;
+        protected static readonly string k_TestUXMLFileContent
+            = WebUtility.UrlDecode("%3Cui%3AUXML+xmlns%3Aui%3D%22UnityEngine.UIElements%22+xmlns%3Auie%3D%22UnityEditor.UIElements%22%3E%0D%0A++++%3Cui%3AVisualElement%3E%0D%0A++++++++%3Cui%3AVisualElement+%2F%3E%0D%0A++++%3C%2Fui%3AVisualElement%3E%0D%0A%3C%2Fui%3AUXML%3E%0D%0A");
+
         protected Builder BuilderWindow { get; private set; }
         protected BuilderLibrary LibraryPane { get; private set; }
         protected BuilderHierarchy HierarchyPane { get; private set; }
@@ -16,7 +24,7 @@ namespace Unity.UI.Builder.EditorTests
         protected BuilderInspector InspectorPane { get; private set; }
 
         [SetUp]
-        public void Setup()
+        public virtual void Setup()
         {
             BuilderWindow = BuilderTestsHelper.MakeNewBuilderWindow();
             LibraryPane = BuilderWindow.rootVisualElement.Q<BuilderLibrary>();
@@ -30,12 +38,15 @@ namespace Unity.UI.Builder.EditorTests
             createSelectorField.visualInput.Blur();
         }
 
-        [TearDown]
-        public void TearDown()
+        [UnityTearDown]
+        protected virtual IEnumerator TearDown()
         {
             ForceNewDocument();
             MouseCaptureController.ReleaseMouse();
+
+            yield return null;
             BuilderWindow.Close();
+            yield return null;
         }
 
         protected void ForceNewDocument()
@@ -45,17 +56,22 @@ namespace Unity.UI.Builder.EditorTests
 
         protected IEnumerator AddVisualElement()
         {
-            var label = BuilderTestsHelper.GetLabelWithName(LibraryPane, nameof(VisualElement));
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
-                label.worldBound.center,
-                HierarchyPane.worldBound.center);
+            yield return AddElement(nameof(VisualElement));
+        }
 
-            yield return UIETestHelpers.Pause(1);
+        protected IEnumerator AddButtonElement()
+        {
+            yield return AddElement(nameof(Button));
         }
 
         protected IEnumerator AddTextFieldElement()
         {
-            var label = BuilderTestsHelper.GetLabelWithName(LibraryPane, "Text Field");
+            yield return AddElement("Text Field");
+        }
+
+        protected IEnumerator AddElement(string elementLabel)
+        {
+            var label = BuilderTestsHelper.GetLabelWithName(LibraryPane, elementLabel);
             yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
                 label.worldBound.center,
                 HierarchyPane.worldBound.center);
@@ -71,7 +87,18 @@ namespace Unity.UI.Builder.EditorTests
 
             // Make
             yield return UIETestEvents.KeyBoard.SimulateTyping(builderWindow, selectorName);
-            UIETestEvents.KeyBoard.SimulateKeyDown(builderWindow, KeyCode.Return);
+            yield return UIETestEvents.KeyBoard.SimulateKeyDown(builderWindow, KeyCode.Return);
+        }
+
+        protected void CreateTestUXMLFile()
+        {
+            File.WriteAllText(k_TestUXMLFilePath, k_TestUXMLFileContent);
+            AssetDatabase.ImportAsset(k_TestUXMLFilePath);
+        }
+
+        protected void DeleteTestUXMLFile()
+        {
+            AssetDatabase.DeleteAsset(k_TestUXMLFilePath);
         }
 
         internal BuilderExplorerItem GetStyleSelectorNodeWithName(string selectorName)
@@ -84,7 +111,7 @@ namespace Unity.UI.Builder.EditorTests
             return BuilderTestsHelper.GetExplorerItemWithName(HierarchyPane, nodeName);
         }
 
-        internal VisualElement GetFirstViewportElement()
+        internal VisualElement GetFirstDocumentElement()
         {
             return ViewportPane.documentElement[0];
         }

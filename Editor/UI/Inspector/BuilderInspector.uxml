@@ -16,7 +16,7 @@
     <Template name="CursorSection" path="Packages/com.unity.ui.builder/Editor/UI/Inspector/StyleSectionsCursor.uxml" />
 
     <!-- Main ScrollView -->
-    <!-- DO NOT ADD A VIEW-DATA KEY TO THE SCROLLVIEW! 
+    <!-- DO NOT ADD A VIEW-DATA KEY TO THE SCROLLVIEW!
         We handle scorll position restoration in a custom way inside the BuilderInspector
         element. It relies on ScrollView not trying to restore position as well.
     -->
@@ -24,11 +24,11 @@
         name="inspector-scroll-view"
         class="unity-builder-inspector__scroll-view">
 
-        <!-- Nothing Selected Label -->
+        <!-- Nothing Selected Label (left here in case we want to add something back) -->
         <Label
             name="nothing-selected-label"
             class="unity-builder-inspector__nothing-selected-label"
-            text="Nothing selected. :)" />
+            text="" /> <!-- Nothing selected. :) -->
 
         <!-- Canvas Inspector -->
         <Instance template="CanvasInspector" name="canvas-inspector" />

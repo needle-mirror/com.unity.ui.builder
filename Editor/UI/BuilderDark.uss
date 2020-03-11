@@ -40,6 +40,10 @@
     background-image: resource("com.unity.ui.builder/Icons/Dark/d__Menu");
 }
 
+.unity-builder__toolbar-setting-menu:hover {
+    background-color: #4E4E4E;
+}
+
 .unity-builder-explorer__item--hover {
     background-color: #303030;
 }

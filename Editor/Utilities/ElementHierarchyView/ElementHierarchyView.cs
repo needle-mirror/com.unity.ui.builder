@@ -12,6 +12,7 @@ namespace Unity.UI.Builder
     internal class ElementHierarchyView : VisualElement
     {
         public bool hierarchyHasChanged { get; set; }
+        public bool hasUnsavedChanges { get; set; }
         public BuilderExplorer.BuilderElementInfoVisibilityState elementInfoVisibilityState { get; set; }
 
         VisualTreeAsset m_ClassPillTemplate;
@@ -76,6 +77,7 @@ namespace Unity.UI.Builder
 
             m_SelectElementCallback = selectElementCallback;
             hierarchyHasChanged = true;
+            hasUnsavedChanges = false;
 
             m_SearchResultsHightlights = new List<VisualElement>();
 
@@ -168,7 +170,7 @@ namespace Unity.UI.Builder
             {
                 var styleSheetAsset = documentElement.GetStyleSheet();
                 var styleSheetFileName = AssetDatabase.GetAssetPath(styleSheetAsset);
-                var styleSheetAssetName = BuilderAssetUtilities.GetStyleSheetAssetName(styleSheetAsset);
+                var styleSheetAssetName = BuilderAssetUtilities.GetStyleSheetAssetName(styleSheetAsset, hasUnsavedChanges);
                 var ssLabel = new Label(styleSheetAssetName);
                 ssLabel.AddToClassList(BuilderConstants.ExplorerItemLabelClassName);
                 ssLabel.AddToClassList("unity-debugger-tree-item-type");
@@ -236,7 +238,7 @@ namespace Unity.UI.Builder
             if (BuilderSharedStyles.IsDocumentElement(documentElement))
             {
                 var uxmlAsset = documentElement.GetVisualTreeAsset();
-                var ssLabel = new Label(BuilderAssetUtilities.GetVisualTreeAssetAssetName(uxmlAsset));
+                var ssLabel = new Label(BuilderAssetUtilities.GetVisualTreeAssetAssetName(uxmlAsset, hasUnsavedChanges));
                 ssLabel.AddToClassList(BuilderConstants.ExplorerItemLabelClassName);
                 ssLabel.AddToClassList("unity-debugger-tree-item-type");
                 row.AddToClassList(BuilderConstants.ExplorerHeaderRowClassName);

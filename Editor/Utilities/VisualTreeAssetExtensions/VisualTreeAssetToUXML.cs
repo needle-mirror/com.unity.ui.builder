@@ -268,18 +268,13 @@ namespace Unity.UI.Builder
 
                     if (r.properties != null && r.properties.Length > 0)
                     {
-                        stringBuilder.Append(" style=\"");
-
                         var ruleBuilder = new StringBuilder();
                         var exportOptions = new UssExportOptions();
                         exportOptions.propertyIndent = string.Empty;
                         StyleSheetToUss.ToUssString(vta.inlineSheet, exportOptions, r, ruleBuilder);
                         var ruleStr = ruleBuilder.ToString();
-                        ruleStr = ruleStr.Replace('\n', ' ');
-                        ruleStr = ruleStr.Trim();
-                        stringBuilder.Append(ruleStr);
-
-                        stringBuilder.Append("\"");
+                        
+                        AppendElementAttribute("style", ruleStr, stringBuilder);
                     }
                 }
             }

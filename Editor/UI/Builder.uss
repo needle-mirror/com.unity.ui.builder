@@ -135,7 +135,10 @@
 }
 
 .unity-builder__toolbar-setting-menu {
+    background-color: initial;
     border-width: 0px;
+    padding-top: 2px;
+    padding-bottom: 2px;
     -unity-slice-top: 0;
     -unity-slice-right: 0;
 }
@@ -994,13 +997,11 @@
 
 .unity-builder-dragger--being-dragged > .unity-base-field__label {
     min-width: 0;
-    width: 80px;
+    width: 90px;
 }
 
 .unity-builder-dragger--being-dragged .unity-composite-field__label {
-    min-width: 0;
-    width: 80px;
-    padding-left: 30px;
+    display: none;
 }
 
 /*****************************************************************************/
@@ -1036,9 +1037,7 @@
 }
 
 .unity-builder-tooltip-preview .unity-composite-field__label {
-    min-width: 0;
-    width: 100px;
-    padding-left: 50px;
+    display: none;
 }
 
 /*****************************************************************************/

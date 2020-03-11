@@ -21,12 +21,12 @@ namespace Unity.UI.Builder
             if (hasDocument)
             {
                 SetText(document.mainStyleSheet.GenerateUSS());
-                SetTargetAsset(document.mainStyleSheet);
+                SetTargetAsset(document.mainStyleSheet, document.hasUnsavedChanges);
             }
             else
             {
                 SetText(string.Empty);
-                SetTargetAsset(null);
+                SetTargetAsset(null, false);
             }
         }
 

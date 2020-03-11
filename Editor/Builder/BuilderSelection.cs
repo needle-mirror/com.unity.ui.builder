@@ -208,7 +208,7 @@ namespace Unity.UI.Builder
                 element.SetInlineRule(vta.inlineSheet, rule);
 
                 // Need to enforce this specific style is updated.
-                element.IncrementVersion(VersionChangeType.Opacity);
+                element.IncrementVersion(VersionChangeType.Opacity | VersionChangeType.Overflow);
 
 #elif UNITY_2019_3_OR_NEWER
                 var stylesData = new UnityEngine.UIElements.StyleSheets.VisualElementStylesData(false);
@@ -218,13 +218,16 @@ namespace Unity.UI.Builder
                 stylesData.ApplyProperties(s_StylePropertyReader, null);
 
                 // Need to enforce this specific style is updated.
-                element.IncrementVersion(VersionChangeType.Opacity);
+                element.IncrementVersion(VersionChangeType.Opacity | VersionChangeType.Overflow);
 #else
                 var stylesData = new UnityEngine.UIElements.StyleSheets.VisualElementStylesData(false);
                 element.m_Style = stylesData;
 
                 var propIds = UnityEngine.UIElements.StyleSheets.StyleSheetCache.GetPropertyIDs(vta.inlineSheet, vea.ruleIndex);
                 element.specifiedStyle.ApplyRule(vta.inlineSheet, Int32.MaxValue, rule, propIds);
+
+                // Need to enforce this specific style is updated.
+                element.IncrementVersion(VersionChangeType.Overflow);
 #endif
             }
 
@@ -298,6 +301,17 @@ namespace Unity.UI.Builder
             m_NextPostStylingAction();
 
             m_NextPostStylingAction = null;
+        }
+
+        public bool hasUnsavedChanges
+        {
+            get { return m_PaneWindow.document.hasUnsavedChanges; }
+            private set { m_PaneWindow.document.hasUnsavedChanges = value; }
+        }
+        
+        public void ResetUnsavedChanges()
+        {
+            hasUnsavedChanges = false;
         }
     }
 }

@@ -28,7 +28,7 @@ namespace Unity.UI.Builder
         // Case: https://fogbugz.unity3d.com/f/cases/1180090/
         long m_LastFrameCount;
 #endif
-        
+
         public BuilderCommandHandler(
             BuilderPaneWindow paneWindow,
             BuilderSelection selection)
@@ -173,6 +173,7 @@ namespace Unity.UI.Builder
                 case KeyCode.Delete:
                 case KeyCode.Backspace:
                     PerformActionOnSelection(DeleteElement, null, ClearSelectionNotify);
+                    evt.StopPropagation();
                     break;
                 case KeyCode.Escape:
                     {
@@ -241,7 +242,7 @@ namespace Unity.UI.Builder
             BuilderAssetUtilities.TransferAssetToAsset(m_PaneWindow.document, parent, pasteVta);
             m_PaneWindow.document.AddStyleSheetToAllRootElements();
 
-            var selectionParentId = parent?.id ?? m_PaneWindow.document.visualTreeAsset.GetRootUXMLElement().id;
+            var selectionParentId = parent?.id ?? m_PaneWindow.document.visualTreeAsset.GetRootUXMLElementId();
             VisualElementAsset newSelectedItem = pasteVta.templateAssets.FirstOrDefault(tpl => tpl.parentId == selectionParentId);
             if (newSelectedItem == null)
                 newSelectedItem = pasteVta.visualElementAssets.FirstOrDefault(asset => asset.parentId == selectionParentId);
@@ -295,7 +296,9 @@ namespace Unity.UI.Builder
             // call to Refresh().
             m_PaneWindow.rootVisualElement.schedule.Execute(() =>
             {
-                m_Selection.Select(null, m_Selection.selection.First());
+                var currentlySelectedItem = m_Selection.selection.FirstOrDefault();
+                if(currentlySelectedItem != null)
+                    m_Selection.Select(null, currentlySelectedItem);
             }).ExecuteLater(200);
 
             m_PaneWindow.document.hasUnsavedChanges = true;

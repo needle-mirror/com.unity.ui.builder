@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UIElements;
 using System.IO;
@@ -8,7 +9,7 @@ using PackageInfo = UnityEditor.PackageManager.PackageInfo;
 
 namespace Unity.UI.Builder
 {
-    internal class BuilderToolbar : VisualElement, IBuilderAssetModificationProcessor
+    internal class BuilderToolbar : VisualElement, IBuilderAssetModificationProcessor, IBuilderSelectionNotifier
     {
         BuilderPaneWindow m_PaneWindow;
         BuilderSelection m_Selection;
@@ -436,7 +437,7 @@ namespace Unity.UI.Builder
             SaveDocument(uxmlPath, ussPath);
         }
 
-        void SaveDocument(string uxmlPath, string ussPath)
+        internal void SaveDocument(string uxmlPath, string ussPath)
         {
             var viewportWindow = m_PaneWindow as IBuilderViewportWindow;
             if (viewportWindow == null)
@@ -457,6 +458,9 @@ namespace Unity.UI.Builder
 
             m_SaveDialog.Hide();
 
+            // Only updating UI to remove "*" from file names.
+            m_Selection.ResetUnsavedChanges();
+            
             if (needFullRefresh)
                 m_PaneWindow.OnEnableAfterAllSerialization();
             else
@@ -730,16 +734,12 @@ namespace Unity.UI.Builder
 
         void SetViewportSubTitle()
         {
-            // Have to keep refreshing this because it's a weak pointer.
-            document.unsavedChangesStateChanged = SetViewportSubTitle;
-
             var newFileName = document.uxmlFileName;
 
             if (string.IsNullOrEmpty(newFileName))
                 newFileName = BuilderConstants.ToolbarUnsavedFileDisplayMessage;
-
-            if (document.hasUnsavedChanges)
-                newFileName = newFileName + "*";
+            else if (document.hasUnsavedChanges)
+                newFileName = newFileName + BuilderConstants.ToolbarUnsavedFileSuffix;
 
             var subTitle = newFileName;
 
@@ -747,6 +747,20 @@ namespace Unity.UI.Builder
                 subTitle += $"{BuilderConstants.SubtitlePrefix}UI Builder {m_BuilderPackageVersion}";
 
             m_Viewport.subTitle = subTitle;
+        }
+
+        public void SelectionChanged()
+        {
+        }
+
+        public void HierarchyChanged(VisualElement element, BuilderHierarchyChangeType changeType)
+        {
+            SetViewportSubTitle();
+        }
+
+        public void StylingChanged(List<string> styles)
+        {
+            SetViewportSubTitle();
         }
     }
 }

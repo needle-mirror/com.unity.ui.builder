@@ -4,6 +4,24 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.10.2] - 2020-03-11
+
+- Moved Hierarchy "hamburger/3-dots" options menu from a dedicated toolbar to the Hierarchy pane header.
+- Newly created empty VisualElements will now auto-size themselves when given a background image, provided no other styles have already been overridden.
+- The Inspector will now be blank when nothing is selected to match the Unity Inspector Window.
+- Fixed handling of built-in resources assets when set via the Inspector. USS does not support such paths and this is now properly indicated with an message.
+- Fixed background color style alpha value being reset to 255 if all other components were set to 0.
+- Fixed ghosting of some inspector controls when the inspector was disabled.
+- Fixed text overlapping controls in Library hover and drag tooltips.
+- Fixed null-ref exception when deselecting an element after having made a change to style but not committed the change.
+- Fixed Overflow style not being visually applied in the canvas when changed as an inline style.
+- Fixed Canvas not being centered the first time the UI Builder window is opened with no UXML document loaded.
+- Fixed escaping of `&` in image file paths inside inlined styles in UXML.
+- Fixed canvas background settings like Camera view being reset when saving file for the first time.
+- Fixed the unsaved changes marker `*` not appearing beside file names in the StyleSheet, Hierarchy, UXML Preview, and USS Preview panes.
+- (mac) Fixed macOS playing the "bad key-press" sound when the Delete key is used to delete an item from the inspector.
+- (2020.1+) Fixed showing a blank 3rd button in the Overflow style options in the Inspector.
+
 ## [0.10.1] - 2020-02-06
 
 - Improved handling of external changes made to the currently open UXML or USS asset. Unsaved changes will still be lost for now but the UI Builder will at least refresh itself properly after an external change.

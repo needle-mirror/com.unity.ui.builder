@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEditor.UIElements;
 
 namespace Unity.UI.Builder
 {
@@ -14,6 +16,7 @@ namespace Unity.UI.Builder
         Label m_SubTitlePrefix;
         VisualElement m_Container;
         VisualElement m_Toolbar;
+        ToolbarMenu m_EllipsisMenu;
 
         public new class UxmlFactory : UxmlFactory<BuilderPane, UxmlTraits> {}
 
@@ -64,10 +67,22 @@ namespace Unity.UI.Builder
             m_SubTitlePrefix = this.Q<Label>("sub-title-prefix");
             m_Container = this.Q("content-container");
             m_Toolbar = this.Q("toolbar");
-            
+
             focusable = true;
             m_SubTitlePrefix.text = BuilderConstants.SubtitlePrefix;
             subTitle = string.Empty;
+
+            m_EllipsisMenu = this.Q<ToolbarMenu>("ellipsis-menu");
+            m_EllipsisMenu.style.display = DisplayStyle.None;
+        }
+
+        public void AppendActionToEllipsisMenu(string actionName,
+            Action<DropdownMenuAction> action,
+            Func<DropdownMenuAction, DropdownMenuAction.Status> actionStatusCallback,
+            object userData = null)
+        {
+            m_EllipsisMenu.style.display = DisplayStyle.Flex;
+            m_EllipsisMenu.menu.AppendAction(actionName, action, actionStatusCallback, userData);
         }
 
         public override VisualElement contentContainer => m_Container;

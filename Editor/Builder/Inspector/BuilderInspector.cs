@@ -71,6 +71,9 @@ namespace Unity.UI.Builder
         // Current Selection
         StyleRule m_CurrentRule;
         VisualElement m_CurrentVisualElement;
+        
+        // Cached Selection
+        VisualElement m_CachedVisualElement;
 
         // Sections List (for hiding/showing based on current selection)
         List<VisualElement> m_Sections;
@@ -137,8 +140,10 @@ namespace Unity.UI.Builder
 
         public VisualElement currentVisualElement
         {
-            get { return m_CurrentVisualElement; }
-            set { m_CurrentVisualElement = value; }
+            get
+            {
+                return m_CurrentVisualElement != null ? m_CurrentVisualElement : m_CachedVisualElement;
+            }
         }
 
         public BuilderInspector(BuilderPaneWindow paneWindow, BuilderSelection selection)
@@ -425,17 +430,22 @@ namespace Unity.UI.Builder
 
         public void SelectionChanged()
         {
-            currentVisualElement = null;
+            m_CurrentVisualElement = null;
 
             foreach (var element in m_Selection.selection)
             {
-                if (currentVisualElement != null) // We only support editing one element. Disable for for multiple elements.
+                if (m_CurrentVisualElement != null) // We only support editing one element. Disable for for multiple elements.
                 {
-                    currentVisualElement = null;
+                    m_CurrentVisualElement = null;
                     break;
                 }
 
-                currentVisualElement = element;
+                m_CurrentVisualElement = element;
+            }
+
+            if (m_CurrentVisualElement != null)
+            {
+                m_CachedVisualElement = m_CurrentVisualElement;
             }
 
             RefreshUI();

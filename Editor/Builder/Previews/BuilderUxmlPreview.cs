@@ -28,12 +28,12 @@ namespace Unity.UI.Builder
             if (hasDocument)
             {
                 SetText(GenerateUXMLText());
-                SetTargetAsset(document.visualTreeAsset);
+                SetTargetAsset(document.visualTreeAsset, document.hasUnsavedChanges);
             }
             else
             {
                 SetText(string.Empty);
-                SetTargetAsset(null);
+                SetTargetAsset(null, false);
             }
         }
 
@@ -49,7 +49,7 @@ namespace Unity.UI.Builder
 
         public void StylingChanged(List<string> styles)
         {
-            // Do nothing for now.
+            RefreshUXML();
         }
 
         protected override string previewAssetExtension => BuilderConstants.UxmlExtension;

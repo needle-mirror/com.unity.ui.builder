@@ -6,9 +6,6 @@ namespace Unity.UI.Builder
 {
     internal class BuilderHierarchy : BuilderExplorer, IBuilderSelectionNotifier
     {
-        static readonly string kToolbarPath = BuilderConstants.UIBuilderPackagePath + "/Explorer/BuilderExplorerToolbar.uxml";
-
-        ToolbarMenu m_HierarchyTypeClassVisibilityMenu;
         [SerializeField] BuilderElementInfoVisibilityState m_ElementInfoVisibilityState;
 
         public BuilderHierarchy(
@@ -26,12 +23,9 @@ namespace Unity.UI.Builder
                   contextMenuManipulator,
                   viewport.documentElement,
                   highlightOverlayPainter,
-                  kToolbarPath)
+                  null)
         {
             viewDataKey = "builder-hierarchy";
-
-            m_HierarchyTypeClassVisibilityMenu = this.Q<ToolbarMenu>("hierarchy-visibility-toolbar-menu");
-            SetUpHierarchyVisibilityMenu();
         }
 
         protected override bool IsSelectedItemValid(VisualElement element)
@@ -42,16 +36,21 @@ namespace Unity.UI.Builder
             return isVEA || isVTA;
         }
 
-        void SetUpHierarchyVisibilityMenu()
+        protected override void InitEllipsisMenu()
         {
-            m_HierarchyTypeClassVisibilityMenu.menu.AppendAction("Type",
+            base.InitEllipsisMenu();
+
+            if (pane == null)
+                return;
+
+            pane.AppendActionToEllipsisMenu("Type",
                 a => ChangeVisibilityState(BuilderElementInfoVisibilityState.TypeName),
                 a => m_ElementInfoVisibilityState
                 .HasFlag(BuilderElementInfoVisibilityState.TypeName)
                 ? DropdownMenuAction.Status.Checked
                 : DropdownMenuAction.Status.Normal);
 
-            m_HierarchyTypeClassVisibilityMenu.menu.AppendAction("Class List",
+            pane.AppendActionToEllipsisMenu("Class List",
                 a => ChangeVisibilityState(BuilderElementInfoVisibilityState.ClassList),
                 a => m_ElementInfoVisibilityState
                 .HasFlag(BuilderElementInfoVisibilityState.ClassList)
@@ -64,7 +63,7 @@ namespace Unity.UI.Builder
             m_ElementInfoVisibilityState ^= state;
             m_ElementHierarchyView.elementInfoVisibilityState = m_ElementInfoVisibilityState;
             SaveViewData();
-            UpdateHierarchyAndSelection();
+            UpdateHierarchyAndSelection(m_ElementHierarchyView.hasUnsavedChanges);
         }
 
         internal override void OnViewDataReady()

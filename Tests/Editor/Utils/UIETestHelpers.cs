@@ -30,7 +30,7 @@ namespace Unity.UI.Builder.EditorTests
             return true;
         }
 
-        public static IEnumerator Pause(int frames)
+        public static IEnumerator Pause(int frames = 1)
         {
             for (var i = 0; i < frames; i++)
             {

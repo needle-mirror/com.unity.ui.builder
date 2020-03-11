@@ -44,7 +44,6 @@ namespace Unity.UI.Builder
         StyleSheet m_CanvasThemeStyleSheet;
 
         bool m_HasUnsavedChanges = false;
-        WeakReference<Action> m_UnsavedChangesStateChangeCallback;
         bool m_DocumentBeingSavedExplicitly = false;
 
         [SerializeField]
@@ -141,14 +140,6 @@ namespace Unity.UI.Builder
             }
         }
 
-        public Action unsavedChangesStateChanged
-        {
-            set
-            {
-                m_UnsavedChangesStateChangeCallback = new WeakReference<Action>(value, true);
-            }
-        }
-
         public bool hasUnsavedChanges
         {
             get { return m_HasUnsavedChanges; }
@@ -158,14 +149,9 @@ namespace Unity.UI.Builder
                     return;
 
                 m_HasUnsavedChanges = value;
-
-                if (m_UnsavedChangesStateChangeCallback.TryGetTarget(out Action action))
-                {
-                    action.Invoke();
-                }
             }
         }
-        
+
         public CanvasTheme currentCanvasTheme
         {
             get { return m_CurrentCanvasTheme; }
@@ -223,7 +209,7 @@ namespace Unity.UI.Builder
             }
         }
 
-        string diskSettingsJsonFolderPath
+        internal string diskSettingsJsonFolderPath
         {
             get
             {
@@ -521,15 +507,15 @@ namespace Unity.UI.Builder
 
             if (needFullRefresh && documentRootElement != null)
             {
-                NewDocument(documentRootElement);
-
-                // Re-init setting.
+                // Copy previous document settings.
                 if (m_Settings != null)
                 {
                     m_Settings.UxmlGuid = AssetDatabase.AssetPathToGUID(uxmlPath);
                     m_Settings.UxmlPath = uxmlPath;
                     SaveSettingsToDisk();
                 }
+
+                NewDocument(documentRootElement);
             }
             else
             {

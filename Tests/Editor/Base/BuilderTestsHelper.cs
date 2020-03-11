@@ -35,12 +35,6 @@ namespace Unity.UI.Builder.EditorTests
             return builderWindow;
         }
 
-        static bool HasValidSizeForTesting(EditorWindow builderWindow)
-        {
-            return builderWindow.position.size.x >= k_MinWindowSize.size.x &&
-                   builderWindow.position.size.y >= k_MinWindowSize.size.y;
-        }
-
         internal static List<BuilderExplorerItem> GetExplorerItemsWithName(BuilderPaneContent paneContent, string name)
         {
             return paneContent.Query<BuilderExplorerItem>()

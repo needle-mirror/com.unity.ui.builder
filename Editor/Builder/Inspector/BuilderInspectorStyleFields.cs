@@ -196,6 +196,14 @@ namespace Unity.UI.Builder
                     foreach (Enum item in Enum.GetValues(enumType))
                     {
                         var typeName = item.ToString();
+#if UNITY_2020_1_OR_NEWER
+                        // For the "Overflow" style, the Enum reflected from the computedStyle's
+                        // is of type OverflowInternal, which, for some reason, includes the
+                        // OverflowInternal.Scroll option, which...we don't support. Until we
+                        // do support it, we'll have to live with a bit of a hack here.
+                        if (typeName == "Scroll")
+                            continue;
+#endif
                         var label = string.Empty;
                         if (typeName == "Auto")
                             label = "AUTO";
@@ -375,7 +383,7 @@ namespace Unity.UI.Builder
             for (int i = 0; i < foldoutColorField.bindingPathArray.Length; i++)
             {
                 var styleName = foldoutColorField.bindingPathArray[i];
-                var styleProperty = GetStylePropertyByStyleName(styleName);
+                var styleProperty = GetOrCreateStylePropertyByStyleName(styleName);
 
                 if (styleProperty.values.Length == 0)
                     styleSheet.AddValue(styleProperty, newValue);
@@ -615,10 +623,8 @@ namespace Unity.UI.Builder
                 var value = style.value;
                 if (styleProperty != null)
                     value = styleSheet.GetColor(styleProperty.values[0]);
-
-                // We keep falling into the alpha==0 trap. This patches the issue a little.
-                if (value.a < 0.1f)
-                    value.a = 255.0f;
+                else
+                    value.a = 255.0f; // When no specific style value defined, we will use default alpha = 255 instead of 0.
                 
                 uiField.SetValueWithoutNotify(value);
             }
@@ -1136,7 +1142,7 @@ namespace Unity.UI.Builder
 
         // Style Updates
 
-        StyleProperty GetStylePropertyByStyleName(string styleName)
+        StyleProperty GetOrCreateStylePropertyByStyleName(string styleName)
         {
             var styleProperty = styleSheet.FindProperty(currentRule, styleName);
             if (styleProperty == null)
@@ -1181,7 +1187,7 @@ namespace Unity.UI.Builder
 
         void OnFieldKeywordChange(StyleValueKeyword keyword, VisualElement target, string styleName)
         {
-            var styleProperty = GetStylePropertyByStyleName(styleName);
+            var styleProperty = GetOrCreateStylePropertyByStyleName(styleName);
             var isNewValue = styleProperty.values.Length == 0;
 
             // If the current style property is saved as a different type than the new style type,
@@ -1209,9 +1215,9 @@ namespace Unity.UI.Builder
         }
 
 #if UNITY_2019_3_OR_NEWER
-        void OnFieldDimensionChangeImpl(float newValue, Dimension.Unit newUnit, VisualElement target, string styleName)
+        bool OnFieldDimensionChangeImplBatch(float newValue, Dimension.Unit newUnit, VisualElement target, string styleName)
         {
-            var styleProperty = GetStylePropertyByStyleName(styleName);
+            var styleProperty = GetOrCreateStylePropertyByStyleName(styleName);
             var isNewValue = styleProperty.values.Length == 0;
 
             // If the current style property is saved as a different type than the new style type,
@@ -1232,6 +1238,13 @@ namespace Unity.UI.Builder
                 styleSheet.AddValue(styleProperty, dimension);
             else // TODO: Assume only one value.
                 styleSheet.SetValue(styleProperty.values[0], dimension);
+
+            return isNewValue;
+        }
+
+        void OnFieldDimensionChangeImpl(float newValue, Dimension.Unit newUnit, VisualElement target, string styleName)
+        {
+            bool isNewValue = OnFieldDimensionChangeImplBatch(newValue, newUnit, target, styleName);
 
             PostStyleFieldSteps(target, styleName, isNewValue);
         }
@@ -1270,9 +1283,9 @@ namespace Unity.UI.Builder
             }
         }
 
-        void OnFieldValueChangeImpl(int newValue, VisualElement target, string styleName)
+        bool OnFieldValueChangeImplBatch(int newValue, VisualElement target, string styleName)
         {
-            var styleProperty = GetStylePropertyByStyleName(styleName);
+            var styleProperty = GetOrCreateStylePropertyByStyleName(styleName);
             var isNewValue = styleProperty.values.Length == 0;
 
             // If the current style property is saved as a different type than the new style type,
@@ -1290,6 +1303,13 @@ namespace Unity.UI.Builder
             else // TODO: Assume only one value.
                 styleSheet.SetValue(styleProperty.values[0], newValue);
 
+            return isNewValue;
+        }
+
+        void OnFieldValueChangeImpl(int newValue, VisualElement target, string styleName)
+        {
+            bool isNewValue = OnFieldValueChangeImplBatch(newValue, target, styleName);
+
             PostStyleFieldSteps(target, styleName, isNewValue);
         }
 
@@ -1300,7 +1320,7 @@ namespace Unity.UI.Builder
 
         void OnFieldValueChangeIntToFloat(ChangeEvent<int> e, string styleName)
         {
-            var styleProperty = GetStylePropertyByStyleName(styleName);
+            var styleProperty = GetOrCreateStylePropertyByStyleName(styleName);
             var isNewValue = styleProperty.values.Length == 0;
 
             var newValue = (float)e.newValue;
@@ -1315,7 +1335,7 @@ namespace Unity.UI.Builder
 
         void OnFieldValueChangeImpl(float newValue, VisualElement target, string styleName)
         {
-            var styleProperty = GetStylePropertyByStyleName(styleName);
+            var styleProperty = GetOrCreateStylePropertyByStyleName(styleName);
             var isNewValue = styleProperty.values.Length == 0;
 
             // If the current style property is saved as a different type than the new style type,
@@ -1383,7 +1403,7 @@ namespace Unity.UI.Builder
 
         void OnFieldValueChange(ChangeEvent<Color> e, string styleName)
         {
-            var styleProperty = GetStylePropertyByStyleName(styleName);
+            var styleProperty = GetOrCreateStylePropertyByStyleName(styleName);
             var isNewValue = styleProperty.values.Length == 0;
 
             if (isNewValue)
@@ -1404,7 +1424,7 @@ namespace Unity.UI.Builder
             if (field is IToggleButtonStrip && string.IsNullOrEmpty(e.newValue))
                 return;
 
-            var styleProperty = GetStylePropertyByStyleName(styleName);
+            var styleProperty = GetOrCreateStylePropertyByStyleName(styleName);
             var isNewValue = styleProperty.values.Length == 0;
 
             // If the current style property is saved as a different type than the new style type,
@@ -1446,10 +1466,23 @@ namespace Unity.UI.Builder
 
         void OnFieldValueChange(ChangeEvent<Object> e, string styleName)
         {
-            var styleProperty = GetStylePropertyByStyleName(styleName);
+            var assetPath = AssetDatabase.GetAssetPath(e.newValue);
+
+            if (BuilderAssetUtilities.IsBuiltinPath(assetPath))
+            {
+                Builder.ShowWarning(BuilderConstants.BuiltInAssetPathsNotSupportedMessage);
+
+                // Revert the change
+                ObjectField field = e.target as ObjectField;
+
+                field.SetValueWithoutNotify(e.previousValue);
+                return;
+            }
+
+            var resourcesPath = BuilderAssetUtilities.GetResourcesPathForAsset(assetPath);
+            var styleProperty = GetOrCreateStylePropertyByStyleName(styleName);
             var isNewValue = styleProperty.values.Length == 0;
 
-            var resourcesPath = BuilderAssetUtilities.GetResourcesPathForAsset(e.newValue);
             if (!isNewValue)
             {
                 if (styleProperty.values[0].valueType == StyleValueType.ResourcePath && string.IsNullOrEmpty(resourcesPath))
@@ -1461,6 +1494,25 @@ namespace Unity.UI.Builder
                 {
                     styleSheet.RemoveValue(styleProperty, styleProperty.values[0]);
                     isNewValue = true;
+                }
+            }
+
+            if (styleName == "background-image" && e.newValue != null)
+            {
+                if (currentVisualElement.GetMinSizeSpecialElement() != null)
+                {
+                    var texture = e.newValue as Texture;
+
+                    if (texture != null)
+                    {
+#if UNITY_2019_3_OR_NEWER
+                        OnFieldDimensionChangeImplBatch(texture.width, Dimension.Unit.Pixel, GetFieldListForStyleName("width")[0], "width");
+                        OnFieldDimensionChangeImplBatch(texture.height, Dimension.Unit.Pixel, GetFieldListForStyleName("height")[0], "height");
+#else
+                        OnFieldValueChangeImplBatch(texture.width, GetFieldListForStyleName("width")[0], "width");
+                        OnFieldValueChangeImplBatch(texture.height, GetFieldListForStyleName("height")[0], "height");
+#endif
+                    }
                 }
             }
 
@@ -1482,7 +1534,7 @@ namespace Unity.UI.Builder
                 return;
             }
 
-            var styleProperty = GetStylePropertyByStyleName(styleName);
+            var styleProperty = GetOrCreateStylePropertyByStyleName(styleName);
             var isNewValue = styleProperty.values.Length == 0;
 
             if (isNewValue)
@@ -1495,7 +1547,7 @@ namespace Unity.UI.Builder
 
         void OnFieldValueChange(ChangeEvent<Enum> e, string styleName)
         {
-            var styleProperty = GetStylePropertyByStyleName(styleName);
+            var styleProperty = GetOrCreateStylePropertyByStyleName(styleName);
             var isNewValue = styleProperty.values.Length == 0;
 
             if (isNewValue)

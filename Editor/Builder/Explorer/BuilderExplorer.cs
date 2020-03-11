@@ -42,6 +42,15 @@ namespace Unity.UI.Builder
             get { return m_ElementHierarchyView.container; }
         }
 
+        // Caching whether we need to rebuild the hierarchy on a style change.
+        // We need to rebuild the hierarchy to update the file name to indicate to the user that there
+        // are unsaved changes.  But Style changes do not change the hierarchy.  Thus, we only need to
+        // rebuild the hierarchy to indicate that there are unsaved changes due to style when:
+        //     1. the document has no unsaved changes
+        //     2. and it's the first style change event.
+        // Otherwise there is no need.
+        private bool m_ShouldRebuildHierarchyOnStyleChange;
+
         public BuilderExplorer(
             BuilderViewport viewport,
             BuilderSelection selection,
@@ -93,7 +102,8 @@ namespace Unity.UI.Builder
             // Make sure the Hierarchy View gets focus when the pane gets focused.
             primaryFocusable = m_ElementHierarchyView.Q<ListView>();
 
-            UpdateHierarchyAndSelection();
+            UpdateHierarchyAndSelection(false);
+            m_ShouldRebuildHierarchyOnStyleChange = true;
         }
 
         public void ClearHighlightOverlay()
@@ -128,11 +138,12 @@ namespace Unity.UI.Builder
             m_Selection.Select(this, element);
         }
 
-        public void UpdateHierarchyAndSelection()
+        public void UpdateHierarchyAndSelection(bool hasUnsavedChanges)
         {
             m_SelectionMadeExternally = true;
 
             m_ElementHierarchyView.hierarchyHasChanged = true;
+            m_ElementHierarchyView.hasUnsavedChanges = hasUnsavedChanges;
             m_ElementHierarchyView.RebuildTree(m_DocumentElementRoot);
 
             if (!m_Selection.isEmpty)
@@ -152,7 +163,8 @@ namespace Unity.UI.Builder
                 changeType.HasFlag(BuilderHierarchyChangeType.Name) ||
                 changeType.HasFlag(BuilderHierarchyChangeType.ClassList))
             {
-                UpdateHierarchyAndSelection();
+                UpdateHierarchyAndSelection(m_Selection.hasUnsavedChanges);
+                m_ShouldRebuildHierarchyOnStyleChange = !m_Selection.hasUnsavedChanges;
             }
         }
 
@@ -187,7 +199,9 @@ namespace Unity.UI.Builder
 
         public void StylingChanged(List<string> styles)
         {
-
+            if(m_ShouldRebuildHierarchyOnStyleChange)
+                UpdateHierarchyAndSelection(m_Selection.hasUnsavedChanges);
+            m_ShouldRebuildHierarchyOnStyleChange = !m_Selection.hasUnsavedChanges;
         }
     }
 }

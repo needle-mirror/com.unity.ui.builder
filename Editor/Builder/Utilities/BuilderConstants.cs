@@ -168,7 +168,8 @@ namespace Unity.UI.Builder
         public static readonly string ToolbarLoadUxmlDialogTitle = "Load UXML File";
         public static readonly string ToolbarCannotLoadUxmlOutsideProjectMessage = "UI Builder: Cannot load .uxml files outside the Project.";
         public static readonly string ToolbarSelectedAssetIsInvalidMessage = "UI Builder: The asset selected was not a valid UXML asset.";
-        public static readonly string ToolbarUnsavedFileDisplayMessage = "<unsaved file>";
+        public static readonly string ToolbarUnsavedFileSuffix = "*";
+        public static readonly string ToolbarUnsavedFileDisplayMessage = "<unsaved file>" + ToolbarUnsavedFileSuffix;
 
         //
         // VisualTreeAsset/StyleSheet
@@ -237,6 +238,7 @@ namespace Unity.UI.Builder
         public static readonly string StyleSelectorValidationSpacialCharacters = "Style Selector can only contain letters, numbers, underscores, dots, spaces and dashes.";
         public static readonly string TypeAttributeInvalidTypeMessage = "{0} attribute is an invalid type. Make sure to include assembly name.";
         public static readonly string TypeAttributeMustDeriveFromMessage = "{0} attribute type must derive from {1}";
+        public static readonly string BuiltInAssetPathsNotSupportedMessage = "Built-in resource paths are not supported in USS.";
 
         //
         // UXML/USS
