@@ -1,4 +1,7 @@
-<UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+<UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:uib="Unity.UI.Builder">
+    <VisualElement name="checkerboard-background-container" class="unity-builder-viewport__canvas-layer unity-builder-viewport__checkerboard-background-container" >
+        <uib:CheckerboardBackground name="checkerboard-background-element" class="unity-builder-viewport__checkerboard-background" />
+    </VisualElement>
     <VisualElement name="default-background-element" class="unity-builder-viewport__canvas-layer" />
     <VisualElement name="custom-background-element" class="unity-builder-viewport__canvas-layer" />
     <VisualElement name="content-container" class="unity-builder-canvas__container" />

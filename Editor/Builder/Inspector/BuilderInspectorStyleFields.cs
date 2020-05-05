@@ -82,6 +82,31 @@ namespace Unity.UI.Builder
             return null;
         }
 
+        void RegisterFocusCallbackOnHighlightingField(VisualElement field)
+        {
+            field.RegisterCallback<FocusInEvent>(OnFieldFocusIn);
+            field.RegisterCallback<FocusOutEvent>(OnFieldFocusOut);
+
+            var valueField = field.Q<IntegerStyleField>();
+
+            if (valueField != null)
+            {
+                valueField.RegisterCallback<FocusInEvent>(OnFieldFocusIn);
+                valueField.RegisterCallback<FocusOutEvent>(OnFieldFocusOut);
+            }
+        }
+
+        void OnFieldFocusIn(FocusInEvent evt)
+        {
+            m_Inspector.highlightOverlayPainter.ClearOverlay();
+            m_Inspector.highlightOverlayPainter.AddOverlay(m_Inspector.selection.selection.First());
+        }
+
+        void OnFieldFocusOut(FocusOutEvent evt)
+        {
+            m_Inspector.highlightOverlayPainter.ClearOverlay();
+        }
+
         public void BindStyleField(BuilderStyleRow styleRow, string styleName, VisualElement fieldElement)
         {
             // Link the row.
@@ -162,11 +187,11 @@ namespace Unity.UI.Builder
                 uiField.objectType = typeof(Font);
                 uiField.RegisterValueChangedCallback(e => OnFieldValueChangeFont(e, styleName));
             }
-            else if (val is StyleBackground && fieldElement is ObjectField)
+            else if (val is StyleBackground && fieldElement is ImageStyleField imageStyleField)
             {
-                var uiField = fieldElement as ObjectField;
-                uiField.objectType = typeof(Texture2D);
-                uiField.RegisterValueChangedCallback(e => OnFieldValueChange(e, styleName));
+                imageStyleField.RegisterValueChangedCallback(e => OnFieldValueChange(e, styleName));
+                if (BuilderExternalPackages.IsVectorGraphicsInstalled)
+                    imageStyleField.TryEnableVectorGraphicTypeSupport();
             }
             else if (val is StyleCursor && fieldElement is ObjectField)
             {
@@ -243,6 +268,18 @@ namespace Unity.UI.Builder
             else
             {
                 m_StyleFields[styleName].Add(fieldElement);
+            }
+
+            if (BuilderConstants.ViewportOverlayEnablingStyleProperties.Contains(styleName))
+            {
+                RegisterFocusCallbackOnHighlightingField(fieldElement);
+
+                var foldoutNumberFieldParent = fieldElement.GetFirstAncestorOfType<FoldoutNumberField>();
+
+                if (foldoutNumberFieldParent != null)
+                {
+                    RegisterFocusCallbackOnHighlightingField(foldoutNumberFieldParent);
+                }
             }
         }
 
@@ -415,7 +452,7 @@ namespace Unity.UI.Builder
                 var value = style.value;
                 if (styleProperty != null)
                     value = styleSheet.GetFloat(styleProperty.values[0]);
-                
+
                 uiField.SetValueWithoutNotify(value);
             }
             else if (val is StyleFloat && fieldElement is IntegerField)
@@ -625,7 +662,7 @@ namespace Unity.UI.Builder
                     value = styleSheet.GetColor(styleProperty.values[0]);
                 else
                     value.a = 255.0f; // When no specific style value defined, we will use default alpha = 255 instead of 0.
-                
+
                 uiField.SetValueWithoutNotify(value);
             }
             else if (val is StyleFont && fieldElement is ObjectField)
@@ -639,16 +676,31 @@ namespace Unity.UI.Builder
 
                 uiField.SetValueWithoutNotify(value);
             }
-            else if (val is StyleBackground && fieldElement is ObjectField)
+            else if (val is StyleBackground && fieldElement is ImageStyleField imageStyleField)
             {
                 var style = (StyleBackground)val;
-                var uiField = fieldElement as ObjectField;
 
                 var value = style.value;
                 if (styleProperty != null)
-                    value.texture = styleSheet.GetAsset(styleProperty.values[0]) as Texture2D;
-
-                uiField.SetValueWithoutNotify(value.texture);
+                {
+                    var asset = styleSheet.GetAsset(styleProperty.values[0]);
+                    imageStyleField.SetValueWithoutNotify(asset);
+                    switch (asset) {
+                        case Texture2D texture2D:
+                            value.texture = texture2D;
+                            break;
+#if UNITY_2019_3_OR_NEWER
+                        case VectorImage vectorImage:
+                            value.vectorImage = vectorImage;
+                            break;
+#endif
+                    }
+                }
+                else
+                {
+                    imageStyleField.SetValueWithoutNotify(null);
+                    imageStyleField.SetTypePopupValueWithoutNotify(typeof(Texture2D));
+                }
             }
             else if (val is StyleCursor && fieldElement is ObjectField)
             {
@@ -819,9 +871,9 @@ namespace Unity.UI.Builder
             {
                 DispatchChangeEvent(objectFontField);
             }
-            else if (val is StyleBackground && fieldElement is ObjectField objectBackgroundField)
+            else if (val is StyleBackground && fieldElement is ImageStyleField imageStyleField)
             {
-                DispatchChangeEvent(objectBackgroundField);
+                DispatchChangeEvent(imageStyleField);
             }
             else if (val is StyleCursor && fieldElement is ObjectField objectCursorField)
             {
@@ -919,13 +971,13 @@ namespace Unity.UI.Builder
                 SetStyleProperty,
                 SetActionStatus,
                 evt.target);
-            
+
             evt.menu.AppendAction(
                 BuilderConstants.ContextMenuUnsetMessage,
                 UnsetStyleProperty,
                 UnsetActionStatus,
                 evt.target);
-            
+
             evt.menu.AppendAction(
                 BuilderConstants.ContextMenuUnsetAllMessage,
                 UnsetAllStyleProperties,
@@ -933,13 +985,13 @@ namespace Unity.UI.Builder
                 evt.target);
         }
 
-        DropdownMenuAction.Status UnsetAllActionStatus(DropdownMenuAction action)
+        public DropdownMenuAction.Status UnsetAllActionStatus(DropdownMenuAction action)
         {
             if (currentRule.properties.Length == 0)
                 return DropdownMenuAction.Status.Disabled;
-            
-            return currentRule.properties.Any(property => !property.name.StartsWith("--")) 
-                ? DropdownMenuAction.Status.Normal 
+
+            return currentRule.properties.Any(property => !property.name.StartsWith("--"))
+                ? DropdownMenuAction.Status.Normal
                 : DropdownMenuAction.Status.Disabled;
         }
 
@@ -947,7 +999,7 @@ namespace Unity.UI.Builder
         {
             return StyleActionStatus(action, property => property != null);
         }
-        
+
         DropdownMenuAction.Status StyleActionStatus(DropdownMenuAction action, Func<StyleProperty, bool> normalStatusCondition)
         {
             var fieldElement = action.userData as VisualElement;
@@ -956,7 +1008,7 @@ namespace Unity.UI.Builder
             {
                 return CanUnsetStyleProperties(bindableElements, normalStatusCondition);
             }
-            
+
             return CanUnsetStyleProperties(new List<VisualElement>{ fieldElement }, normalStatusCondition);
         }
 
@@ -971,7 +1023,7 @@ namespace Unity.UI.Builder
 
             return StyleActionStatus(action, property => property == null);
         }
-        
+
         DropdownMenuAction.Status CanUnsetStyleProperties(IEnumerable<VisualElement> fields, Func<StyleProperty, bool> normalStatusCondition)
         {
             foreach (var fieldElement in fields)
@@ -990,11 +1042,11 @@ namespace Unity.UI.Builder
                                 Debug.Log(path);
                                 return DropdownMenuAction.Status.Normal;
                             }
-                                
+
                         }
                     }
                 }
-                
+
                 var styleName = fieldElement.GetProperty(BuilderConstants.InspectorStylePropertyNameVEPropertyName) as string;
                 if (!string.IsNullOrEmpty(styleName))
                 {
@@ -1007,7 +1059,7 @@ namespace Unity.UI.Builder
             return DropdownMenuAction.Status.Disabled;
         }
 
-        void UnsetAllStyleProperties(DropdownMenuAction action)
+        public void UnsetAllStyleProperties(DropdownMenuAction action)
         {
             var fields = new List<VisualElement>();
             foreach (var pair in m_StyleFields)
@@ -1035,7 +1087,7 @@ namespace Unity.UI.Builder
             NotifyStyleChanges();
         }
 
-        void SetStyleProperties(IEnumerable<VisualElement> fields) 
+        void SetStyleProperties(IEnumerable<VisualElement> fields)
         {
             foreach (var fieldElement in fields)
             {
@@ -1076,7 +1128,7 @@ namespace Unity.UI.Builder
             NotifyStyleChanges();
         }
 
-        void UnsetStyleProperties(IEnumerable<VisualElement> fields) 
+        public void UnsetStyleProperties(IEnumerable<VisualElement> fields)
         {
             foreach (var fieldElement in fields)
             {
@@ -1092,7 +1144,7 @@ namespace Unity.UI.Builder
                 });
 
                 styleSheet.RemoveProperty(currentRule, styleName);
-                
+
                 var foldout = fieldElement.GetProperty(BuilderConstants.FoldoutFieldPropertyName) as FoldoutField;
                 if (foldout != null)
                 {
@@ -1160,7 +1212,7 @@ namespace Unity.UI.Builder
             currentVisualElement.RemoveMinSizeSpecialElement();
 
             var styleFields = styleRow.Query<BindableElement>().ToList();
-            
+
             var bindableElement = target as BindableElement;
             foreach (var styleField in styleFields)
             {
@@ -1185,20 +1237,28 @@ namespace Unity.UI.Builder
                 updateStyleCategoryFoldoutOverrides();
         }
 
-        void OnFieldKeywordChange(StyleValueKeyword keyword, VisualElement target, string styleName)
+        bool IsNewValue(StyleProperty styleProperty, params StyleValueType[] supportedValueTypes)
         {
-            var styleProperty = GetOrCreateStylePropertyByStyleName(styleName);
             var isNewValue = styleProperty.values.Length == 0;
 
             // If the current style property is saved as a different type than the new style type,
-            // we need to resave it here as the new type. We do this by just removing the current value.
-            if (!isNewValue && styleProperty.values[0].valueType != StyleValueType.Keyword)
+            // we need to re-save it here as the new type. We do this by just removing the current value.
+            if (!isNewValue && !supportedValueTypes.Contains(styleProperty.values[0].valueType))
             {
                 Undo.RegisterCompleteObjectUndo(styleSheet, BuilderConstants.ChangeUIStyleValueUndoMessage);
 
                 styleProperty.values = new StyleValueHandle[0];
                 isNewValue = true;
             }
+
+
+            return isNewValue;
+        }
+
+        void OnFieldKeywordChange(StyleValueKeyword keyword, VisualElement target, string styleName)
+        {
+            var styleProperty = GetOrCreateStylePropertyByStyleName(styleName);
+            var isNewValue = IsNewValue(styleProperty, StyleValueType.Keyword);
 
             if (isNewValue)
                 styleSheet.AddValue(styleProperty, keyword, BuilderConstants.ChangeUIStyleValueUndoMessage);
@@ -1404,7 +1464,9 @@ namespace Unity.UI.Builder
         void OnFieldValueChange(ChangeEvent<Color> e, string styleName)
         {
             var styleProperty = GetOrCreateStylePropertyByStyleName(styleName);
-            var isNewValue = styleProperty.values.Length == 0;
+
+            // The UI Builder does not support color keyword value. Color set by a builder will be in rgba format.
+            var isNewValue = IsNewValue(styleProperty, StyleValueType.Color);
 
             if (isNewValue)
                 styleSheet.AddValue(styleProperty, e.newValue);
@@ -1464,24 +1526,49 @@ namespace Unity.UI.Builder
             PostStyleFieldSteps(e.target as VisualElement, styleName, isNewValue);
         }
 
+        void OnFieldValueChange(ChangeEvent<object> e, string styleName)
+        {
+            OnFieldValueChangeImpl(e.target, (Object)e.newValue, (Object)e.previousValue, styleName);
+        }
+
         void OnFieldValueChange(ChangeEvent<Object> e, string styleName)
         {
-            var assetPath = AssetDatabase.GetAssetPath(e.newValue);
+            OnFieldValueChangeImpl(e.target, e.newValue, e.previousValue, styleName);
+        }
 
+        void OnFieldValueChangeImpl(IEventHandler target, Object newValue, Object previousValue, string styleName)
+        {
+            if (newValue != null)
+            {
+                OnFieldObjectValueChange(target, newValue, previousValue, styleName);
+            }
+            else
+            {
+                var keywords = StyleFieldConstants.GetStyleKeywords(styleName);
+                if (keywords == StyleFieldConstants.KLNone)
+                    OnFieldKeywordChange(StyleValueKeyword.None, target as VisualElement, styleName);
+                else if (keywords == StyleFieldConstants.KLAuto)
+                    OnFieldKeywordChange(StyleValueKeyword.Auto, target as VisualElement, styleName);
+                else
+                    OnFieldKeywordChange(StyleValueKeyword.Initial, target as VisualElement, styleName);
+            }
+        }
+
+        void OnFieldObjectValueChange(IEventHandler target, Object newValue, Object previousValue, string styleName)
+        {
+            var assetPath = AssetDatabase.GetAssetPath(newValue);
             if (BuilderAssetUtilities.IsBuiltinPath(assetPath))
             {
                 Builder.ShowWarning(BuilderConstants.BuiltInAssetPathsNotSupportedMessage);
 
                 // Revert the change
-                ObjectField field = e.target as ObjectField;
-
-                field.SetValueWithoutNotify(e.previousValue);
+                ((ObjectField)target).SetValueWithoutNotify(previousValue);
                 return;
             }
 
             var resourcesPath = BuilderAssetUtilities.GetResourcesPathForAsset(assetPath);
             var styleProperty = GetOrCreateStylePropertyByStyleName(styleName);
-            var isNewValue = styleProperty.values.Length == 0;
+            var isNewValue = IsNewValue(styleProperty, StyleValueType.ResourcePath, StyleValueType.AssetReference);
 
             if (!isNewValue)
             {
@@ -1497,31 +1584,28 @@ namespace Unity.UI.Builder
                 }
             }
 
-            if (styleName == "background-image" && e.newValue != null)
+            if (styleName == "background-image")
             {
-                if (currentVisualElement.GetMinSizeSpecialElement() != null)
+                if (currentVisualElement.GetMinSizeSpecialElement() != null && newValue is Texture texture)
                 {
-                    var texture = e.newValue as Texture;
+                    var widthFieldsForName =  GetFieldListForStyleName("width");
+                    Assert.AreEqual(1, widthFieldsForName.Count);
+                    var widthField = (DimensionStyleField) widthFieldsForName[0];
+                    widthField.value = $"{texture.width}px";
 
-                    if (texture != null)
-                    {
-#if UNITY_2019_3_OR_NEWER
-                        OnFieldDimensionChangeImplBatch(texture.width, Dimension.Unit.Pixel, GetFieldListForStyleName("width")[0], "width");
-                        OnFieldDimensionChangeImplBatch(texture.height, Dimension.Unit.Pixel, GetFieldListForStyleName("height")[0], "height");
-#else
-                        OnFieldValueChangeImplBatch(texture.width, GetFieldListForStyleName("width")[0], "width");
-                        OnFieldValueChangeImplBatch(texture.height, GetFieldListForStyleName("height")[0], "height");
-#endif
-                    }
+                    var heightFieldsForName =  GetFieldListForStyleName("height");
+                    Assert.AreEqual(1, heightFieldsForName.Count);
+                    var heightField= (DimensionStyleField) heightFieldsForName[0];
+                    heightField.value = $"{texture.height}px";
                 }
             }
 
             if (isNewValue)
-                styleSheet.AddValue(styleProperty, e.newValue);
+                styleSheet.AddValue(styleProperty, newValue);
             else // TODO: Assume only one value.
-                styleSheet.SetValue(styleProperty.values[0], e.newValue);
+                styleSheet.SetValue(styleProperty.values[0], newValue);
 
-            PostStyleFieldSteps(e.target as VisualElement, styleName, isNewValue);
+            PostStyleFieldSteps(target as VisualElement, styleName, isNewValue);
         }
 
         void OnFieldValueChangeFont(ChangeEvent<Object> e, string styleName)

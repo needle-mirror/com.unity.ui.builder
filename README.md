@@ -1,15 +1,18 @@
 # UI Builder
 
-The **UI Builder** lets you visually create and edit UXML and USS UI assets for **UIElements**. Once the package is installed, the UI Builder window can be opened via the **Window > UI > UI Builder** menu, or double-clicking on a `.uxml` asset in the Project Browser.
+The **UI Builder** lets you visually create and edit UI assets (UXML and USS) for use with the **UI Toolkit** (formally UIElements). Once the package is installed, the UI Builder window can be opened via the **Window > UI Toolkit > UI Builder** menu, or double-clicking on a `.uxml` asset in the Project Browser.
+
+> Note, for 2019.3 and 2019.2, the UI Builder window can be found in **Window > UI > UI Builder**.
 
 **Internal Developers:** Please **join our [#devs-uibuilder](https://unity.slack.com/archives/CJ3TX00QJ) Slack channel** for feedback and questions.
 
 ## Installation
 
 Unity versions supported:
-- **2019.2**: 2019.2.20f1 or newer
-- **2019.3**: 2019.3.0f6 or newer
-- **2020.1**: 2020.1.0a22 or newer
+- **2019.2**: 2019.2.21f1 or newer
+- **2019.3**: 2019.3.12f1 or newer
+- **2020.1**: 2020.1.0b7 or newer
+- **2020.2**: 2020.2.0a9 or newer
 
 To install:
 1. Open the **Window > Package Manager**.

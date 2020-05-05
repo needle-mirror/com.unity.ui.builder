@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.IO;
+using UnityEditor;
 using UnityEngine;
 
 namespace Unity.UI.Builder
@@ -6,14 +8,20 @@ namespace Unity.UI.Builder
     internal static class BuilderConstants
     {
         // Builder
-        public static readonly string BuilderWindowTitle = "UI Builder";
-        public static readonly string BuilderPackageName = "com.unity.ui.builder";
+        public const string BuilderWindowTitle = "UI Builder";
+        public const string BuilderWindowIcon = IconsResourcesPath + "/Generic/UIBuilder";
+        public const string BuilderPackageName = "com.unity.ui.builder";
+#if UNITY_2020_1_OR_NEWER
+        public const string BuilderMenuEntry = "Window/UI Toolkit/UI Builder";
+#else
+        public const string BuilderMenuEntry = "Window/UI/UI Builder";
+#endif
 
         // Numbers
         public static readonly int VisualTreeAssetOrderIncrement = 10;
         public static readonly int VisualTreeAssetOrderHalfIncrement = 5;
         public static readonly float CanvasInitialWidth = 350;
-        public static readonly float CanvasInitialHeight = 550;
+        public static readonly float CanvasInitialHeight = 450; // Making this too large might break tests.
         public static readonly float CanvasMinWidth = 100;
         public static readonly float CanvasMinHeight = 100;
         public static readonly int ClassNameInPillMaxLength = 25;
@@ -22,11 +30,20 @@ namespace Unity.UI.Builder
         public static readonly Vector2 ViewportInitialContentOffset = new Vector2(20.0f, 20.0f);
 
         // Paths
-        public static readonly string UIBuilderPackageRootPath = "Packages/" + BuilderPackageName;
-        public static readonly string UIBuilderPackagePath = UIBuilderPackageRootPath + "/Editor/UI";
-        public static readonly string UtilitiesPath = UIBuilderPackageRootPath + "/Editor/Utilities";
-        public static readonly string InspectorUssPathNoExt = UIBuilderPackagePath + "/Inspector/BuilderInspector";
-        public static readonly string RuntimeThemeUSSPath = "Packages/com.unity.ui.runtime/USS/Default.uss.asset";
+        public const string UIBuilderPackageRootPath = "Packages/" + BuilderPackageName;
+        public const string UIBuilderPackagePath = UIBuilderPackageRootPath + "/Editor/UI";
+        public const string UIBuilderPackageResourcesPath  = UIBuilderPackageRootPath + "/Editor/Resources/";
+        public const string UtilitiesPath = UIBuilderPackageRootPath + "/Editor/Utilities";
+        public const string LibraryUIPath = UIBuilderPackagePath + "/Library/";
+        public const string LibraryUssPathNoExt = UIBuilderPackagePath + "/Library/BuilderLibrary";
+        public const string InspectorUssPathNoExt = UIBuilderPackagePath + "/Inspector/BuilderInspector";
+        public const string RuntimeThemeUSSPath = "Packages/com.unity.ui.runtime/USS/Default.uss.asset";
+        public const string IconsResourcesPath = BuilderPackageName + "/Icons";
+        public const string UIBuilderTestsRootPath = UIBuilderPackageRootPath + "/Tests/Editor";
+        public const string UIBuilderTestsTestFilesPath = UIBuilderTestsRootPath + "/TestFiles";
+        const string BuilderDocumentDiskJsonFileName = "UIBuilderDocument.json";
+        const string BuilderDocumentDiskJsonFolderPath = "Library/UIBuilder";
+        const string BuilderDocumentDiskSettingsJsonFolderPath = "Library/UIBuilder/DocumentSettings";
 
         // Global Style Class Names
         public static readonly string HiddenStyleClassName = "unity-builder-hidden";
@@ -39,6 +56,9 @@ namespace Unity.UI.Builder
         public static readonly string SingleSpace = " ";
         public static readonly string TripleSpace = "   "; // Don't ask.
         public static readonly string SubtitlePrefix = " - ";
+        public const string WindowsNewlineChar = "\r\n";
+        public const string UnixNewlineChar = "\n";
+        public const string NewlineChar = UnixNewlineChar;
 
         //
         // Elements
@@ -50,6 +70,7 @@ namespace Unity.UI.Builder
 
         // Element Linked VE Property Names
         public static readonly string ElementLinkedStyleSheetVEPropertyName = "__unity-ui-builder-linked-stylesheet";
+        public static readonly string ElementLinkedStyleSheetIndexVEPropertyName = "__unity-ui-builder-linked-stylesheet-index";
         public static readonly string ElementLinkedStyleSelectorVEPropertyName = "__unity-ui-builder-linked-style-selector";
         public static readonly string ElementLinkedVisualTreeAssetVEPropertyName = "__unity-ui-builder-linked-visual-tree-asset";
         public static readonly string ElementLinkedVisualElementAssetVEPropertyName = "__unity-ui-builder-linked-visual-element-asset";
@@ -122,7 +143,16 @@ namespace Unity.UI.Builder
         public static readonly string ExplorerItemTypeLabelClassName = "unity-builder-explorer__type-label";
         public static readonly string ExplorerItemLabelContClassName = "unity-builder-explorer-tree-item-label-cont";
         public static readonly string ExplorerItemLabelClassName = "unity-builder-explorer-tree-item-label";
+        public static readonly string ExplorerItemIconClassName = "unity-builder-explorer-tree-item-icon";
         public static readonly string ExplorerStyleSheetsPaneClassName = "unity-builder-stylesheets-pane";
+        public static readonly string ExplorerActiveStyleSheetClassName = "unity-builder-stylesheets-pane--active-stylesheet";
+
+        // StyleSheets Pane Menu
+        public static readonly string ExplorerStyleSheetsPaneCreateNewUSSMenu = "Create New USS";
+        public static readonly string ExplorerStyleSheetsPaneAddExistingUSSMenu = "Add Existing USS";
+        public static readonly string ExplorerStyleSheetsPaneRemoveUSSMenu = "Remove USS";
+        public static readonly string ExplorerStyleSheetsPaneAddToNewUSSMenu = "Add to New USS";
+        public static readonly string ExplorerStyleSheetsPaneAddToExistingUSSMenu = "Add to Existing USS";
 
         // Explorer Messages
         public static readonly string ExplorerInExplorerNewClassSelectorInfoMessage = "Add new selector...";
@@ -137,6 +167,18 @@ namespace Unity.UI.Builder
 
         // Library Style Class Names
         public static readonly string LibraryCurrentlyOpenFileItemClassName = "unity-builder-library__currently-open-file";
+
+        // Library Menu
+        public const string LibraryShowPackageFiles = "Show Package Files";
+        public const string LibraryViewModeToggle = "Tree View";
+        public const string LibraryProjectTabName = "Project";
+        public const string LibraryStandardControlsTabName = "Standard";
+
+        // Library Content
+        public const string LibraryContainersSectionHeaderName = "Containers";
+        public const string LibraryControlsSectionHeaderName = "Controls";
+        public const string LibraryAssetsSectionHeaderName = "Assets";
+        public const string LibraryCustomControlsSectionHeaderName = "Custom Controls";
 
         //
         // Selection
@@ -172,13 +214,6 @@ namespace Unity.UI.Builder
         public static readonly string ToolbarUnsavedFileDisplayMessage = "<unsaved file>" + ToolbarUnsavedFileSuffix;
 
         //
-        // VisualTreeAsset/StyleSheet
-        //
-
-        // VisualTreeAsset
-        public static readonly string VisualTreeAssetStyleSheetPathAsInstanceIdSchemeName = "instanceId:";
-
-        //
         // Undo/Redo
         //
 
@@ -195,7 +230,6 @@ namespace Unity.UI.Builder
         public static readonly string AddNewSelectorUndoMessage = "Create USS Selector";
         public static readonly string RenameSelectorUndoMessage = "Rename USS Selector";
         public static readonly string DeleteSelectorUndoMessage = "Delete USS Selector";
-        public static readonly string VisualTreeAssetUnsavedUssFileMessage = "*unsaved in-memory StyleSheet with ";
         public static readonly string SaveAsNewDocumentsDialogMessage = "Save As New UI Documents";
         public static readonly string NewDocumentsDialogMessage = "New UI Documents";
 
@@ -214,9 +248,9 @@ namespace Unity.UI.Builder
         // Save Dialog Messages
         public static readonly string SaveDialogChooseUxmlPathDialogTitle = "Choose UXML File Location";
         public static readonly string SaveDialogChooseUssPathDialogTitle = "Choose USS File Location";
-        public static readonly string SaveDialogSaveChangesPromptTitle = "UI Builder: Document Has Been Modified";
+        public static readonly string SaveDialogSaveChangesPromptTitle = "UI Builder: Document has unsaved changes.";
         public static readonly string SaveDialogSaveChangesPromptMessage = "Do you want to save changes you made?";
-        public static readonly string SaveDialogExternalChangesPromptTitle = "UI Builder: Document Has Been Modified in External Editor";
+        public static readonly string SaveDialogExternalChangesPromptTitle = "UI Builder: Document has been modified in an external editor.";
         public static readonly string SaveDialogExternalChangesPromptMessage = "Unsaved changes in the UI Builder will be lost.\nPlease avoid changing files externally while they are open in the Builder.";
         public static readonly string SaveDialogInvalidPathMessage = "Can only save in the 'Assets/' or 'Packages/' folders.";
 
@@ -226,6 +260,10 @@ namespace Unity.UI.Builder
             "You are about to {0}:\n\n{1}\n\nwhich is currently open in the UI Builder. " +
             "If you {0} the file, the UI Builder document will close, " +
             "and you will lose any unsaved changes. Would you like to {0} the file anyway?";
+
+        // Delete Last Element Messages
+        public static readonly string DeleteLastElementDialogTitle = "UI Builder: Deleting last element.";
+        public static readonly string DeleteLastElementDialogMessage = "You are about to delete the last element. Since USS files are attached to root elements, with no elements in the document, no USS files can be attached. Any existing USS files attached will be removed. You can always undo this operation and get everything back. Continue?";
 
         //
         // Messages
@@ -251,8 +289,8 @@ namespace Unity.UI.Builder
         public static readonly string UssExtension = ".uss";
 
         // UXML
-        public static readonly string UxmlHeader = "<ui:UXML xmlns:ui=\"UnityEngine.UIElements\" xmlns:uie=\"UnityEditor.UIElements\">\n";
-        public static readonly string UxmlFooter = "</ui:UXML>\n";
+        public static readonly string UxmlHeader = "<ui:UXML xmlns:ui=\"UnityEngine.UIElements\" xmlns:uie=\"UnityEditor.UIElements\">";
+        public static readonly string UxmlFooter = "</ui:UXML>";
         public static readonly string UxmlEngineNamespace = "UnityEngine.UIElements.";
         public static readonly string UxmlEngineNamespaceReplace = "ui:";
         public static readonly string UxmlEditorNamespace = "UnityEditor.UIElements.";
@@ -276,8 +314,91 @@ namespace Unity.UI.Builder
             "border-bottom-width"
         };
 
+        internal static readonly List<string> ViewportOverlayEnablingStyleProperties = new List<string>()
+        {
+            "width",
+            "height",
+            "margin-left",
+            "margin-right",
+            "margin-top",
+            "margin-bottom",
+            "padding-left",
+            "padding-right",
+            "padding-top",
+            "padding-bottom",
+            "border-left-width",
+            "border-right-width",
+            "border-top-width",
+            "border-bottom-width"
+        };
+
+        public static readonly Dictionary<string, string> SpecialEnumNamesCases = new Dictionary<string, string>
+        {
+            {"nowrap", "no-wrap"}
+        };
+
         // Version Style Classes
         public static readonly string Version_2019_2 = "unity-builder-2019-2";
         public static readonly string Version_2019_3_OrNewer = "unity-builder-2019-3-or-newer";
+
+        //
+        // Complex Getters
+        //
+
+        public static string NewlineCharFromEditorSettings
+        {
+            get
+            {
+                string preferredLineEndings;
+                switch (EditorSettings.lineEndingsForNewScripts)
+                {
+                    case LineEndingsMode.OSNative:
+                        if (Application.platform == RuntimePlatform.WindowsEditor)
+                            preferredLineEndings = WindowsNewlineChar;
+                        else
+                            preferredLineEndings = UnixNewlineChar;
+                        break;
+                    case LineEndingsMode.Unix:
+                        preferredLineEndings = UnixNewlineChar;
+                        break;
+                    case LineEndingsMode.Windows:
+                        preferredLineEndings = WindowsNewlineChar;
+                        break;
+                    default:
+                        preferredLineEndings = UnixNewlineChar;
+                        break;
+                }
+                return preferredLineEndings;
+            }
+        }
+
+        public static string BuilderDocumentDiskJsonFolderAbsolutePath
+        {
+            get
+            {
+                var path = Application.dataPath + "/../" + BuilderDocumentDiskJsonFolderPath;
+                path = Path.GetFullPath(path);
+                return path;
+            }
+        }
+
+        public static string BuilderDocumentDiskJsonFileAbsolutePath
+        {
+            get
+            {
+                var path = BuilderDocumentDiskJsonFolderAbsolutePath + "/" + BuilderDocumentDiskJsonFileName;
+                return path;
+            }
+        }
+
+        public static string BuilderDocumentDiskSettingsJsonFolderAbsolutePath
+        {
+            get
+            {
+                var path = Application.dataPath + "/../" + BuilderDocumentDiskSettingsJsonFolderPath;
+                path = Path.GetFullPath(path);
+                return path;
+            }
+        }
     }
 }

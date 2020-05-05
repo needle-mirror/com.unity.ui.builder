@@ -12,11 +12,6 @@ namespace Unity.UI.Builder
     {
         static readonly string s_UssClassName = "unity-builder-explorer";
 
-        // TODO: Transfer to own USS.
-        const string k_DefaultStyleSheetPath = "StyleSheets/UIElementsDebugger/UIElementsDebugger.uss";
-        const string k_DefaultDarkStyleSheetPath = "StyleSheets/UIElementsDebugger/UIElementsDebuggerDark.uss";
-        const string k_DefaultLightStyleSheetPath = "StyleSheets/UIElementsDebugger/UIElementsDebuggerLight.uss";
-
         [Flags]
         internal enum BuilderElementInfoVisibilityState
         {
@@ -27,7 +22,9 @@ namespace Unity.UI.Builder
         }
 
         VisualElement m_DocumentElementRoot;
+        bool m_IncludeDocumentElementRoot;
         VisualElement m_DocumentElement;
+        protected BuilderPaneWindow m_PaneWindow;
         protected BuilderViewport m_Viewport;
         protected ElementHierarchyView m_ElementHierarchyView;
         protected BuilderSelection m_Selection;
@@ -52,17 +49,21 @@ namespace Unity.UI.Builder
         private bool m_ShouldRebuildHierarchyOnStyleChange;
 
         public BuilderExplorer(
+            BuilderPaneWindow paneWindow,
             BuilderViewport viewport,
             BuilderSelection selection,
             BuilderClassDragger classDragger,
             BuilderHierarchyDragger hierarchyDragger,
             BuilderElementContextMenu contextMenuManipulator,
             VisualElement documentElementRoot,
+            bool includeDocumentElementRoot,
             HighlightOverlayPainter highlightOverlayPainter,
             string toolbarUxmlPath)
         {
+            m_PaneWindow = paneWindow;
             m_Viewport = viewport;
             m_DocumentElementRoot = documentElementRoot;
+            m_IncludeDocumentElementRoot = includeDocumentElementRoot;
             m_DocumentElement = viewport.documentElement;
             AddToClassList(s_UssClassName);
 
@@ -74,15 +75,6 @@ namespace Unity.UI.Builder
 
             m_Selection = selection;
 
-            // TODO: Transfer to own USS.
-            var sheet = EditorGUIUtility.Load(k_DefaultStyleSheetPath) as StyleSheet;
-            styleSheets.Add(sheet);
-            StyleSheet colorSheet;
-            if (EditorGUIUtility.isProSkin)
-                colorSheet = EditorGUIUtility.Load(k_DefaultDarkStyleSheetPath) as StyleSheet;
-            else
-                colorSheet = EditorGUIUtility.Load(k_DefaultLightStyleSheetPath) as StyleSheet;
-            styleSheets.Add(colorSheet);
 
             // Query the UI
             if (!string.IsNullOrEmpty(toolbarUxmlPath))
@@ -93,11 +85,17 @@ namespace Unity.UI.Builder
 
             // Create the Hierarchy View.
             m_ElementHierarchyView = new ElementHierarchyView(
+                m_PaneWindow,
                 m_DocumentElement,
                 selection, classDragger, hierarchyDragger,
                 contextMenuManipulator, ElementSelected, highlightOverlayPainter);
             m_ElementHierarchyView.style.flexGrow = 1;
             Add(m_ElementHierarchyView);
+
+            // Enable horizontal scrolling.
+#if UNITY_2020_2_OR_NEWER
+            m_ElementHierarchyView.Q<TreeView>().horizontalScrollingEnabled = true;
+#endif
 
             // Make sure the Hierarchy View gets focus when the pane gets focused.
             primaryFocusable = m_ElementHierarchyView.Q<ListView>();
@@ -116,7 +114,7 @@ namespace Unity.UI.Builder
             m_ElementHierarchyView.ResetHighlightOverlays();
         }
 
-        void ElementSelected(VisualElement element)
+        protected virtual void ElementSelected(VisualElement element)
         {
             if (m_SelectionMadeExternally)
                 return;
@@ -138,13 +136,18 @@ namespace Unity.UI.Builder
             m_Selection.Select(this, element);
         }
 
+        protected void UpdateHierarchy(bool hasUnsavedChanges)
+        {
+            m_ElementHierarchyView.hierarchyHasChanged = true;
+            m_ElementHierarchyView.hasUnsavedChanges = hasUnsavedChanges;
+            m_ElementHierarchyView.RebuildTree(m_DocumentElementRoot, m_IncludeDocumentElementRoot);
+        }
+
         public void UpdateHierarchyAndSelection(bool hasUnsavedChanges)
         {
             m_SelectionMadeExternally = true;
 
-            m_ElementHierarchyView.hierarchyHasChanged = true;
-            m_ElementHierarchyView.hasUnsavedChanges = hasUnsavedChanges;
-            m_ElementHierarchyView.RebuildTree(m_DocumentElementRoot);
+            UpdateHierarchy(hasUnsavedChanges);
 
             if (!m_Selection.isEmpty)
             {
@@ -155,7 +158,7 @@ namespace Unity.UI.Builder
             m_SelectionMadeExternally = false;
         }
 
-        public void HierarchyChanged(VisualElement element, BuilderHierarchyChangeType changeType)
+        public virtual void HierarchyChanged(VisualElement element, BuilderHierarchyChangeType changeType)
         {
             if (element == null ||
                 changeType.HasFlag(BuilderHierarchyChangeType.ChildrenAdded) ||
@@ -173,7 +176,7 @@ namespace Unity.UI.Builder
             return true;
         }
 
-        public void SelectionChanged()
+        public virtual void SelectionChanged()
         {
             if (!m_Selection.selection.Any())
             {
@@ -197,9 +200,9 @@ namespace Unity.UI.Builder
             m_SelectionMadeExternally = false;
         }
 
-        public void StylingChanged(List<string> styles)
+        public virtual void StylingChanged(List<string> styles)
         {
-            if(m_ShouldRebuildHierarchyOnStyleChange)
+            if (m_ShouldRebuildHierarchyOnStyleChange)
                 UpdateHierarchyAndSelection(m_Selection.hasUnsavedChanges);
             m_ShouldRebuildHierarchyOnStyleChange = !m_Selection.hasUnsavedChanges;
         }

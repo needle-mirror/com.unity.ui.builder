@@ -93,42 +93,46 @@ namespace Unity.UI.Builder
                 e.StopImmediatePropagation();
             });
 
-            renameTextfield.RegisterValueChangedCallback((e) =>
+            renameTextfield.RegisterCallback<FocusOutEvent>(e =>
             {
-                var vea = documentElement.GetVisualElementAsset();
-                var value = e.newValue;
-                
-                if (!string.IsNullOrEmpty(e.newValue))
-                {
-                    value = value.Trim();
-                    value = value.TrimStart('#');
-                    if (!BuilderNameUtilities.AttributeRegex.IsMatch(value))
-                    {
-                        Builder.ShowWarning(string.Format(BuilderConstants.AttributeValidationSpacialCharacters, "Name"));
-                        renameTextfield.schedule.Execute(() =>
-                        {
-                            FocusOnRenameTextField();
-                            renameTextfield.SetValueWithoutNotify(value);
-                        });
-                        e.StopPropagation();
-                        return;
-                    }
-
-                    nameLabel.text = BuilderConstants.UssSelectorNameSymbol + value;
-                }
-                else
-                {
-                    nameLabel.text = e.newValue;
-                }
-
-                documentElement.name = value;
-                vea.SetAttributeValue("name", value);
-
-                e.StopPropagation();
-                selection.NotifyOfHierarchyChange();
+                OnEditTextFinished(documentElement, renameTextfield, nameLabel, selection);
             });
 
             return renameTextfield;
+        }
+
+        void OnEditTextFinished(VisualElement documentElement, TextField renameTextfield, Label nameLabel,
+            BuilderSelection selection)
+        {
+            var vea = documentElement.GetVisualElementAsset();
+            var value = renameTextfield.text ?? documentElement.name;
+
+            if (!string.IsNullOrEmpty(renameTextfield.text))
+            {
+                value = value.Trim();
+                value = value.TrimStart('#');
+                if (!BuilderNameUtilities.AttributeRegex.IsMatch(value))
+                {
+                    Builder.ShowWarning(string.Format(BuilderConstants.AttributeValidationSpacialCharacters, "Name"));
+                    renameTextfield.schedule.Execute(() =>
+                    {
+                        FocusOnRenameTextField();
+                        renameTextfield.SetValueWithoutNotify(value);
+                    });
+                    return;
+                }
+
+                nameLabel.text = BuilderConstants.UssSelectorNameSymbol + value;
+            }
+            else
+            {
+                nameLabel.text = renameTextfield.text;
+            }
+
+            documentElement.name = value;
+            vea.SetAttributeValue("name", value);
+
+            selection.NotifyOfHierarchyChange();
         }
 
         public VisualElement row()

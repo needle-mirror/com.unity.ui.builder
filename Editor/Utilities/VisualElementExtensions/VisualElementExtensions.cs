@@ -169,6 +169,18 @@ namespace Unity.UI.Builder
             return element.GetVisualElementAsset() != null || element.GetVisualTreeAsset() != null || BuilderSharedStyles.IsDocumentElement(element);
         }
 
+        public static StyleSheet GetClosestStyleSheet(this VisualElement element)
+        {
+            if (element == null)
+                return null;
+
+            var ss = element.GetStyleSheet();
+            if (ss != null)
+                return ss;
+
+            return element.parent.GetClosestStyleSheet();
+        }
+
         public static VisualElement GetClosestElementPartOfCurrentDocument(this VisualElement element)
         {
             if (element == null)
@@ -274,5 +286,27 @@ namespace Unity.UI.Builder
 
             return element.parent.GetFirstAncestorWithClass(className);
         }
+
+        static CustomStyleProperty<string> s_BuilderElementStyleProperty = new CustomStyleProperty<string>("--builder-style");
+
+        public static void RegisterCustomBuilderStyleChangeEvent(this VisualElement element, Action<BuilderElementStyle> onElementStyleChanged)
+        {
+            element.RegisterCallback<CustomStyleResolvedEvent>(e =>
+            {
+                if (e.customStyle.TryGetValue(s_BuilderElementStyleProperty, out var value))
+                {
+                    if (Enum.TryParse<BuilderElementStyle>(value, true, out var elementStyle))
+                        onElementStyleChanged.Invoke(elementStyle);
+                    else
+                        throw new NotSupportedException($"The `{value}` value is not supported for {s_BuilderElementStyleProperty.name} property.");
+                }
+            });
+        }
+    }
+
+    enum BuilderElementStyle
+    {
+        Default,
+        Highlighted
     }
 }

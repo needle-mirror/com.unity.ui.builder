@@ -1,3 +1,4 @@
+using NUnit.Framework;
 using System;
 using System.Collections;
 using UnityEditor;
@@ -42,7 +43,8 @@ namespace Unity.UI.Builder.EditorTests
             Copy,
             Paste,
             Cut,
-            Duplicate
+            Duplicate,
+            Rename
         }
 
         public static IEnumerator ExecuteCommand(EditorWindow window, Command command)
@@ -83,8 +85,14 @@ namespace Unity.UI.Builder.EditorTests
                 yield return SimulateClick(target, button, modifiers, 2);
             }
 
+            // TODO: All SimulateClick() or other methods that take an ExplorerItem as their target need
+            // to be converted to take ExplorerItem query instead. The Explorer gets Refreshed() more now
+            // and the likelyhood of using a stale ExplorerItem element to click on is very high. This
+            // leads to much hard-to-track bugs with the tests themselves.
             static IEnumerator SimulateClick(VisualElement target, MouseButton button , EventModifiers modifiers, int clickCount)
             {
+                Assert.That(target.panel, Is.Not.Null);
+
                 var root = UIETestHelpers.GetRoot(target);
                 var mouseDown = MakeEvent(EventType.MouseDown, target.worldBound.center, button, modifiers, clickCount);
                 root.SendEvent(mouseDown);

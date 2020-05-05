@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -7,6 +9,9 @@ namespace Unity.UI.Builder
     {
         static string ConvertDashToUpperNoSpace(string dash, bool firstCase, bool addSpace)
         {
+            if (BuilderConstants.SpecialEnumNamesCases.TryGetValue(dash, out var replacement))
+                dash = replacement;
+
             var sb = new StringBuilder();
             bool caseFlag = firstCase;
             for (int i = 0; i < dash.Length; ++i)
@@ -50,6 +55,9 @@ namespace Unity.UI.Builder
         {
             var split = Regex.Replace(Regex.Replace(camel, @"(\P{Ll})(\P{Ll}\p{Ll})", "$1-$2"), @"(\p{Ll})(\P{Ll})", "$1-$2");
             var lowerCase = split.ToLower();
+            foreach (var pair in BuilderConstants.SpecialEnumNamesCases.Where(pair => pair.Value.Equals(lowerCase)))
+                return pair.Key;
+
             return lowerCase;
         }
 

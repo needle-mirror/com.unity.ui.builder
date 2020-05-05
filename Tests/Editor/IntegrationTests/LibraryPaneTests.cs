@@ -13,35 +13,67 @@ namespace Unity.UI.Builder.EditorTests
         [UnitySetUp]
         public IEnumerator UnitySetUp()
         {
+            var contentUpdated = false;
+            BuilderLibraryContent.ResetProjectUxmlPathsHash();
+            BuilderLibraryContent.OnLibraryContentUpdated += () =>
+            {
+                contentUpdated = true;
+            };
+
             CreateTestUXMLFile();
-            yield return null;
+
+            // TODO: We need to reconsider this pattern as it is very dangerous.
+            // For one, [UniteSetUp] runs BEFORE [SetUp], so at this point
+            // there is no UI Builder window open. As such, our
+            // BuilderLibraryContent.AssetModificationProcessor.OnAssetChange() would
+            // check for the "ActiveWindow" and because it was null it would never
+            // call RegenerateLibraryContent(), and therefore OnLibraryContentUpdated.
+            // 
+            // And that's how we get to an infinite loop.
+            // 
+            // This would also happen if the test UXML file already existed in the project
+            // (because of a previous test not cleaning up, for example).
+            //
+            // I've plugged all the holes:
+            // - BuilderLibraryContent.AssetModificationProcessor.OnAssetChange() uses delayCall
+            // - We always try to delete the text UXML file before creating a new one
+            // - Added a "timeout" loop safety counter below so we never go infinite
+            //
+            // But we need to reconsider this pattern and be very careful how we override
+            // or new [UnitySetUp] and [SetUp]. I would suggest even just sticking to
+            // only using [UnitySetUp] and makeing [SetUp] non-overridable. It's still
+            // a big problem either way because if you call base.UnitySetUp() _after_ your
+            // new code, you're still going to run into problems.
+            int count = 5;
+            while (!contentUpdated)
+            {
+                count--;
+                if (count == 0)
+                {
+                    Assert.Fail("We waited too long for the BuilderLibraryContent to update. Something is very wrong.");
+                    break;
+                }
+                yield return UIETestHelpers.Pause();
+            }
         }
 
         protected override IEnumerator TearDown()
         {
+            // Switch back to the controls mode
+            if (LibraryPane != null)
+                yield return SwitchLibraryTab(BuilderLibrary.BuilderLibraryTab.Controls);
+
             yield return base.TearDown();
             DeleteTestUXMLFile();
         }
 
         /// <summary>
-        /// Displays built-in elements under a **Unity** heading.
-        /// </summary>
-        [Test]
-        public void BuiltInComponentsLocatedUnderTheUnityHeading()
-        {
-            var libraryTreeView = LibraryPane.Q<TreeView>();
-            var unityComponents = (BuilderLibrary.LibraryTreeItem) libraryTreeView.items.First();
-            Assert.That(unityComponents.name, Is.EqualTo("Unity"));
-            Assert.That((unityComponents.children.First() as BuilderLibrary.LibraryTreeItem)?.name,
-                Is.EqualTo(nameof(VisualElement)));
-        }
-
-        /// <summary>
         /// Displays project-defined factory elements and UXML files (with `.uxml` extension) under a **Project** heading. This includes assets inside the `Assets/` and `Packages/` folders.
         /// </summary>
-        [Test]
-        public void DisplaysProjectDefinedUXMLFilesInsideAssets()
+        [UnityTest]
+        public IEnumerator DisplaysProjectDefinedUXMLFilesInsideAssets()
         {
+            yield return SwitchLibraryTab(BuilderLibrary.BuilderLibraryTab.Project);
             var testUXML = GetTestAssetsUXMLFileNode();
             Assert.That(testUXML, Is.Not.Null);
         }
@@ -49,17 +81,17 @@ namespace Unity.UI.Builder.EditorTests
         ITreeViewItem GetTestAssetsUXMLFileNode(string nodeName = k_TestUXMLFileName)
         {
             var libraryTreeView = LibraryPane.Q<TreeView>();
-            var projectNode = (BuilderLibrary.LibraryTreeItem) libraryTreeView.items
-                .First(item => ((BuilderLibrary.LibraryTreeItem) item).name.Equals("Project"));
+            var projectNode = (BuilderLibraryTreeItem)libraryTreeView.items
+                .First(item => ((BuilderLibraryTreeItem)item).Name.Equals(BuilderConstants.LibraryAssetsSectionHeaderName));
             libraryTreeView.ExpandItem(projectNode.id);
 
-            var assets = (BuilderLibrary.LibraryTreeItem) projectNode.children.First();
-            libraryTreeView.ExpandItem(assets.id);
-            if (!assets.name.Equals("Assets"))
+            var assetsNode = (BuilderLibraryTreeItem)projectNode.children?.FirstOrDefault();
+            if (assetsNode == null || !assetsNode.Name.Equals(BuilderConstants.LibraryAssetsSectionHeaderName))
                 return null;
 
-            var testUXML = assets.children
-                .FirstOrDefault(item => ((BuilderLibrary.LibraryTreeItem) item).name.Equals(nodeName));
+            libraryTreeView.ExpandItem(assetsNode.id);
+            var testUXML = assetsNode.children
+                .FirstOrDefault(item => ((BuilderLibraryTreeItem)item).Name.Equals(nodeName));
             return testUXML;
         }
 
@@ -70,12 +102,10 @@ namespace Unity.UI.Builder.EditorTests
         public IEnumerator CanDoubleClickToCreateNewElement()
         {
             Assert.That(ViewportPane.documentElement.childCount, Is.EqualTo(0));
-            var libraryTreeView = LibraryPane.Q<TreeView>();
-            var visualElementNode = libraryTreeView.Query<Label>(null, "unity-builder-library__tree-item-label")
-                .Where(label => label.text.Equals(nameof(VisualElement))).First();
+            var label = BuilderTestsHelper.GetLabelWithName(LibraryPane, nameof(VisualElement));
 
-            Assert.That(visualElementNode, Is.Not.Null);
-            yield return UIETestEvents.Mouse.SimulateDoubleClick(visualElementNode);
+            Assert.That(label, Is.Not.Null);
+            yield return UIETestEvents.Mouse.SimulateDoubleClick(label);
             Assert.That(ViewportPane.documentElement.childCount, Is.EqualTo(1));
         }
 
@@ -88,7 +118,7 @@ namespace Unity.UI.Builder.EditorTests
             var testUXMLTreeViewItem = GetTestAssetsUXMLFileNode();
             var libraryTreeView = LibraryPane.Q<TreeView>();
             yield return libraryTreeView.SelectAndScrollToItemWithId(testUXMLTreeViewItem.id);
-            yield return UIETestHelpers.Pause(1);
+            yield return UIETestHelpers.Pause();
             var testUXMLLabel = libraryTreeView.Query<Label>(null, "unity-builder-library__tree-item-label")
                 .Where(label => label.text.Equals(k_TestUXMLFileName)).First();
             Assert.That(testUXMLLabel, Is.Not.Null);
@@ -163,9 +193,10 @@ namespace Unity.UI.Builder.EditorTests
             yield return AddVisualElement();
 
             var firstVisualElementItem = GetFirstExplorerItem();
+            yield return SelectLibraryTreeItemWithName("Text Field");
             var textFieldLibrary = BuilderTestsHelper.GetLabelWithName(LibraryPane, "Text Field");
 
-            var veBottomPosition =  new Vector2(firstVisualElementItem.worldBound.center.x, firstVisualElementItem.worldBound.yMin);
+            var veBottomPosition = new Vector2(firstVisualElementItem.worldBound.center.x, firstVisualElementItem.worldBound.yMin);
             yield return UIETestEvents.Mouse.SimulateMouseEvent(BuilderWindow, EventType.MouseDown, textFieldLibrary.worldBound.center);
             yield return UIETestEvents.Mouse.SimulateMouseMove(BuilderWindow, textFieldLibrary.worldBound.center, firstVisualElementItem.worldBound.center);
             yield return UIETestEvents.Mouse.SimulateMouseMove(BuilderWindow, firstVisualElementItem.worldBound.center, veBottomPosition);
@@ -184,7 +215,7 @@ namespace Unity.UI.Builder.EditorTests
             var testUXMLTreeViewItem = GetTestAssetsUXMLFileNode();
             var libraryTreeView = LibraryPane.Q<TreeView>();
             yield return libraryTreeView.SelectAndScrollToItemWithId(testUXMLTreeViewItem.id);
-            yield return UIETestHelpers.Pause(1);
+            yield return UIETestHelpers.Pause();
             var testUXMLLabel = libraryTreeView.Query<Label>(null, "unity-builder-library__tree-item-label")
                 .Where(label => label.text.Equals(k_TestUXMLFileName)).First();
             Assert.That(testUXMLLabel, Is.Not.Null);
@@ -246,7 +277,7 @@ namespace Unity.UI.Builder.EditorTests
         /// <summary>
         /// Hovering over items in the Library shows a preview of that element in a floating preview box. The preview uses the current Theme selected for the Canvas.
         /// </summary>
-        [UnityTest]
+        [UnityTest, Ignore("Let finalize our decision about what kind of items should have a preview")]
         public IEnumerator HoveringOverItemShowsFloatingPreviewBox()
         {
             var veLabel = BuilderTestsHelper.GetLabelWithName(LibraryPane, nameof(VisualElement));
@@ -254,7 +285,7 @@ namespace Unity.UI.Builder.EditorTests
             Assert.That(preview.worldBound.size, Is.EqualTo(Vector2.zero));
 
             yield return UIETestEvents.Mouse.SimulateMouseEvent(BuilderWindow, EventType.MouseMove, veLabel.worldBound.center);
-            yield return UIETestHelpers.Pause(1);
+            yield return UIETestHelpers.Pause();
             Assert.That(preview.worldBound.size, Is.Not.EqualTo(Vector2.zero));
         }
 
@@ -264,21 +295,80 @@ namespace Unity.UI.Builder.EditorTests
         [UnityTest]
         public IEnumerator LibraryUpdatesWhenUXMLFilesAreAddedDeletedMoved()
         {
+            // Switch to the project mode
+            yield return SwitchLibraryTab(BuilderLibrary.BuilderLibraryTab.Project);
+
             // Add
             var uxmlTreeViewItem = GetTestAssetsUXMLFileNode();
             Assert.That(uxmlTreeViewItem, Is.Not.Null);
 
             // Move
+            var contentUpdated = false;
+            BuilderLibraryContent.OnLibraryContentUpdated += () =>
+            {
+                contentUpdated = true;
+            };
             AssetDatabase.MoveAsset(k_TestUXMLFilePath, "Assets/NewName.uxml");
-            yield return UIETestHelpers.Pause(1);
+            while (!contentUpdated)
+                yield return UIETestHelpers.Pause();
+
             uxmlTreeViewItem = GetTestAssetsUXMLFileNode("NewName.uxml");
             Assert.That(uxmlTreeViewItem, Is.Not.Null);
 
             // Delete
+            contentUpdated = false;
+            BuilderLibraryContent.OnLibraryContentUpdated += () =>
+            {
+                contentUpdated = true;
+            };
             AssetDatabase.DeleteAsset("Assets/NewName.uxml");
-            yield return UIETestHelpers.Pause(1);
+            while (!contentUpdated)
+                yield return UIETestHelpers.Pause();
+
+            yield return UIETestHelpers.Pause();
             uxmlTreeViewItem = GetTestAssetsUXMLFileNode("NewName.uxml");
             Assert.That(uxmlTreeViewItem, Is.Null);
+        }
+
+        IEnumerator SwitchLibraryTab(BuilderLibrary.BuilderLibraryTab tabName)
+        {
+            var controlsViewButton = LibraryPane.Q<Button>(tabName.ToString());
+            yield return UIETestEvents.Mouse.SimulateClick(controlsViewButton);
+        }
+
+        /// <summary>
+        /// Can switch between **Controls** and **Project** view using tabs in the Library header.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator SwitchLibraryBetweenTabs()
+        {
+            yield return SwitchLibraryTab(BuilderLibrary.BuilderLibraryTab.Controls);
+            var controlsNode = FindLibraryItemWithData(BuilderConstants.LibraryControlsSectionHeaderName);
+            Assert.That(controlsNode, Is.Not.Null);
+
+            var containersNode = FindLibraryItemWithData(BuilderConstants.LibraryContainersSectionHeaderName);
+            Assert.That(containersNode, Is.Not.Null);
+
+            yield return SwitchLibraryTab(BuilderLibrary.BuilderLibraryTab.Project);
+            var projectNode = FindLibraryItemWithData(BuilderConstants.LibraryAssetsSectionHeaderName);
+            Assert.That(projectNode, Is.Not.Null);
+        }
+
+        /// <summary>
+        /// Controls view mode can be switched to the tree view representation using **Tree View** option from the `...` options menu in the top right of the Library pane.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator SwitchLibraryBetweenViewModes()
+        {
+            yield return SwitchLibraryTab(BuilderLibrary.BuilderLibraryTab.Controls);
+
+            LibraryPane.SetViewMode(BuilderLibrary.LibraryViewMode.IconTile);
+            yield return UIETestHelpers.Pause();
+            Assert.That(LibraryPane.Q<BuilderLibraryPlainView>(), Is.Not.Null);
+
+            LibraryPane.SetViewMode(BuilderLibrary.LibraryViewMode.TreeView);
+            yield return UIETestHelpers.Pause();
+            Assert.That(LibraryPane.Q<BuilderLibraryTreeView>(), Is.Not.Null);
         }
     }
 }

@@ -24,6 +24,7 @@ namespace Unity.UI.Builder
 
         VisualElement m_DefaultBackgroundElement;
         VisualElement m_CustomBackgroundElement;
+        VisualElement m_CheckerboardBackgroundElement;
 
         Dictionary<string, VisualElement> m_HandleElements;
 
@@ -33,6 +34,7 @@ namespace Unity.UI.Builder
 
         public VisualElement defaultBackgroundElement => m_DefaultBackgroundElement;
         public VisualElement customBackgroundElement => m_CustomBackgroundElement;
+        public VisualElement checkerboardBackgroundElement => m_CheckerboardBackgroundElement;
 
         BuilderDocument m_Document;
         public BuilderDocument document
@@ -49,6 +51,7 @@ namespace Unity.UI.Builder
         }
 
         public VisualElement documentElement { get; set; }
+        public VisualElement editorLayer { get; set; }
 
         private float m_X;
         private float m_Y;
@@ -170,6 +173,13 @@ namespace Unity.UI.Builder
                 documentElement.style.right = -(m_Width - newWidth);
                 documentElement.style.bottom = -(m_Height - newHeight);
             }
+
+            if (editorLayer != null)
+            {
+                editorLayer.transform.scale = new Vector3(m_ZoomScale, m_ZoomScale, 1);
+                editorLayer.style.right = -(m_Width - newWidth);
+                editorLayer.style.bottom = -(m_Height - newHeight);
+            }
         }
 
         public BuilderCanvas()
@@ -207,6 +217,7 @@ namespace Unity.UI.Builder
 
             m_DefaultBackgroundElement = this.Q("default-background-element");
             m_CustomBackgroundElement = this.Q("custom-background-element");
+            m_CheckerboardBackgroundElement = this.Q("checkerboard-background-container");
         }
 
         public void SetSizeFromDocumentSettings()

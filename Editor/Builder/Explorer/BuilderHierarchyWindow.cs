@@ -6,7 +6,7 @@ namespace Unity.UI.Builder
     {
         BuilderHierarchy m_HierarchyPane;
 
-        //[MenuItem("Window/UI/UI Builder Hierarchy")]
+        //[MenuItem(BuilderConstants.BuilderMenuEntry + " Hierarchy")]
         public static void ShowWindow()
         {
             GetWindowAndInit<BuilderHierarchyWindow>("UI Builder Hierarchy");
@@ -27,7 +27,7 @@ namespace Unity.UI.Builder
             var hierarchyDragger = new BuilderHierarchyDragger(this, root, selection, viewport, viewport.parentTracker);
             var contextMenuManipulator = new BuilderElementContextMenu(this, selection);
 
-            m_HierarchyPane = new BuilderHierarchy(viewport, selection, classDragger, hierarchyDragger, contextMenuManipulator, null);
+            m_HierarchyPane = new BuilderHierarchy(this, viewport, selection, classDragger, hierarchyDragger, contextMenuManipulator, null);
 
             selection.AddNotifier(m_HierarchyPane);
 

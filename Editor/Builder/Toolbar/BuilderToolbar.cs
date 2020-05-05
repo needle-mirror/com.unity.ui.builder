@@ -11,9 +11,11 @@ namespace Unity.UI.Builder
 {
     internal class BuilderToolbar : VisualElement, IBuilderAssetModificationProcessor, IBuilderSelectionNotifier
     {
+        public const string FitCanvasButtonName = "fit-canvas-button";
+        public const string PreviewToggleName = "preview-button";
+
         BuilderPaneWindow m_PaneWindow;
         BuilderSelection m_Selection;
-        ModalPopup m_SaveDialog;
         BuilderViewport m_Viewport;
         BuilderExplorer m_Explorer;
         BuilderLibrary m_Library;
@@ -25,20 +27,7 @@ namespace Unity.UI.Builder
         ToolbarButton m_ResetButton;
         ToolbarButton m_FitCanvasButton;
         ToolbarMenu m_CanvasThemeMenu;
-
-        TextField m_SaveDialogUxmlPathField;
-        Button m_SaveDialogUxmlLocationButton;
-        TextField m_SaveDialogUssPathField;
-        Button m_SaveDialogUssLocationButton;
-        Button m_SaveDialogSaveButton;
-        Button m_SaveDialogCancelButton;
-        Label m_SaveDialogTitleLabel;
-
-        string m_SaveDialogValidationBoxMessage;
-        IMGUIContainer m_SaveDialogValidationBox;
-
-        bool m_IsDialogSaveAs;
-        bool m_HasModifiedUssPathManually = false;
+        ToolbarMenu m_SettingsMenu;
 
         string m_LastSavePath = "Assets";
 
@@ -52,7 +41,6 @@ namespace Unity.UI.Builder
         public BuilderToolbar(
             BuilderPaneWindow paneWindow,
             BuilderSelection selection,
-            ModalPopup saveDialog,
             BuilderViewport viewport,
             BuilderExplorer explorer,
             BuilderLibrary library,
@@ -61,36 +49,11 @@ namespace Unity.UI.Builder
         {
             m_PaneWindow = paneWindow;
             m_Selection = selection;
-            m_SaveDialog = saveDialog;
             m_Viewport = viewport;
             m_Explorer = explorer;
             m_Library = library;
             m_Inspector = inspector;
             m_TooltipPreview = tooltipPreview;
-
-            // Query the UI
-            m_SaveDialogUxmlPathField = m_SaveDialog.Q<TextField>("save-dialog-uxml-path");
-            m_SaveDialogUxmlLocationButton = m_SaveDialog.Q<Button>("save-dialog-uxml-location-button");
-            m_SaveDialogUssPathField = m_SaveDialog.Q<TextField>("save-dialog-uss-path");
-            m_SaveDialogUssLocationButton = m_SaveDialog.Q<Button>("save-dialog-uss-location-button");
-            m_SaveDialogSaveButton = m_SaveDialog.Q<Button>("save-dialog-save-button");
-            m_SaveDialogCancelButton = m_SaveDialog.Q<Button>("save-dialog-cancel-button");
-            m_SaveDialogTitleLabel = m_SaveDialog.Q<Label>("title");
-
-            m_SaveDialogUxmlPathField.RegisterValueChangedCallback(OnUxmlPathFieldChange);
-            m_SaveDialogUssPathField.RegisterValueChangedCallback(OnUssPathFieldChange);
-            m_SaveDialogUxmlPathField.RegisterCallback<KeyUpEvent>(OnSaveDialogEnterPress);
-            m_SaveDialogUssPathField.RegisterCallback<KeyUpEvent>(OnSaveDialogEnterPress);
-
-            m_SaveDialogSaveButton.clickable.clicked += SaveDocument;
-            m_SaveDialogCancelButton.clickable.clicked += m_SaveDialog.Hide;
-            m_SaveDialogUxmlLocationButton.clickable.clicked += OnUxmlLocationButtonClick;
-            m_SaveDialogUssLocationButton.clickable.clicked += OnUssLocationButtonClick;
-
-            var saveDialogValidationBoxContainer = m_SaveDialog.Q("save-dialog-validation-box");
-            m_SaveDialogValidationBox = new IMGUIContainer(DrawSaveDialogValidationMessage);
-            m_SaveDialogValidationBox.style.overflow = Overflow.Hidden;
-            saveDialogValidationBoxContainer.Add(m_SaveDialogValidationBox);
 
             var template = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
                 BuilderConstants.UIBuilderPackagePath + "/BuilderToolbar.uxml");
@@ -105,11 +68,11 @@ namespace Unity.UI.Builder
             SetUpZoomMenu();
 
             // Fit canvas
-            m_FitCanvasButton = this.Q<ToolbarButton>("fit-canvas-button");
+            m_FitCanvasButton = this.Q<ToolbarButton>(FitCanvasButtonName);
             m_FitCanvasButton.clickable.clicked += () => m_Viewport.FitCanvas();
 
             // Preview Button
-            var previewButton = this.Q<ToolbarToggle>("preview-button");
+            var previewButton = this.Q<ToolbarToggle>(PreviewToggleName);
             previewButton.RegisterValueChangedCallback(TogglePreviewMode);
 
             m_CanvasThemeMenu = this.Q<ToolbarMenu>("canvas-theme-menu");
@@ -119,6 +82,9 @@ namespace Unity.UI.Builder
 
             // Track unsaved changes state change.
             SetViewportSubTitle();
+
+            m_SettingsMenu = this.Q<ToolbarMenu>("settings-menu");
+            SetupSettingsMenu();
 
             // Get Builder package version.
             var packageInfo = PackageInfo.FindForAssetPath("Packages/" + BuilderConstants.BuilderPackageName);
@@ -166,7 +132,7 @@ namespace Unity.UI.Builder
 
         bool IsFileActionCompatible(string assetPath, string actionName)
         {
-            if (assetPath.Equals(document.ussPath) || assetPath.Equals(document.uxmlPath))
+            if (assetPath.Equals(document.uxmlPath) || document.ussPaths.Contains(assetPath))
             {
                 var fileName = Path.GetFileName(assetPath);
                 var acceptAction = BuilderDialogsUtility.DisplayDialog(BuilderConstants.ErrorDialogNotice,
@@ -175,92 +141,12 @@ namespace Unity.UI.Builder
                     string.Format(BuilderConstants.DialogAbortActionOption, actionName.ToPascalCase()));
 
                 if (acceptAction)
-                    ForceNewDocument();
+                    NewDocument(false);
 
                 return acceptAction;
             }
 
             return true;
-        }
-
-        void DrawSaveDialogValidationMessage()
-        {
-            EditorGUILayout.HelpBox(m_SaveDialogValidationBoxMessage, MessageType.Error, true);
-        }
-
-        void DisplaySaveDialogValidationMessage(string message)
-        {
-            m_SaveDialogValidationBoxMessage = message;
-            m_SaveDialogValidationBox.style.display = DisplayStyle.Flex;
-            m_SaveDialogSaveButton.SetEnabled(false);
-        }
-
-        void ClearSaveDialogValidationMessage()
-        {
-            m_SaveDialogValidationBox.style.display = DisplayStyle.None;
-            m_SaveDialogValidationBoxMessage = string.Empty;
-            m_SaveDialogSaveButton.SetEnabled(true);
-        }
-
-        void ValidateSaveDialogPath(string value)
-        {
-            if (value.StartsWith("Assets/") || value.StartsWith("Packages/"))
-            {
-                ClearSaveDialogValidationMessage();
-            }
-            else
-            {
-                DisplaySaveDialogValidationMessage(BuilderConstants.SaveDialogInvalidPathMessage);
-            }
-        }
-
-        void OnSaveDialogEnterPress(KeyUpEvent evt)
-        {
-            if (evt.keyCode != KeyCode.Return)
-                return;
-
-            SaveDocument();
-        }
-
-        void OnUxmlPathFieldChange(ChangeEvent<string> evt)
-        {
-            if (m_HasModifiedUssPathManually)
-                return;
-
-            var newUxmlPath = evt.newValue;
-            var lastDot = newUxmlPath.LastIndexOf('.');
-
-            string newUssPath;
-            if (lastDot < 0 || newUxmlPath.Substring(lastDot) != BuilderConstants.UxmlExtension)
-                newUssPath = newUxmlPath + BuilderConstants.UssExtension;
-            else
-                newUssPath = newUxmlPath.Substring(0, lastDot) + BuilderConstants.UssExtension;
-
-            m_SaveDialogUssPathField.SetValueWithoutNotify(newUssPath);
-            ValidateSaveDialogPath(evt.newValue);
-        }
-
-        void OnUssPathFieldChange(ChangeEvent<string> evt)
-        {
-            m_HasModifiedUssPathManually = true;
-            ValidateSaveDialogPath(evt.newValue);
-        }
-
-        void OpenSaveFileDialog(string title, TextField field, string extension)
-        {
-            var newPath = EditorUtility.SaveFilePanel(
-                title,
-                Path.GetDirectoryName(field.value),
-                Path.GetFileName(field.value),
-                extension);
-
-            if (string.IsNullOrWhiteSpace(newPath))
-                return;
-
-            var appPathLength = Application.dataPath.Length - 6; // - "Assets".Length
-            newPath = newPath.Substring(appPathLength);
-
-            field.value = newPath;
         }
 
         string OpenLoadFileDialog(string title, string extension)
@@ -273,25 +159,9 @@ namespace Unity.UI.Builder
             return loadPath;
         }
 
-        void OnUxmlLocationButtonClick()
+        public void NewDocument(bool checkForUnsavedChanges = true)
         {
-            OpenSaveFileDialog(BuilderConstants.SaveDialogChooseUxmlPathDialogTitle, m_SaveDialogUxmlPathField, BuilderConstants.Uxml);
-        }
-
-        void OnUssLocationButtonClick()
-        {
-            OpenSaveFileDialog(BuilderConstants.SaveDialogChooseUssPathDialogTitle, m_SaveDialogUssPathField, BuilderConstants.Uss);
-        }
-
-        internal void ForceNewDocument()
-        {
-            document.hasUnsavedChanges = false;
-            NewDocument();
-        }
-
-        void NewDocument()
-        {
-            if (!document.CheckForUnsavedChanges())
+            if (checkForUnsavedChanges && !document.CheckForUnsavedChanges())
                 return;
 
             m_Selection.ClearSelection(null);
@@ -320,147 +190,29 @@ namespace Unity.UI.Builder
             LoadDocumentInternal(originalAsset);
         }
 
-        string GenerateNewDocumentName(string ext, string currentPath)
-        {
-            string name = "NewUI." + ext; // Default name if new
-
-            switch (ext)
-            {
-                case "uxml":
-                {
-                    if (!string.IsNullOrEmpty(document.uxmlPath))
-                    {
-                        name = Path.GetFileName(currentPath);
-                    }
-                    break;
-                }
-                case "uss":
-                {
-                    // Default: Set name to existing uss document name
-                    if (!string.IsNullOrEmpty(document.ussPath))
-                    {
-                        name = Path.GetFileName(currentPath);
-                    } // Else: Set name to existing uxml document name
-                    else if (!string.IsNullOrEmpty(document.uxmlPath))
-                    {
-                        name = Path.GetFileNameWithoutExtension(document.uxmlPath) + BuilderConstants.UssExtension;
-                    }
-                    break;
-                }
-            }
-            return name;
-        }
-
-        public void PromptSaveDocumentDialog()
-        {
-            PromptSaveDocumentDialog(false);
-        }
-        void PromptSaveAsDocumentDialog()
-        {
-            PromptSaveDocumentDialog(true);
-        }
-
-        void PromptSaveDocumentDialog(bool isSaveAs)
-        {
-            m_IsDialogSaveAs = isSaveAs;
-            m_SaveDialogTitleLabel.text = isSaveAs ? BuilderConstants.SaveAsNewDocumentsDialogMessage : BuilderConstants.NewDocumentsDialogMessage;
-
-            if (!string.IsNullOrEmpty(document.uxmlPath) && !string.IsNullOrEmpty(document.ussPath) && !isSaveAs)
-            {
-                SaveDocument(document.uxmlPath, document.ussPath);
-                return;
-            }
-
-            var currentPath = string.Empty;
-            var lastSelectedPath = m_LastSavePath;
-            if (!string.IsNullOrEmpty(lastSelectedPath))
-                currentPath = lastSelectedPath;
-
-            if (!string.IsNullOrEmpty(currentPath) && !Directory.Exists(currentPath))
-                currentPath = Path.GetDirectoryName(currentPath);
-
-            currentPath = currentPath.Replace('\\', '/');
-
-            if (!string.IsNullOrEmpty(currentPath))
-                currentPath = currentPath + "/";
-
-            ValidateSaveDialogPath(currentPath);
-
-            if (string.IsNullOrEmpty(document.uxmlPath) || isSaveAs)
-            {
-                m_SaveDialogUxmlPathField.SetValueWithoutNotify(
-                    currentPath + GenerateNewDocumentName(BuilderConstants.Uxml, document.uxmlPath));
-                m_SaveDialogUxmlPathField.SetEnabled(true);
-                m_SaveDialogUxmlPathField.visualInput.Focus();
-            }
-            else
-            {
-                m_SaveDialogUxmlPathField.SetValueWithoutNotify(document.uxmlPath);
-                m_SaveDialogUxmlPathField.SetEnabled(false);
-            }
-
-            if (string.IsNullOrEmpty(document.ussPath) || isSaveAs)
-            {
-                m_SaveDialogUssPathField.SetValueWithoutNotify(
-                    currentPath + GenerateNewDocumentName(BuilderConstants.Uss, document.ussPath));
-                m_SaveDialogUssPathField.SetEnabled(true);
-            }
-            else
-            {
-                m_SaveDialogUssPathField.SetValueWithoutNotify(document.ussPath);
-                m_SaveDialogUssPathField.SetEnabled(false);
-            }
-
-            if (Path.GetFileNameWithoutExtension(m_SaveDialogUxmlPathField.value) ==
-                Path.GetFileNameWithoutExtension(m_SaveDialogUssPathField.value))
-            {
-                m_HasModifiedUssPathManually = false;
-            }
-            else
-            {
-                m_HasModifiedUssPathManually = true;
-            }
-
-            m_SaveDialog.Show();
-        }
-
-        void SaveDocument()
-        {
-            var uxmlPath = m_SaveDialogUxmlPathField.value;
-            var ussPath = m_SaveDialogUssPathField.value;
-
-            if (!uxmlPath.EndsWith(BuilderConstants.UxmlExtension))
-                uxmlPath = uxmlPath + BuilderConstants.UxmlExtension;
-            if (!ussPath.EndsWith(BuilderConstants.UssExtension))
-                ussPath = ussPath + BuilderConstants.UssExtension;
-
-            SaveDocument(uxmlPath, ussPath);
-        }
-
-        internal void SaveDocument(string uxmlPath, string ussPath)
+        internal void SaveDocument(bool isSaveAs)
         {
             var viewportWindow = m_PaneWindow as IBuilderViewportWindow;
             if (viewportWindow == null)
                 return;
 
             // Set asset.
-            var needFullRefresh = document.SaveNewDocument(
-                uxmlPath, ussPath, viewportWindow.documentRootElement, m_IsDialogSaveAs);
+            var userConfirmed = document.SaveNewDocument(viewportWindow.documentRootElement, isSaveAs, out var needFullRefresh);
+            if (!userConfirmed)
+                return;
 
             // Update any uses out there of the currently edited and saved USS.
             RetainedMode.FlagStyleSheetChange();
 
             // Save last save path.
-            m_LastSavePath = Path.GetDirectoryName(uxmlPath);
+            m_LastSavePath = Path.GetDirectoryName(document.uxmlPath);
 
             // Set doc field value.
             SetViewportSubTitle();
 
-            m_SaveDialog.Hide();
-
             // Only updating UI to remove "*" from file names.
             m_Selection.ResetUnsavedChanges();
-            
+
             if (needFullRefresh)
                 m_PaneWindow.OnEnableAfterAllSerialization();
             else
@@ -564,11 +316,11 @@ namespace Unity.UI.Builder
 
             m_FileMenu.menu.AppendAction("Save", a =>
             {
-                PromptSaveDocumentDialog();
+                SaveDocument(false);
             });
             m_FileMenu.menu.AppendAction("Save As...", a =>
             {
-                PromptSaveAsDocumentDialog();
+                SaveDocument(true);
             });
         }
 
@@ -656,8 +408,10 @@ namespace Unity.UI.Builder
             element.styleSheets.Remove(UIElementsEditorUtility.s_DefaultCommonDarkStyleSheet);
             element.styleSheets.Remove(UIElementsEditorUtility.s_DefaultCommonLightStyleSheet);
             element.styleSheets.Remove(runtimeStyleSheet);
+            m_Viewport.canvas.defaultBackgroundElement.style.display = DisplayStyle.Flex;
 
             StyleSheet themeStyleSheet = null;
+            m_Viewport.canvas.checkerboardBackgroundElement.style.display = DisplayStyle.None;
 
             switch (theme)
             {
@@ -669,6 +423,10 @@ namespace Unity.UI.Builder
                     break;
                 case BuilderDocument.CanvasTheme.Runtime:
                     themeStyleSheet = runtimeStyleSheet;
+#if UNITY_2019_3_OR_NEWER
+                    m_Viewport.canvas.defaultBackgroundElement.style.display = DisplayStyle.None;
+                    m_Viewport.canvas.checkerboardBackgroundElement.style.display = DisplayStyle.Flex;
+#endif
                     break;
                 case BuilderDocument.CanvasTheme.Default:
                     themeStyleSheet = null;
@@ -749,9 +507,19 @@ namespace Unity.UI.Builder
             m_Viewport.subTitle = subTitle;
         }
 
-        public void SelectionChanged()
+        void SetupSettingsMenu()
         {
+            Builder builder = m_PaneWindow as Builder;
+
+            if (builder == null)
+                return;
+
+            m_SettingsMenu.menu.AppendAction("Show UXML \u2215 USS Previews"
+                , a => builder.codePreviewVisible = !builder.codePreviewVisible
+                , a => builder.codePreviewVisible ? DropdownMenuAction.Status.Checked : DropdownMenuAction.Status.Normal);
         }
+
+        public void SelectionChanged() {}
 
         public void HierarchyChanged(VisualElement element, BuilderHierarchyChangeType changeType)
         {

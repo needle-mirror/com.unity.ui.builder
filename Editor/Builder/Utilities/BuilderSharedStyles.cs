@@ -33,6 +33,11 @@ namespace Unity.UI.Builder
             return element.name == BuilderConstants.StyleSelectorElementContainerName;
         }
 
+        internal static bool IsStyleSheetElement(VisualElement element)
+        {
+            return element.GetProperty(BuilderConstants.ElementLinkedStyleSheetVEPropertyName) != null;
+        }
+
         internal static bool IsSelectorElement(VisualElement element)
         {
             return element.GetProperty(BuilderConstants.ElementLinkedStyleSelectorVEPropertyName) != null;
@@ -102,31 +107,52 @@ namespace Unity.UI.Builder
             return sharedStylesContainer;
         }
 
-        internal static void AddSelectorElementsFromStyleSheet(VisualElement documentElement, StyleSheet styleSheet)
+        internal static void AddSelectorElementsFromStyleSheet(VisualElement documentElement, List<BuilderDocumentOpenUSS> openUssFiles)
         {
             var selectorContainerElement = GetSelectorContainerElement(documentElement);
-            selectorContainerElement.SetProperty(BuilderConstants.ElementLinkedStyleSheetVEPropertyName, styleSheet);
             selectorContainerElement.Clear();
 
-            if (styleSheet == null)
-                return;
-
-            foreach (var complexSelector in styleSheet.complexSelectors)
+            for (int i = 0; i < openUssFiles.Count; ++i)
             {
-                var complexSelectorStr = StyleSheetToUss.ToUssSelector(complexSelector);
-                if (complexSelectorStr == BuilderConstants.SelectedStyleSheetSelectorName)
-                    continue;
+                var styleSheet = openUssFiles[i].Sheet;
 
-                var ssVE = CreateNewSelectorElement(complexSelector);
-                selectorContainerElement.Add(ssVE);
+                var styleSheetElement = new VisualElement();
+                styleSheetElement.name = styleSheet.name;
+                styleSheetElement.SetProperty(BuilderConstants.ElementLinkedStyleSheetVEPropertyName, styleSheet);
+                styleSheetElement.SetProperty(BuilderConstants.ElementLinkedStyleSheetIndexVEPropertyName, i);
+                selectorContainerElement.Add(styleSheetElement);
+
+                foreach (var complexSelector in styleSheet.complexSelectors)
+                {
+                    var complexSelectorStr = StyleSheetToUss.ToUssSelector(complexSelector);
+                    if (complexSelectorStr == BuilderConstants.SelectedStyleSheetSelectorName)
+                        continue;
+
+                    var ssVE = CreateNewSelectorElement(complexSelector);
+                    styleSheetElement.Add(ssVE);
+                }
             }
         }
 
         internal static StyleComplexSelector CreateNewSelector(VisualElement selectorContainerElement, StyleSheet styleSheet, string selectorStr)
         {
             var complexSelector = styleSheet.AddSelector(selectorStr);
-            var ssVE = CreateNewSelectorElement(complexSelector);
-            selectorContainerElement.Add(ssVE);
+
+            VisualElement styleSheetElement = null;
+            foreach (var child in selectorContainerElement.Children())
+            {
+                if (child.GetStyleSheet() == styleSheet)
+                {
+                    styleSheetElement = child;
+                    break;
+                }
+            }
+
+            if (styleSheetElement != null)
+            {
+                var ssVE = CreateNewSelectorElement(complexSelector);
+                styleSheetElement.Add(ssVE);
+            }
 
             return complexSelector;
         }

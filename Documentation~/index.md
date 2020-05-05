@@ -1,6 +1,6 @@
 # UI Builder
 
-The **UI Builder** lets you visually create and edit UXML and USS UI assets for **UIElements**. Once the package is installed, the UI Builder window can be opened via the **Window > UI > UI Builder** menu, or double-clicking on a `.uxml` asset in the Project Browser.
+The **UI Builder** lets you visually create and edit UI assets (UXML and USS) for use with the **UI Toolkit** (formally UIElements). Once the package is installed, the UI Builder window can be opened via the **Window > UI > UI Builder** menu, or double-clicking on a `.uxml` asset in the Project Browser.
 
 ## Overview
 
@@ -121,7 +121,7 @@ To resize the selected element, use its drag handles:
 - If the element's  **Position > Position** setting is **Relative**, you can only adjust its height and width.
 - If the element's  **Position > Position** setting is **Absolute**, you have full control over how you resize and position the element.
 
- > [!NOTE] Absolute positioning is not recommended because it bypasses UIElements' automatic layouting functionality.
+ > [!NOTE] Absolute positioning is not recommended because it bypasses UI Toolkit's automatic layouting functionality.
 
 ### Setting a background
 

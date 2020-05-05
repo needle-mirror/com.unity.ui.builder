@@ -54,6 +54,24 @@ namespace Unity.UI.Builder
             VisualTreeAssetLinkedCloneTree.CloneTree(vta, target);
         }
 
+        public static bool IsEmpty(this VisualTreeAsset vta)
+        {
+#if UNITY_2020_1_OR_NEWER
+            return vta.visualElementAssets.Count <= 1; // Because of the <UXML> tag, there's always one.
+#else
+            return vta.visualElementAssets.Count <= 0;
+#endif
+        }
+
+        public static bool WillBeEmptyIfRemovingOne(this VisualTreeAsset vta)
+        {
+#if UNITY_2020_1_OR_NEWER
+            return vta.visualElementAssets.Count <= 2; // Because of the <UXML> tag, there's always one.
+#else
+            return vta.visualElementAssets.Count <= 1;
+#endif
+        }
+
         public static VisualElementAsset GetRootUXMLElement(this VisualTreeAsset vta)
         {
 #if UNITY_2020_1_OR_NEWER
@@ -241,7 +259,8 @@ namespace Unity.UI.Builder
                 if (styleSheets != null)
                 {
                     foreach (var styleSheet in styleSheets)
-                        sheets.Add(styleSheet);
+                        if (styleSheet != null) // Possible if the path is not valid.
+                            sheets.Add(styleSheet);
                 }
 #endif
                 var styleSheetPaths = asset.GetStyleSheetPaths();
@@ -386,11 +405,6 @@ namespace Unity.UI.Builder
             }
 
             return vta.inlineSheet.GetRule(vea.ruleIndex);
-        }
-
-        public static void FixStyleSheetPaths(this VisualTreeAsset vta, string instanceId, string ussPath)
-        {
-            vta.ReplaceStyleSheetPaths(BuilderConstants.VisualTreeAssetStyleSheetPathAsInstanceIdSchemeName + instanceId, ussPath);
         }
 
         public static void ReplaceStyleSheetPaths(this VisualTreeAsset vta, string oldUssPath, string newUssPath)

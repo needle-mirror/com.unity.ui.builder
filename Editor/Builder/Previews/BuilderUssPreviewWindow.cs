@@ -4,7 +4,7 @@ namespace Unity.UI.Builder
     {
         BuilderUssPreview m_UssPreview;
 
-        //[MenuItem("Window/UI/UI Builder USS Preview")]
+        //[MenuItem("BuilderConstants.BuilderMenuEntry + " USS Preview")]
         public static void ShowWindow()
         {
             GetWindowAndInit<BuilderUssPreviewWindow>("UI Builder USS Preview");
@@ -20,7 +20,7 @@ namespace Unity.UI.Builder
 
             var selection = viewportWindow.selection;
 
-            m_UssPreview = new BuilderUssPreview(this);
+            m_UssPreview = new BuilderUssPreview(this, selection);
 
             selection.AddNotifier(m_UssPreview);
 

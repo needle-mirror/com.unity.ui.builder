@@ -15,6 +15,9 @@ namespace Unity.UI.Builder
         List<ManipulatorActivationFilter> activators { get; }
         ManipulatorActivationFilter m_CurrentActivator;
 
+        protected BuilderDocument document => m_PaneWindow.document;
+        protected BuilderPaneWindow paneWindow => m_PaneWindow;
+
         public BuilderElementContextMenu(BuilderPaneWindow paneWindow, BuilderSelection selection)
         {
             m_PaneWindow = paneWindow;
@@ -109,7 +112,7 @@ namespace Unity.UI.Builder
             return ((MouseButton)evt.button == m_CurrentActivator.button);
         }
 
-        public void BuildElementContextualMenu(ContextualMenuPopulateEvent evt, VisualElement target)
+        public virtual void BuildElementContextualMenu(ContextualMenuPopulateEvent evt, VisualElement target)
         {
             var documentElement = target.GetProperty(BuilderConstants.ElementLinkedDocumentVisualElementVEPropertyName) as VisualElement;
             
@@ -181,8 +184,8 @@ namespace Unity.UI.Builder
                 "Delete",
                 a =>
                 {   m_Selection.Select(null, documentElement);
-                    m_PaneWindow.commandHandler.DeleteElement(documentElement);
-                    m_PaneWindow.commandHandler.ClearSelectionNotify();
+                    if (m_PaneWindow.commandHandler.DeleteElement(documentElement))
+                        m_PaneWindow.commandHandler.ClearSelectionNotify();
                 },
                 isValidTarget
                     ? DropdownMenuAction.Status.Normal

@@ -18,7 +18,7 @@ namespace Unity.UI.Builder
         static readonly string s_CodeCodeOuterContainerClassName = "unity-builder-code__code_outer_container";
         static readonly string s_CodeCodeContainerClassName = "unity-builder-code__code_container";
         static readonly string s_CodeOpenSourceFileClassName = "unity-builder-code__open-source-file-button";
-        
+
         ScrollView m_ScrollView;
 
         VisualElement m_Container;
@@ -26,7 +26,7 @@ namespace Unity.UI.Builder
         VisualElement m_CodeOuterContainer;
         TextField m_Code;
         Label m_LineNumbers;
-        
+
         private Button m_OpenTargetAssetSourceButton;
         ScriptableObject m_TargetAsset;
         BuilderPaneWindow m_PaneWindow;
@@ -115,7 +115,7 @@ namespace Unity.UI.Builder
         {
             if(!isTargetAssetAvailableOnDisk)
                 return;
-            
+
             AssetDatabase.OpenAsset(m_TargetAsset);
         }
 
@@ -141,9 +141,9 @@ namespace Unity.UI.Builder
 
         protected void SetTargetAsset(ScriptableObject targetAsset, bool hasUnsavedChanges)
         {
-            if(pane == null)
+            if (pane == null)
                 return;
-            
+
             m_TargetAsset = targetAsset;
             pane.subTitle = BuilderAssetUtilities.GetAssetName(targetAsset, previewAssetExtension, hasUnsavedChanges);
             m_OpenTargetAssetSourceButton.style.display = isTargetAssetAvailableOnDisk ? DisplayStyle.Flex : DisplayStyle.None;
@@ -151,6 +151,13 @@ namespace Unity.UI.Builder
         
         protected void SetText(string text)
         {
+            if (string.IsNullOrEmpty(text))
+            {
+                m_LineNumbers.text = string.Empty;
+                m_Code.value = string.Empty;
+                return;
+            }
+
             var lineCount = text.Count(x => x == '\n') + 1;
             string lineNumbersText = "";
             for (int i = 1; i <= lineCount; ++i)

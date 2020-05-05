@@ -19,26 +19,6 @@ namespace Unity.UI.Builder
         static VisualElement CloneSetupRecursively(VisualTreeAsset vta, VisualElementAsset root,
             Dictionary<int, List<VisualElementAsset>> idToChildren, CreationContext context)
         {
-            // This is needed because of asset reloads during domain reloads where the
-            // stylesheet path might be a temporary instance id to a pure in-memory stylesheet.
-            List<string> originalStyleSheets = null;
-#if UNITY_2019_3_OR_NEWER
-            if (root.stylesheetPaths != null && root.stylesheetPaths.Count > 0)
-#else
-            if (root.stylesheets != null && root.stylesheets.Count > 0)
-#endif
-            {
-                originalStyleSheets = root.GetStyleSheetPaths();
-                var strippedList = originalStyleSheets.Where(
-                    (s) => !s.StartsWith(BuilderConstants.VisualTreeAssetStyleSheetPathAsInstanceIdSchemeName));
-
-#if UNITY_2019_3_OR_NEWER
-                root.stylesheetPaths = strippedList.ToList();
-#else
-                root.stylesheets = strippedList.ToList();
-#endif
-            }
-
 #if UNITY_2019_3_OR_NEWER
             var resolvedSheets = new List<StyleSheet>();
             foreach (var sheetPath in root.stylesheetPaths)
@@ -49,14 +29,6 @@ namespace Unity.UI.Builder
 #endif
 
             var ve = VisualTreeAsset.Create(root, context);
-
-            // Restore stylesheets.
-            if (originalStyleSheets != null)
-#if UNITY_2019_3_OR_NEWER
-                root.stylesheetPaths = originalStyleSheets;
-#else
-                root.stylesheets = originalStyleSheets;
-#endif
 
             // Linking the new element with its VisualElementAsset.
             // All this copied code for this one line!

@@ -1,12 +1,10 @@
-using UnityEditor;
-
 namespace Unity.UI.Builder
 {
-    internal class BuilderLibraryWindow : BuilderPaneWindow
+    class BuilderLibraryWindow : BuilderPaneWindow
     {
         BuilderLibrary m_Library;
 
-        //[MenuItem("Window/UI/UI Builder Library")]
+        //[MenuItem(BuilderConstants.BuilderMenuEntry + " Library")]
         public static void ShowWindow()
         {
             GetWindowAndInit<BuilderLibraryWindow>("UI Builder Library");

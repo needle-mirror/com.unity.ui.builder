@@ -51,3 +51,7 @@
     top: 0;
     bottom: 0;
 }
+
+.unity-style-field__dragger-field .unity-base-field__input {
+    display: none;
+}

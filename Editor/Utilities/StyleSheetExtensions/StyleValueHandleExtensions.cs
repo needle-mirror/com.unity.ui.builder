@@ -129,7 +129,15 @@ namespace Unity.UI.Builder
 
         public static Color GetColor(this StyleSheet styleSheet, StyleValueHandle valueHandle)
         {
-            return styleSheet.colors[valueHandle.valueIndex];
+#if UNITY_2019_3_OR_NEWER
+            if (valueHandle.valueType == StyleValueType.Enum)
+            {
+                var colorName = styleSheet.ReadAsString(valueHandle);
+                StyleSheetColor.TryGetColor(colorName.ToLower(), out var value);
+                return value;
+            }
+#endif
+            return styleSheet.ReadColor(valueHandle);
         }
 
         public static string GetString(this StyleSheet styleSheet, StyleValueHandle valueHandle)
@@ -139,15 +147,20 @@ namespace Unity.UI.Builder
 
         public static Object GetAsset(this StyleSheet styleSheet, StyleValueHandle valueHandle)
         {
-            if (valueHandle.valueType == StyleValueType.ResourcePath)
+            switch (valueHandle.valueType)
             {
-                var resourcePath = styleSheet.strings[valueHandle.valueIndex];
-                var asset = Resources.Load<Object>(resourcePath);
-                return asset;
-            }
-            else
-            {
-                return styleSheet.assets[valueHandle.valueIndex];
+                case StyleValueType.ResourcePath:
+                    var resourcePath = styleSheet.strings[valueHandle.valueIndex];
+                    var asset = Resources.Load<Object>(resourcePath);
+                    return asset;
+                case StyleValueType.Keyword:
+                    return null;
+#if UNITY_2020_2_OR_NEWER
+                case StyleValueType.MissingAssetReference:
+                    return null;
+#endif
+                default:
+                    return styleSheet.assets[valueHandle.valueIndex];
             }
         }
 

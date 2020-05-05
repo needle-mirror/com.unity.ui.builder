@@ -73,6 +73,10 @@ namespace Unity.UI.Builder
         void FillHighlightRects(VisualElement ve)
         {
             var viewport = ve.GetFirstAncestorOfType<BuilderViewport>();
+
+            if (viewport == null)
+                return;
+
             var style = ve.resolvedStyle;
             Rect contentRect = ve.LocalToWorld(ve.contentRect);
 

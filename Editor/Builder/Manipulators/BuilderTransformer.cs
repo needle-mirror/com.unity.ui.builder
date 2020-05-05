@@ -117,6 +117,10 @@ namespace Unity.UI.Builder
 
                 if (CanStartManipulation(e))
                 {
+                    // Ignore double-click to allow text editing of the selected element
+                    if (e.clickCount == 2)
+                        return;
+
                     m_StartDrag(target);
                     m_Start = e.mousePosition;
 

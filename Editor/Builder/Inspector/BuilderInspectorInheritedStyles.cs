@@ -5,6 +5,7 @@ using UnityEngine.UIElements.StyleSheets;
 using UnityEditor;
 using UnityEngine;
 using System.Text.RegularExpressions;
+using System.Linq;
 
 namespace Unity.UI.Builder
 {
@@ -159,11 +160,15 @@ namespace Unity.UI.Builder
 
         void ExtractLocalStylesToNewClass(string className)
         {
+            // Get StyleSheet.
+            var mainStyleSheet = m_PaneWindow.document.activeStyleSheet;
+            if (mainStyleSheet == null)
+                return;
+
             PreAddStyleClass(className);
 
             // Create new selector in main StyleSheet.
             var selectorString = BuilderConstants.UssSelectorClassNameSymbol + className;
-            var mainStyleSheet = m_PaneWindow.document.mainStyleSheet;
             var selectorsRootElement = BuilderSharedStyles.GetSelectorContainerElement(m_Selection.documentElement);
             var newSelector = BuilderSharedStyles.CreateNewSelector(selectorsRootElement, mainStyleSheet, selectorString);
 
@@ -177,7 +182,7 @@ namespace Unity.UI.Builder
 
             // Overwrite Undo Message.
             Undo.RegisterCompleteObjectUndo(
-                new Object[] { m_PaneWindow.document.visualTreeAsset, m_PaneWindow.document.mainStyleSheet },
+                new Object[] { m_PaneWindow.document.visualTreeAsset, mainStyleSheet },
                 BuilderConstants.CreateStyleClassUndoMessage);
 
             // We actually want to get the notification back and refresh ourselves.
@@ -214,6 +219,12 @@ namespace Unity.UI.Builder
             return clickable;
         }
 
+        bool IsClassInUXMLDoc(string className)
+        {
+            var vea = currentVisualElement?.GetVisualElementAsset();
+            return vea != null && vea.classes != null && vea.classes.Contains(className);
+        }
+
         void RefreshClassListContainer()
         {
             m_ClassListContainer.Clear();
@@ -232,13 +243,21 @@ namespace Unity.UI.Builder
                 var pill = m_ClassListContainer.contentContainer.ElementAt(m_ClassListContainer.childCount - 1);
                 var pillLabel = pill.Q<Label>("class-name-label");
                 var pillDeleteButton = pill.Q<Button>("delete-class-button");
+                pillDeleteButton.userData = className;
 
                 // Add ellipsis if the class name is too long.
                 var classNameShortened = BuilderNameUtilities.CapStringLengthAndAddEllipsis(className, BuilderConstants.ClassNameInPillMaxLength);
                 pillLabel.text = BuilderConstants.UssSelectorClassNameSymbol + classNameShortened;
 
-                pillDeleteButton.userData = className;
-                pillDeleteButton.clickable.clickedWithEventInfo += OnStyleClassDelete;
+                if (IsClassInUXMLDoc(className))
+                {
+                    pillDeleteButton.clickable.clickedWithEventInfo += OnStyleClassDelete;
+                }
+                else
+                {
+                    // Don't show "x" button if the class can't actually be removed.
+                    pillDeleteButton.style.display = DisplayStyle.None;
+                }
 
                 // See if the class is in document as its own selector.
                 var selector = BuilderSharedStyles.FindSelectorElement(documentRootElement, BuilderConstants.UssSelectorClassNameSymbol + className);
@@ -267,8 +286,12 @@ namespace Unity.UI.Builder
 
             if (selectorElement == null)
             {
+                // Get StyleSheet.
+                var mainStyleSheet = m_PaneWindow.document.firstStyleSheet;
+                if (mainStyleSheet == null)
+                    return;
+
                 var selectorsRootElement = BuilderSharedStyles.GetSelectorContainerElement(m_Selection.documentElement);
-                var mainStyleSheet = m_PaneWindow.document.mainStyleSheet;
                 BuilderSharedStyles.CreateNewSelector(selectorsRootElement, mainStyleSheet, selectorString);
 
                 m_Selection.NotifyOfStylingChange();

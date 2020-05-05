@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Linq;
 using System.Net;
 using NUnit.Framework;
@@ -16,19 +17,25 @@ namespace Unity.UI.Builder.EditorTests
         [UnityTest]
         public IEnumerator ClickToSelect()
         {
-            yield return AddVisualElement();
-            var hierarchyCreatedItem = GetFirstExplorerVisualElementNode(nameof(VisualElement));
+            const string testElementName = "test_element_name";
+            AddElementCodeOnly<TextField>(testElementName);
+            Selection.ClearSelection(null);
+
+            yield return UIETestHelpers.Pause();
+            var hierarchyCreatedItem = GetHierarchyExplorerItemByElementName(testElementName);
             Assert.That(hierarchyCreatedItem, Is.Not.Null);
 
-            yield return UIETestEvents.Mouse.SimulateClick(StyleSheetsPane);
             var hierarchyTreeView = HierarchyPane.Q<TreeView>();
             Assert.That(hierarchyTreeView.GetSelectedItem(), Is.Null);
+            Assert.That(Selection.isEmpty, Is.True);
 
             yield return UIETestEvents.Mouse.SimulateClick(hierarchyCreatedItem);
             var documentElement = GetFirstDocumentElement();
+            Assert.That(documentElement.name, Is.EqualTo(testElementName));
 
             var selectedItem = (TreeViewItem<VisualElement>) hierarchyTreeView.GetSelectedItem();
             Assert.That(documentElement, Is.EqualTo(selectedItem.data));
+            Assert.That(Selection.selection.First(), Is.EqualTo(documentElement));
         }
 
         /// <summary>
@@ -112,7 +119,7 @@ namespace Unity.UI.Builder.EditorTests
         /// Can double-click on an item to rename it.
         /// During element rename, if new name is not valid, an error message will display and rename will not be applied - keeping the focus on the rename field.
         /// </summary>
-        /// 
+        ///
         /// Instability failure details:
         /* DisplayNameStyleAndRenameOption (1.119s)
             ---
@@ -179,6 +186,29 @@ namespace Unity.UI.Builder.EditorTests
             Assert.That(nameLabel.classList, Contains.Item(BuilderConstants.ElementNameClassName));
         }
 
+        /// <summary>
+        /// When editing name of element in Hierarchy, hitting the Esc key will cancel the edit and revert to value before the edit started.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator EscKeyWillCancelRename()
+        {
+            const string testItemName = "test_name";
+            yield return AddVisualElement();
+            var hierarchyItem = BuilderTestsHelper.GetExplorerItemWithName(HierarchyPane, nameof(VisualElement));
+            var documentElement = BuilderTestsHelper.GetLinkedDocumentElement(hierarchyItem);
+            Assert.That(string.IsNullOrEmpty(documentElement.name));
+
+            yield return UIETestEvents.Mouse.SimulateDoubleClick(hierarchyItem);
+            yield return UIETestEvents.KeyBoard.SimulateTyping(BuilderWindow, testItemName);
+            yield return UIETestEvents.KeyBoard.SimulateKeyDown(BuilderWindow, KeyCode.Escape);
+
+            // Test that not only the name has not changed to the new value entered...
+            hierarchyItem = BuilderTestsHelper.GetExplorerItemWithName(HierarchyPane, nameof(VisualElement));
+            documentElement = BuilderTestsHelper.GetLinkedDocumentElement(hierarchyItem);
+            Assert.AreNotEqual(documentElement.name, testItemName);
+            // But is also equal to its original name
+            Assert.That(string.IsNullOrEmpty(documentElement.name));
+        }
 
         /// <summary>
         /// Elements are displayed grayed out if they are children of a template instance or C# type.
@@ -218,6 +248,7 @@ namespace Unity.UI.Builder.EditorTests
         public IEnumerator SelectingStyleSelectorOrStyleSheetDeselectsHierarchyItems()
         {
             yield return AddVisualElement();
+            yield return EnsureSelectorsCanBeAddedAndReloadBuilder();
             yield return AddSelector(StyleSheetsPaneTests.TestSelectorName);
 
             // Deselect
@@ -267,10 +298,16 @@ namespace Unity.UI.Builder.EditorTests
 
             var complexItem =  GetFirstExplorerItem();
 
+            var newlineFixedExpectedUXML = m_ExpectedUXMLString;
+            if (BuilderConstants.NewlineChar != BuilderConstants.NewlineCharFromEditorSettings)
+                newlineFixedExpectedUXML = newlineFixedExpectedUXML.Replace(
+                    BuilderConstants.NewlineChar,
+                    BuilderConstants.NewlineCharFromEditorSettings);
+
             // Copy to UXML
             yield return UIETestEvents.Mouse.SimulateClick(complexItem);
             yield return UIETestEvents.ExecuteCommand(BuilderWindow, UIETestEvents.Command.Copy);
-            Assert.That(BuilderEditorUtility.SystemCopyBuffer, Is.EqualTo(m_ExpectedUXMLString));
+            Assert.That(BuilderEditorUtility.SystemCopyBuffer, Is.EqualTo(newlineFixedExpectedUXML));
 
             ForceNewDocument();
             BuilderEditorUtility.SystemCopyBuffer = string.Empty;
@@ -279,7 +316,7 @@ namespace Unity.UI.Builder.EditorTests
             var explorerItems = BuilderTestsHelper.GetExplorerItems(HierarchyPane);
             Assert.That(explorerItems, Is.Empty);
 
-            BuilderEditorUtility.SystemCopyBuffer = m_ExpectedUXMLString;
+            BuilderEditorUtility.SystemCopyBuffer = newlineFixedExpectedUXML;
             yield return UIETestEvents.ExecuteCommand(BuilderWindow, UIETestEvents.Command.Paste);
             // var newItem = BuilderTestsHelper.GetExplorerItemWithName(HierarchyPane, nameof(VisualElement));
             var hierarchyTreeView = HierarchyPane.Q<TreeView>();
@@ -355,7 +392,7 @@ namespace Unity.UI.Builder.EditorTests
         /// <summary>
         /// With an element selected, you can use the standard short-cuts and Edit menu to copy/paste/duplicate/delete it.  The copied element is pasted at the same level of the hierarchy as the source element. If the source element's parent is deleted, the copied element is pasted at the root.
         /// </summary>
-        /// 
+        ///
         /// Instability failure details:
         /* StandardShortCuts (1.280s)
             ---
@@ -374,6 +411,18 @@ namespace Unity.UI.Builder.EditorTests
             Assert.That(explorerItems.Count, Is.EqualTo(1));
             yield return UIETestEvents.Mouse.SimulateClick(explorerItems[0]);
 
+            // Rename
+            const string renameString = "renameString";
+            yield return UIETestEvents.ExecuteCommand(BuilderWindow, UIETestEvents.Command.Rename);
+            yield return UIETestEvents.KeyBoard.SimulateTyping(BuilderWindow, renameString);
+            yield return UIETestEvents.Mouse.SimulateClick(ViewportPane);
+
+            explorerItems = BuilderTestsHelper.GetExplorerItems(HierarchyPane);
+            var explorerItemLabel = explorerItems[0].Q<Label>();
+            Assert.That(explorerItemLabel.text, Is.EqualTo("#" + renameString));
+
+            yield return UIETestEvents.Mouse.SimulateClick(explorerItems[0]);
+
             // Duplicate
             yield return UIETestEvents.ExecuteCommand(BuilderWindow, UIETestEvents.Command.Duplicate);
             explorerItems = BuilderTestsHelper.GetExplorerItems(HierarchyPane);
@@ -382,7 +431,7 @@ namespace Unity.UI.Builder.EditorTests
             // Copy/Paste
             yield return UIETestEvents.ExecuteCommand(BuilderWindow, UIETestEvents.Command.Copy);
             yield return UIETestEvents.ExecuteCommand(BuilderWindow, UIETestEvents.Command.Paste);
-            
+
             explorerItems = BuilderTestsHelper.GetExplorerItems(HierarchyPane);
             Assert.That(explorerItems.Count, Is.EqualTo(3));
 

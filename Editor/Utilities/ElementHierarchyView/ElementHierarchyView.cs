@@ -47,6 +47,7 @@ namespace Unity.UI.Builder
         List<VisualElement> m_SearchResultsHightlights;
         IPanel m_CurrentPanelDebug;
 
+        BuilderPaneWindow m_PaneWindow;
         VisualElement m_DocumentRootElement;
         BuilderSelection m_Selection;
         BuilderClassDragger m_ClassDragger;
@@ -59,6 +60,7 @@ namespace Unity.UI.Builder
         }
 
         public ElementHierarchyView(
+            BuilderPaneWindow paneWindow,
             VisualElement documentRootElement,
             BuilderSelection selection,
             BuilderClassDragger classDragger,
@@ -67,6 +69,7 @@ namespace Unity.UI.Builder
             Action<VisualElement> selectElementCallback,
             HighlightOverlayPainter highlightOverlayPainter)
         {
+            m_PaneWindow = paneWindow;
             m_DocumentRootElement = documentRootElement;
             m_Selection = selection;
             m_ClassDragger = classDragger;
@@ -105,7 +108,6 @@ namespace Unity.UI.Builder
 
             // TODO: Hiding for now since search does not work, especially with style class pills.
             m_SearchBar.style.display = DisplayStyle.None;
-
             m_ClassPillTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
                 BuilderConstants.UIBuilderPackagePath + "/BuilderClassPill.uxml");
 
@@ -145,6 +147,7 @@ namespace Unity.UI.Builder
             var row = explorerItem.parent.parent;
             row.RemoveFromClassList(BuilderConstants.ExplorerHeaderRowClassName);
             row.RemoveFromClassList(BuilderConstants.ExplorerItemHiddenClassName);
+            row.RemoveFromClassList(BuilderConstants.ExplorerActiveStyleSheetClassName);
 
             // Get target element (in the document).
             var documentElement = (item as TreeViewItem<VisualElement>).data;
@@ -166,7 +169,7 @@ namespace Unity.UI.Builder
             labelCont.AddToClassList(BuilderConstants.ExplorerItemLabelContClassName);
             explorerItem.Add(labelCont);
 
-            if (BuilderSharedStyles.IsSelectorsContainerElement(documentElement))
+            if (BuilderSharedStyles.IsStyleSheetElement(documentElement))
             {
                 var styleSheetAsset = documentElement.GetStyleSheet();
                 var styleSheetFileName = AssetDatabase.GetAssetPath(styleSheetAsset);
@@ -176,6 +179,13 @@ namespace Unity.UI.Builder
                 ssLabel.AddToClassList("unity-debugger-tree-item-type");
                 row.AddToClassList(BuilderConstants.ExplorerHeaderRowClassName);
                 labelCont.Add(ssLabel);
+
+                // Register right-click events for context menu actions.
+                m_ContextMenuManipulator.RegisterCallbacksOnTarget(explorerItem);
+
+                if (styleSheetAsset == m_PaneWindow.document.activeStyleSheet)
+                    row.AddToClassList(BuilderConstants.ExplorerActiveStyleSheetClassName);
+
                 return;
             }
             else if (BuilderSharedStyles.IsSelectorElement(documentElement))
@@ -234,7 +244,7 @@ namespace Unity.UI.Builder
 
                 return;
             }
-            
+
             if (BuilderSharedStyles.IsDocumentElement(documentElement))
             {
                 var uxmlAsset = documentElement.GetVisualTreeAsset();
@@ -293,13 +303,13 @@ namespace Unity.UI.Builder
                     classLabel.AddToClassList(BuilderConstants.ExplorerItemLabelClassName);
                     classLabel.AddToClassList(BuilderConstants.ElementClassNameClassName);
                     classLabel.AddToClassList("unity-debugger-tree-item-classlist-label");
-
                     classLabelCont.Add(classLabel);
                 }
             }
 
             // Show name of uxml file if this element is a TemplateContainer.
             var path = documentElement.GetProperty(BuilderConstants.LibraryItemLinkedTemplateContainerPathVEPropertyName) as string;
+            Texture2D itemIcon;
             if (documentElement is TemplateContainer && !string.IsNullOrEmpty(path))
             {
                 var pathStr = Path.GetFileName(path);
@@ -308,7 +318,20 @@ namespace Unity.UI.Builder
                 label.AddToClassList(BuilderConstants.ElementTypeClassName);
                 label.AddToClassList("unity-builder-explorer-tree-item-template-path"); // Just make it look a bit shaded.
                 labelCont.Add(label);
+                itemIcon = BuilderLibraryContent.GetUXMLAssetIcon(path);
             }
+            else
+            {
+                itemIcon = BuilderLibraryContent.GetTypeLibraryIcon(documentElement.GetType());
+            }
+
+            // Element icon.
+            var icon = new VisualElement();
+            icon.AddToClassList(BuilderConstants.ExplorerItemIconClassName);
+            var styleBackgroundImage = icon.style.backgroundImage;
+            styleBackgroundImage.value = new Background { texture = itemIcon };
+            icon.style.backgroundImage = styleBackgroundImage;
+            labelCont.Insert(0, icon);
 
             // Register right-click events for context menu actions.
             m_ContextMenuManipulator.RegisterCallbacksOnTarget(explorerItem);
@@ -356,7 +379,7 @@ namespace Unity.UI.Builder
             panel?.visualTree.MarkDirtyRepaint();
         }
 
-        public void RebuildTree(VisualElement rootVisualElement)
+        public void RebuildTree(VisualElement rootVisualElement, bool includeParent = true)
         {
             if (!hierarchyHasChanged)
                 return;
@@ -366,12 +389,14 @@ namespace Unity.UI.Builder
             if (m_TreeView != null)
                 wasTreeFocused = m_TreeView.Q<ListView>().IsFocused();
 
-            ResetHighlightOverlays();
 
             m_CurrentPanelDebug = rootVisualElement.panel;
 
             int nextId = 1;
-            m_TreeRootItems = GetTreeItemsFromVisualTreeIncludingParent(rootVisualElement, ref nextId);
+            if (includeParent)
+                m_TreeRootItems = GetTreeItemsFromVisualTreeIncludingParent(rootVisualElement, ref nextId);
+            else
+                m_TreeRootItems = GetTreeItemsFromVisualTree(rootVisualElement, ref nextId);
 
             // Clear selection which would otherwise persist via view data persistence.
             m_TreeView?.ClearSelection();
@@ -382,8 +407,9 @@ namespace Unity.UI.Builder
                 m_TreeView.Q<ListView>()?.Focus();
 
             // Auto-expand all items on load.
-            foreach (var item in m_TreeView.rootItems)
-                m_TreeView.ExpandItem(item.id);
+            if (m_TreeRootItems != null)
+                foreach (var item in m_TreeView.rootItems)
+                    m_TreeView.ExpandItem(item.id);
 
             hierarchyHasChanged = false;
         }
@@ -421,8 +447,6 @@ namespace Unity.UI.Builder
             var item = items.First() as TreeViewItem<VisualElement>;
             var element = item != null ? item.data : null;
             m_SelectElementCallback(element);
-
-            ResetHighlightOverlays();
         }
 
         void HighlightAllElementsMatchingSelectorElement(VisualElement selectorElement)
@@ -466,7 +490,34 @@ namespace Unity.UI.Builder
             });
             element.RegisterCallback<MouseLeaveEvent>((e) =>
             {
-                ResetHighlightOverlays();
+                ClearHighlightOverlay();
+            });
+
+            element.RegisterCustomBuilderStyleChangeEvent(elementStyle =>
+            {
+                var documentElement = element.GetProperty(BuilderConstants.ElementLinkedDocumentVisualElementVEPropertyName) as VisualElement;
+                var isValidTarget = documentElement != null;
+                if (!isValidTarget)
+                    return;
+
+                var icon = element.Q(null, BuilderConstants.ExplorerItemIconClassName);
+                if (icon == null)
+                    return;
+
+                var path = documentElement.GetProperty(BuilderConstants.LibraryItemLinkedTemplateContainerPathVEPropertyName) as string;
+                var libraryIcon = BuilderLibraryContent.GetTypeLibraryIcon(documentElement.GetType());
+                if (documentElement is TemplateContainer && !string.IsNullOrEmpty(path))
+                {
+                    libraryIcon = BuilderLibraryContent.GetUXMLAssetIcon(path);
+                }
+                else if (elementStyle == BuilderElementStyle.Highlighted && !EditorGUIUtility.isProSkin)
+                {
+                        libraryIcon = BuilderLibraryContent.GetTypeDarkSkinLibraryIcon(documentElement.GetType());
+                }
+
+                var styleBackgroundImage = icon.style.backgroundImage;
+                styleBackgroundImage.value = new Background { texture = libraryIcon };
+                icon.style.backgroundImage = styleBackgroundImage;
             });
 
             return element;
@@ -500,8 +551,6 @@ namespace Unity.UI.Builder
                 return;
 
             m_TreeView.ClearSelection();
-
-            ResetHighlightOverlays();
         }
 
         public void ClearSearchResults()

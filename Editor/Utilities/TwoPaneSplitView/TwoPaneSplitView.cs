@@ -65,6 +65,8 @@ namespace Unity.UI.Builder
         VisualElement m_DragLine;
         VisualElement m_DragLineAnchor;
 
+        bool m_CollapseMode;
+
         VisualElement m_Content;
 
         Orientation m_Orientation;
@@ -105,6 +107,49 @@ namespace Unity.UI.Builder
             Orientation orientation) : this()
         {
             Init(fixedPaneIndex, fixedPaneStartDimension, orientation);
+        }
+
+        public void CollapseChild(int index)
+        {
+            if (m_LeftPane == null)
+                return;
+
+            m_DragLine.style.display = DisplayStyle.None;
+            m_DragLineAnchor.style.display = DisplayStyle.None;
+            if (index == 0)
+            {
+                m_LeftPane.style.width = StyleKeyword.Initial;
+                m_LeftPane.style.height = StyleKeyword.Initial;
+                m_LeftPane.style.flexGrow = 1;
+                m_RightPane.style.display = DisplayStyle.None;
+            }
+            else
+            {
+                m_RightPane.style.width = StyleKeyword.Initial;
+                m_RightPane.style.height = StyleKeyword.Initial;
+                m_RightPane.style.flexGrow = 1;
+                m_LeftPane.style.display = DisplayStyle.None;
+            }
+
+            m_CollapseMode = true;
+        }
+
+        public void UnCollapseChild(int index)
+        {
+            if (m_LeftPane == null)
+                return;
+
+            m_LeftPane.style.display = DisplayStyle.Flex;
+            m_RightPane.style.display = DisplayStyle.Flex;
+
+            m_DragLine.style.display = DisplayStyle.Flex;
+            m_DragLineAnchor.style.display = DisplayStyle.Flex;
+
+            m_LeftPane.style.flexGrow = 0;
+            m_RightPane.style.flexGrow = 0;
+            m_CollapseMode = false;
+
+            Init(m_FixedPaneIndex, m_FixedPaneInitialDimension, m_Orientation);
         }
 
         public void Init(int fixedPaneIndex, float fixedPaneInitialDimension, Orientation orientation)
@@ -238,6 +283,14 @@ namespace Unity.UI.Builder
 
         void OnSizeChange(GeometryChangedEvent evt)
         {
+            OnSizeChange();
+        }
+
+        void OnSizeChange()
+        {
+            if (m_CollapseMode)
+                return;
+
             var maxLength = this.resolvedStyle.width;
             var dragLinePos = m_DragLineAnchor.resolvedStyle.left;
             var activeElementPos = m_FixedPane.resolvedStyle.left;

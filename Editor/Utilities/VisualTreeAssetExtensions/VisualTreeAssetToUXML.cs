@@ -1,11 +1,8 @@
 using System.Collections.Generic;
-using UnityEditor.StyleSheets;
 using System.Text;
 using UnityEngine.Assertions;
 using UnityEngine.UIElements;
-using System.Reflection;
 using UnityEngine;
-using UnityEditor;
 using System.IO;
 
 namespace Unity.UI.Builder
@@ -147,7 +144,8 @@ namespace Unity.UI.Builder
                     {
                         Debug.LogError("UI Builder: VisualTreeAsset.m_Usings field has not been found! Update the reflection code!");
                     }
-                    stringBuilder.Append(" />\n");
+                    stringBuilder.Append(" />");
+                    stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
                 }
             }
         }
@@ -171,7 +169,7 @@ namespace Unity.UI.Builder
 
         public static string GetProcessedPathForSrcAttribute(string vtaPath, string assetPath)
         {
-            if (string.IsNullOrEmpty(assetPath) || assetPath.StartsWith(BuilderConstants.VisualTreeAssetUnsavedUssFileMessage))
+            if (string.IsNullOrEmpty(assetPath))
                 return assetPath;
 
             var result = string.Empty;
@@ -197,20 +195,13 @@ namespace Unity.UI.Builder
 
         static void ProcessStyleSheetPath(
             string vtaPath,
-            string path, StringBuilder stringBuilder, int depth, bool omitUnsavedUss,
+            string path, StringBuilder stringBuilder, int depth,
             ref bool newLineAdded, ref bool hasChildTags)
         {
-            if (path.StartsWith(BuilderConstants.VisualTreeAssetStyleSheetPathAsInstanceIdSchemeName))
-            {
-                if (omitUnsavedUss)
-                    return;
-                else
-                    path = BuilderConstants.VisualTreeAssetUnsavedUssFileMessage + path;
-            }
-
             if (!newLineAdded)
             {
-                stringBuilder.Append(">\n");
+                stringBuilder.Append(">");
+                stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
                 newLineAdded = true;
             }
 
@@ -224,7 +215,8 @@ namespace Unity.UI.Builder
 #else
             AppendElementAttribute("path", path, stringBuilder);
 #endif
-            stringBuilder.Append(" />\n");
+            stringBuilder.Append(" />");
+            stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
 
             hasChildTags = true;
         }
@@ -232,8 +224,7 @@ namespace Unity.UI.Builder
         static void GenerateUXMLRecursive(
             VisualTreeAsset vta, string vtaPath, VisualElementAsset root,
             Dictionary<int, List<VisualElementAsset>> idToChildren,
-            StringBuilder stringBuilder, int depth,
-            bool omitUnsavedUss, bool writingToFile)
+            StringBuilder stringBuilder, int depth, bool writingToFile)
         {
             Indent(stringBuilder, depth);
 
@@ -273,7 +264,12 @@ namespace Unity.UI.Builder
                         exportOptions.propertyIndent = string.Empty;
                         StyleSheetToUss.ToUssString(vta.inlineSheet, exportOptions, r, ruleBuilder);
                         var ruleStr = ruleBuilder.ToString();
-                        
+
+                        // Need to remove newlines here before we give it to
+                        // AppendElementAttribute() so we don't add "&#10;" everywhere.
+                        ruleStr = ruleStr.Replace("\n", " ");
+                        ruleStr = ruleStr.Trim();
+
                         AppendElementAttribute("style", ruleStr, stringBuilder);
                     }
                 }
@@ -294,7 +290,7 @@ namespace Unity.UI.Builder
                     var path = AssetDatabase.GetAssetPath(styleSheet);
                     ProcessStyleSheetPath(
                         vtaPath,
-                        path, stringBuilder, depth, omitUnsavedUss,
+                        path, stringBuilder, depth,
                         ref newLineAdded, ref hasChildTags);
                 }
             }
@@ -308,7 +304,7 @@ namespace Unity.UI.Builder
                 {
                     ProcessStyleSheetPath(
                         vtaPath,
-                        path, stringBuilder, depth, omitUnsavedUss,
+                        path, stringBuilder, depth,
                         ref newLineAdded, ref hasChildTags);
                 }
             }
@@ -318,7 +314,10 @@ namespace Unity.UI.Builder
             if (templateAsset != null && templateAsset.attributeOverrides != null && templateAsset.attributeOverrides.Count > 0)
             {
                 if (!hasChildTags)
-                    stringBuilder.Append(">\n");
+                {
+                    stringBuilder.Append(">");
+                    stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
+                }
 
                 var overridesMap = new Dictionary<string, List<TemplateAsset.AttributeOverride>>();
                 foreach (var attributeOverride in templateAsset.attributeOverrides)
@@ -340,7 +339,8 @@ namespace Unity.UI.Builder
                     foreach (var attributeOverride in overrides)
                         AppendElementAttribute(attributeOverride.m_AttributeName, attributeOverride.m_Value, stringBuilder);
 
-                    stringBuilder.Append(" />\n");
+                    stringBuilder.Append(" />");
+                    stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
                 }
 
                 hasChildTags = true;
@@ -351,14 +351,17 @@ namespace Unity.UI.Builder
             if (idToChildren != null && idToChildren.TryGetValue(root.id, out children) && children.Count > 0)
             {
                 if (!hasChildTags)
-                    stringBuilder.Append(">\n");
+                {
+                    stringBuilder.Append(">");
+                    stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
+                }
 
                 children.Sort(VisualTreeAssetUtilities.CompareForOrder);
 
                 foreach (VisualElementAsset childVea in children)
                     GenerateUXMLRecursive(
                         vta, vtaPath, childVea, idToChildren, stringBuilder,
-                        depth + 1, omitUnsavedUss, writingToFile);
+                        depth + 1, writingToFile);
 
                 hasChildTags = true;
             }
@@ -368,11 +371,13 @@ namespace Unity.UI.Builder
                 Indent(stringBuilder, depth);
                 stringBuilder.Append("</");
                 AppendElementTypeName(root, stringBuilder);
-                stringBuilder.Append(">\n");
+                stringBuilder.Append(">");
+                stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
             }
             else
             {
-                stringBuilder.Append(" />\n");
+                stringBuilder.Append(" />");
+                stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
             }
         }
 
@@ -381,6 +386,7 @@ namespace Unity.UI.Builder
             var stringBuilder = new StringBuilder();
 
             stringBuilder.Append(BuilderConstants.UxmlHeader);
+            stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
 
             var idToChildren = VisualTreeAssetUtilities.GenerateIdToChildren(vta);
 
@@ -389,9 +395,10 @@ namespace Unity.UI.Builder
             GatherUsedTemplates(vta, vea, idToChildren, usedTemplates);
             AppendTemplateRegistrations(vta, vtaPath, stringBuilder, usedTemplates);
 
-            GenerateUXMLRecursive(vta, vtaPath, vea, idToChildren, stringBuilder, 1, true, true);
+            GenerateUXMLRecursive(vta, vtaPath, vea, idToChildren, stringBuilder, 1, true);
 
             stringBuilder.Append(BuilderConstants.UxmlFooter);
+            stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
 
             return stringBuilder.ToString();
         }
@@ -429,7 +436,7 @@ namespace Unity.UI.Builder
                 if (writingToFile && rootElement.fullTypeName == BuilderConstants.SelectedVisualTreeAssetSpecialElementTypeName)
                     continue;
 
-                GenerateUXMLRecursive(vta, vtaPath, rootElement, idToChildren, stringBuilder, 1, false, writingToFile);
+                GenerateUXMLRecursive(vta, vtaPath, rootElement, idToChildren, stringBuilder, 1, writingToFile);
             }
         }
 
@@ -441,13 +448,16 @@ namespace Unity.UI.Builder
                 (vta.templateAssets == null || vta.templateAssets.Count <= 0))
             {
                 stringBuilder.Append(BuilderConstants.UxmlHeader);
+                stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
                 stringBuilder.Append(BuilderConstants.UxmlFooter);
+                stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
                 return stringBuilder.ToString();
             }
 
             var idToChildren = VisualTreeAssetUtilities.GenerateIdToChildren(vta);
 
             stringBuilder.Append(BuilderConstants.UxmlHeader);
+            stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
 
             // Templates
             AppendTemplateRegistrations(vta, vtaPath, stringBuilder);
@@ -455,6 +465,7 @@ namespace Unity.UI.Builder
             GenerateUXMLFromRootElements(vta, idToChildren, stringBuilder, vtaPath, writingToFile);
 
             stringBuilder.Append(BuilderConstants.UxmlFooter);
+            stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
 
             return stringBuilder.ToString();
         }

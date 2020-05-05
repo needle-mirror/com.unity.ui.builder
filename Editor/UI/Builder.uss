@@ -77,6 +77,10 @@
     opacity: 0.5;
 }
 
+.unity-builder-explorer--hidden  .unity-builder-explorer-tree-item-icon {
+    opacity: 0.5;
+}
+
 .unity-builder-explorer-tree-item-template-path {
     opacity: 0.5;
 }
@@ -97,6 +101,12 @@
     padding-right: 1px;
     margin-right: 4px;
     margin-left: 1px;
+}
+
+.unity-builder-explorer-tree-item-icon {
+    width: 16px;
+    height: 16px;
+    margin-top: 2px;
 }
 
 .unity-builder-explorer__reorder-zone {
@@ -134,9 +144,17 @@
     flex-grow: 1;
 }
 
+BuilderExplorerItem {
+    --builder-style: default;
+}
+
+.unity-list-view:focus > .unity-list-view__item--selected BuilderExplorerItem {
+    --builder-style: highlighted;
+}
+
 .unity-builder__toolbar-setting-menu {
     background-color: initial;
-    border-width: 0px;
+    border-width: 0;
     padding-top: 2px;
     padding-bottom: 2px;
     -unity-slice-top: 0;
@@ -198,6 +216,10 @@
     margin-left: 0;
 }
 
+.unity-builder-stylesheets-pane--active-stylesheet {
+    -unity-font-style: bold;
+}
+
 /*****************************************************************************/
 /* Viewport                                                                  */
 /*****************************************************************************/
@@ -247,6 +269,16 @@
     left: 0;
     right: 0;
     bottom: 0;
+}
+
+.unity-builder-viewport__checkerboard-background {
+    --odd-cell-color: #808080;
+    --even-cell-color: #8c8c8c;
+    --cell-size: 8.0;
+}
+
+.unity-builder-viewport__checkerboard-background-container {
+    overflow: hidden;
 }
 
 .unity-builder-viewport__shared-styles-and-document {
@@ -469,6 +501,20 @@
     flex-grow: 1;
 }
 
+.unity-builder-viewport__text-editor-container {
+    position: absolute;
+}
+
+.unity-builder-viewport__text-editor {
+    margin: 0;
+    padding: 0;
+}
+
+.unity-builder-viewport__text-editor .unity-base-text-field__input  {
+    margin: 0;
+    padding: 0;
+}
+
 /*****************************************************************************/
 /* Snippet Content                                                           */
 /*****************************************************************************/
@@ -536,30 +582,6 @@
 }
 
 /*****************************************************************************/
-/* Library                                                                   */
-/*****************************************************************************/
-
-.unity-builder-library {
-    flex-grow: 1;
-}
-
-.unity-builder-library__tree-view {
-    flex-grow: 1;
-}
-
-.unity-builder-library__tree-item {
-    flex-direction: row;
-    flex-grow: 1;
-    flex-shrink: 0;
-    flex-basis: 0;
-}
-
-.unity-builder-library__tree-item-label {
-    flex-grow: 1;
-    -unity-text-align: middle-left;
-}
-
-/*****************************************************************************/
 /* Builder Class Pill                                                        */
 /*****************************************************************************/
 
@@ -577,14 +599,16 @@
     max-width: 200px;
     overflow: hidden;
     -unity-text-align: middle-left;
+    padding-top: 2px;
+    padding-bottom: 2px;
 }
 
 .unity-builder-class-pill__delete-button {
     height: 16px;
     margin-right: 0;
-    padding-bottom: 2px;
-    margin-bottom: 2px;
+    margin-bottom: 0;
     margin-top: 0;
+    padding-bottom: 0;
     -unity-text-align: middle-center;
 }
 
@@ -716,6 +740,31 @@
 
 .unity-builder-parent-tracker {
     border-width: 2px;
+}
+
+/*****************************************************************************/
+/* Builder Selection Indicator                                               */
+/*****************************************************************************/
+.unity-builder-selection-indicator {
+    border-width: 2px;
+}
+
+.unity-builder-selection-indicator__header {
+    position: absolute;
+    height: 20px;
+    margin-top: -22px;
+    margin-left: -2px;
+    padding: 0px 2px;
+    flex-direction: row;
+    align-items: center;
+}
+
+.unity-builder-selection-indicator__header-container {
+    flex-direction: row;
+}
+
+.unity-builder-selection-indicator__header-label {
+    color: rgb(255, 255, 255);
 }
 
 /*****************************************************************************/
@@ -933,26 +982,26 @@
 }
 
 .unity-builder-anchorer--top {
-    top: -24px;
+    top: -34px;
     left: 0;
     right: 0;
 }
 
 .unity-builder-anchorer--left {
     top: 0;
-    left: -24px;
+    left: -34px;
     bottom: 0;
 }
 
 .unity-builder-anchorer--bottom {
     left: 0;
     right: 0;
-    bottom: -24px;
+    bottom: -34px;
 }
 
 .unity-builder-anchorer--right {
     top: 0;
-    right: -24px;
+    right: -34px;
     bottom: 0;
 }
 

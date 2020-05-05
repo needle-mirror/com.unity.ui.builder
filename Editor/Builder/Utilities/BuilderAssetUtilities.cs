@@ -40,6 +40,31 @@ namespace Unity.UI.Builder
             return assetPath == "Resources/unity_builtin_extra";
         }
 
+        public static void AddStyleSheetToAsset(
+            BuilderDocument document, string ussPath)
+        {
+            var styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(ussPath);
+            if (styleSheet == null)
+            {
+                BuilderDialogsUtility.DisplayDialog("Invalid Asset Type", @"Asset at path {ussPath} is not a StyleSheet.");
+                return;
+            }
+
+            Undo.RegisterCompleteObjectUndo(
+                document.visualTreeAsset, "Add StyleSheet to UXML");
+
+            document.AddStyleSheetToDocument(styleSheet, ussPath);
+        }
+
+        public static void RemoveStyleSheetFromAsset(
+            BuilderDocument document, int ussIndex)
+        {
+            Undo.RegisterCompleteObjectUndo(
+                document.visualTreeAsset, "Remove StyleSheet from UXML");
+
+            document.RemoveStyleSheetFromDocument(ussIndex);
+        }
+
         public static VisualElementAsset AddElementToAsset(
             BuilderDocument document, VisualElement ve, int index = -1)
         {
@@ -133,12 +158,12 @@ namespace Unity.UI.Builder
         }
 
         public static void TransferAssetToAsset(
-            BuilderDocument document, StyleSheet otherStyleSheet)
+            BuilderDocument document, StyleSheet styleSheet, StyleSheet otherStyleSheet)
         {
             Undo.RegisterCompleteObjectUndo(
-                document.mainStyleSheet, BuilderConstants.AddNewSelectorUndoMessage);
+                styleSheet, BuilderConstants.AddNewSelectorUndoMessage);
 
-            document.mainStyleSheet.Swallow(otherStyleSheet);
+            styleSheet.Swallow(otherStyleSheet);
         }
 
         public static void AddStyleClassToElementInAsset(BuilderDocument document, VisualElement ve, string className)
@@ -159,31 +184,33 @@ namespace Unity.UI.Builder
             vea.RemoveStyleClass(className);
         }
 
-        public static void AddStyleComplexSelectorToSelection(BuilderDocument document, StyleComplexSelector scs)
+        public static void AddStyleComplexSelectorToSelection(BuilderDocument document, StyleSheet styleSheet, StyleComplexSelector scs)
         {
-            var selectionProp = document.mainStyleSheet.AddProperty(
+            var selectionProp = styleSheet.AddProperty(
                 scs,
                 BuilderConstants.SelectedStyleRulePropertyName,
                 BuilderConstants.ChangeSelectionUndoMessage);
 
             // Need to add at least one dummy value because lots of code will die
             // if it encounters a style property with no values.
-            document.mainStyleSheet.AddValue(
+            styleSheet.AddValue(
                 selectionProp, 42.0f, BuilderConstants.ChangeSelectionUndoMessage);
         }
 
         public static void AddElementToSelectionInAsset(BuilderDocument document, VisualElement ve)
         {
-            if (BuilderSharedStyles.IsSelectorsContainerElement(ve))
+            if (BuilderSharedStyles.IsStyleSheetElement(ve))
             {
-                document.mainStyleSheet.AddSelector(
+                var styleSheet = ve.GetStyleSheet();
+                styleSheet.AddSelector(
                     BuilderConstants.SelectedStyleSheetSelectorName,
                     BuilderConstants.ChangeSelectionUndoMessage);
             }
             else if (BuilderSharedStyles.IsSelectorElement(ve))
             {
+                var styleSheet = ve.GetClosestStyleSheet();
                 var scs = ve.GetStyleComplexSelector();
-                AddStyleComplexSelectorToSelection(document, scs);
+                AddStyleComplexSelectorToSelection(document, styleSheet, scs);
             }
             else if (BuilderSharedStyles.IsDocumentElement(ve))
             {
@@ -205,16 +232,18 @@ namespace Unity.UI.Builder
 
         public static void RemoveElementFromSelectionInAsset(BuilderDocument document, VisualElement ve)
         {
-            if (BuilderSharedStyles.IsSelectorsContainerElement(ve))
+            if (BuilderSharedStyles.IsStyleSheetElement(ve))
             {
-                document.mainStyleSheet.RemoveSelector(
+                var styleSheet = ve.GetStyleSheet();
+                styleSheet.RemoveSelector(
                     BuilderConstants.SelectedStyleSheetSelectorName,
                     BuilderConstants.ChangeSelectionUndoMessage);
             }
             else if (BuilderSharedStyles.IsSelectorElement(ve))
             {
+                var styleSheet = ve.GetClosestStyleSheet();
                 var scs = ve.GetStyleComplexSelector();
-                document.mainStyleSheet.RemoveProperty(
+                styleSheet.RemoveProperty(
                     scs,
                     BuilderConstants.SelectedStyleRulePropertyName,
                     BuilderConstants.ChangeSelectionUndoMessage);
@@ -237,17 +266,22 @@ namespace Unity.UI.Builder
                 vea.Deselect();
             }
         }
-        
+
         public static string GetVisualTreeAssetAssetName(VisualTreeAsset visualTreeAsset, bool hasUnsavedChanges) =>
             GetAssetName(visualTreeAsset, BuilderConstants.UxmlExtension, hasUnsavedChanges);
-        
+
         public static string GetStyleSheetAssetName(StyleSheet styleSheet, bool hasUnsavedChanges) =>
             GetAssetName(styleSheet, BuilderConstants.UssExtension, hasUnsavedChanges);
 
         public static string GetAssetName(ScriptableObject asset, string extension, bool hasUnsavedChanges)
         {
             if (asset == null)
-                return BuilderConstants.ToolbarUnsavedFileDisplayMessage + extension;
+            {
+                if (extension == BuilderConstants.UxmlExtension)
+                    return BuilderConstants.ToolbarUnsavedFileDisplayMessage + extension;
+                else
+                    return string.Empty;
+            }
 
             var assetPath = AssetDatabase.GetAssetPath(asset);
             if(string.IsNullOrEmpty(assetPath))

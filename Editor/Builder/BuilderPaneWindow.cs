@@ -1,5 +1,5 @@
+using System.IO;
 using UnityEditor;
-using UnityEditor.Callbacks;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -58,10 +58,32 @@ namespace Unity.UI.Builder
             }
         }
 
-        protected static T GetWindowAndInit<T>(string title) where T : BuilderPaneWindow
+        protected static T GetWindowAndInit<T>(string title, string icon = null) where T : BuilderPaneWindow
         {
             var window = GetWindow<T>();
-            window.titleContent = new GUIContent(title);
+
+            Texture2D iconTex = null;
+            if (!string.IsNullOrEmpty(icon))
+            {
+                if (EditorGUIUtility.isProSkin)
+                {
+                    var newName = "d_" + Path.GetFileName(icon);
+                    var iconDirName = Path.GetDirectoryName(icon);
+                    if (!string.IsNullOrEmpty(iconDirName))
+                        newName = $"{iconDirName}/{newName}";
+
+                    icon = newName;
+                }
+
+                if (EditorGUIUtility.pixelsPerPoint > 1)
+                    icon = $"{icon}@2x";
+
+                iconTex = Resources.Load<Texture2D>(icon);
+            }
+
+            if (!string.IsNullOrEmpty(title))
+                window.titleContent = new GUIContent(title, iconTex);
+
             window.Show();
             return window;
         }

@@ -105,6 +105,9 @@ namespace Unity.UI.Builder
                 case EventCommandNames.Delete: evt.StopPropagation(); return;
                 case EventCommandNames.Duplicate: evt.StopPropagation(); return;
                 case EventCommandNames.Paste: evt.StopPropagation(); return;
+#if UNITY_2019_3_OR_NEWER
+                case EventCommandNames.Rename: evt.StopPropagation(); return;
+#endif
             }
         }
 
@@ -115,10 +118,19 @@ namespace Unity.UI.Builder
                 case EventCommandNames.Cut: PerformActionOnSelection(CutElement, ClearCopyBuffer, JustNotify); return;
                 case EventCommandNames.Copy: PerformActionOnSelection(CopyElement, ClearCopyBuffer); return;
                 case EventCommandNames.SoftDelete:
-                case EventCommandNames.Delete: PerformActionOnSelection(DeleteElement, null, ClearSelectionNotify); return;
+                case EventCommandNames.Delete: DeleteSelection(); return;
                 case EventCommandNames.Duplicate: PerformActionOnSelection(DuplicateElement, ClearCopyBuffer, Paste); return;
                 case EventCommandNames.Paste: Paste(); return;
+#if UNITY_2019_3_OR_NEWER
+                case EventCommandNames.Rename: PerformActionOnSelection(RenameElement); return;
+#endif
             }
+        }
+
+        static void RenameElement(VisualElement element)
+        {
+            var explorerItemElement = element.GetProperty(BuilderConstants.ElementLinkedExplorerItemVEPropertyName) as BuilderExplorerItem;
+            explorerItemElement?.ActivateRenameElementMode();
         }
 
         void OnUndoRedo()
@@ -157,7 +169,7 @@ namespace Unity.UI.Builder
 
             m_ControlWasPressed = false;
 
-            m_Toolbar.PromptSaveDocumentDialog();
+            m_Toolbar.SaveDocument(false);
 
             evt.StopPropagation();
         }
@@ -172,7 +184,7 @@ namespace Unity.UI.Builder
             {
                 case KeyCode.Delete:
                 case KeyCode.Backspace:
-                    PerformActionOnSelection(DeleteElement, null, ClearSelectionNotify);
+                    DeleteSelection();
                     evt.StopPropagation();
                     break;
                 case KeyCode.Escape:
@@ -185,6 +197,27 @@ namespace Unity.UI.Builder
                     }
                     break;
             }
+        }
+
+        public void DeleteSelection()
+        {
+            if (m_Selection.isEmpty)
+                return;
+
+            // Must save a copy of the selection here and then clear selection before
+            // we delete the elements. Otherwise the selection clearing will fail
+            // to remove the special selection objects because it won't be able
+            // to query parent information of selected elements (they have already
+            // been removed from the hierarchy).
+            var selectionCopy = m_Selection.selection.ToList();
+            m_Selection.ClearSelection(null, true);
+
+            bool somethingWasDeleted = false;
+            foreach (var element in selectionCopy)
+                somethingWasDeleted |= DeleteElement(element);
+
+            if (somethingWasDeleted)
+                JustNotify();
         }
 
         public void PerformActionOnSelection(Action<VisualElement> preElementaction, Action preAction = null, Action postAction = null)
@@ -224,8 +257,9 @@ namespace Unity.UI.Builder
             var selector = element.GetStyleComplexSelector();
             if (selector != null)
             {
+                var styleSheet = element.GetClosestStyleSheet();
                 BuilderEditorUtility.SystemCopyBuffer =
-                    StyleSheetToUss.ToUssString(m_PaneWindow.document.mainStyleSheet, selector);
+                    StyleSheetToUss.ToUssString(styleSheet, selector);
                 return;
             }
         }
@@ -240,7 +274,7 @@ namespace Unity.UI.Builder
                 parent = m_Selection.selection.First().parent?.GetVisualElementAsset();
 
             BuilderAssetUtilities.TransferAssetToAsset(m_PaneWindow.document, parent, pasteVta);
-            m_PaneWindow.document.AddStyleSheetToAllRootElements();
+            m_PaneWindow.document.AddStyleSheetsToAllRootElements();
 
             var selectionParentId = parent?.id ?? m_PaneWindow.document.visualTreeAsset.GetRootUXMLElementId();
             VisualElementAsset newSelectedItem = pasteVta.templateAssets.FirstOrDefault(tpl => tpl.parentId == selectionParentId);
@@ -255,15 +289,20 @@ namespace Unity.UI.Builder
 
         void PasteUSS(string copyBuffer)
         {
+            // Paste does nothing if document has no stylesheets.
+            var mainStyleSheet = m_PaneWindow.document.activeStyleSheet;
+            if (mainStyleSheet == null)
+                return;
+
             var pasteStyleSheet = StyleSheetUtilities.CreateInstance();
             var importer = new BuilderStyleSheetImporter(); // Cannot be cached because the StyleBuilder never gets reset.
             importer.Import(pasteStyleSheet, copyBuffer);
 
-            BuilderAssetUtilities.TransferAssetToAsset(m_PaneWindow.document, pasteStyleSheet);
+            BuilderAssetUtilities.TransferAssetToAsset(m_PaneWindow.document, mainStyleSheet, pasteStyleSheet);
 
             m_Selection.ClearSelection(null);
-            var scs =  m_PaneWindow.document.mainStyleSheet.complexSelectors.Last();
-            BuilderAssetUtilities.AddStyleComplexSelectorToSelection(m_PaneWindow.document, scs);
+            var scs = mainStyleSheet.complexSelectors.Last();
+            BuilderAssetUtilities.AddStyleComplexSelectorToSelection(m_PaneWindow.document, mainStyleSheet, scs);
 
             ScriptableObject.DestroyImmediate(pasteStyleSheet);
         }
@@ -301,32 +340,75 @@ namespace Unity.UI.Builder
                     m_Selection.Select(null, currentlySelectedItem);
             }).ExecuteLater(200);
 
-            m_PaneWindow.document.hasUnsavedChanges = true;
+            m_Selection.NotifyOfHierarchyChange();
         }
 
-        public void DeleteElement(VisualElement element)
+        public bool DeleteElement(VisualElement element)
         {
             if (BuilderSharedStyles.IsSelectorsContainerElement(element) ||
+                BuilderSharedStyles.IsStyleSheetElement(element) ||
                 BuilderSharedStyles.IsDocumentElement(element) ||
                 !element.IsLinkedToAsset())
-                return;
+                return false;
 
             if (BuilderSharedStyles.IsSelectorElement(element))
             {
+                var styleSheet = element.GetClosestStyleSheet();
                 Undo.RegisterCompleteObjectUndo(
-                    m_PaneWindow.document.mainStyleSheet, BuilderConstants.DeleteSelectorUndoMessage);
+                    styleSheet, BuilderConstants.DeleteSelectorUndoMessage);
 
                 var selectorStr = BuilderSharedStyles.GetSelectorString(element);
-                m_PaneWindow.document.mainStyleSheet.RemoveSelector(selectorStr);
+                styleSheet.RemoveSelector(selectorStr);
+
+                element.RemoveFromHierarchy();
+                m_Selection.NotifyOfHierarchyChange();
+
+                return true;
+            }
+
+            return DeleteElementFromVisualTreeAsset(element);
+        }
+
+        bool DeleteElementFromVisualTreeAsset(VisualElement element)
+        {
+            var vea = element.GetVisualElementAsset();
+            if (vea == null)
+                return false;
+
+            // Before 2020.1, the only way to attach a StyleSheet to a UXML document was via a <Style>
+            // tag as a child of an element tag. This meant that if there were no elements in the document,
+            // there cannot be any StyleSheets attached to it. Therefore, we need to warn the user when
+            // deleting the last element in the document that they will lose the list of attached StyleSheets
+            // as well. This is something that can be undone via undo so it's not terrible if they say "Yes"
+            // accidentally.
+            //
+            // 2020.1 adds support for the global <Style> tag so this limitation is lifted. However, the
+            // UI Builder does not yet support the global <Style> tag. Plus, even when support to the
+            // UI Builder is added, we still need to maintain support for 2019.3 via this logic.
+            if (!(vea is TemplateAsset) &&
+                m_PaneWindow.document.firstStyleSheet != null &&
+                m_PaneWindow.document.visualTreeAsset.WillBeEmptyIfRemovingOne())
+            {
+                var continueDeletion = BuilderDialogsUtility.DisplayDialog(
+                    BuilderConstants.DeleteLastElementDialogTitle,
+                    BuilderConstants.DeleteLastElementDialogMessage,
+                    "Yes", "Cancel");
+                if (!continueDeletion)
+                    return false;
+
+                BuilderAssetUtilities.DeleteElementFromAsset(m_PaneWindow.document, element);
+
+                m_PaneWindow.OnEnableAfterAllSerialization();
             }
             else
             {
                 BuilderAssetUtilities.DeleteElementFromAsset(m_PaneWindow.document, element);
+
+                element.RemoveFromHierarchy();
+                m_Selection.NotifyOfHierarchyChange();
             }
 
-            element.RemoveFromHierarchy();
-
-            m_PaneWindow.document.hasUnsavedChanges = true;
+            return true;
         }
 
         public void ClearCopyBuffer()

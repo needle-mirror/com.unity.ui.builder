@@ -14,7 +14,7 @@ namespace Unity.UI.Builder
 
         VisualElement m_DragPreviewLastParent;
         VisualElement m_DragPreviewElement;
-        BuilderLibrary.LibraryTreeItem m_LibraryItem;
+        BuilderLibraryTreeItem m_LibraryItem;
         BuilderTooltipPreview m_TooltipPreview;
 
         public BuilderLibraryDragger(
@@ -40,11 +40,15 @@ namespace Unity.UI.Builder
         {
             m_LibraryItem =
                 target.GetProperty(BuilderConstants.LibraryItemLinkedManipulatorVEPropertyName)
-                as BuilderLibrary.LibraryTreeItem;
+                as BuilderLibraryTreeItem;
             if (m_LibraryItem == null)
                 return false;
 
-            var madeElement = m_LibraryItem.makeVisualElement();
+            var isCurrentDocumentVisualTreeAsset = m_LibraryItem.SourceAsset == paneWindow.document.visualTreeAsset;
+            if (isCurrentDocumentVisualTreeAsset)
+                return false;
+
+            var madeElement = m_LibraryItem.MakeVisualElementCallback();
             if (madeElement == null)
                 return false;
 
@@ -91,8 +95,8 @@ namespace Unity.UI.Builder
 
             var item =
                 target.GetProperty(BuilderConstants.LibraryItemLinkedManipulatorVEPropertyName)
-                as BuilderLibrary.LibraryTreeItem;
-            m_DragPreviewElement = item.makeVisualElement();
+                as BuilderLibraryTreeItem;
+            m_DragPreviewElement = item.MakeVisualElementCallback();
             m_DragPreviewElement.AddToClassList(s_DragPreviewElementClassName);
 
             if (index < 0)
@@ -116,12 +120,12 @@ namespace Unity.UI.Builder
             // We should have an item reference here if the OnDragStart() worked.
             var item = m_LibraryItem;
 
-            if (item.makeElementAsset == null)
+            if (item.MakeElementAssetCallback == null)
                 BuilderAssetUtilities.AddElementToAsset(
                     paneWindow.document, m_DragPreviewElement, index);
             else
                 BuilderAssetUtilities.AddElementToAsset(
-                    paneWindow.document, m_DragPreviewElement, item.makeElementAsset, index);
+                    paneWindow.document, m_DragPreviewElement, item.MakeElementAssetCallback, index);
 
             selection.NotifyOfHierarchyChange(null);
             selection.NotifyOfStylingChange(null);

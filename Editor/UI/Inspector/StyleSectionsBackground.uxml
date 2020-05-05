@@ -6,7 +6,7 @@
 
     <!-- Background Image -->
     <uib:BuilderStyleRow binding-path="background-image">
-        <uie:ObjectField label="Image" tooltip="background-image" />
+        <uib:ImageStyleField label="Image" tooltip="background-image" />
     </uib:BuilderStyleRow>
 
     <!-- Unity Background Image Tint Color -->

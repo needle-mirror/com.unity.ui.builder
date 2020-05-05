@@ -4,7 +4,7 @@ namespace Unity.UI.Builder
     {
         BuilderUxmlPreview m_UxmlPreview;
 
-        //[MenuItem("Window/UI/UI Builder UXML Preview")]
+        //[MenuItem(BuilderConstants.BuilderMenuEntry + " UXML Preview")]
         public static void ShowWindow()
         {
             GetWindowAndInit<BuilderUxmlPreviewWindow>("UI Builder UXML Preview");

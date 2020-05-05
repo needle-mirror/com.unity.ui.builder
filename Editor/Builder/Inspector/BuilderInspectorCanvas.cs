@@ -90,6 +90,7 @@ namespace Unity.UI.Builder
             var backgroundModeValues = Enum.GetValues(backgroundModeType)
                 .OfType<BuilderCanvasBackgroundMode>().Select((v) => v.ToString()).ToList();
             var backgroundModeNames = Enum.GetNames(backgroundModeType);
+            backgroundModeNames[0] = "Transparent";
             m_BackgroundMode = root.Q<ToggleButtonStrip>("background-mode-field");
             m_BackgroundMode.enumType = backgroundModeType;
             m_BackgroundMode.labels = backgroundModeNames;

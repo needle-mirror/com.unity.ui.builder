@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
-
+using UnityEngine.UIElements.StyleSheets.Syntax;
 #if UNITY_2019_3_OR_NEWER
 using UnityEngine.UIElements.StyleSheets;
 #endif
@@ -53,6 +53,51 @@ namespace Unity.UI.Builder
         public static readonly List<string> KLDefault = new List<string>() { KeywordInitial };
         public static readonly List<string> KLAuto = new List<string>() { KeywordAuto, KeywordInitial };
         public static readonly List<string> KLNone = new List<string>() { KeywordNone, KeywordInitial };
+
+        public static List<string> GetStyleKeywords(string binding)
+        {
+            if (string.IsNullOrEmpty(binding))
+                return StyleFieldConstants.KLDefault;
+
+            var syntaxParser = new StyleSyntaxParser();
+#if UNITY_2019_3_OR_NEWER
+            var syntaxFound = StylePropertyCache.TryGetSyntax(binding, out var syntax);
+#else
+            var syntaxFound = StyleFieldConstants.StylePropertySyntaxCache.TryGetValue(binding, out var syntax);
+#endif
+            if (!syntaxFound)
+                return StyleFieldConstants.KLDefault;
+
+            var expression = syntaxParser.Parse(syntax);
+            if (expression == null)
+                return StyleFieldConstants.KLDefault;
+
+            var hasAuto = FindKeywordInExpression(expression, StyleFieldConstants.KeywordAuto);
+            var hasNone = FindKeywordInExpression(expression, StyleFieldConstants.KeywordNone);
+
+            if (hasAuto)
+                return StyleFieldConstants.KLAuto;
+            else if (hasNone)
+                return StyleFieldConstants.KLNone;
+
+            return StyleFieldConstants.KLDefault;
+        }
+
+        static bool FindKeywordInExpression(Expression expression, string keyword)
+        {
+            if (expression.type == ExpressionType.Keyword && expression.keyword == keyword)
+                return true;
+
+            if (expression.subExpressions == null)
+                return false;
+
+            foreach (var subExp in expression.subExpressions)
+                if (FindKeywordInExpression(subExp, keyword))
+                    return true;
+
+            return false;
+        }
+
 
 #if UNITY_2019_2
         public static readonly Dictionary<string, string> StylePropertySyntaxCache = new Dictionary<string, string>()

@@ -64,7 +64,7 @@ namespace Unity.UI.Builder
                     return BuilderSelectionType.VisualTreeAsset;
                 if (BuilderSharedStyles.IsSelectorElement(selectedElement))
                     return BuilderSelectionType.StyleSelector;
-                if (BuilderSharedStyles.IsSelectorsContainerElement(selectedElement))
+                if (BuilderSharedStyles.IsStyleSheetElement(selectedElement))
                     return BuilderSelectionType.StyleSheet;
                 if (selectedElement.GetVisualElementAsset() != null)
                     return BuilderSelectionType.Element;
@@ -123,6 +123,11 @@ namespace Unity.UI.Builder
         public void RemoveNotifier(IBuilderSelectionNotifier notifier)
         {
             m_Notifiers.Remove(notifier);
+        }
+
+        public void ForceReselection(IBuilderSelectionNotifier source = null)
+        {
+            NotifyOfSelectionChange(source);
         }
 
         public void Select(IBuilderSelectionNotifier source, VisualElement ve)
@@ -274,7 +279,7 @@ namespace Unity.UI.Builder
             // This is so anyone interested can refresh their use of this USS with
             // the latest (unsaved to disk) changes.
             //RetainedMode.FlagStyleSheetChange(); // Works but TOO SLOW.
-            EditorUtility.SetDirty(m_PaneWindow.document.mainStyleSheet);
+            m_PaneWindow.document.MarkStyleSheetsDirty();
 
             foreach (var notifier in m_Notifiers)
                 if (notifier != m_CurrentNotifier)

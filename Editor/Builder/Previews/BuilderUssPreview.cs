@@ -1,13 +1,16 @@
 using UnityEngine.UIElements;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Unity.UI.Builder
 {
     internal class BuilderUssPreview : BuilderCodePreview, IBuilderSelectionNotifier
     {
-        public BuilderUssPreview(BuilderPaneWindow paneWindow):base(paneWindow)
+        BuilderSelection m_Selection;
+
+        public BuilderUssPreview(BuilderPaneWindow paneWindow, BuilderSelection selection) : base(paneWindow)
         {
-           
+            m_Selection = selection;
         }
 
         protected override void OnAttachToPanelDefaultAction()
@@ -18,10 +21,21 @@ namespace Unity.UI.Builder
 
         void RefreshUSS()
         {
-            if (hasDocument)
+            if (hasDocument && document.firstStyleSheet != null)
             {
-                SetText(document.mainStyleSheet.GenerateUSS());
-                SetTargetAsset(document.mainStyleSheet, document.hasUnsavedChanges);
+                var styleSheet = document.activeStyleSheet;
+
+                var selectedElement = m_Selection.isEmpty ? null : m_Selection.selection.First();
+                if (selectedElement != null)
+                {
+                    if (BuilderSharedStyles.IsStyleSheetElement(selectedElement))
+                        styleSheet = selectedElement.GetStyleSheet();
+                    else if (BuilderSharedStyles.IsSelectorElement(selectedElement))
+                        styleSheet = selectedElement.GetClosestStyleSheet();
+                }
+
+                SetText(styleSheet.GenerateUSS());
+                SetTargetAsset(styleSheet, document.hasUnsavedChanges);
             }
             else
             {

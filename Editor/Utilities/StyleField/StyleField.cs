@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine.UIElements;
-using UnityEngine.UIElements.StyleSheets;
-using UnityEngine.UIElements.StyleSheets.Syntax;
 
 namespace Unity.UI.Builder
 {
@@ -83,7 +81,7 @@ namespace Unity.UI.Builder
         {
             AddToClassList(s_UssClassName);
 
-            styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(s_UssPath)); 
+            styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(s_UssPath));
 
 #if UNITY_2019_2
             styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(s_UssPath2019_2));
@@ -225,54 +223,10 @@ namespace Unity.UI.Builder
             return new List<string>();
         }
 
-        bool FindKeywordInExpression(Expression expression, string keyword)
-        {
-            if (expression.type == ExpressionType.Keyword && expression.keyword == keyword)
-                return true;
-
-            if (expression.subExpressions == null)
-                return false;
-
-            foreach (var subExp in expression.subExpressions)
-                if (FindKeywordInExpression(subExp, keyword))
-                    return true;
-
-            return false;
-        }
-
-        List<string> GetStyleKeywords(string binding)
-        {
-            if (string.IsNullOrEmpty(binding))
-                return StyleFieldConstants.KLDefault;
-
-            var syntaxParser = new StyleSyntaxParser();
-#if UNITY_2019_3_OR_NEWER
-            var syntaxFound = StylePropertyCache.TryGetSyntax(binding, out var syntax);
-#else
-            var syntaxFound = StyleFieldConstants.StylePropertySyntaxCache.TryGetValue(binding, out var syntax);
-#endif
-            if (!syntaxFound)
-                return StyleFieldConstants.KLDefault;
-
-            var expression = syntaxParser.Parse(syntax);
-            if (expression == null)
-                return StyleFieldConstants.KLDefault;
-
-            var hasAuto = FindKeywordInExpression(expression, StyleFieldConstants.KeywordAuto);
-            var hasNone = FindKeywordInExpression(expression, StyleFieldConstants.KeywordNone);
-
-            if (hasAuto)
-                return StyleFieldConstants.KLAuto;
-            else if (hasNone)
-                return StyleFieldConstants.KLNone;
-
-            return StyleFieldConstants.KLDefault;
-        }
-
         void UpdateOptionsMenu(string binding)
         {
             m_CachedRegularOptionsList = GenerateAdditionalOptions(binding);
-            m_StyleKeywords = GetStyleKeywords(binding);
+            m_StyleKeywords = StyleFieldConstants.GetStyleKeywords(binding);
 
             m_AllOptionsList = new List<string>();
             m_AllOptionsList.AddRange(m_CachedRegularOptionsList);

@@ -192,15 +192,15 @@
     background-image: resource("com.unity.ui.builder/Icons/Light/Inspector/Text White Space/Normal");
 }
 
-.unity-builder-inspector_white-space-field #no-wrap > .unity-button-strip__button-icon {
+.unity-builder-inspector_white-space-field #nowrap > .unity-button-strip__button-icon {
     background-image: resource("com.unity.ui.builder/Icons/Light/Inspector/Text White Space/No Wrap");
 }
 
-.unity-builder-inspector_white-space-field #no-wrap:checked > .unity-button-strip__button-icon {
+.unity-builder-inspector_white-space-field #nowrap:checked > .unity-button-strip__button-icon {
     background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Text White Space/No Wrap");
 }
 
-.unity-builder-inspector_white-space-field #no-wrap:checked:hover > .unity-button-strip__button-icon {
+.unity-builder-inspector_white-space-field #nowrap:checked:hover > .unity-button-strip__button-icon {
     background-image: resource("com.unity.ui.builder/Icons/Light/Inspector/Text White Space/No Wrap");
 }
 
@@ -344,15 +344,15 @@
 /* Flex Wrap Field                                                           */
 /*****************************************************************************/
 
-.unity-builder-inspector_flex-wrap-field #no-wrap > .unity-button-strip__button-icon {
+.unity-builder-inspector_flex-wrap-field #nowrap > .unity-button-strip__button-icon {
     background-image: resource("com.unity.ui.builder/Icons/Light/Inspector/Flex Wrap/No Wrap");
 }
 
-.unity-builder-inspector_flex-wrap-field #no-wrap:checked > .unity-button-strip__button-icon {
+.unity-builder-inspector_flex-wrap-field #nowrap:checked > .unity-button-strip__button-icon {
     background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Flex Wrap/No Wrap");
 }
 
-.unity-builder-inspector_flex-wrap-field #no-wrap:checked:hover > .unity-button-strip__button-icon {
+.unity-builder-inspector_flex-wrap-field #nowrap:checked:hover > .unity-button-strip__button-icon {
     background-image: resource("com.unity.ui.builder/Icons/Light/Inspector/Flex Wrap/No Wrap");
 }
 

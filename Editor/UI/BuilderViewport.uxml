@@ -14,6 +14,7 @@
                     </VisualElement>
                     <VisualElement name="pick-overlay" class="unity-builder-viewport__pick-overlay unity-builder-viewport__canvas-layer">
                         <uib:BuilderParentTracker name="parent-tracker" />
+                        <uib:BuilderSelectionIndicator name="selection-indicator" />
                         <uib:BuilderAnchorer name="anchorer" />
                         <uib:BuilderResizer name="resizer" />
                         <uib:BuilderMover name="mover" />
@@ -24,6 +25,11 @@
                         picking-mode="Ignore">
 
                     </uib:OverlayPainterHelperElement>
+                    <VisualElement name="__unity-editor-layer" class="unity-builder-viewport__editor-container unity-builder-viewport__canvas-layer" picking-mode="Ignore">
+                        <VisualElement name="__unity-text-editor-container" class="unity-builder-viewport__text-editor-container">
+                            <TextField name="__unity-text-editor" class="unity-builder-viewport__text-editor" />
+                        </VisualElement>
+                    </VisualElement>
                 </uib:BuilderCanvas>
              </VisualElement>
         </VisualElement>

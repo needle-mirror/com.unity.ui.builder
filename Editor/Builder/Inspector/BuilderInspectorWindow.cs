@@ -9,7 +9,7 @@ namespace Unity.UI.Builder
     {
         BuilderInspector m_Inspector;
 
-        //[MenuItem("Window/UI/UI Builder Inspector")]
+        //[MenuItem(BuilderConstants.BuilderMenuEntry + " Inspector")]
         public static void ShowWindow()
         {
             GetWindowAndInit<BuilderInspectorWindow>("UI Builder Inspector");

@@ -4,6 +4,55 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.11.0] - 2020-05-05
+
+- Multi-USS Support:
+    - Added support for attaching zero and more than one USS file to your UXML document.
+    - By default, new UXML documents will now start with zero USS files attached.
+    - From the StyleSheets pane, you can right-click to:
+        - add an existing USS file to your UXML document,
+        - create a new empty USS file,
+        - or remove a USS from the UXML document.
+    - In order to add a USS file to the document, there has to be at least one element in the UXML document to contain the `<Style>` tag.
+    - There is now the concept of an "active" USS file (marked with **bold** text). This will be the file new selectors are added via:
+        - the toolbar field,
+        - copy/paste,
+        - or the Inspector's Extract Inline Styles feature.
+- Re-designed Library Pane:
+    - Library items now have icons! These icons also appear in the Hierarchy.
+    - New Library pane view with large icons in a grid.
+    - Elements that are only supported for writing Editor Extensions are now marked "Editor Only" in the Library.
+    - UXML files in the Library "Open" button replaced with icon that only appears on hover.
+    - Library is split into two tabs:
+        - "Standard" tab is where all standard Unity controls are located.
+        - "Project" tab is where all project UXML and custom C# controls can be found.
+- Re-designed Selection Overlays:
+    - Improved the look of the selection overlay to not obscure the element. It's just a blue border now.
+    - The size/border/padding/margin overlays will appear only when editing size/border/padding/margin style properties in the Inspector.
+    - Added header on selected element with type or name being displayed.
+- Other:
+    - Added support for editing of text in-place directly in the Canvas by double clicking on a text element.
+    - Added ability to hide the UXML and USS Preview panes.
+    - Added checkerboard-style background for the Runtime Theme to better visualize transparent elements.
+    - Added support for the system Rename command in the Hierarchy (which can optionally be given a hotkey, like F2, via the Shortcut Manager).
+    - Added right-click menu on Inspector Styles section category foldouts with option to Unset all style properties in a category at once.
+    - Added an icon to the UI Builder window tab.
+    - Added support for the vector image type (enabled if the optional Vector Graphics package is installed).
+    - (2020.2+) Added horizontal scrollbar to Hierarchy and StyleSheets panes.
+    - (2020.2+) Added support for the MissingReference style property type to allow users to fix broken paths in USS inside the UI Builder.
+- Fixed
+    - Fixed invalid type conversion error when placing down a LayerMaskField.
+    - Fixed Wrap style "nowrap" generating incorrect USS with the wrong keyword, "no-wrap".
+    - Fixed ESC key not cancelling the Rename of an element in the Hierarchy.
+    - Fixed clicking somewhere else while renaming an element in the Hierarchy (de-focusing the Rename field) not committing the rename.
+    - Fixed background image and cursor style properties generating invalid USS if set to "none".
+    - Fixed extra fields being visible behind numeric StyleFields when the Inspector pane was really wide.
+    - Fixed extra escape characters being added to the style attribute in the generated UXML.
+    - Fixed having the ability to remove an un-removable style class that was not added in UXML in the Inspector.
+    - Fixed line endings used in saved UXML and USS to use Unity's project setting and/or OS-defaults.
+    - Fixed undo/redo history being cleared when entering playmode.
+    - (2019.3+) Fixed exceptions when opening a USS file with use of color keywords.
+
 ## [0.10.2] - 2020-03-11
 
 - Moved Hierarchy "hamburger/3-dots" options menu from a dedicated toolbar to the Hierarchy pane header.

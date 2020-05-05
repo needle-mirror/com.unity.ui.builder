@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using UnityEditor;
@@ -264,7 +263,7 @@ namespace Unity.UI.Builder
                 if (veValueAbstract is Enum)
                     value = (veValueAbstract as Enum).ToString();
                 else
-                    value = (string)veValueAbstract;
+                    value = veValueAbstract.ToString();
 
                 (fieldElement as TextField).SetValueWithoutNotify(value);
             }
@@ -680,28 +679,21 @@ namespace Unity.UI.Builder
 
         void CallInitOnElement()
         {
-            var attributeList = new List<UxmlAttributeDescription>();
             var fullTypeName = currentVisualElement.GetType().ToString();
-            List<IUxmlFactory> factoryList;
-            if (VisualElementFactoryRegistry.TryGetValue(fullTypeName, out factoryList))
-            {
-                var factory = factoryList[0];
-                var traitsField = factory.GetType().GetField("m_Traits", BindingFlags.Instance | BindingFlags.NonPublic);
-                if (traitsField == null)
-                {
-                    Debug.LogError("UI Builder: IUxmlFactory.m_Traits field has not been found! Update the reflection code!");
-                    return;
-                }
 
-                var traitObj = traitsField.GetValue(factory);
-                var trait = traitObj as UxmlTraits;
+            if (VisualElementFactoryRegistry.TryGetValue(fullTypeName, out var factoryList))
+            {
+                var traits = factoryList[0].GetTraits();
+
+                if (traits == null)
+                    return;
 
                 var context = new CreationContext();
                 var vea = currentVisualElement.GetVisualElementAsset();
 
                 try
                 {
-                    trait.Init(currentVisualElement, vea, context);
+                    traits.Init(currentVisualElement, vea, context);
                 }
                 catch
                 {

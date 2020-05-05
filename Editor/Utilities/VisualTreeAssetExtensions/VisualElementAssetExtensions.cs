@@ -131,6 +131,14 @@ namespace Unity.UI.Builder
             vea.classes = classList.ToArray();
         }
 
+        public static void ClearStyleSheets(this VisualElementAsset vea)
+        {
+#if UNITY_2019_3_OR_NEWER
+            vea.stylesheets.Clear();
+#endif
+            vea.GetStyleSheetPaths().Clear();
+        }
+
 #if UNITY_2019_3_OR_NEWER
         public static void AddStyleSheet(this VisualElementAsset vea, StyleSheet styleSheet)
         {

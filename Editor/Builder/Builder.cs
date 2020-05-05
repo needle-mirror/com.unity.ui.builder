@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 
 namespace Unity.UI.Builder
 {
-    internal class Builder : BuilderPaneWindow, IBuilderViewportWindow
+    class Builder : BuilderPaneWindow, IBuilderViewportWindow
     {
         BuilderSelection m_Selection;
 
@@ -25,12 +25,36 @@ namespace Unity.UI.Builder
         public VisualElement documentRootElement => m_Viewport.documentElement;
         public BuilderCanvas canvas => m_Viewport.canvas;
 
+        public bool codePreviewVisible
+        {
+            get { return document.codePreviewVisible; }
+            set
+            {
+                document.codePreviewVisible = value;
+                UpdatePreviewsVisibility();
+            }
+        }
+
+        void UpdatePreviewsVisibility()
+        {
+            var codeSplit = rootVisualElement.Q<TwoPaneSplitView>("middle-column");
+
+            if (codePreviewVisible)
+            {
+                codeSplit.UnCollapseChild(0);
+            }
+            else
+            {
+                codeSplit.CollapseChild(0);
+            }
+        }
+
         public HighlightOverlayPainter highlightOverlayPainter => m_HighlightOverlayPainter;
 
-        [MenuItem("Window/UI/UI Builder")]
+        [MenuItem(BuilderConstants.BuilderMenuEntry)]
         public static Builder ShowWindow()
         {
-            return GetWindowAndInit<Builder>(BuilderConstants.BuilderWindowTitle);
+            return GetWindowAndInit<Builder>(BuilderConstants.BuilderWindowTitle, BuilderConstants.BuilderWindowIcon);
         }
 
         public static Builder ActiveWindow
@@ -47,34 +71,30 @@ namespace Unity.UI.Builder
             }
         }
 
-        private static GUIContent s_WarningContent;
+        static GUIContent s_WarningContent;
 
         public static void ShowWarning(string message)
         {
             if(s_WarningContent == null)
                 s_WarningContent = new GUIContent(string.Empty, EditorGUIUtility.FindTexture("console.warnicon"));
-            
+
             s_WarningContent.text = message;
             ActiveWindow.ShowNotification(s_WarningContent, 4);
         }
-        
+
         public override void CreateUI()
         {
             var root = rootVisualElement;
+            titleContent = GetLocalizedTitleContent();
 
             // Load assets.
             var builderTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(BuilderConstants.UIBuilderPackagePath + "/Builder.uxml");
-            var saveDialogTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(BuilderConstants.UIBuilderPackagePath + "/BuilderSaveDialog.uxml");
 
             // Load templates.
             builderTemplate.CloneTree(root);
-            saveDialogTemplate.CloneTree(root);
 
             // Create overlay painter.
             m_HighlightOverlayPainter = new HighlightOverlayPainter();
-
-            // Fetch the save dialog.
-            var dialog = root.Q<ModalPopup>("save-dialog");
 
             // Fetch the tooltip previews.
             var styleSheetsPaneTooltipPreview = root.Q<BuilderTooltipPreview>("stylesheets-pane-tooltip-preview");
@@ -83,7 +103,7 @@ namespace Unity.UI.Builder
             // Create selection.
             m_Selection = new BuilderSelection(root, this);
 
-            // Create Element Context Menu Manipulator 
+            // Create Element Context Menu Manipulator
             var contextMenuManipulator = new BuilderElementContextMenu(this, selection);
 
             // Create viewport first.
@@ -95,14 +115,14 @@ namespace Unity.UI.Builder
             // Create the rest of the panes.
             var classDragger = new BuilderClassDragger(this, root, selection, m_Viewport, m_Viewport.parentTracker);
             var hierarchyDragger = new BuilderHierarchyDragger(this, root, selection, m_Viewport, m_Viewport.parentTracker);
-            var styleSheetsPane = new BuilderStyleSheets(m_Viewport, selection, classDragger, hierarchyDragger, contextMenuManipulator, m_HighlightOverlayPainter, styleSheetsPaneTooltipPreview);
-            var hierarchy = new BuilderHierarchy(m_Viewport, selection, classDragger, hierarchyDragger, contextMenuManipulator, m_HighlightOverlayPainter);
+            var styleSheetsPane = new BuilderStyleSheets(this, m_Viewport, selection, classDragger, hierarchyDragger, m_HighlightOverlayPainter, styleSheetsPaneTooltipPreview);
+            var hierarchy = new BuilderHierarchy(this, m_Viewport, selection, classDragger, hierarchyDragger, contextMenuManipulator, m_HighlightOverlayPainter);
             var libraryDragger = new BuilderLibraryDragger(this, root, selection, m_Viewport, m_Viewport.parentTracker, hierarchy.container, libraryTooltipPreview);
             m_Library = new BuilderLibrary(this, m_Viewport, selection, libraryDragger, libraryTooltipPreview);
-            m_Inspector = new BuilderInspector(this, selection);
-            m_Toolbar = new BuilderToolbar(this, selection, dialog, m_Viewport, hierarchy, m_Library, m_Inspector, libraryTooltipPreview);
+            m_Inspector = new BuilderInspector(this, selection, m_HighlightOverlayPainter);
+            m_Toolbar = new BuilderToolbar(this, selection, m_Viewport, hierarchy, m_Library, m_Inspector, libraryTooltipPreview);
             m_UxmlPreview = new BuilderUxmlPreview(this);
-            m_UssPreview = new BuilderUssPreview(this);
+            m_UssPreview = new BuilderUssPreview(this, selection);
             root.Q("viewport").Add(m_Viewport);
             m_Viewport.toolbar.Add(m_Toolbar);
             root.Q("library").Add(m_Library);
@@ -135,7 +155,19 @@ namespace Unity.UI.Builder
             commandHandler.RegisterPane(m_Viewport);
             commandHandler.RegisterToolbar(m_Toolbar);
 
+            var middleSplitView = rootVisualElement.Q<TwoPaneSplitView>("middle-column");
+
+            middleSplitView.RegisterCallback<GeometryChangedEvent>(OnFirstDisplay);
+
             OnEnableAfterAllSerialization();
+        }
+
+        void OnFirstDisplay(GeometryChangedEvent evt)
+        {
+            var middleSplitView = rootVisualElement.Q<TwoPaneSplitView>("middle-column");
+
+            UpdatePreviewsVisibility();
+            middleSplitView.UnregisterCallback<GeometryChangedEvent>(OnFirstDisplay);
         }
 
         public override void OnEnableAfterAllSerialization()
@@ -175,7 +207,7 @@ namespace Unity.UI.Builder
                     return false;
             }
 
-            var builder = GetWindowAndInit<Builder>(BuilderConstants.BuilderWindowTitle);
+            var builder = ShowWindow();
             builder.LoadDocument(asset);
 
             return true;

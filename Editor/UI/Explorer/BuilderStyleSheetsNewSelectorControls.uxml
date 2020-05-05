@@ -4,6 +4,6 @@
             <TextField name="new-selector-field" class="unity-builder-explorer__new-selector-field" />
         </VisualElement>
         <uie:ToolbarMenu name="add-pseudo-state-menu" text="States" class="unity-builder-stylesheets__toolbar-add-pseudo-state-menu" />
-        <uie:ToolbarButton name="add-new-selector-button" text="Add" class="unity-builder-stylesheets__toolbar-add-new-selector" />
+        <uie:ToolbarMenu name="add-new-selector-menu" text="Add" class="unity-builder-stylesheets__toolbar-add-new-selector" />
     </uie:Toolbar>
 </UXML>

@@ -23,6 +23,7 @@ namespace Unity.UI.Builder.EditorTests
             Assert.That(menuItem, Is.Not.Null);
 
             yield return AddVisualElement();
+            yield return EnsureSelectorsCanBeAddedAndReloadBuilder();
             yield return AddSelector(StyleSheetsPaneTests.TestSelectorName);
 
             ForceNewDocument();
@@ -69,7 +70,7 @@ namespace Unity.UI.Builder.EditorTests
         public IEnumerator CanResetViewAndFitCanvas()
         {
             var toolbar = ViewportPane.Q<BuilderToolbar>();
-            var fitCanvasButton = toolbar.Query<ToolbarButton>().Where(button =>  button.text == "Fit Canvas").First();
+            var fitCanvasButton = toolbar.Q<ToolbarButton>(BuilderToolbar.FitCanvasButtonName);
             Assert.That(fitCanvasButton, Is.Not.Null);
 
             var canvas = ViewportPane.Q<BuilderCanvas>();
@@ -107,8 +108,13 @@ namespace Unity.UI.Builder.EditorTests
         public IEnumerator PreviewModeBehaviour()
         {
             var toolbar = ViewportPane.Q<BuilderToolbar>();
-            var previewToggle = toolbar.Query<ToolbarToggle>().Where(toggle =>  toggle.text == "Preview").First();
+            var previewToggle = toolbar.Q<ToolbarToggle>(BuilderToolbar.PreviewToggleName);
             Assert.That(previewToggle, Is.Not.Null);
+
+            // Fit Canvas to make sure added button will be visible
+            var fitCanvasButton = toolbar.Q<ToolbarButton>(BuilderToolbar.FitCanvasButtonName);
+            Assert.That(fitCanvasButton, Is.Not.Null);
+            yield return UIETestEvents.Mouse.SimulateClick(fitCanvasButton);
 
             yield return AddButtonElement();
             yield return UIETestEvents.Mouse.SimulateClick(ViewportPane);

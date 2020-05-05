@@ -2,6 +2,7 @@
     <ui:Template name="SampleSection" path="Packages/com.unity.ui.builder/Editor/UI/SampleDocument/BuilderSampleCanvasSection.uxml" />
     <ui:VisualElement style="background-image: url(&apos;/Packages/com.unity.ui.builder/Editor/UI/SampleDocument/BuilderSample&amp;CanvasImange.png&apos;);&#10;">
         <Style path="Packages/com.unity.ui.builder/Editor/UI/SampleDocument/BuilderSampleCanvas.uss" />
+        <Style path="Packages/com.unity.ui.builder/Editor/UI/SampleDocument/BuilderSampleCanvas2.uss" />
         <ui:Label text="Canvas Contents:" class="canvas-contents" />
         <ui:VisualElement name="sample-canvas" style="border-width: 20px;&#10;border-color: rgb(160, 96, 0);&#10;">
             <ui:Button name="canvas-button" text="Canvas Button!" class="sample-button canvas-button" />
@@ -25,5 +26,6 @@
     </ui:VisualElement>
     <ui:Label text="Multi-Line Label:&#10;line 1&#10;line 2&#10;&#x9;tabbed line 3&#10;line 4 with symbols: &quot;jd&amp;&amp;&quot;&apos;&lt;&gt;&apos;">
         <Style path="Packages/com.unity.ui.builder/Editor/UI/SampleDocument/BuilderSampleCanvas.uss" />
+        <Style path="Packages/com.unity.ui.builder/Editor/UI/SampleDocument/BuilderSampleCanvas2.uss" />
     </ui:Label>
 </ui:UXML>

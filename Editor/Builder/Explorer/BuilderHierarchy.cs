@@ -9,6 +9,7 @@ namespace Unity.UI.Builder
         [SerializeField] BuilderElementInfoVisibilityState m_ElementInfoVisibilityState;
 
         public BuilderHierarchy(
+            BuilderPaneWindow paneWindow,
             BuilderViewport viewport,
             BuilderSelection selection,
             BuilderClassDragger classDragger,
@@ -16,12 +17,14 @@ namespace Unity.UI.Builder
             BuilderElementContextMenu contextMenuManipulator,
             HighlightOverlayPainter highlightOverlayPainter)
             : base(
+                  paneWindow,
                   viewport,
                   selection,
                   classDragger,
                   hierarchyDragger,
                   contextMenuManipulator,
                   viewport.documentElement,
+                  true,
                   highlightOverlayPainter,
                   null)
         {

@@ -22,23 +22,31 @@ namespace Unity.UI.Builder
         VisualElement m_SharedStylesAndDocumentElement;
         VisualElement m_StyleSelectorElementContainer;
         VisualElement m_DocumentElement;
+        VisualElement m_EditorLayer;
+        TextField m_TextEditor;
+        VisualElement m_EditedElement;
+        UxmlAttributeDescription m_EditedTextAttribute;
         VisualElement m_PickOverlay;
         VisualElement m_HighlightOverlay;
         BuilderParentTracker m_BuilderParentTracker;
+        BuilderSelectionIndicator m_BuilderSelectionIndicator;
         BuilderResizer m_BuilderResizer;
         BuilderMover m_BuilderMover;
         BuilderZoomer m_BuilderZoomer;
         BuilderPanner m_BuilderPanner;
         BuilderAnchorer m_BuilderAnchorer;
+        CheckerboardBackground m_CheckerboardBackground;
 
         BuilderSelection m_Selection;
         BuilderElementContextMenu m_ContextMenuManipulator;
 
         List<VisualElement> m_MatchingExplorerItems = new List<VisualElement>();
 
+        public BuilderPaneWindow paneWindow => m_PaneWindow;
         public VisualElement toolbar => m_Toolbar;
         public VisualElement viewportWrapper => m_ViewportWrapper;
         public BuilderCanvas canvas => m_Canvas;
+        public BuilderSelection selection => m_Selection;
 
         string m_SubTitle;
         public string subTitle
@@ -99,6 +107,7 @@ namespace Unity.UI.Builder
         }
 
         public BuilderParentTracker parentTracker => m_BuilderParentTracker;
+        public BuilderSelectionIndicator selectionIndicator => m_BuilderSelectionIndicator;
         public BuilderResizer resizer => m_BuilderResizer;
         public BuilderMover mover => m_BuilderMover;
         public BuilderAnchorer anchorer => m_BuilderAnchorer;
@@ -109,6 +118,9 @@ namespace Unity.UI.Builder
         public VisualElement documentElement => m_DocumentElement;
         public VisualElement pickOverlay => m_PickOverlay;
         public VisualElement highlightOverlay => m_HighlightOverlay;
+        public VisualElement editorLayer => m_EditorLayer;
+        public TextField textEditor => m_TextEditor;
+
 
         public BuilderViewport(BuilderPaneWindow paneWindow, BuilderSelection selection, BuilderElementContextMenu contextMenuManipulator)
         {
@@ -132,9 +144,14 @@ namespace Unity.UI.Builder
             m_StyleSelectorElementContainer = this.Q(BuilderConstants.StyleSelectorElementContainerName);
             m_DocumentElement = this.Q("document");
             m_Canvas.documentElement = m_DocumentElement;
+            m_EditorLayer = this.Q("__unity-editor-layer");
+            m_EditorLayer.AddToClassList(BuilderConstants.HiddenStyleClassName);
+            m_TextEditor = this.Q<TextField>("__unity-text-editor");
+            m_Canvas.editorLayer = m_EditorLayer;
             m_PickOverlay = this.Q("pick-overlay");
             m_HighlightOverlay = this.Q("highlight-overlay");
             m_BuilderParentTracker = this.Q<BuilderParentTracker>("parent-tracker");
+            m_BuilderSelectionIndicator = this.Q<BuilderSelectionIndicator>("selection-indicator");
             m_BuilderResizer = this.Q<BuilderResizer>("resizer");
             m_BuilderMover = this.Q<BuilderMover>("mover");
             m_BuilderAnchorer = this.Q<BuilderAnchorer>("anchorer");
@@ -148,7 +165,7 @@ namespace Unity.UI.Builder
             m_PickOverlay.RegisterCallback<MouseLeaveEvent>(OnMouseLeave);
             m_Viewport.RegisterCallback<MouseDownEvent>(OnMissPick);
             m_Viewport.RegisterCallback<GeometryChangedEvent>(OnGeometryChanged);
-            
+
             m_ContextMenuManipulator?.RegisterCallbacksOnTarget(m_Viewport);
 
             // Make sure this gets focus when the pane gets focused.
@@ -158,6 +175,11 @@ namespace Unity.UI.Builder
             // Restore the zoom scale
             zoomScale = paneWindow.document.viewportZoomScale;
             contentOffset = paneWindow.document.viewportContentOffset;
+
+            // Repaint bug workaround.
+            m_CheckerboardBackground = this.Q<CheckerboardBackground>();
+            RegisterCallback<BlurEvent>(e => { m_CheckerboardBackground.MarkDirtyRepaint(); });
+            RegisterCallback<FocusEvent>(e => { m_CheckerboardBackground.MarkDirtyRepaint(); });
         }
 
         private void ResetViewTransform()
@@ -218,9 +240,9 @@ namespace Unity.UI.Builder
             // initialized properly (i.e.: m_Viewport.resolvedStyle has valid values).
             // But since GeometryChangedEvent is called also for resizing, added some logic to make sure
             // we only center the canvas on opening the window.
-            
+
             bool viewportNowVisible = evt.oldRect != Rect.zero;
-            
+
             if (string.IsNullOrEmpty(m_PaneWindow.document.uxmlFileName) &&
                 !m_PaneWindow.document.hasUnsavedChanges && viewportNowVisible)
             {
@@ -234,7 +256,7 @@ namespace Unity.UI.Builder
                 m_Viewport.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
             }
         }
-        
+
         void CenterCanvas()
         {
             contentOffset = new Vector2((m_Viewport.resolvedStyle.width - m_Canvas.width) / 2, (m_Viewport.resolvedStyle.height - m_Canvas.height) / 2);
@@ -266,8 +288,14 @@ namespace Unity.UI.Builder
 
             if (pickedElement != null)
             {
-                SetInnerSelection(pickedElement);
                 m_Selection.Select(this, pickedElement);
+                SetInnerSelection(pickedElement);
+
+                if (evt.clickCount == 2)
+                {
+                    var posInViewport = m_PickOverlay.ChangeCoordinatesTo(this, evt.localMousePosition);
+                    BuilderInPlaceTextEditingUtilities.OpenEditor(pickedElement, this.ChangeCoordinatesTo(pickedElement, posInViewport));
+                }
             }
             else
             {
@@ -389,9 +417,20 @@ namespace Unity.UI.Builder
 
         void SetInnerSelection(VisualElement selectedElement)
         {
+            if (selectedElement.resolvedStyle.display == DisplayStyle.None)
+            {
+                ClearInnerSelection();
+                return;
+            }
+
             m_BuilderResizer.Activate(m_Selection, m_PaneWindow.document.visualTreeAsset, selectedElement);
             m_BuilderMover.Activate(m_Selection, m_PaneWindow.document.visualTreeAsset, selectedElement);
             m_BuilderAnchorer.Activate(m_Selection, m_PaneWindow.document.visualTreeAsset, selectedElement);
+
+            if (m_Selection.selectionType == BuilderSelectionType.Element || m_Selection.selectionType == BuilderSelectionType.ElementInTemplateInstance)
+                m_BuilderSelectionIndicator.Activate(selectedElement);
+            else
+                m_BuilderSelectionIndicator.Deactivate();
         }
 
         void ClearInnerSelection()
@@ -399,11 +438,12 @@ namespace Unity.UI.Builder
             m_BuilderResizer.Deactivate();
             m_BuilderMover.Deactivate();
             m_BuilderAnchorer.Deactivate();
+            m_BuilderSelectionIndicator.Deactivate();
         }
 
         public void HierarchyChanged(VisualElement element, BuilderHierarchyChangeType changeType)
         {
-
+            m_BuilderSelectionIndicator.OnHierarchyChanged(element);
         }
 
         public void SelectionChanged()
@@ -416,7 +456,13 @@ namespace Unity.UI.Builder
 
         public void StylingChanged(List<string> styles)
         {
+            if (m_Selection.isEmpty || styles == null)
+                return;
 
+            if (styles.Contains("display"))
+            {
+                SetInnerSelection(m_Selection.selection.First());
+            }
         }
     }
 }

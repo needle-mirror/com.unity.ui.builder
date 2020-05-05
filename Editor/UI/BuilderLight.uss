@@ -109,11 +109,11 @@
 }
 
 .unity-builder-code__open-source-file-button {
-    background-image: resource("com.unity.ui.builder/Icons/Light/CodePreview/Go To Dashboard");
+    background-image: resource("com.unity.ui.builder/Icons/Light/CodePreview/GoToDashboard");
 }
 
 .unity-builder-code__open-source-file-button:hover {
-    background-image: resource("com.unity.ui.builder/Icons/Selected/CodePreview/Go To Dashboard");
+    background-image: resource("com.unity.ui.builder/Icons/Selected/CodePreview/GoToDashboard");
 }
 
 .unity-builder-code__code-line-numbers {
@@ -166,11 +166,24 @@
 }
 
 /*****************************************************************************/
+/* Builder Selection Indicator                                               */
+/*****************************************************************************/
+
+.unity-builder-selection-indicator {
+
+    border-color: rgb(63, 146, 214);
+}
+
+.unity-builder-selection-indicator__header {
+    background-color: rgba(63, 146, 214, 0.9);
+}
+
+/*****************************************************************************/
 /* Builder Resizer                                                           */
 /*****************************************************************************/
 
 .unity-builder-resizer__side__inner {
-    background-color: rgb(112, 164, 207);
+    background-color: rgb(63, 146, 214);
 }
 
 .unity-builder-resizer__corner__inner {

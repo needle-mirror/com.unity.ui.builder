@@ -9,7 +9,7 @@ namespace Unity.UI.Builder.EditorTests
         public static ITreeViewItem GetSelectedItem(this TreeView treeView)
         {
 #if UNITY_2020_1_OR_NEWER
-            return treeView.selectedItem;
+            return treeView.selectedItems.FirstOrDefault();
 #else
             return treeView.currentSelection.FirstOrDefault();
 #endif

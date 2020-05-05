@@ -30,5 +30,50 @@ namespace Unity.UI.Builder
 
             return EditorUtility.DisplayDialogComplex(title, message, ok, cancel, alt);
         }
+
+        public static string DisplayOpenFileDialog(string title, string directory, string extension)
+        {
+            if (Application.isBatchMode)
+                return null;
+
+            if (string.IsNullOrEmpty(directory))
+                directory = Application.dataPath;
+
+            var newPath = EditorUtility.OpenFilePanel(
+                title,
+                directory,
+                extension);
+
+            if (string.IsNullOrWhiteSpace(newPath))
+                return null;
+
+            var appPathLength = Application.dataPath.Length - 6; // - "Assets".Length
+            newPath = newPath.Substring(appPathLength);
+
+            return newPath;
+        }
+
+        public static string DisplaySaveFileDialog(string title, string directory, string defaultName, string extension)
+        {
+            if (Application.isBatchMode)
+                return null;
+
+            if (string.IsNullOrEmpty(directory))
+                directory = Application.dataPath;
+
+            var newPath = EditorUtility.SaveFilePanel(
+                title,
+                directory,
+                defaultName,
+                extension);
+
+            if (string.IsNullOrWhiteSpace(newPath))
+                return null;
+
+            var appPathLength = Application.dataPath.Length - 6; // - "Assets".Length
+            newPath = newPath.Substring(appPathLength);
+
+            return newPath;
+        }
     }
 }

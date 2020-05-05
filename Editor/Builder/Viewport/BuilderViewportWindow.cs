@@ -18,7 +18,7 @@ namespace Unity.UI.Builder
         public VisualElement documentRootElement => m_Viewport.documentElement;
         public BuilderCanvas canvas => m_Viewport.canvas;
 
-        //[MenuItem("Window/UI/UI Builder Viewport")]
+        //[MenuItem(BuilderConstants.BuilderMenuEntry + " Viewport")]
         public static void ShowWindow()
         {
             GetWindowAndInit<BuilderViewportWindow>("UI Builder Viewport");
@@ -28,15 +28,6 @@ namespace Unity.UI.Builder
         {
             var root = rootVisualElement;
 
-            // Load assets.
-            var saveDialogTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(BuilderConstants.UIBuilderPackagePath + "/BuilderSaveDialog.uxml");
-
-            // Load template.
-            saveDialogTemplate.CloneTree(root);
-
-            // Fetch the save dialog.
-            var dialog = root.Q<ModalPopup>("save-dialog");
-
             // Create selection.
             m_Selection = new BuilderSelection(root, this);
 
@@ -45,7 +36,7 @@ namespace Unity.UI.Builder
             selection.documentElement = m_Viewport.documentElement;
 
             // Create the rest of the panes.
-            m_Toolbar = new BuilderToolbar(this, selection, dialog, m_Viewport, null, null, null, null);
+            m_Toolbar = new BuilderToolbar(this, selection, m_Viewport, null, null, null, null);
             root.Add(m_Viewport);
             m_Viewport.toolbar.Add(m_Toolbar);
 
@@ -63,8 +54,6 @@ namespace Unity.UI.Builder
             // Command Handler
             commandHandler.RegisterPane(m_Viewport);
             commandHandler.RegisterToolbar(m_Toolbar);
-
-            dialog.BringToFront();
 
             OnEnableAfterAllSerialization();
         }

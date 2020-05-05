@@ -6,7 +6,7 @@ namespace Unity.UI.Builder
     {
         BuilderStyleSheets m_StyleSheetsPane;
 
-        //[MenuItem("Window/UI/UI Builder StyleSheets")]
+        //[MenuItem(BuilderConstants.BuilderMenuEntry + " StyleSheets")]
         public static void ShowWindow()
         {
             GetWindowAndInit<BuilderStyleSheetsWindow>("UI Builder StyleSheets");
@@ -25,9 +25,8 @@ namespace Unity.UI.Builder
 
             var classDragger = new BuilderClassDragger(this, root, selection, viewport, viewport.parentTracker);
             var hierarchyDragger = new BuilderHierarchyDragger(this, root, selection, viewport, viewport.parentTracker);
-            var contextMenuManipulator = new BuilderElementContextMenu(this, selection);
 
-            m_StyleSheetsPane = new BuilderStyleSheets(viewport, selection, classDragger, hierarchyDragger, contextMenuManipulator, null, null);
+            m_StyleSheetsPane = new BuilderStyleSheets(this, viewport, selection, classDragger, hierarchyDragger, null, null);
 
             selection.AddNotifier(m_StyleSheetsPane);
 

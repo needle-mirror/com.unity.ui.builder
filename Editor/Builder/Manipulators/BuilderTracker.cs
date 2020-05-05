@@ -115,10 +115,10 @@ namespace Unity.UI.Builder
             var width = selfRect.width;
             var height = selfRect.height;
 
-            style.top = top;
-            style.left = left;
-            style.width = width;
-            style.height = height;
+            style.top = top - resolvedStyle.borderTopWidth;
+            style.left = left - resolvedStyle.borderLeftWidth;
+            style.width = width + resolvedStyle.borderLeftWidth + resolvedStyle.borderRightWidth;
+            style.height = height + resolvedStyle.borderTopWidth + resolvedStyle.borderBottomWidth;
         }
 
         public void SelectionChanged()

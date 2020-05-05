@@ -1,7 +1,6 @@
 using System;
 using System.Globalization;
 using System.IO;
-using System.Reflection;
 using System.Text;
 using UnityEditor;
 using UnityEngine;
@@ -106,6 +105,11 @@ namespace Unity.UI.Builder
                 case StyleValueType.String:
                     str = $"\"{sheet.ReadString(handle)}\"";
                     break;
+#if UNITY_2020_2_OR_NEWER
+                case StyleValueType.MissingAssetReference:
+                    str = $"url('{sheet.ReadMissingAssetReferenceUrl(handle)}')";
+                    break;
+#endif
                 case StyleValueType.AssetReference:
                     var assetRef = sheet.ReadAssetReference(handle);
                     var assetPath = AssetDatabase.GetAssetPath(assetRef);
@@ -163,7 +167,7 @@ namespace Unity.UI.Builder
 #if UNITY_2019_3_OR_NEWER
             return false;
 #else
-            foreach (PropertyInfo field in StyleSheetUtilities.ComputedStylesFieldInfos)
+            foreach (System.Reflection.PropertyInfo field in StyleSheetUtilities.ComputedStylesFieldInfos)
             {
                 var styleName = BuilderNameUtilities.ConverStyleCSharpNameToUssName(field.Name);
                 if (styleName != name)
@@ -209,7 +213,8 @@ namespace Unity.UI.Builder
                     ValueHandlesToUssString(sb, sheet, options, property.name, property.values, ref valueIndex);
                 }
 
-                sb.Append(";\n");
+                sb.Append(";");
+                sb.Append(BuilderConstants.NewlineCharFromEditorSettings);
             }
         }
 
@@ -270,12 +275,13 @@ namespace Unity.UI.Builder
             foreach (var selector in complexSelector.selectors)
                 ToUssString(selector.previousRelationship, selector.parts, sb);
 
-            sb.Append(" {\n");
+            sb.Append(" {");
+            sb.Append(BuilderConstants.NewlineCharFromEditorSettings);
 
             ToUssString(sheet, options, complexSelector.rule, sb);
 
             sb.Append("}");
-            sb.Append("\n");
+            sb.Append(BuilderConstants.NewlineCharFromEditorSettings);
         }
 
         public static string ToUssString(StyleSheet sheet, UssExportOptions options = null)
@@ -299,7 +305,7 @@ namespace Unity.UI.Builder
                     ToUssString(sheet, options, complexSelector, sb);
                     if (complexSelectorIndex != sheet.complexSelectors.Length - 1)
                     {
-                        sb.Append("\n");
+                        sb.Append(BuilderConstants.NewlineCharFromEditorSettings);
                     }
                 }
             }
