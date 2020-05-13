@@ -262,7 +262,12 @@ namespace Unity.UI.Builder
         void UpdateInGameBackground()
         {
             if (backgroundCamera == null)
+            {
+                var refCamera = FindCameraByName();
+                m_CameraField.value = null;
+                m_CameraField.value = refCamera;
                 return;
+            }
 
             backgroundCamera.targetTexture = m_InGamePreviewRenderTexture;
 
@@ -400,7 +405,7 @@ namespace Unity.UI.Builder
         void OnBackgroundCameraChange(ChangeEvent<Object> evt)
         {
             var previousCamera = evt.previousValue as Camera;
-            if (previousCamera == evt.newValue)
+            if (Object.ReferenceEquals(previousCamera, evt.newValue))
                 return;
 
 #if UNITY_2019_3_OR_NEWER

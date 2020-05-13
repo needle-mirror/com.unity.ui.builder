@@ -9,9 +9,6 @@ namespace Unity.UI.Builder.EditorTests
 {
     class StyleSheetsPaneMultiUSSTests : BuilderIntegrationTest
     {
-        protected const string k_TestUSSFileName = "MyTestVisualTreeAsset.uss";
-        protected const string k_TestUSSFilePath = "Assets/" + k_TestUSSFileName;
-
         const string k_ColorsTestUSSFileNameNoExt = "ColorsTestStyleSheet";
         const string k_LayoutTestUSSFileNameNoExt = "LayoutTestStyleSheet";
 
@@ -27,28 +24,6 @@ namespace Unity.UI.Builder.EditorTests
 
             yield return base.TearDown();
             AssetDatabase.DeleteAsset(k_TestUSSFilePath);
-        }
-
-        IEnumerator CodeOnlyAddUSSToDocument(string path)
-        {
-            var builderWindow = BuilderWindow;
-
-            // Need to have at least one element in the asset.
-            if (builderWindow.document.visualTreeAsset.IsEmpty())
-                AddElementCodeOnly("TestElement");
-
-            yield return UIETestHelpers.Pause(1);
-
-            // Make sure there's no modified version in memory.
-            AssetDatabase.ImportAsset(
-                k_TestEmptyUSSFilePath,
-                ImportAssetOptions.ForceUpdate | ImportAssetOptions.ForceSynchronousImport);
-
-            yield return UIETestHelpers.Pause(1);
-
-            BuilderStyleSheetsUtilities.AddUSSToAsset(builderWindow, path);
-
-            yield return UIETestHelpers.Pause(1);
         }
 
         StyleSheet GetStyleSheetFromExplorerItem(VisualElement explorerItem, string ussPath)

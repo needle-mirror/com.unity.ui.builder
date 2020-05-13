@@ -13,10 +13,15 @@
 1. A dialog to Save/DontSave/Cancel will be shown if there are unsaved changes in the UI Builder, even if the UI Builder window is not open.
 1. The Builder will properly update itself if external changes are made to the currently open UXML and USS assets.
 1. The Builder will display a message saying unsaved changes are lost if there were unsaved changes and an external change was made to the currently open UXML and USS assets.
+1. If the Builder loads or reloads with a UXML or USS that has invalid or unsupported syntax, a dialog, console errors, and a warning overlay will display telling the user what happened. Saving will not be allowed in this state.
 
 ## StyleSheets
 
 1. Can select a StyleSheet via a root item that should have the name of the .uss file. This displays its dedicated Inspector. `Tested`
+1. Can push the "+" dropdown menu in the toolbar to:
+    1. **Create New USS** - this will open a Save File Dialog allowing you to create a new USS Asset in your project.
+    1. **Add Existing USS** - this will open the Open File Dialog allowing you to add an existing USS Asset to the UXML document.
+    1. Note: If there are no elements in current document, no options will display in this menu except a disabled options saying why no USS assets can be added.
 1. Right-clicking anywhere in the TreeView should display the standard copy/paste/duplicate/delete menu with the additional options to: `Tested`
     1. **Create New USS** - this will open a Save File Dialog allowing you to create a new USS Asset in your project. `Tested`
     1. **Add Existing USS** - this will open the Open File Dialog allowing you to add an existing USS Asset to the UXML document. `Tested`
@@ -209,7 +214,7 @@
 
 1. Only visible if the selection is an element in the current document.
 1. Can add existing style class to element by typing the name of the class in the field inside the **StyleSheet** section and pressing the **Add Style Class to List** button (or pressing Enter).
-1. Can extract all overwritten **Inlined Styles** to a new style class selector, added to the *active* StyleSheet, by typing the name of the class in the field inside **StyleSheet** and pressing the **Extract Inlined Styles to New Class** button.
+1. Can extract all overwritten **Inlined Styles** to a new style class selector, added to the *active* StyleSheet, by typing the name of the class in the field inside **StyleSheet** and pressing the **Extract Inlined Styles to New Class** button. If there are no USS files attached to the UXML document, a dialog will open allowing the option to add to new USS or to an existing USS.
 1. If the style class being added to an element is not valid, an error message appears.
 1. All style classes on the current element are displayed as pills.
 1. Style class pills have an **X** button that lets you remove them from the element, but only if the class was added in the current UXML document (and not via C# in a custom control's constructor).

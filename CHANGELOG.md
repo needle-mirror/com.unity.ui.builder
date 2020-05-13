@@ -4,6 +4,15 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.11.1] - 2020-05-12
+
+- Added a "+" menu to the StyleSheets pane toolbar to make adding USS assets to the current document more discoverable.
+- Fixed UI Builder not being able to display if loaded UXML or USS have invalid or unsupported syntax, even after a Unity restart.
+- Fixed regression where changes made to USS or UXML in external editor would be undone when the UI Builder refreshed.
+- Fixed hover preview overlay in the Library not disappearing when opening a UXML document via the Library open icon.
+- Fixed reloading the scene causing Canvas camera background to go blank.
+- Fixed extracting of inline styles from the Inspector when there are no USS files attached to the UXML document. A dialog with options will now be shown.
+
 ## [0.11.0] - 2020-05-05
 
 - Multi-USS Support:

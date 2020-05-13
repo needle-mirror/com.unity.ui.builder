@@ -148,6 +148,7 @@ namespace Unity.UI.Builder
         public static readonly string ExplorerActiveStyleSheetClassName = "unity-builder-stylesheets-pane--active-stylesheet";
 
         // StyleSheets Pane Menu
+        public static readonly string ExplorerStyleSheetsPanePlusMenuNoElementsMessage = "Need at least one element in UXML to add StyleSheets.";
         public static readonly string ExplorerStyleSheetsPaneCreateNewUSSMenu = "Create New USS";
         public static readonly string ExplorerStyleSheetsPaneAddExistingUSSMenu = "Add Existing USS";
         public static readonly string ExplorerStyleSheetsPaneRemoveUSSMenu = "Remove USS";
@@ -260,8 +261,17 @@ namespace Unity.UI.Builder
             "You are about to {0}:\n\n{1}\n\nwhich is currently open in the UI Builder. " +
             "If you {0} the file, the UI Builder document will close, " +
             "and you will lose any unsaved changes. Would you like to {0} the file anyway?";
+        public static readonly string InvalidUXMLOrUSSAssetNameSuffix = "[UNSUPPORTED_IN_UI_BUILDER]";
+        public static readonly string InvalidUSSDialogTitle = "UI Builder: Unable to parse USS file.";
+        public static readonly string InvalidUSSDialogMessage = "UI Builder Failed to open {0}.uss asset. This may be due to invalid USS syntax or USS syntax the UI Builder does not yet support (ie. Variables). Check console for details.";
+        public static readonly string InvalidUXMLDialogTitle = "UI Builder: Unable to parse UXML file.";
+        public static readonly string InvalidUXMLDialogMessage = "UI Builder Failed to open {0}.uxml asset. This may be due to invalid UXML syntax or UXML syntax the UI Builder does not yet support. Check console for details.";
 
-        // Delete Last Element Messages
+        // StyleSheets Dialogs
+        public static readonly string ExtractInlineStylesNoUSSDialogTitle = "UI Builder: No USS in current document.";
+        public static readonly string ExtractInlineStylesNoUSSDialogMessage = "There is no StyleSheet (USS) added to this UXML document. Where would you like to add this new USS rule?";
+        public static readonly string ExtractInlineStylesNoUSSDialogNewUSSOption = "Add to New USS";
+        public static readonly string ExtractInlineStylesNoUSSDialogExistingUSSOption = "Add to Existing USS";
         public static readonly string DeleteLastElementDialogTitle = "UI Builder: Deleting last element.";
         public static readonly string DeleteLastElementDialogMessage = "You are about to delete the last element. Since USS files are attached to root elements, with no elements in the document, no USS files can be attached. Any existing USS files attached will be removed. You can always undo this operation and get everything back. Continue?";
 

@@ -13,6 +13,7 @@ namespace Unity.UI.Builder
         static readonly string kToolbarPath = BuilderConstants.UIBuilderPackagePath + "/Explorer/BuilderStyleSheetsNewSelectorControls.uxml";
         static readonly string kHelpTooltipPath = BuilderConstants.UIBuilderPackagePath + "/Explorer/BuilderStyleSheetsNewSelectorHelpTips.uxml";
 
+        ToolbarMenu m_AddUSSMenu;
         TextField m_NewSelectorTextField;
         VisualElement m_NewSelectorTextInputField;
         ToolbarMenu m_PseudoStatesMenu;
@@ -130,6 +131,10 @@ namespace Unity.UI.Builder
                 HideTooltip();
             });
 
+            // Setup New USS Menu.
+            m_AddUSSMenu = parent.Q<ToolbarMenu>("add-uss-menu");
+            SetUpAddUSSMenu();
+
             // Setup new selector button.
             m_NewSelectorAddMenu = parent.Q<ToolbarMenu>("add-new-selector-menu");
             m_NewSelectorAddMenu.SetEnabled(false);
@@ -235,6 +240,37 @@ namespace Unity.UI.Builder
             m_Selection.NotifyOfStylingChange();
         }
 
+        void SetUpAddUSSMenu()
+        {
+            if (m_AddUSSMenu == null)
+                return;
+
+            m_AddUSSMenu.menu.MenuItems().Clear();
+
+            if (m_PaneWindow.document.visualTreeAsset.IsEmpty())
+            {
+                m_AddUSSMenu.menu.AppendAction(
+                    BuilderConstants.ExplorerStyleSheetsPanePlusMenuNoElementsMessage,
+                    action => {},
+                    action => DropdownMenuAction.Status.Disabled);
+            }
+            else
+            {
+                m_AddUSSMenu.menu.AppendAction(
+                    BuilderConstants.ExplorerStyleSheetsPaneCreateNewUSSMenu,
+                    action =>
+                    {
+                        BuilderStyleSheetsUtilities.CreateNewUSSAsset(m_PaneWindow);
+                    });
+                m_AddUSSMenu.menu.AppendAction(
+                    BuilderConstants.ExplorerStyleSheetsPaneAddExistingUSSMenu,
+                    action =>
+                    {
+                        BuilderStyleSheetsUtilities.AddExistingUSSToAsset(m_PaneWindow);
+                    });
+            }
+        }
+
         void SetUpAddMenu()
         {
             m_NewSelectorAddMenu.menu.MenuItems().Clear();
@@ -319,6 +355,7 @@ namespace Unity.UI.Builder
             if (m_PaneWindow != null)
                 enabled = !m_PaneWindow.document.visualTreeAsset.IsEmpty();
             m_NewSelectorTextField.SetEnabled(enabled);
+            SetUpAddUSSMenu();
         }
 
         protected override void ElementSelected(VisualElement element)

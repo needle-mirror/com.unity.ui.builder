@@ -163,7 +163,33 @@ namespace Unity.UI.Builder
             // Get StyleSheet.
             var mainStyleSheet = m_PaneWindow.document.activeStyleSheet;
             if (mainStyleSheet == null)
-                return;
+            {
+                var option = BuilderDialogsUtility.DisplayDialogComplex(
+                    BuilderConstants.ExtractInlineStylesNoUSSDialogTitle,
+                    BuilderConstants.ExtractInlineStylesNoUSSDialogMessage,
+                    BuilderConstants.ExtractInlineStylesNoUSSDialogNewUSSOption,
+                    BuilderConstants.ExtractInlineStylesNoUSSDialogExistingUSSOption,
+                    BuilderConstants.DialogCancelOption);
+
+                switch (option)
+                {
+                    // New
+                    case 0:
+                        if (!BuilderStyleSheetsUtilities.CreateNewUSSAsset(m_PaneWindow))
+                            return;
+                        break;
+                    // Existing
+                    case 1:
+                        if (!BuilderStyleSheetsUtilities.AddExistingUSSToAsset(m_PaneWindow))
+                            return;
+                        break;
+                    // Cancel
+                    case 2:
+                        return;
+                }
+
+                mainStyleSheet = m_PaneWindow.document.activeStyleSheet;
+            }
 
             PreAddStyleClass(className);
 

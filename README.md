@@ -16,7 +16,10 @@ Unity versions supported:
 
 To install:
 1. Open the **Window > Package Manager**.
-1. Enable **Advanced > Show preview Packages**: ![Enable Preview Packages](Documentation~/images/InstallationPackageManagerAdvancedOptions.png)
+    * For 2019.2, 2019.3, and older 2020.1, enable **Advanced > Show preview Packages**: ![Enable Preview Packages](Documentation~/images/InstallationPackageManagerAdvancedOptions.png)
+    * For newer 2020.1 and 2020.2+, go to **Edit > Project Settings... > Package Manager**, and enable check **Enable Preview Packages**:
+    ![Enable Preview Packages (new)](Documentation~/images/InstallationPackageManagerEnablePreview.png)
+1. Go back to the **Window > Package Manager**.
 1. Search for `UI Builder`:![Search Package Manager](Documentation~/images/InstallationPackageManagerSearch.png)
 1. Press **Install**.
 

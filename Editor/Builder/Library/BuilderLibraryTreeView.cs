@@ -110,10 +110,10 @@ namespace Unity.UI.Builder
                 });
             }
 
-            // Edit button.
-            var editButton = root.Q<Button>();
-            editButton.AddToClassList(BuilderConstants.HiddenStyleClassName);
-            editButton.clickable.clickedWithEventInfo += OnOpenButtonClick;
+            // Open button.
+            var openButton = root.Q<Button>(k_OpenButtonName);
+            openButton.AddToClassList(BuilderConstants.HiddenStyleClassName);
+            openButton.clickable.clickedWithEventInfo += OnOpenButtonClick;
 
             return root;
         }
@@ -126,6 +126,7 @@ namespace Unity.UI.Builder
             if (item?.SourceAsset == null)
                 return;
 
+            HidePreview();
             m_PaneWindow.LoadDocument(item.SourceAsset);
         }
 

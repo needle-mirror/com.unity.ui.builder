@@ -129,6 +129,10 @@ namespace Unity.UI.Builder
         {
             var ussText = m_StyleSheet.GenerateUSS();
 
+            // This will only be null (not empty) if the UXML is invalid in some way.
+            if (ussText == null)
+                return;
+
             // Make sure the folders exist.
             var ussFolder = Path.GetDirectoryName(ussPath);
             if (!Directory.Exists(ussFolder))

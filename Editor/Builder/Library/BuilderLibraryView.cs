@@ -99,6 +99,11 @@ namespace Unity.UI.Builder
 
         void OnItemMouseLeave(MouseLeaveEvent evt)
         {
+            HidePreview();
+        }
+
+        protected void HidePreview()
+        {
             m_TooltipPreview.Clear();
             m_TooltipPreview.Hide();
         }

@@ -533,6 +533,11 @@ namespace Unity.UI.Builder
             if (builderWindow == null)
                 builderWindow = Builder.ShowWindow();
 
+            // LoadDocument() will call Clear() which will try to restore from Backup().
+            // If we don't clear the Backups here, they will overwrite the newly post-processed
+            // and re-imported asset we detected here.
+            ClearBackups();
+
             builderWindow.toolbar.LoadDocument(newVisualTreeAsset, true);
         }
 
@@ -572,6 +577,7 @@ namespace Unity.UI.Builder
         public void OnAfterBuilderDeserialize(VisualElement documentElement)
         {
             // Refresh StyleSheets.
+            m_ActiveStyleSheet = null;
             var styleSheetsUsed = m_VisualTreeAsset.GetAllReferencedStyleSheets();
             while (m_OpenUSSFiles.Count < styleSheetsUsed.Count)
                 m_OpenUSSFiles.Add(new BuilderDocumentOpenUSS());
@@ -644,6 +650,10 @@ namespace Unity.UI.Builder
         void WriteUXMLToFile(string uxmlPath)
         {
             var uxmlText = visualTreeAsset.GenerateUXML(uxmlPath, true);
+
+            // This will only be null (not empty) if the UXML is invalid in some way.
+            if (uxmlText == null)
+                return;
 
             // Make sure the folders exist.
             var uxmlFolder = Path.GetDirectoryName(uxmlPath);

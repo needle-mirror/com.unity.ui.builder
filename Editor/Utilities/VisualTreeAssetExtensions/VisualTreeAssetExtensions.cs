@@ -46,7 +46,28 @@ namespace Unity.UI.Builder
 
         internal static string GenerateUXML(this VisualTreeAsset vta, string vtaPath, bool writingToFile = false)
         {
-            return VisualTreeAssetToUXML.GenerateUXML(vta, vtaPath, writingToFile);
+            string result = null;
+            try
+            {
+                result = VisualTreeAssetToUXML.GenerateUXML(vta, vtaPath, writingToFile);
+            }
+            catch (Exception ex)
+            {
+                if (!vta.name.Contains(BuilderConstants.InvalidUXMLOrUSSAssetNameSuffix))
+                {
+                    var message = string.Format(BuilderConstants.InvalidUXMLDialogMessage, vta.name);
+                    BuilderDialogsUtility.DisplayDialog(BuilderConstants.InvalidUXMLDialogTitle, message);
+                    vta.name = vta.name + BuilderConstants.InvalidUXMLOrUSSAssetNameSuffix;
+                }
+                else
+                {
+                    var name = vta.name.Replace(BuilderConstants.InvalidUXMLOrUSSAssetNameSuffix, string.Empty);
+                    var message = string.Format(BuilderConstants.InvalidUXMLDialogMessage, name);
+                    Builder.ShowWarning(message);
+                }
+                Debug.LogError(ex.Message + "\n" + ex.StackTrace);
+            }
+            return result;
         }
 
         internal static void LinkedCloneTree(this VisualTreeAsset vta, VisualElement target)
@@ -348,7 +369,7 @@ namespace Unity.UI.Builder
             this VisualTreeAsset vta, VisualElementAsset parent, VisualElement visualElement, int index = -1)
         {
             var fullTypeName = visualElement.GetType().ToString();
-            var vea = new VisualElementAsset(visualElement.GetType().ToString());
+            var vea = new VisualElementAsset(fullTypeName);
             VisualTreeAssetUtilities.InitializeElement(vea);
 
             visualElement.SetProperty(BuilderConstants.ElementLinkedVisualElementAssetVEPropertyName, vea);

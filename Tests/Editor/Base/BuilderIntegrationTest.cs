@@ -12,6 +12,7 @@ namespace Unity.UI.Builder.EditorTests
 {
     abstract class BuilderIntegrationTest
     {
+        protected const string k_TestUSSFileName = "MyTestVisualTreeAsset.uss";
         protected const string k_TestUXMLFileName = "MyTestVisualTreeAsset.uxml";
         protected const string k_TestEmptyUSSFileNameNoExt = "EmptyTestStyleSheet";
         protected const string k_TestNoUSSDocumentUXMLFileNameNoExt = "NoUSSDocument";
@@ -21,6 +22,7 @@ namespace Unity.UI.Builder.EditorTests
         protected const string k_TestNoUSSDocumentUXMLFileName = k_TestNoUSSDocumentUXMLFileNameNoExt + ".uxml";
         protected const string k_TestMultiUSSDocumentUXMLFileName = k_TestMultiUSSDocumentUXMLFileNameNoExt + ".uxml";
 
+        protected const string k_TestUSSFilePath = "Assets/" + k_TestUSSFileName;
         protected const string k_TestUXMLFilePath = "Assets/" + k_TestUXMLFileName;
         protected const string k_TestEmptyUSSFilePath = BuilderConstants.UIBuilderTestsTestFilesPath + "/" + k_TestEmptyUSSFileName;
         protected const string k_TestNoUSSDocumentUXMLFilePath = BuilderConstants.UIBuilderTestsTestFilesPath + "/" + k_TestNoUSSDocumentUXMLFileName;
@@ -79,6 +81,28 @@ namespace Unity.UI.Builder.EditorTests
                 return;
 
             BuilderWindow.rootVisualElement.Q<BuilderToolbar>().NewDocument(false);
+        }
+
+        protected IEnumerator CodeOnlyAddUSSToDocument(string path)
+        {
+            var builderWindow = BuilderWindow;
+
+            // Need to have at least one element in the asset.
+            if (builderWindow.document.visualTreeAsset.IsEmpty())
+                AddElementCodeOnly("TestElement");
+
+            yield return UIETestHelpers.Pause(1);
+
+            // Make sure there's no modified version in memory.
+            AssetDatabase.ImportAsset(
+                k_TestEmptyUSSFilePath,
+                ImportAssetOptions.ForceUpdate | ImportAssetOptions.ForceSynchronousImport);
+
+            yield return UIETestHelpers.Pause(1);
+
+            BuilderStyleSheetsUtilities.AddUSSToAsset(builderWindow, path);
+
+            yield return UIETestHelpers.Pause(1);
         }
 
         protected void AddElementCodeOnly(string name)
@@ -196,6 +220,21 @@ namespace Unity.UI.Builder.EditorTests
             yield return UIETestHelpers.Pause(1);
         }
 
+        protected void CreateTestUSSFile()
+        {
+            // We have tests that _wait_ for the AssetModificationProcessor to kick in with
+            // the new asset being created here. If we, for some reason, leak the asset
+            // from a previous run and we don't _re_create it, those some tests may way
+            // forever. It is very important to delete the file if it's already there
+            // and re-create it.
+            AssetDatabase.DeleteAsset(k_TestUSSFilePath);
+            AssetDatabase.Refresh();
+
+            File.WriteAllText(k_TestUSSFilePath, string.Empty);
+            AssetDatabase.Refresh();
+            AssetDatabase.ImportAsset(k_TestUSSFilePath, ImportAssetOptions.ForceUpdate);
+        }
+
         protected void CreateTestUXMLFile()
         {
             // We have tests that _wait_ for the AssetModificationProcessor to kick in with
@@ -209,6 +248,11 @@ namespace Unity.UI.Builder.EditorTests
             File.WriteAllText(k_TestUXMLFilePath, k_TestUXMLFileContent);
             AssetDatabase.Refresh();
             AssetDatabase.ImportAsset(k_TestUXMLFilePath, ImportAssetOptions.ForceUpdate);
+        }
+
+        protected void DeleteTestUSSFile()
+        {
+            AssetDatabase.DeleteAsset(k_TestUSSFilePath);
         }
 
         protected void DeleteTestUXMLFile()

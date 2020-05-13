@@ -52,7 +52,28 @@ namespace Unity.UI.Builder
 
         internal static string GenerateUSS(this StyleSheet styleSheet)
         {
-            return StyleSheetToUss.ToUssString(styleSheet);
+            string result = null;
+            try
+            {
+                result = StyleSheetToUss.ToUssString(styleSheet);
+            }
+            catch (Exception ex)
+            {
+                if (!styleSheet.name.Contains(BuilderConstants.InvalidUXMLOrUSSAssetNameSuffix))
+                {
+                    var message = string.Format(BuilderConstants.InvalidUSSDialogMessage, styleSheet.name);
+                    BuilderDialogsUtility.DisplayDialog(BuilderConstants.InvalidUSSDialogTitle, message);
+                    styleSheet.name = styleSheet.name + BuilderConstants.InvalidUXMLOrUSSAssetNameSuffix;
+                }
+                else
+                {
+                    var name = styleSheet.name.Replace(BuilderConstants.InvalidUXMLOrUSSAssetNameSuffix, string.Empty);
+                    var message = string.Format(BuilderConstants.InvalidUSSDialogMessage, name);
+                    Builder.ShowWarning(message);
+                }
+                Debug.LogError(ex.Message + "\n" + ex.StackTrace);
+            }
+            return result;
         }
 
         internal static StyleComplexSelector FindSelector(this StyleSheet styleSheet, string selectorStr)
