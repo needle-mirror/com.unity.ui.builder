@@ -183,9 +183,9 @@ namespace Unity.UI.Builder
             evt.menu.AppendAction(
                 "Delete",
                 a =>
-                {   m_Selection.Select(null, documentElement);
-                    if (m_PaneWindow.commandHandler.DeleteElement(documentElement))
-                        m_PaneWindow.commandHandler.ClearSelectionNotify();
+                {
+                    m_Selection.Select(null, documentElement);
+                    m_PaneWindow.commandHandler.DeleteSelection();
                 },
                 isValidTarget
                     ? DropdownMenuAction.Status.Normal

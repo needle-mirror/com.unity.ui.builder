@@ -165,8 +165,8 @@ namespace Unity.UI.Builder.EditorTests
             yield return CheckMultiUSSDocument();
         }
 
-        [UnityTest]
-        public IEnumerator EnsureChangesAreUndoneIfOpeningNewDocWithoutSaving()
+        [Test]
+        public void EnsureChangesAreUndoneIfOpeningNewDocWithoutSaving()
         {
             var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_TestMultiUSSDocumentUXMLFilePath);
             var assetCount = asset.visualElementAssets.Count;
@@ -175,8 +175,7 @@ namespace Unity.UI.Builder.EditorTests
 
             Assert.That(BuilderWindow.documentRootElement.childCount, Is.EqualTo(1));
 
-            yield return AddTextFieldElement();
-
+            AddElementCodeOnly<TextField>();
             // Test restoration of backup.
             Assert.AreNotEqual(asset.visualElementAssets.Count, assetCount);
             ForceNewDocument();
@@ -252,13 +251,12 @@ namespace Unity.UI.Builder.EditorTests
             Assert.AreEqual(StyleSheetToUss.ToUssSelector(complexSelector), testSelector);
         }
 
-        [UnityTest]
-        public IEnumerator UndoRedoCreationOfTextFieldInMultiUSSDocument()
+        [Test]
+        public void UndoRedoCreationOfTextFieldInMultiUSSDocument()
         {
             var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_TestMultiUSSDocumentUXMLFilePath);
             BuilderWindow.LoadDocument(asset);
-
-            yield return AddTextFieldElement();
+            AddElementCodeOnly<TextField>();
 
             UndoRedoCheckWithTextField();
         }
@@ -271,7 +269,7 @@ namespace Unity.UI.Builder.EditorTests
 
             Assert.That(BuilderWindow.documentRootElement.childCount, Is.EqualTo(1));
 
-            yield return AddTextFieldElement();
+            AddElementCodeOnly<TextField>();
 
             UndoRedoCheckWithTextField();
 
@@ -299,7 +297,7 @@ namespace Unity.UI.Builder.EditorTests
 
             Assert.That(BuilderWindow.documentRootElement.childCount, Is.EqualTo(1));
 
-            yield return AddTextFieldElement();
+            AddElementCodeOnly<TextField>();
 
             UndoRedoCheckWithTextField();
 

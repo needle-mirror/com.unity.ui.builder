@@ -10,19 +10,20 @@ namespace Unity.UI.Builder
         {
             "content-container",
             "class",
-            "style"
+            "style",
+            "template",
         };
 
         public static List<UxmlAttributeDescription> GetAttributeDescriptions(this VisualElement ve)
         {
             var attributeList = new List<UxmlAttributeDescription>();
+            var uxmlQualifiedName = GetUxmlQualifiedName(ve);
 
-            var fullTypeName = ve.GetType().ToString();
-            List<IUxmlFactory> factoryList;
-            if (!VisualElementFactoryRegistry.TryGetValue(fullTypeName, out factoryList))
+            if (!VisualElementFactoryRegistry.TryGetValue(uxmlQualifiedName, out var factoryList))
                 return attributeList;
 
             foreach (IUxmlFactory f in factoryList)
+            {
                 foreach (var a in f.uxmlAttributesDescription)
                 {
                     if (s_SkippedAttributeNames.Contains(a.name))
@@ -30,8 +31,29 @@ namespace Unity.UI.Builder
 
                     attributeList.Add(a);
                 }
+            }
 
             return attributeList;
+        }
+
+        static string GetUxmlQualifiedName(VisualElement ve)
+        {
+            var uxmlQualifiedName = ve.GetType().FullName;
+
+            // Try get uxmlQualifiedName from the UxmlFactory.
+            var factoryTypeName = $"{ve.GetType().FullName}+UxmlFactory";
+            var asm = ve.GetType().Assembly;
+            var factoryType = asm.GetType(factoryTypeName);
+            if (factoryType != null)
+            {
+                var factoryTypeInstance = (IUxmlFactory) Activator.CreateInstance(factoryType);
+                if (factoryTypeInstance != null)
+                {
+                    uxmlQualifiedName = factoryTypeInstance.uxmlQualifiedName;
+                }
+            }
+
+            return uxmlQualifiedName;
         }
 
         public static Dictionary<string, string> GetOverriddenAttributes(this VisualElement ve)

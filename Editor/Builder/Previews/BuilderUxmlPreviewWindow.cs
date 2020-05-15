@@ -7,7 +7,13 @@ namespace Unity.UI.Builder
         //[MenuItem(BuilderConstants.BuilderMenuEntry + " UXML Preview")]
         public static void ShowWindow()
         {
-            GetWindowAndInit<BuilderUxmlPreviewWindow>("UI Builder UXML Preview");
+            GetWindowAndInit<BuilderUxmlPreviewWindow>();
+        }
+
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            SetTitleContent("UI Builder UXML Preview");
         }
 
         public override void CreateUI()

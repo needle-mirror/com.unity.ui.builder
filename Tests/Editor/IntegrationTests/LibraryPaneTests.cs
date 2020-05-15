@@ -28,9 +28,9 @@ namespace Unity.UI.Builder.EditorTests
             // BuilderLibraryContent.AssetModificationProcessor.OnAssetChange() would
             // check for the "ActiveWindow" and because it was null it would never
             // call RegenerateLibraryContent(), and therefore OnLibraryContentUpdated.
-            // 
+            //
             // And that's how we get to an infinite loop.
-            // 
+            //
             // This would also happen if the test UXML file already existed in the project
             // (because of a previous test not cleaning up, for example).
             //
@@ -147,7 +147,7 @@ namespace Unity.UI.Builder.EditorTests
         [UnityTest, Ignore("This is unstable. I got it to fail consistently by just having a floating UI Builder window open at the same time.")]
         public IEnumerator DragOntoViewportElementToCreateNewInstanceAsChild()
         {
-            yield return AddVisualElement();
+            AddElementCodeOnly();
             var documentElement = ViewportPane.documentElement[0];
 
             var veLabel = BuilderTestsHelper.GetLabelWithName(LibraryPane, nameof(VisualElement));
@@ -169,7 +169,8 @@ namespace Unity.UI.Builder.EditorTests
         [UnityTest]
         public IEnumerator DragOntoHierarchyElementToCreateAsChild()
         {
-            yield return AddVisualElement();
+            AddElementCodeOnly();
+            yield return UIETestHelpers.Pause();
             var explorerItem = GetFirstExplorerItem();
 
             var veLabel = BuilderTestsHelper.GetLabelWithName(LibraryPane, nameof(VisualElement));
@@ -189,8 +190,8 @@ namespace Unity.UI.Builder.EditorTests
         [UnityTest]
         public IEnumerator DragOntoHierarchyElementToCreateAsSibling()
         {
-            yield return AddVisualElement();
-            yield return AddVisualElement();
+            AddElementCodeOnly();
+            AddElementCodeOnly();
 
             var firstVisualElementItem = GetFirstExplorerItem();
             yield return SelectLibraryTreeItemWithName("Text Field");

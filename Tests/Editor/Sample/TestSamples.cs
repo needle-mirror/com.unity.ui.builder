@@ -71,9 +71,9 @@ namespace Unity.UI.Builder.EditorTests
             Assert.That(InspectorPane, Is.Not.Null);
 
             // Use the following methods to add standard controls to the document.
-            yield return AddVisualElement();
-            yield return AddTextFieldElement();
-            yield return AddButtonElement();
+            AddElementCodeOnly();
+            AddElementCodeOnly<TextField>();
+            AddElementCodeOnly<Button>();
 
             // Get created element.
             var createdButton = ViewportPane.documentElement.Q<Button>();

@@ -7,7 +7,13 @@ namespace Unity.UI.Builder
         //[MenuItem("BuilderConstants.BuilderMenuEntry + " USS Preview")]
         public static void ShowWindow()
         {
-            GetWindowAndInit<BuilderUssPreviewWindow>("UI Builder USS Preview");
+            GetWindowAndInit<BuilderUssPreviewWindow>();
+        }
+
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            SetTitleContent("UI Builder USS Preview");
         }
 
         public override void CreateUI()

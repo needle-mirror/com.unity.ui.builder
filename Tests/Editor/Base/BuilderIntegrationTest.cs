@@ -105,17 +105,22 @@ namespace Unity.UI.Builder.EditorTests
             yield return UIETestHelpers.Pause(1);
         }
 
-        protected void AddElementCodeOnly(string name)
+        protected void AddElementCodeOnly(string name = "")
         {
             AddElementCodeOnly<VisualElement>(name);
         }
 
-        protected void AddElementCodeOnly<T>(string name) where T : VisualElement, new()
+        protected void AddElementCodeOnly<T>(string name = "") where T : VisualElement, new()
         {
-            var element = new T() { name = name };
+            var element = BuilderLibraryContent.GetLibraryItemForType(typeof(T)).MakeVisualElementCallback.Invoke();
+
+            if (!string.IsNullOrEmpty(name))
+                element.name = name;
+
             BuilderWindow.documentRootElement.Add(element);
             BuilderAssetUtilities.AddElementToAsset(BuilderWindow.document, element);
             BuilderWindow.OnEnableAfterAllSerialization();
+            Selection.NotifyOfHierarchyChange();
         }
 
         protected IEnumerator EnsureSelectorsCanBeAddedAndReloadBuilder()
@@ -148,11 +153,6 @@ namespace Unity.UI.Builder.EditorTests
         protected IEnumerator AddVisualElement()
         {
             yield return AddElement(nameof(VisualElement));
-        }
-
-        protected IEnumerator AddButtonElement()
-        {
-            yield return AddElement(nameof(Button));
         }
 
         protected IEnumerator AddTextFieldElement()

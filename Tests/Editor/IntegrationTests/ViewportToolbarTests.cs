@@ -22,7 +22,7 @@ namespace Unity.UI.Builder.EditorTests
             var menuItem = toolbar.Query<ToolbarMenu>().Where(menu => menu.Q<TextElement>().text == "File").First();
             Assert.That(menuItem, Is.Not.Null);
 
-            yield return AddVisualElement();
+            AddElementCodeOnly();
             yield return EnsureSelectorsCanBeAddedAndReloadBuilder();
             yield return AddSelector(StyleSheetsPaneTests.TestSelectorName);
 
@@ -116,7 +116,7 @@ namespace Unity.UI.Builder.EditorTests
             Assert.That(fitCanvasButton, Is.Not.Null);
             yield return UIETestEvents.Mouse.SimulateClick(fitCanvasButton);
 
-            yield return AddButtonElement();
+            AddElementCodeOnly<Button>();
             yield return UIETestEvents.Mouse.SimulateClick(ViewportPane);
             Assert.True(BuilderWindow.selection.isEmpty);
 

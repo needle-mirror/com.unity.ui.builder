@@ -48,10 +48,10 @@ namespace Unity.UI.Builder.EditorTests
             var toolbar = ViewportPane.Q<BuilderToolbar>();
             toolbar.LoadDocument(asset);
 
-            yield return UIETestHelpers.Pause(1);
+            yield return UIETestHelpers.Pause();
             Assert.False(ViewportPane.subTitle.Contains("*"));
 
-            yield return AddVisualElement();
+            AddElementCodeOnly();
             Assert.True(ViewportPane.subTitle.Contains("*"));
         }
 

@@ -7,7 +7,13 @@ namespace Unity.UI.Builder
         //[MenuItem(BuilderConstants.BuilderMenuEntry + " Library")]
         public static void ShowWindow()
         {
-            GetWindowAndInit<BuilderLibraryWindow>("UI Builder Library");
+            GetWindowAndInit<BuilderLibraryWindow>();
+        }
+
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            SetTitleContent("UI Builder Library");
         }
 
         public override void CreateUI()

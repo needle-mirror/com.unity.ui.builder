@@ -1,17 +1,17 @@
 {
   "name": "com.unity.ui.builder",
   "displayName": "UI Builder",
-  "version": "0.11.1-preview",
+  "version": "0.11.2-preview",
   "unity": "2019.2",
   "type": "tool",
   "description": "UI Builder lets you visually create and edit UI assets (UXML and USS) for use with the UI Toolkit (formally UIElements).\n\nYou can open the UI Builder via the main menu: Window > UI Toolkit > UI Builder\n\nNote: In Unity 2019.3 and 2019.2, the UI Builder can be found in: Window > UI > UI Builder",
   "upmCi": {
-    "footprint": "a7f543db8aff27019eed7ccc859d378cabd0d2e5"
+    "footprint": "619111561ca97be9ae4c2d3eee8f6510cfce1a31"
   },
   "repository": {
     "type": "git",
     "url": "https://github.cds.internal.unity3d.com/unity/com.unity.ui.builder.git",
-    "revision": "96d18ea466419dd606a7b8c7552407a08bcc3e59"
+    "revision": "b48ddea26247d13042a54e1de50578812027c774"
   },
   "samples": [
     {

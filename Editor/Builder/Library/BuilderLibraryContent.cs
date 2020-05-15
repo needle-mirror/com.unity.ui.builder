@@ -86,6 +86,13 @@ namespace Unity.UI.Builder
             return null;
         }
 
+        internal static BuilderLibraryTreeItem GetLibraryItemForType(Type type)
+        {
+            return s_ControlsTypeCache.TryGetValue(type, out var builderLibraryTreeItem)
+                ? builderLibraryTreeItem
+                : null;
+        }
+
         public static Texture2D GetTypeDarkSkinLibraryIcon(Type type)
         {
             if (s_ControlsTypeCache.TryGetValue(type, out var builderLibraryTreeItem))

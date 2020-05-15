@@ -21,7 +21,13 @@ namespace Unity.UI.Builder
         //[MenuItem(BuilderConstants.BuilderMenuEntry + " Viewport")]
         public static void ShowWindow()
         {
-            GetWindowAndInit<BuilderViewportWindow>("UI Builder Viewport");
+            GetWindowAndInit<BuilderViewportWindow>();
+        }
+
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            SetTitleContent("UI Builder Viewport");
         }
 
         public override void CreateUI()

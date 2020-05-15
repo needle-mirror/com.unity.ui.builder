@@ -9,7 +9,13 @@ namespace Unity.UI.Builder
         //[MenuItem(BuilderConstants.BuilderMenuEntry + " Hierarchy")]
         public static void ShowWindow()
         {
-            GetWindowAndInit<BuilderHierarchyWindow>("UI Builder Hierarchy");
+            GetWindowAndInit<BuilderHierarchyWindow>();
+        }
+
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            SetTitleContent("UI Builder Hierarchy");
         }
 
         public override void CreateUI()

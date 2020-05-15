@@ -343,7 +343,7 @@ namespace Unity.UI.Builder
             m_Selection.NotifyOfHierarchyChange();
         }
 
-        public bool DeleteElement(VisualElement element)
+        bool DeleteElement(VisualElement element)
         {
             if (BuilderSharedStyles.IsSelectorsContainerElement(element) ||
                 BuilderSharedStyles.IsStyleSheetElement(element) ||

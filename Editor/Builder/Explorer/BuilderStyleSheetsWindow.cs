@@ -9,7 +9,13 @@ namespace Unity.UI.Builder
         //[MenuItem(BuilderConstants.BuilderMenuEntry + " StyleSheets")]
         public static void ShowWindow()
         {
-            GetWindowAndInit<BuilderStyleSheetsWindow>("UI Builder StyleSheets");
+            GetWindowAndInit<BuilderStyleSheetsWindow>();
+        }
+
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            SetTitleContent("UI Builder StyleSheets");
         }
 
         public override void CreateUI()

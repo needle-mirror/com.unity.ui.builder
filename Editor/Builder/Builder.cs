@@ -54,7 +54,7 @@ namespace Unity.UI.Builder
         [MenuItem(BuilderConstants.BuilderMenuEntry)]
         public static Builder ShowWindow()
         {
-            return GetWindowAndInit<Builder>(BuilderConstants.BuilderWindowTitle, BuilderConstants.BuilderWindowIcon);
+            return GetWindowAndInit<Builder>();
         }
 
         public static Builder ActiveWindow
@@ -190,6 +190,12 @@ namespace Unity.UI.Builder
         public override void LoadDocument(VisualTreeAsset asset)
         {
             m_Toolbar.LoadDocument(asset);
+        }
+
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            SetTitleContent(BuilderConstants.BuilderWindowTitle, BuilderConstants.BuilderWindowIcon);
         }
 
         [OnOpenAsset(0)]

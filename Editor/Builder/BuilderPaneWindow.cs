@@ -8,8 +8,10 @@ namespace Unity.UI.Builder
     internal class BuilderPaneWindow : EditorWindow
     {
         BuilderDocument m_Document;
-
         BuilderCommandHandler m_CommandHandler;
+
+        [SerializeField]
+        GUIContent m_WindowTitleContent;
 
         public BuilderDocument document
         {
@@ -58,37 +60,41 @@ namespace Unity.UI.Builder
             }
         }
 
-        protected static T GetWindowAndInit<T>(string title, string icon = null) where T : BuilderPaneWindow
+        protected static T GetWindowAndInit<T>() where T : BuilderPaneWindow
         {
             var window = GetWindow<T>();
-
-            Texture2D iconTex = null;
-            if (!string.IsNullOrEmpty(icon))
-            {
-                if (EditorGUIUtility.isProSkin)
-                {
-                    var newName = "d_" + Path.GetFileName(icon);
-                    var iconDirName = Path.GetDirectoryName(icon);
-                    if (!string.IsNullOrEmpty(iconDirName))
-                        newName = $"{iconDirName}/{newName}";
-
-                    icon = newName;
-                }
-
-                if (EditorGUIUtility.pixelsPerPoint > 1)
-                    icon = $"{icon}@2x";
-
-                iconTex = Resources.Load<Texture2D>(icon);
-            }
-
-            if (!string.IsNullOrEmpty(title))
-                window.titleContent = new GUIContent(title, iconTex);
-
             window.Show();
             return window;
         }
 
-        protected void OnEnable()
+        protected void SetTitleContent(string windowTitle, string windowIconPath = null)
+        {
+            if(string.IsNullOrEmpty(windowTitle))
+                return;
+
+            Texture2D iconTex = null;
+            if (!string.IsNullOrEmpty(windowIconPath))
+            {
+                if (EditorGUIUtility.isProSkin)
+                {
+                    var newName = "d_" + Path.GetFileName(windowIconPath);
+                    var iconDirName = Path.GetDirectoryName(windowIconPath);
+                    if (!string.IsNullOrEmpty(iconDirName))
+                        newName = $"{iconDirName}/{newName}";
+
+                    windowIconPath = newName;
+                }
+
+                if (EditorGUIUtility.pixelsPerPoint > 1)
+                    windowIconPath = $"{windowIconPath}@2x";
+
+                iconTex = Resources.Load<Texture2D>(windowIconPath);
+            }
+
+            titleContent = new GUIContent(windowTitle, iconTex);
+        }
+
+        protected virtual void OnEnable()
         {
             var root = rootVisualElement;
 

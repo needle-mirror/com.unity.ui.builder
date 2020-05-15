@@ -12,7 +12,13 @@ namespace Unity.UI.Builder
         //[MenuItem(BuilderConstants.BuilderMenuEntry + " Inspector")]
         public static void ShowWindow()
         {
-            GetWindowAndInit<BuilderInspectorWindow>("UI Builder Inspector");
+            GetWindowAndInit<BuilderInspectorWindow>();
+        }
+
+        protected override void OnEnable()
+        {
+            base.OnEnable();
+            SetTitleContent("UI Builder Inspector");
         }
 
         public override void CreateUI()

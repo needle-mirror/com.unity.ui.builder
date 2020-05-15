@@ -4,6 +4,12 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [0.11.2] - 2020-05-14
+
+- Fixed stack overflow error when deleting USS selector via right-click > Delete in the StyleSheets pane.
+- Fixed name and icon of UI Builder window being reset to just "Builder" (and no icon) after a domain reload.
+- (2020.1+) Fixed UXML Instance elements (TemplateContainers) not showing any attribute fields in the Inspector (like Name).
+
 ## [0.11.1] - 2020-05-12
 
 - Added a "+" menu to the StyleSheets pane toolbar to make adding USS assets to the current document more discoverable.
