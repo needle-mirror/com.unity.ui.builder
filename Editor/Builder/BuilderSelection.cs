@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEditor;
+using UnityEngine;
 using UnityEngine.UIElements;
 using UnityEngine.UIElements.StyleSheets;
 
@@ -28,11 +29,17 @@ namespace Unity.UI.Builder
         All = ~0
     }
 
+    internal enum BuilderStylingChangeType
+    {
+        Default,
+        RefreshOnly
+    }
+
     internal interface IBuilderSelectionNotifier
     {
         void SelectionChanged();
         void HierarchyChanged(VisualElement element, BuilderHierarchyChangeType changeType);
-        void StylingChanged(List<string> styles);
+        void StylingChanged(List<string> styles, BuilderStylingChangeType changeType);
     }
 
     internal class BuilderSelection
@@ -44,6 +51,7 @@ namespace Unity.UI.Builder
 
         IBuilderSelectionNotifier m_CurrentNotifier;
         List<string> m_CurrentStyleList;
+        BuilderStylingChangeType m_CurrentChangeType;
         Action m_NextPostStylingAction;
 
         VisualElement m_Root;
@@ -76,10 +84,10 @@ namespace Unity.UI.Builder
         }
 
         List<VisualElement> m_Selection;
-        public IEnumerable<VisualElement> selection
-        {
-            get { return m_Selection; }
-        }
+
+        public int selectionCount => m_Selection.Count;
+
+        public IEnumerable<VisualElement> selection => m_Selection;
 
         public VisualElement documentElement
         {
@@ -151,12 +159,20 @@ namespace Unity.UI.Builder
             NotifyOfSelectionChange(source);
         }
 
-        public void AddToSelection(IBuilderSelectionNotifier source, VisualElement ve, bool undo = true)
+        public void AddToSelection(IBuilderSelectionNotifier source, VisualElement ve)
+        {
+            AddToSelection(source, ve, true, true);
+        }
+
+        void AddToSelection(IBuilderSelectionNotifier source, VisualElement ve, bool undo, bool sort)
         {
             if (ve == null)
                 return;
 
             m_Selection.Add(ve);
+
+            if (sort)
+                SortSelection();
 
             if (undo)
                 BuilderAssetUtilities.AddElementToSelectionInAsset(m_PaneWindow.document, ve);
@@ -192,7 +208,9 @@ namespace Unity.UI.Builder
 
             var selectedElements = sharedStylesAndDocumentElement.FindSelectedElements();
             foreach (var selectedElement in selectedElements)
-                AddToSelection(null, selectedElement, false);
+                AddToSelection(null, selectedElement, false, false);
+
+            SortSelection();
         }
 
         public void NotifyOfHierarchyChange(
@@ -248,7 +266,7 @@ namespace Unity.UI.Builder
                     notifier.HierarchyChanged(element, changeType);
         }
 
-        public void NotifyOfStylingChange(IBuilderSelectionNotifier source = null, List<string> styles = null)
+        public void NotifyOfStylingChange(IBuilderSelectionNotifier source = null, List<string> styles = null, BuilderStylingChangeType changeType = BuilderStylingChangeType.Default)
         {
             if (m_Notifiers == null || m_Notifiers.Count == 0)
                 return;
@@ -258,6 +276,7 @@ namespace Unity.UI.Builder
 
             m_CurrentNotifier = source;
             m_CurrentStyleList = styles;
+            m_CurrentChangeType = changeType;
             QueueUpPostPanelUpdaterChangeAction(NotifyOfStylingChangePostStylingUpdate);
         }
 
@@ -283,7 +302,7 @@ namespace Unity.UI.Builder
 
             foreach (var notifier in m_Notifiers)
                 if (notifier != m_CurrentNotifier)
-                    notifier.StylingChanged(m_CurrentStyleList);
+                    notifier.StylingChanged(m_CurrentStyleList, m_CurrentChangeType);
 
             m_CurrentNotifier = null;
             m_CurrentStyleList = null;
@@ -306,6 +325,38 @@ namespace Unity.UI.Builder
             m_NextPostStylingAction();
 
             m_NextPostStylingAction = null;
+        }
+
+        int GetSelectedItemOrder(VisualElement element)
+        {
+            var vea = element.GetVisualElementAsset();
+            if (vea != null)
+                return vea.orderInDocument;
+
+            var selector = element.GetStyleComplexSelector();
+            if (selector != null)
+            {
+                var styleSheetElement = element.parent;
+                var styleSheetIndex = styleSheetElement.parent.IndexOf(styleSheetElement);
+                var elementIndex = styleSheetElement.IndexOf(element);
+
+                return (styleSheetIndex * 10000) + elementIndex;
+            }
+
+            return 0;
+        }
+
+        void SortSelection()
+        {
+            if (m_Selection.Count <= 1)
+                return;
+
+            m_Selection.Sort((left, right) =>
+            {
+                var leftOrder = GetSelectedItemOrder(left);
+                var rightOrder = GetSelectedItemOrder(right);
+                return leftOrder.CompareTo(rightOrder);
+            });
         }
 
         public bool hasUnsavedChanges

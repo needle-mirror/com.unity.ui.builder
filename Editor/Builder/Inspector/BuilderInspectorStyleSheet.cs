@@ -52,7 +52,7 @@ namespace Unity.UI.Builder
                 styleSheet, BuilderConstants.AddNewSelectorUndoMessage);
 
             BuilderSharedStyles.CreateNewSelector(
-                currentVisualElement, styleSheet, newSelectorString);
+                currentVisualElement.parent, styleSheet, newSelectorString);
 
             m_Selection.NotifyOfHierarchyChange(m_Inspector);
             m_Selection.NotifyOfStylingChange(m_Inspector);

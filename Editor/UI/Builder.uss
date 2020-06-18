@@ -192,10 +192,10 @@ BuilderExplorerItem {
 }
 
 .unity-builder-explorer__new-selector-field {
-    padding-top: 2px;
+    padding-top: 0;
     padding-bottom: 0;
     margin-top: 0;
-    margin-bottom: 1px;
+    margin-bottom: 0;
 }
 
 .unity-builder-stylesheets__toolbar-add-uss-menu > .unity-text-element {
@@ -203,10 +203,6 @@ BuilderExplorerItem {
     margin-top: -4px;
     padding-left: 0;
     font-size: 26px;
-}
-
-.unity-builder-stylesheets__toolbar-add-pseudo-state-menu {
-    padding-top: 2px;
 }
 
 .unity-builder-stylesheets__toolbar-add-new-selector {
@@ -289,8 +285,12 @@ BuilderExplorerItem {
 }
 
 .unity-builder-viewport__shared-styles-and-document {
-    border-width: 4px;
-    margin: -4px;
+    border-left-width: 4px;
+    border-right-width: 4px;
+    border-bottom-width: 4px;
+    margin-right: -4px;
+    margin-left: -4px;
+    margin-bottom: -4px;
 }
 
 .unity-builder-viewport__shared-styles {
@@ -314,6 +314,19 @@ BuilderExplorerItem {
 
 .unity-builder-canvas__container {
     flex-grow: 1;
+}
+
+.unity-builder-canvas__header {
+    margin-left: -4px;
+    margin-right: -4px;
+    flex-direction: row;
+    overflow: hidden;
+}
+
+.unity-builder-canvas__title {
+    margin-left: 4px;
+    margin-top: 2px;
+    margin-bottom: 2px;
 }
 
 .unity-builder-canvas__handle {
@@ -586,6 +599,21 @@ BuilderExplorerItem {
     border-width: 0;
     width: 15px;
     height: 15px;
+}
+
+/*****************************************************************************/
+/* Builder Label Pill                                                        */
+/*****************************************************************************/
+
+.unity-builder-tag-pill {
+    margin-right: 10px;
+    border-radius: 5px;
+    border-width: 1px;
+    height: 12px;
+    font-size: 9px;
+    align-self: center;
+    padding-left: 5px;
+    padding-right: 5px;
 }
 
 /*****************************************************************************/
@@ -1094,6 +1122,33 @@ BuilderExplorerItem {
 
 .unity-builder-tooltip-preview .unity-composite-field__label {
     display: none;
+}
+
+/***************************************************************/
+/*  Variable Info Tooltip                                      */
+/***************************************************************/
+.unity-builder-inspector__varinfo-tooltip {
+    align-content: center;
+    -unity-text-align: middle-left;
+}
+
+.unity-builder-inspector__varinfo-edit-container {
+    align-content: center;
+    flex-direction: row;
+    margin-top: 14px;
+}
+
+.unity-builder-inspector__varinfo-name-label {
+    margin-bottom: 6px;
+}
+
+.unity-builder-inspector__varinfo-source-label {
+    font-size: 10px;
+}
+
+.unity-builder-inspector__varinfo-edit-button {
+    border-color: rgba(0, 0, 0, 0);
+    background-color: rgba(0, 0, 0, 0);
 }
 
 /*****************************************************************************/

@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine.UIElements;
 
 namespace Unity.UI.Builder
@@ -54,7 +55,10 @@ namespace Unity.UI.Builder
         {
             // If this is the uxml file entry of the currently open file, don't allow
             // the user to instantiate it (infinite recursion) or re-open it.
-            if (item.Name == m_PaneWindow.document.uxmlFileName)
+            var listOfOpenDocuments = m_PaneWindow.document.openUXMLFiles;
+            bool isCurrentDocumentOpen = listOfOpenDocuments.Any(doc => doc.uxmlFileName == item.Name);
+
+            if (isCurrentDocumentOpen)
                 return;
 
             var newElement = item.MakeVisualElementCallback?.Invoke();

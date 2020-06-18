@@ -78,18 +78,25 @@ namespace Unity.UI.Builder
         public static bool IsEmpty(this VisualTreeAsset vta)
         {
 #if UNITY_2020_1_OR_NEWER
-            return vta.visualElementAssets.Count <= 1; // Because of the <UXML> tag, there's always one.
+            return vta.visualElementAssets.Count <= 1 && vta.templateAssets.Count <= 0; // Because of the <UXML> tag, there's always one.
 #else
-            return vta.visualElementAssets.Count <= 0;
+            return vta.visualElementAssets.Count <= 0 && vta.templateAssets.Count <= 0;
 #endif
         }
 
-        public static bool WillBeEmptyIfRemovingOne(this VisualTreeAsset vta)
+        public static bool WillBeEmptyIfRemovingOne(this VisualTreeAsset vta, VisualElementAsset veaToRemove)
         {
+            if (veaToRemove is TemplateAsset)
 #if UNITY_2020_1_OR_NEWER
-            return vta.visualElementAssets.Count <= 2; // Because of the <UXML> tag, there's always one.
+                return vta.templateAssets.Count <= 1 && vta.visualElementAssets.Count <= 1; // Because of the <UXML> tag, there's always one.
 #else
-            return vta.visualElementAssets.Count <= 1;
+                return vta.templateAssets.Count <= 1 && vta.visualElementAssets.Count <= 0;
+#endif
+
+#if UNITY_2020_1_OR_NEWER
+            return vta.templateAssets.Count == 0 && vta.visualElementAssets.Count <= 2; // Because of the <UXML> tag, there's always one.
+#else
+            return vta.templateAssets.Count == 0 && vta.visualElementAssets.Count <= 1;
 #endif
         }
 
@@ -270,37 +277,44 @@ namespace Unity.UI.Builder
 #endif
         }
 
+        static void GetAllReferencedStyleSheets(VisualElementAsset vea, HashSet<StyleSheet> sheets)
+        {
+#if UNITY_2019_3_OR_NEWER
+            var styleSheets = vea.stylesheets;
+            if (styleSheets != null)
+            {
+                foreach (var styleSheet in styleSheets)
+                    if (styleSheet != null) // Possible if the path is not valid.
+                        sheets.Add(styleSheet);
+            }
+#endif
+            var styleSheetPaths = vea.GetStyleSheetPaths();
+            if (styleSheetPaths != null)
+            {
+                foreach (var sheetPath in styleSheetPaths)
+                {
+                    var sheetAsset = AssetDatabase.LoadAssetAtPath<StyleSheet>(sheetPath);
+                    if (sheetAsset == null)
+                    {
+                        sheetAsset = Resources.Load<StyleSheet>(sheetPath);
+                        if (sheetAsset == null)
+                            continue;
+                    }
+
+                    sheets.Add(sheetAsset);
+                }
+            }
+        }
+
         internal static List<StyleSheet> GetAllReferencedStyleSheets(this VisualTreeAsset vta)
         {
             var sheets = new HashSet<StyleSheet>();
-            foreach (var asset in vta.visualElementAssets)
-            {
-#if UNITY_2019_3_OR_NEWER
-                var styleSheets = asset.stylesheets;
-                if (styleSheets != null)
-                {
-                    foreach (var styleSheet in styleSheets)
-                        if (styleSheet != null) // Possible if the path is not valid.
-                            sheets.Add(styleSheet);
-                }
-#endif
-                var styleSheetPaths = asset.GetStyleSheetPaths();
-                if (styleSheetPaths != null)
-                {
-                    foreach (var sheetPath in styleSheetPaths)
-                    {
-                        var sheetAsset = AssetDatabase.LoadAssetAtPath<StyleSheet>(sheetPath);
-                        if (sheetAsset == null)
-                        {
-                            sheetAsset = Resources.Load<StyleSheet>(sheetPath);
-                            if (sheetAsset == null)
-                                continue;
-                        }
 
-                        sheets.Add(sheetAsset);
-                    }
-                }
-            }
+            foreach (var vea in vta.visualElementAssets)
+                GetAllReferencedStyleSheets(vea, sheets);
+
+            foreach (var vea in vta.templateAssets)
+                GetAllReferencedStyleSheets(vea, sheets);
 
             return sheets.ToList();
         }

@@ -5,3 +5,7 @@
 .unity-label {
     width: 60px;
 }
+
+#builder-test {
+    width: 120px;
+}

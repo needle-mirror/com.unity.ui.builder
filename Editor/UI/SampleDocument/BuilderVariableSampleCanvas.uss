@@ -1,0 +1,26 @@
+.test-button-0 {
+    --var-length: 4px;
+    --var-text-color: rgb(0, 0, 255);
+}
+
+.test-button-1 {
+    --var-color: rgb(255, 0, 255);
+    --var-int: 2;
+    --var-length: 80px;
+    --var-length-pers: 5%;
+    --var-font-style: italic;
+    width: var(--var-length);
+    background-color: var(--var-color);
+    color: var(--var-text-color);
+    -unity-font-style: var(--var-font-style);
+}
+
+.test-button-2 {
+    border-left-width: var(--var-length); /*Variable not defined in the selector to test the behaviour with variables from theme stylesheets*/
+}
+
+.test-button-3 {
+    --var-enum: none;
+    display: var(--var-enum);
+}
+

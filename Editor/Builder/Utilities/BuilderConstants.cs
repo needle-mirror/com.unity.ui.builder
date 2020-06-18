@@ -16,6 +16,10 @@ namespace Unity.UI.Builder
 #else
         public const string BuilderMenuEntry = "Window/UI/UI Builder";
 #endif
+        public static readonly Rect BuilderWindowDefaultRect = new Rect(50, 50, 1000, 700);
+        // These sizes are copied from EditorWindow.cs. See the default values of EditorWindow.m_MinSize and EditorWindow.m_MaxSize.
+        public static readonly Vector2 BuilderWindowDefaultMinSize = new Vector2(100, 100);
+        public static readonly Vector2 BuilderWindowDefaultMaxSize = new Vector2(4000, 4000);
 
         // Numbers
         public static readonly int VisualTreeAssetOrderIncrement = 10;
@@ -28,6 +32,7 @@ namespace Unity.UI.Builder
         public static readonly float TooltipPreviewYOffset = 20;
         public static readonly float ViewportInitialZoom = 1.0f;
         public static readonly Vector2 ViewportInitialContentOffset = new Vector2(20.0f, 20.0f);
+        public static readonly int DoubleClickDelay = 50;
 
         // Paths
         public const string UIBuilderPackageRootPath = "Packages/" + BuilderPackageName;
@@ -35,6 +40,7 @@ namespace Unity.UI.Builder
         public const string UIBuilderPackageResourcesPath  = UIBuilderPackageRootPath + "/Editor/Resources/";
         public const string UtilitiesPath = UIBuilderPackageRootPath + "/Editor/Utilities";
         public const string LibraryUIPath = UIBuilderPackagePath + "/Library/";
+        public const string SettingsUIPath = UIBuilderPackagePath + "/Settings/";
         public const string LibraryUssPathNoExt = UIBuilderPackagePath + "/Library/BuilderLibrary";
         public const string InspectorUssPathNoExt = UIBuilderPackagePath + "/Inspector/BuilderInspector";
         public const string RuntimeThemeUSSPath = "Packages/com.unity.ui.runtime/USS/Default.uss.asset";
@@ -47,13 +53,16 @@ namespace Unity.UI.Builder
 
         // Global Style Class Names
         public static readonly string HiddenStyleClassName = "unity-builder-hidden";
+        public static readonly string ReadOnlyStyleClassName = "unity-builder--readonly";
         public static readonly string ElementTypeClassName = "unity-builder-code-label--element-type";
         public static readonly string ElementNameClassName = "unity-builder-code-label--element-name";
         public static readonly string ElementClassNameClassName = "unity-builder-code-label--element-class-name";
         public static readonly string ElementPseudoStateClassName = "unity-builder-code-label--element-pseudo-state";
+        public static readonly string TagPillClassName = "unity-builder-tag-pill";
 
         // Random Symbols
         public static readonly string SingleSpace = " ";
+        public static readonly string Underscore = "_";
         public static readonly string TripleSpace = "   "; // Don't ask.
         public static readonly string SubtitlePrefix = " - ";
         public const string WindowsNewlineChar = "\r\n";
@@ -72,10 +81,14 @@ namespace Unity.UI.Builder
         public static readonly string ElementLinkedStyleSheetVEPropertyName = "__unity-ui-builder-linked-stylesheet";
         public static readonly string ElementLinkedStyleSheetIndexVEPropertyName = "__unity-ui-builder-linked-stylesheet-index";
         public static readonly string ElementLinkedStyleSelectorVEPropertyName = "__unity-ui-builder-linked-style-selector";
+        public static readonly string ElementLinkedFakeStyleSelectorVEPropertyName = "__unity-ui-builder-linked-fake-style-selector";
         public static readonly string ElementLinkedVisualTreeAssetVEPropertyName = "__unity-ui-builder-linked-visual-tree-asset";
         public static readonly string ElementLinkedVisualElementAssetVEPropertyName = "__unity-ui-builder-linked-visual-element-asset";
+        public static readonly string ElementLinkedInstancedVisualTreeAssetVEPropertyName = "__unity-ui-builder-instanced-visual-tree-asset";
         public static readonly string ElementLinkedExplorerItemVEPropertyName = "__unity-ui-builder-linked-explorer-item-element";
         public static readonly string ElementLinkedDocumentVisualElementVEPropertyName = "__unity-ui-builder-linked-document-visual-element";
+        public static readonly string ElementLinkedVariableHandlerVEPropertyName = "__unity-ui-builder-linked-variable-handler";
+        public static readonly string ElementLinkedVariableTooltipVEPropertyName = "__unity-ui-builder-linked-variable-tooltip";
 
         //
         // Inspector
@@ -98,6 +111,8 @@ namespace Unity.UI.Builder
         public static readonly string InspectorCategoryFoldoutOverrideClassName = "unity-builder-inspector__style-category-foldout--override";
         public static readonly string InspectorLocalStyleOverrideClassName = "unity-builder-inspector__style--override";
         public static readonly string InspectorLocalStyleResetClassName = "unity-builder-inspector__style--reset"; // used to reset font style of children
+        public static readonly string InspectorLocalStyleVariableClassName = "unity-builder-inspector__style--variable";
+        public static readonly string InspectorLocalStyleVariableEditingClassName = "unity-builder-inspector__style--variable-editing";
         public static readonly string InspectorEmptyFoldoutLabelClassName = "unity-builder-inspector__empty-foldout-label";
         public static readonly string InspectorClassPillNotInDocumentClassName = "unity-builder-class-pill--not-in-document";
 
@@ -116,6 +131,8 @@ namespace Unity.UI.Builder
         public static readonly string InspectorClassPillDoubleClickToSelect = "Double-click to select and edit USS selector.";
         public static readonly string InspectorLocalStylesSectionTitleForSelector = "Styles";
         public static readonly string InspectorLocalStylesSectionTitleForElement = "Inlined Styles";
+        public static readonly string MultiSelectionNotSupportedMessage = "Multi-selection editing is not supported.";
+        public static readonly string InspectorEditorExtensionAuthoringActivated = "You can create Editor extensions in this file";
 
         //
         // Explorer
@@ -149,11 +166,17 @@ namespace Unity.UI.Builder
 
         // StyleSheets Pane Menu
         public static readonly string ExplorerStyleSheetsPanePlusMenuNoElementsMessage = "Need at least one element in UXML to add StyleSheets.";
+        public static readonly string ExplorerStyleSheetsPaneSetActiveUSS = "Set as Active USS";
         public static readonly string ExplorerStyleSheetsPaneCreateNewUSSMenu = "Create New USS";
         public static readonly string ExplorerStyleSheetsPaneAddExistingUSSMenu = "Add Existing USS";
         public static readonly string ExplorerStyleSheetsPaneRemoveUSSMenu = "Remove USS";
         public static readonly string ExplorerStyleSheetsPaneAddToNewUSSMenu = "Add to New USS";
         public static readonly string ExplorerStyleSheetsPaneAddToExistingUSSMenu = "Add to Existing USS";
+
+        // Hierarchy Pane Menu
+        public static readonly string ExplorerHierarchyPaneOpenSubDocument = "Open as Sub-Document";
+        public static readonly string ExplorerHierarchyReturnToParentDocument = "Return to Parent Document";
+        public static readonly string ExplorerHierarchyOpenInBuilder = "Open in UI Builder";
 
         // Explorer Messages
         public static readonly string ExplorerInExplorerNewClassSelectorInfoMessage = "Add new selector...";
@@ -180,6 +203,7 @@ namespace Unity.UI.Builder
         public const string LibraryControlsSectionHeaderName = "Controls";
         public const string LibraryAssetsSectionHeaderName = "Assets";
         public const string LibraryCustomControlsSectionHeaderName = "Custom Controls";
+        public const string EditorOnlyTag = "Editor Only";
 
         //
         // Selection
@@ -231,6 +255,7 @@ namespace Unity.UI.Builder
         public static readonly string AddNewSelectorUndoMessage = "Create USS Selector";
         public static readonly string RenameSelectorUndoMessage = "Rename USS Selector";
         public static readonly string DeleteSelectorUndoMessage = "Delete USS Selector";
+        public static readonly string MoveUSSSelectorUndoMessage = "Move USS Selector";
         public static readonly string SaveAsNewDocumentsDialogMessage = "Save As New UI Documents";
         public static readonly string NewDocumentsDialogMessage = "New UI Documents";
 
@@ -288,6 +313,9 @@ namespace Unity.UI.Builder
         public static readonly string TypeAttributeMustDeriveFromMessage = "{0} attribute type must derive from {1}";
         public static readonly string BuiltInAssetPathsNotSupportedMessage = "Built-in resource paths are not supported in USS.";
 
+        // Settings
+        public const string BuilderEditorExtensionModeToggleLabel = "Enable Editor Extension by default";
+
         //
         // UXML/USS
         //
@@ -299,7 +327,7 @@ namespace Unity.UI.Builder
         public static readonly string UssExtension = ".uss";
 
         // UXML
-        public static readonly string UxmlHeader = "<ui:UXML xmlns:ui=\"UnityEngine.UIElements\" xmlns:uie=\"UnityEditor.UIElements\">";
+        public static readonly string UxmlHeader = "<ui:UXML xmlns:ui=\"UnityEngine.UIElements\" xmlns:uie=\"UnityEditor.UIElements\"";
         public static readonly string UxmlFooter = "</ui:UXML>";
         public static readonly string UxmlEngineNamespace = "UnityEngine.UIElements.";
         public static readonly string UxmlEngineNamespaceReplace = "ui:";
@@ -314,6 +342,9 @@ namespace Unity.UI.Builder
         public static readonly string UssSelectorNameSymbol = "#";
         public static readonly string UssSelectorClassNameSymbol = ".";
         public static readonly string UssSelectorPseudoStateSymbol = ":";
+        public static readonly string UssVariablePrefix = "--";
+        public static readonly string USSVariablePattern = @"[^a-z0-9A-Z_-]";
+        public static readonly string USSVariableInvalidCharFiller = "-";
 
         // Styles
         public static readonly List<string> SpecialSnowflakeLengthSytles = new List<string>()

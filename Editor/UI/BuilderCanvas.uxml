@@ -4,6 +4,11 @@
     </VisualElement>
     <VisualElement name="default-background-element" class="unity-builder-viewport__canvas-layer" />
     <VisualElement name="custom-background-element" class="unity-builder-viewport__canvas-layer" />
+
+    <VisualElement name="header-container" class="unity-builder-canvas__header">
+        <Label name="title" class="unity-builder-pane__sub-title unity-builder-canvas__title" />
+        <Label name="tag" text="Editor Mode" class="unity-builder-pane__sub-title unity-builder-canvas__title unity-builder-tag-pill" />
+    </VisualElement>
     <VisualElement name="content-container" class="unity-builder-canvas__container" />
 
     <VisualElement name="left-handle" class="unity-builder-canvas__handle unity-builder-canvas__side unity-builder-canvas__side--vertical unity-builder-canvas__side--left">

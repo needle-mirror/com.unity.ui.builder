@@ -14,7 +14,7 @@
             <uie:IntegerField name="canvas-height" label="Height" class="unity-builder-double-field" />
         </uib:BuilderStyleRow>
     </uib:PersistedFoldout>
-    <uib:PersistedFoldout
+    <uib:FoldoutWithCheckbox
         name="canvas-background-foldout"
         text="Canvas Background"
         view-data-key="builder-inspector-canvas-background-foldout"
@@ -22,11 +22,6 @@
         value="true"
     >
         <Style path="Packages/com.unity.ui.builder/Editor/UI/Inspector/CanvasInspector.uss" />
-
-        <uib:BuilderStyleRow>
-            <uib:PercentSlider name="background-opacity-field" label="Opacity" />
-        </uib:BuilderStyleRow>
-
         <uib:BuilderStyleRow>
             <uib:ToggleButtonStrip name="background-mode-field" class="unity-builder-inspector_canvas-background-mode" />
         </uib:BuilderStyleRow>
@@ -35,10 +30,16 @@
             <uib:BuilderStyleRow>
                 <uie:ColorField name="background-color-field" label="Color" />
             </uib:BuilderStyleRow>
+            <uib:BuilderStyleRow>
+                <uib:PercentSlider name="background-color-opacity-field" label="Opacity" />
+            </uib:BuilderStyleRow>
         </VisualElement>
         <VisualElement name="canvas-background-image-mode-controls">
             <uib:BuilderStyleRow>
                 <uie:ObjectField name="background-image-field" label="Image" />
+            </uib:BuilderStyleRow>
+            <uib:BuilderStyleRow>
+                <uib:PercentSlider name="background-image-opacity-field" label="Opacity" />
             </uib:BuilderStyleRow>
             <uib:BuilderStyleRow>
                 <uib:ToggleButtonStrip name="background-image-scale-mode-field" label="Scale Mode" class="unity-builder-inspector_background-scale-mode-field" />
@@ -51,6 +52,23 @@
             <uib:BuilderStyleRow>
                 <uie:ObjectField name="background-camera-field" label="Camera" />
             </uib:BuilderStyleRow>
+            <uib:BuilderStyleRow>
+                <uib:PercentSlider name="background-camera-opacity-field" label="Opacity" />
+            </uib:BuilderStyleRow>
         </VisualElement>
+    </uib:FoldoutWithCheckbox>
+    <uib:PersistedFoldout
+            name="document-settings"
+            text="Document Settings"
+            view-data-key="builder-inspector-document-settings-foldout"
+            class="unity-builder-inspector__category-foldout"
+            value="true">
+        <Style path="Packages/com.unity.ui.builder/Editor/UI/Inspector/CanvasInspector.uss" />
+        <uib:BuilderStyleRow class="unity-builder-double-field-row">
+            <Toggle name="editor-extensions-mode-toggle" label="Editor Extension Authoring"/>
+        </uib:BuilderStyleRow>
+        <uib:BuilderStyleRow class="unity-builder-double-field-row">
+            <uib:HelpBox class="unity-builder-inspector_help-box" text="Enable this option to create Editor extensions in this file. The UI Builder displays additional features for working with Editor UI. &#10;To enable Editor extension authoring by default, edit the UI Toolkit Project settings."/>
+        </uib:BuilderStyleRow>
     </uib:PersistedFoldout>
 </UXML>

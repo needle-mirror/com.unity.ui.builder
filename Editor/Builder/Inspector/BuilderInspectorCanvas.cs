@@ -11,6 +11,8 @@ namespace Unity.UI.Builder
     internal class BuilderInspectorCanvas : IBuilderInspectorSection
     {
         static readonly int s_CameraRefreshDelayMS = 100;
+        internal const string ContainerName = "canvas-inspector";
+        internal const string EditorExtensionsModeToggleName = "editor-extensions-mode-toggle";
 
         public VisualElement root => m_CanvasInspector;
 
@@ -22,11 +24,14 @@ namespace Unity.UI.Builder
         BuilderDocumentSettings settings => m_Document.settings;
 
         VisualElement customBackgroundElement => m_Canvas.customBackgroundElement;
+        FoldoutWithCheckbox m_BackgroundOptionsFoldout;
 
         // Fields
         IntegerField m_CanvasWidth;
         IntegerField m_CanvasHeight;
-        PercentSlider m_OpacityField;
+        PercentSlider m_ColorOpacityField;
+        PercentSlider m_ImageOpacityField;
+        PercentSlider m_CameraOpacityField;
         ToggleButtonStrip m_BackgroundMode;
         ColorField m_ColorField;
         ObjectField m_ImageField;
@@ -39,6 +44,8 @@ namespace Unity.UI.Builder
         Rect m_InGamePreviewRect;
         Texture2D m_InGamePreviewTexture2D;
         IVisualElementScheduledItem m_InGamePreviewScheduledItem;
+        Toggle m_EditorExtensionsModeToggle;
+
         Camera backgroundCamera
         {
             get
@@ -62,7 +69,7 @@ namespace Unity.UI.Builder
         {
             m_Inspector = inspector;
             m_Document = inspector.document;
-            m_CanvasInspector = m_Inspector.Q("canvas-inspector");
+            m_CanvasInspector = m_Inspector.Q(ContainerName);
 
             var builderWindow = inspector.paneWindow as Builder;
             if (builderWindow == null)
@@ -82,18 +89,42 @@ namespace Unity.UI.Builder
             m_Canvas.RegisterCallback<GeometryChangedEvent>(OnCanvasSizeChange);
 
             // Background Opacity
-            m_OpacityField = root.Q<PercentSlider>("background-opacity-field");
-            m_OpacityField.RegisterValueChangedCallback(OnBackgroundOpacityChange);
+            m_ColorOpacityField = root.Q<PercentSlider>("background-color-opacity-field");
+            m_ColorOpacityField.RegisterValueChangedCallback(e =>
+            {
+                settings.ColorModeBackgroundOpacity = e.newValue;
+                OnBackgroundOpacityChange(e.newValue);
+            });
+
+            m_ImageOpacityField = root.Q<PercentSlider>("background-image-opacity-field");
+            m_ImageOpacityField.RegisterValueChangedCallback(e =>
+            {
+                settings.ImageModeCanvasBackgroundOpacity = e.newValue;
+                OnBackgroundOpacityChange(e.newValue);
+            });
+
+            m_CameraOpacityField = root.Q<PercentSlider>("background-camera-opacity-field");
+            m_CameraOpacityField.RegisterValueChangedCallback(e =>
+            {
+                settings.CameraModeCanvasBackgroundOpacity = e.newValue;
+                OnBackgroundOpacityChange(e.newValue);
+            });
+
+            // Setup Background State
+            m_BackgroundOptionsFoldout = root.Q<FoldoutWithCheckbox>("canvas-background-foldout");
+            m_BackgroundOptionsFoldout.RegisterCheckboxValueChangedCallback(e =>
+            {
+                settings.EnableCanvasBackground = e.newValue;
+                PostSettingsChange();
+                ApplyBackgroundOptions();
+            });
 
             // Setup Background Mode
             var backgroundModeType = typeof(BuilderCanvasBackgroundMode);
             var backgroundModeValues = Enum.GetValues(backgroundModeType)
                 .OfType<BuilderCanvasBackgroundMode>().Select((v) => v.ToString()).ToList();
-            var backgroundModeNames = Enum.GetNames(backgroundModeType);
-            backgroundModeNames[0] = "Transparent";
             m_BackgroundMode = root.Q<ToggleButtonStrip>("background-mode-field");
             m_BackgroundMode.enumType = backgroundModeType;
-            m_BackgroundMode.labels = backgroundModeNames;
             m_BackgroundMode.choices = backgroundModeValues;
             m_BackgroundMode.RegisterValueChangedCallback(OnBackgroundModeChange);
 
@@ -119,12 +150,37 @@ namespace Unity.UI.Builder
             m_CameraField.objectType = typeof(Camera);
             m_CameraField.RegisterValueChangedCallback(OnBackgroundCameraChange);
 
+#if UNITY_2020_1_OR_NEWER
+            SetupEditorExtensionsModeToggle();
+#else
+            RemoveDocumentSettings();
+#endif
+
             // Control Containers
             m_BackgroundColorModeControls = root.Q("canvas-background-color-mode-controls");
             m_BackgroundImageModeControls = root.Q("canvas-background-image-mode-controls");
             m_BackgroundCameraModeControls = root.Q("canvas-background-camera-mode-controls");
 
             EditorApplication.playModeStateChanged += PlayModeStateChange;
+        }
+
+        void SetupEditorExtensionsModeToggle()
+        {
+            m_EditorExtensionsModeToggle = root.Q<Toggle>(EditorExtensionsModeToggleName);
+            m_EditorExtensionsModeToggle.RegisterValueChangedCallback(e =>
+            {
+                m_Document.UXMLFileSettings.EditorExtensionMode = e.newValue;
+                m_Inspector.selection.NotifyOfStylingChangePostStylingUpdate();
+                if (e.newValue)
+                {
+                    Builder.ShowWarning(BuilderConstants.InspectorEditorExtensionAuthoringActivated);
+                }
+            });
+        }
+
+        void RemoveDocumentSettings()
+        {
+            root.Q("document-settings").RemoveFromHierarchy();
         }
 
         public void Disable()
@@ -149,9 +205,13 @@ namespace Unity.UI.Builder
             m_CanvasWidth.isDelayed = true;
             m_CanvasHeight.isDelayed = true;
 
-            m_OpacityField.SetValueWithoutNotify(settings.CanvasBackgroundOpacity);
-            m_BackgroundMode.SetValueWithoutNotify(settings.CanvasBackgroundMode.ToString());
+            m_BackgroundOptionsFoldout.SetCheckboxValueWithoutNotify(settings.EnableCanvasBackground);
 
+            m_ColorOpacityField.SetValueWithoutNotify(settings.ColorModeBackgroundOpacity);
+            m_ImageOpacityField.SetValueWithoutNotify(settings.ImageModeCanvasBackgroundOpacity);
+            m_CameraOpacityField.SetValueWithoutNotify(settings.CameraModeCanvasBackgroundOpacity);
+
+            m_BackgroundMode.SetValueWithoutNotify(settings.CanvasBackgroundMode.ToString());
             m_ColorField.SetValueWithoutNotify(settings.CanvasBackgroundColor);
 
             var scaleModeStr = settings.CanvasBackgroundImageScaleMode.ToString();
@@ -160,6 +220,7 @@ namespace Unity.UI.Builder
             m_ImageScaleModeField.SetValueWithoutNotify(scaleModeStr);
 
             m_CameraField.SetValueWithoutNotify(FindCameraByName());
+            m_EditorExtensionsModeToggle?.SetValueWithoutNotify(m_Document.UXMLFileSettings.EditorExtensionMode);
 
             ApplyBackgroundOptions();
         }
@@ -182,34 +243,45 @@ namespace Unity.UI.Builder
         void ApplyBackgroundOptions()
         {
             DeactivateCameraMode();
-
             customBackgroundElement.style.backgroundColor = StyleKeyword.Null;
             customBackgroundElement.style.backgroundImage = StyleKeyword.Null;
             customBackgroundElement.style.unityBackgroundScaleMode = StyleKeyword.Null;
 
-            m_BackgroundColorModeControls.AddToClassList(BuilderConstants.HiddenStyleClassName);
-            m_BackgroundImageModeControls.AddToClassList(BuilderConstants.HiddenStyleClassName);
-            m_BackgroundCameraModeControls.AddToClassList(BuilderConstants.HiddenStyleClassName);
-
-            switch (settings.CanvasBackgroundMode)
+            if (settings.EnableCanvasBackground)
             {
-                case BuilderCanvasBackgroundMode.None: break;
-                case BuilderCanvasBackgroundMode.Color:
-                    customBackgroundElement.style.backgroundColor = settings.CanvasBackgroundColor;
-                    m_BackgroundColorModeControls.RemoveFromClassList(BuilderConstants.HiddenStyleClassName);
-                    break;
-                case BuilderCanvasBackgroundMode.Image:
-                    customBackgroundElement.style.backgroundImage = settings.CanvasBackgroundImage;
-                    customBackgroundElement.style.unityBackgroundScaleMode = settings.CanvasBackgroundImageScaleMode;
-                    m_BackgroundImageModeControls.RemoveFromClassList(BuilderConstants.HiddenStyleClassName);
-                    break;
-                case BuilderCanvasBackgroundMode.Camera:
-                    ActivateCameraMode();
-                    m_BackgroundCameraModeControls.RemoveFromClassList(BuilderConstants.HiddenStyleClassName);
-                    break;
+                switch (settings.CanvasBackgroundMode)
+                {
+                    case BuilderCanvasBackgroundMode.Color:
+                        customBackgroundElement.style.backgroundColor = settings.CanvasBackgroundColor;
+                        customBackgroundElement.style.opacity = settings.ColorModeBackgroundOpacity;
+                        break;
+                    case BuilderCanvasBackgroundMode.Image:
+                        customBackgroundElement.style.backgroundImage = settings.CanvasBackgroundImage;
+                        customBackgroundElement.style.unityBackgroundScaleMode = settings.CanvasBackgroundImageScaleMode;
+                        customBackgroundElement.style.opacity = settings.ImageModeCanvasBackgroundOpacity;
+                        break;
+                    case BuilderCanvasBackgroundMode.Camera:
+                        ActivateCameraMode();
+                        customBackgroundElement.style.opacity = settings.CameraModeCanvasBackgroundOpacity;
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
 
-            customBackgroundElement.style.opacity = settings.CanvasBackgroundOpacity;
+            UpdateBackgroundControlsView();
+        }
+
+        void UpdateBackgroundControlsView()
+        {
+            m_BackgroundColorModeControls.EnableInClassList(BuilderConstants.HiddenStyleClassName,
+                settings.CanvasBackgroundMode != BuilderCanvasBackgroundMode.Color);
+
+            m_BackgroundImageModeControls.EnableInClassList(BuilderConstants.HiddenStyleClassName,
+                settings.CanvasBackgroundMode != BuilderCanvasBackgroundMode.Image);
+
+            m_BackgroundCameraModeControls.EnableInClassList(BuilderConstants.HiddenStyleClassName,
+                settings.CanvasBackgroundMode != BuilderCanvasBackgroundMode.Camera);
         }
 
         void ActivateCameraMode()
@@ -340,10 +412,9 @@ namespace Unity.UI.Builder
             PostSettingsChange();
         }
 
-        void OnBackgroundOpacityChange(ChangeEvent<float> evt)
+        void OnBackgroundOpacityChange(float opacity)
         {
-            settings.CanvasBackgroundOpacity = evt.newValue;
-            customBackgroundElement.style.opacity = evt.newValue;
+            customBackgroundElement.style.opacity = opacity;
             PostSettingsChange();
         }
 
@@ -359,25 +430,14 @@ namespace Unity.UI.Builder
         {
             settings.CanvasBackgroundColor = evt.newValue;
             PostSettingsChange();
-
-            if (settings.CanvasBackgroundMode != BuilderCanvasBackgroundMode.Color)
-                return;
-
-            customBackgroundElement.style.backgroundColor = evt.newValue;
+            ApplyBackgroundOptions();
         }
 
         void OnBackgroundImageChange(ChangeEvent<Object> evt)
         {
             settings.CanvasBackgroundImage = evt.newValue as Texture2D;
             PostSettingsChange();
-
-            if (settings.CanvasBackgroundMode != BuilderCanvasBackgroundMode.Image)
-                return;
-
-            if (settings.CanvasBackgroundImage == null)
-                customBackgroundElement.style.backgroundImage = StyleKeyword.Null;
-            else
-                customBackgroundElement.style.backgroundImage = settings.CanvasBackgroundImage;
+            ApplyBackgroundOptions();
         }
 
         void OnBackgroundImageScaleModeChange(ChangeEvent<string> evt)
@@ -386,11 +446,7 @@ namespace Unity.UI.Builder
             var enumValue = (ScaleMode)Enum.Parse(typeof(ScaleMode), newValue);
             settings.CanvasBackgroundImageScaleMode = enumValue;
             PostSettingsChange();
-
-            if (settings.CanvasBackgroundMode != BuilderCanvasBackgroundMode.Image)
-                return;
-
-            customBackgroundElement.style.unityBackgroundScaleMode = enumValue;
+            ApplyBackgroundOptions();
         }
 
         void FitCanvasToImage()
@@ -405,7 +461,7 @@ namespace Unity.UI.Builder
         void OnBackgroundCameraChange(ChangeEvent<Object> evt)
         {
             var previousCamera = evt.previousValue as Camera;
-            if (Object.ReferenceEquals(previousCamera, evt.newValue))
+            if (ReferenceEquals(previousCamera, evt.newValue))
                 return;
 
 #if UNITY_2019_3_OR_NEWER
@@ -413,17 +469,9 @@ namespace Unity.UI.Builder
 #else
             var camera = (evt.newValue as GameObject)?.GetComponent<Camera>();
 #endif
-            if (camera == null)
-            {
-                settings.CanvasBackgroundCameraName = null;
-                DeactivateCameraMode();
-            }
-            else
-            {
-                settings.CanvasBackgroundCameraName = camera.name;
-                ActivateCameraMode();
-            }
+            settings.CanvasBackgroundCameraName = camera == null ? null : camera.name;
             PostSettingsChange();
+            ApplyBackgroundOptions();
         }
     }
 }

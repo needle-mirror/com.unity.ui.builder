@@ -4,6 +4,46 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-preview.1] - 2020-06-18
+
+- **Unity 2019.2 is no longer supported.**
+
+- (2020.1+) Multi-Selection Support:
+    - Can now select more than one element or USS selector at the same time via Shift+Click or Ctrl+Click in the Hierarchy.
+    - When multiple elements or USS selectors are selected, the Inspector will not display any controls. Editing of a multi-selection is not yet supported.
+    - Can copy/paste/duplicate/delete a multi-selection as long as all items in the selection are of the same type. This includes copy/pasting from UI Builder into a text file.
+    - Can drag-reparent or drag-reorder a multi-selection in the Hierarchy and the StyleSheets pane as long as all items in the selection are of the same type.
+- New **Editor Extension Authoring**:
+    - UI Builder is now configured by default to be used for runtime UI. As such, many Editor-Only controls will not be available in the Library.
+    - To see Editor-Only controls and controls meant for use within the Editor, you can enable **Editor Extension Authoring** from the new Document settings Inspector by selecting the Canvas header or .uxml document in the Hierarchy.
+    - The **Editor Extension Authoring** setting is saved inside the UXML asset and therefore version controlled. This is unlike the Canvas settings which are temporary preferences.
+    - You can enable **Editor Extension Authoring** for all new documents or documents not opened by UI Builder before in the **Project Settings > UI Builder** settings.
+- (2019.3+) Variables Support:
+    - If a style is getting its value from a USS variable, its style field label in the Inspector will appear highlighted.
+    - Can now click on the label of a style field using a USS variable to see where the variable value is coming from (via a tooltip popup).
+    - Selectors can now use USS variables for their style values via a new per-field variable mode. This is not supported on elements via inline styles.
+    - Style field variable mode can be activated by double-clicking on its label or via a button in the tooltip popup.
+- Sub-Documents:
+    - Added option in Hierarchy to open a UXML instance as a sub-document via the right-click menu on a `TemplateContainer`.
+    - Can return to parent document by right-clicking on the sub-document's .uxml root item in the Hierarchy and selecting **Return to Parent Document**.
+    - Sub-documents and their parents will all be grayed-out and disabled in the Library pane.
+    - A breadcrumb toolbar will appear when currently viewing a sub-document. Can click on parent documents to return to them.
+- Improved clarity of Library pane by moving Editor-Only tags to category headers instead of per-item.
+- Re-designed Canvas Background settings. Custom background is not enabled/disabled via checkbox on Foldout header and Opacity is now remembered per type of custom background.
+- The StyleSheets pane "States" menu has been moved inside the new selector field with the new label: ":".
+- The StyleSheets pane "Add" menu has been removed. New selectors can now only be added by pressing Enter in the new selector field.
+- Can now drag-and-drop selectors in the StyleSheets pane to reorder them or move them to another StyleSheet.
+- Active StyleSheet will no have to be manually switched via right-click menu on the StyleSheet. It is no longer driven by current selection.
+- Canvas now has a header displaying the open UXML file name (which is no longer listed in the Viewport's header).
+- Canvas and document settings in the Inspector can now be accessed also by clicking on the new Canvas header.
+- List-based attributes, like the Mask field's `choices` attribute, now show and edit properly in the Inspector's Attributes section as comma-separated strings.
+- Instanced UXML templates inside main UXML document from the Library will now have their name initialized to be their .uxml asset name.
+- Added right-click option to open a TemplateContainer's UXML asset directly from the Hierarchy.
+- Fixed right-click Unset on an Inspector category (ie. Margin & Padding) not properly un-setting all style properties within the category.
+- Fixed initial size of the UI Builder window being too small the first time it's installed.
+- Fixed removing of a USS from the document sometimes reloading the UXML immediately after and re-adding the removed USS.
+- Fixed USS files not being added or removed properly to/from the document if all root elements were TemplateContainers.
+
 ## [0.11.2] - 2020-05-14
 
 - Fixed stack overflow error when deleting USS selector via right-click > Delete in the StyleSheets pane.

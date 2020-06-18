@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -65,6 +66,25 @@ namespace Unity.UI.Builder
             document.RemoveStyleSheetFromDocument(ussIndex);
         }
 
+        public static void ReorderStyleSheetsInAsset(
+            BuilderDocument document, VisualElement styleSheetsContainerElement)
+        {
+            Undo.RegisterCompleteObjectUndo(
+                document.visualTreeAsset, "Reorder StyleSheets in UXML");
+
+            var reorderedUSSList = new List<StyleSheet>();
+            foreach (var ussElement in styleSheetsContainerElement.Children())
+                reorderedUSSList.Add(ussElement.GetStyleSheet());
+
+            var openUXMLFile = document.activeOpenUXMLFile;
+            openUXMLFile.openUSSFiles.Sort((left, right) =>
+            {
+                var leftOrder = reorderedUSSList.IndexOf(left.Sheet);
+                var rightOrder = reorderedUSSList.IndexOf(right.Sheet);
+                return leftOrder.CompareTo(rightOrder);
+            });
+        }
+
         public static VisualElementAsset AddElementToAsset(
             BuilderDocument document, VisualElement ve, int index = -1)
         {
@@ -91,7 +111,7 @@ namespace Unity.UI.Builder
 
         public static VisualElementAsset AddElementToAsset(
             BuilderDocument document, VisualElement ve,
-            Func<VisualTreeAsset, VisualElementAsset, VisualElementAsset> makeVisualElementAsset,
+            Func<VisualTreeAsset, VisualElementAsset, VisualElement, VisualElementAsset> makeVisualElementAsset,
             int index = -1)
         {
             Undo.RegisterCompleteObjectUndo(
@@ -105,7 +125,7 @@ namespace Unity.UI.Builder
                 veaParent = document.visualTreeAsset.GetRootUXMLElement(); // UXML Root Element
 #endif
 
-            var vea = makeVisualElementAsset(document.visualTreeAsset, veaParent);
+            var vea = makeVisualElementAsset(document.visualTreeAsset, veaParent, ve);
             ve.SetProperty(BuilderConstants.ElementLinkedVisualElementAssetVEPropertyName, vea);
 
             if (index >= 0)
@@ -114,15 +134,46 @@ namespace Unity.UI.Builder
             return vea;
         }
 
+        public static void SortElementsByTheirVisualElementInAsset(VisualElement parentVE)
+        {
+            var parentVEA = parentVE.GetVisualElementAsset();
+            if (parentVEA == null)
+                return;
+
+            if (parentVE.childCount <= 1)
+                return;
+
+            var correctOrderForElementAssets = new List<VisualElementAsset>();
+            var correctOrdersInDocument = new List<int>();
+            foreach (var ve in parentVE.Children())
+            {
+                var vea = ve.GetVisualElementAsset();
+                if (vea == null)
+                    continue;
+
+                correctOrderForElementAssets.Add(vea);
+                correctOrdersInDocument.Add(vea.orderInDocument);
+            }
+
+            if (correctOrderForElementAssets.Count <= 1)
+                return;
+
+            correctOrdersInDocument.Sort();
+
+            for (int i = 0; i < correctOrderForElementAssets.Count; ++i)
+                correctOrderForElementAssets[i].orderInDocument = correctOrdersInDocument[i];
+        }
+
         public static void ReparentElementInAsset(
-            BuilderDocument document, VisualElement veToReparent, VisualElement newParent, int index = -1)
+            BuilderDocument document, VisualElement veToReparent, VisualElement newParent, int index = -1, bool undo = true)
         {
             var veaToReparent = veToReparent.GetVisualElementAsset();
             if (veaToReparent == null)
                 return;
 
-            Undo.RegisterCompleteObjectUndo(
-                document.visualTreeAsset, BuilderConstants.ReparentUIElementUndoMessage);
+            if (undo)
+                Undo.RegisterCompleteObjectUndo(
+                    document.visualTreeAsset, BuilderConstants.ReparentUIElementUndoMessage);
 
             VisualElementAsset veaNewParent = null;
             if (newParent != null)
@@ -184,7 +235,7 @@ namespace Unity.UI.Builder
             vea.RemoveStyleClass(className);
         }
 
-        public static void AddStyleComplexSelectorToSelection(BuilderDocument document, StyleSheet styleSheet, StyleComplexSelector scs)
+        public static void AddStyleComplexSelectorToSelection(StyleSheet styleSheet, StyleComplexSelector scs)
         {
             var selectionProp = styleSheet.AddProperty(
                 scs,
@@ -210,7 +261,7 @@ namespace Unity.UI.Builder
             {
                 var styleSheet = ve.GetClosestStyleSheet();
                 var scs = ve.GetStyleComplexSelector();
-                AddStyleComplexSelectorToSelection(document, styleSheet, scs);
+                AddStyleComplexSelectorToSelection(styleSheet, scs);
             }
             else if (BuilderSharedStyles.IsDocumentElement(ve))
             {

@@ -3,9 +3,12 @@ using System.Collections;
 using System.Linq;
 using System.Net;
 using NUnit.Framework;
+using UnityEditor;
+using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
+using Toolbar = UnityEditor.UIElements.Toolbar;
 
 namespace Unity.UI.Builder.EditorTests
 {
@@ -460,6 +463,111 @@ namespace Unity.UI.Builder.EditorTests
 
             yield return UIETestEvents.ExecuteCommand(BuilderWindow, UIETestEvents.Command.Paste);
             Assert.That(textField.childCount, Is.EqualTo(2));
+        }
+
+        /// <summary>
+        /// Right-clicking on a TemplateContainer within an open UXML file should allow to "Open as Sub-Document"
+        /// and then returning back to the parent through clicking on "Return to Parent Document" on header.
+        /// </summary>
+#if UNITY_2019_2
+        [UnityTest, Ignore("Fails on 2019.2 only (but all functionality works when manually doing the same steps). We'll drop 2019.2 support soon anyway.")]
+#else
+        [UnityTest]
+#endif
+        public IEnumerator SubDocumentFunctionalityViaRightClickMenu()
+        {
+            var panel = BuilderWindow.rootVisualElement.panel as BaseVisualElementPanel;
+            var menu = panel.contextualMenuManager as BuilderTestContextualMenuManager;
+            Assert.That(menu, Is.Not.Null);
+            Assert.That(menu.menuIsDisplayed, Is.False);
+
+            // Load Test UXML File
+            var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_ParentTestUXMLPath);
+            Assert.That(asset, Is.Not.Null);
+            BuilderWindow.LoadDocument(asset);
+            yield return UIETestHelpers.Pause(1);
+
+            // Check that Breadcrumbs toolbar is NOT present
+            var toolbar = ViewportPane.Q<BuilderToolbar>();
+            var breadcrumbsToolbar = toolbar.Q<Toolbar>(BuilderToolbar.BreadcrumbsToolbarName);
+            var breadcrumbs = toolbar.Q<ToolbarBreadcrumbs>(BuilderToolbar.BreadcrumbsName);
+
+            Assert.IsNotNull(breadcrumbsToolbar);
+            Assert.AreEqual((StyleEnum<DisplayStyle>) DisplayStyle.None, breadcrumbsToolbar.style.display);
+            Assert.AreEqual(0, breadcrumbs.childCount);
+
+            // Check that child is instantiated
+            string nameOfChildSubDocument = "#ChildTestUXMLDocument";
+            var childInHierarchy = BuilderTestsHelper.GetExplorerItemsWithName(HierarchyPane, nameOfChildSubDocument);
+            Assert.AreEqual(1, childInHierarchy.Count);
+            Assert.NotNull(childInHierarchy[0]);
+
+            // Simulate right click on child TemplateContainer
+            yield return UIETestEvents.Mouse.SimulateClick(childInHierarchy[0], MouseButton.RightMouse);
+            Assert.That(menu.menuIsDisplayed, Is.True);
+            
+            var subdocumentClick = menu.FindMenuAction(BuilderConstants.ExplorerHierarchyPaneOpenSubDocument); 
+            Assert.That(subdocumentClick, Is.Not.Null);
+
+            subdocumentClick.Execute();
+            yield return UIETestHelpers.Pause(1);
+
+            // Get parent document
+            var parentRoot = BuilderTestsHelper.GetHeaderItem(HierarchyPane);
+            Assert.NotNull(parentRoot);
+
+            // Breadcrumbs is displaying
+            Assert.AreEqual(2, breadcrumbs.childCount);
+            Assert.AreEqual(breadcrumbsToolbar.style.display, (StyleEnum<DisplayStyle>)DisplayStyle.Flex);
+
+            // Click back to get to Parent
+            yield return UIETestEvents.Mouse.SimulateClick(parentRoot, MouseButton.RightMouse);
+            Assert.That(menu.menuIsDisplayed, Is.True);
+
+            var parentClick = menu.FindMenuAction(BuilderConstants.ExplorerHierarchyReturnToParentDocument); 
+            Assert.That(parentClick, Is.Not.Null);
+            parentClick.Execute();
+
+            yield return UIETestHelpers.Pause(1);
+            Assert.AreEqual(1, BuilderWindow.documentRootElement.childCount);
+
+            Assert.AreEqual(0, breadcrumbs.childCount);
+            Assert.AreEqual(breadcrumbsToolbar.style.display, (StyleEnum<DisplayStyle>)DisplayStyle.None);
+        }
+
+        [UnityTest]
+        public IEnumerator UnloadSubDocumentsOnFileOpen()
+        {
+            var panel = BuilderWindow.rootVisualElement.panel as BaseVisualElementPanel;
+            var menu = panel.contextualMenuManager as BuilderTestContextualMenuManager;
+            Assert.That(menu, Is.Not.Null);
+            Assert.That(menu.menuIsDisplayed, Is.False);
+
+            // Load Test UXML File
+            var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_ParentTestUXMLPath);
+            Assert.That(asset, Is.Not.Null);
+            BuilderWindow.LoadDocument(asset);
+            yield return UIETestHelpers.Pause(1);
+
+            // Open child
+            string nameOfChildSubDocument = "#ChildTestUXMLDocument";
+            var childInHierarchy = BuilderTestsHelper.GetExplorerItemsWithName(HierarchyPane, nameOfChildSubDocument);
+
+            // Simulate right click on child TemplateContainer
+            yield return UIETestEvents.Mouse.SimulateClick(childInHierarchy[0], MouseButton.RightMouse);
+            Assert.That(menu.menuIsDisplayed, Is.True);
+
+            var subdocumentClick = menu.FindMenuAction(BuilderConstants.ExplorerHierarchyPaneOpenSubDocument); 
+            Assert.That(subdocumentClick, Is.Not.Null);
+
+            subdocumentClick.Execute();
+            yield return UIETestHelpers.Pause(1);
+
+            // Main part: opening NewDocument makes it the only document
+            Assert.AreEqual(2, BuilderWindow.document.openUXMLFiles.Count);
+            BuilderWindow.rootVisualElement.Q<BuilderToolbar>().NewDocument();
+            Assert.AreEqual(1, BuilderWindow.document.openUXMLFiles.Count);
+
         }
     }
 }

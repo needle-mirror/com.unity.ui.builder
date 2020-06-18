@@ -25,13 +25,25 @@
     .unity-builder-double-field-label
 */
 .unity-builder-inspector .unity-base-field__label {
-    width: 105px;
     min-width: 105px;
     overflow: hidden;
 }
 
+.unity-builder-inspector__variable-field-label {
+    margin-right: 2px;
+    border-width: 1px;
+    border-color: rgba(0, 0, 0, 0);
+    align-self: flex-start;
+    min-width: 0px;
+    -unity-text-align: middle-left;
+}
+
 .unity-builder-inspector__nothing-selected-label {
     white-space: normal;
+}
+
+.unity-builder-inspector__multi-selection-message {
+    margin: 6px;
 }
 
 .unity-builder-inspector__scroll-view .unity-scroll-view__content-container {
@@ -42,14 +54,18 @@
     display: none;
 }
 
+.unity-builder-inspector__category-foldout > .unity-foldout__header > .unity-label,
 .unity-builder-inspector__category-foldout > .unity-foldout__header > .unity-toggle {
-    padding-left: 6px;
     padding-right: 2px;
     border-top-width: 1px;
     border-bottom-width: 1px;
-    margin-left: 0px;
-    margin-right: 0px;
+    margin-left: 0;
+    margin-right: 0;
     margin-bottom: 0;
+}
+
+.unity-builder-inspector__category-foldout > .unity-foldout__header > .unity-foldout__toggle {
+    padding-left: 6px;
 }
 
 .unity-builder-inspector__category-foldout > .unity-foldout__header > .unity-toggle .unity-label {
@@ -226,4 +242,31 @@
 
 .unity-foldout-field > .unity-foldout__header > Toggle {
     flex-grow: 0;
+}
+
+/*****************************************************************************/
+/* Variable Field                                                            */
+/*****************************************************************************/
+.unity-builder-variable-field {
+    align-self: stretch;
+    flex-basis: 0;
+    flex-grow: 1;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.unity-builder-variable-field .unity-label {
+    margin-left: 0;
+    margin-right: 0;
+}
+
+.unity-builder-variable-field__placeholder-label {
+    position: absolute;
+    top: 2px;
+    right: 0;
+    bottom: 0;
+    left: 6px;
+    flex-direction: row;
+    min-width: 0;
+    -unity-text-align: middle-left;
 }

@@ -1,0 +1,4 @@
+.builder-library-foldout__tag-pill {
+    border-color: #555555;
+    color: #555555;
+}

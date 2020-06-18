@@ -168,17 +168,16 @@ namespace Unity.UI.Builder
                 {
                     if (libraryTreeItem.IsHeader)
                     {
-                        var categoryFoldout = new PersistedFoldout {text = libraryTreeItem.data};
+                        var categoryFoldout = new LibraryFoldout {text = libraryTreeItem.data};
+                        if (libraryTreeItem.IsEditorOnly)
+                        {
+                            categoryFoldout.Tag = BuilderConstants.EditorOnlyTag;
+                            categoryFoldout.Q(LibraryFoldout.TagLabelName).AddToClassList(BuilderConstants.TagPillClassName);
+                        }
                         categoryFoldout.contentContainer.RegisterCallback<GeometryChangedEvent>(e => AdjustSpace(categoryFoldout));
                         categoryFoldout.AddToClassList(k_PlainViewFoldoutStyle);
                         Add(categoryFoldout);
                         FillView(libraryTreeItem.children, categoryFoldout);
-                        continue;
-                    }
-
-                    if (libraryTreeItem.hasChildren)
-                    {
-                        FillView(libraryTreeItem.children, itemsParent);
                         continue;
                     }
 

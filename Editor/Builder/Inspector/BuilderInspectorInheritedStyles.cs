@@ -339,6 +339,9 @@ namespace Unity.UI.Builder
             var container = new VisualElement();
 
             int ruleIndex = 0;
+            var options = new UssExportOptions();
+            var sb = new StringBuilder();
+
             foreach (var rule in m_MatchingSelectors.matchedRulesExtractor.selectedElementRules)
             {
                 var selectorStr = StyleSheetToUss.ToUssSelector(rule.matchRecord.complexSelector);
@@ -363,17 +366,11 @@ namespace Unity.UI.Builder
 
                 for (int j = 0; j < props.Length; j++)
                 {
-                    string s = "";
-                    for (int k = 0; k < props[j].values.Length; k++)
-                    {
-                        if (k > 0)
-                            s += " ";
+                    sb.Clear();
+                    StyleSheetToUss.ToUssString(rule.matchRecord.sheet, options, props[j], sb);
+                    string s = sb.ToString();
 
-                        var str = rule.matchRecord.sheet.ReadAsString(props[j].values[k]);
-                        s += str;
-                    }
-
-                    s = s.ToLower();
+                    s = s?.ToLower();
                     var textField = new TextField(props[j].name) { value = s };
                     textField.isReadOnly = true;
                     ruleFoldout.Add(textField);

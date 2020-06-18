@@ -53,7 +53,7 @@ namespace Unity.UI.Builder
             selection.NotifyOfStylingChange(null);
         }
 
-        protected override bool StopEventOnMouseDown()
+        protected override bool StopEventOnMouseDown(MouseDownEvent evt)
         {
             return false;
         }

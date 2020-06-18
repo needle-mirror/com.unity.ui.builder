@@ -163,7 +163,17 @@ namespace Unity.UI.Builder
                     return styleSheet.assets[valueHandle.valueIndex];
             }
         }
+#if UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
+        public static StyleValueFunction GetFunction(this StyleSheet styleSheet, StyleValueHandle valueHandle)
+        {
+            return styleSheet.ReadFunction(valueHandle);
+        }
 
+        public static string GetVariable(this StyleSheet styleSheet, StyleValueHandle valueHandle)
+        {
+            return styleSheet.ReadVariable(valueHandle);
+        }
+#endif
         public static string GetEnum(this StyleSheet styleSheet, StyleValueHandle valueHandle)
         {
             return styleSheet.ReadEnum(valueHandle);

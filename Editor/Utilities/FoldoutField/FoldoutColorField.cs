@@ -54,6 +54,16 @@ namespace Unity.UI.Builder
             m_ColorField.Q<IMGUIContainer>().hierarchy.Add(m_MixedValueLine);
         }
 
+        public override void UpdateFromChildFields()
+        {
+            var styleFields = this.contentContainer.Query<ColorField>().ToList();
+            for (int i = 0; i < styleFields.Count; ++i)
+            {
+                var styleField = styleFields[i];
+                UpdateFromChildField(bindingPathArray[i], styleField.value);
+            }
+        }
+
         public void UpdateFromChildField(string bindingPath, Color newValue)
         {
             while (fieldValues.Count != bindingPathArray.Length)

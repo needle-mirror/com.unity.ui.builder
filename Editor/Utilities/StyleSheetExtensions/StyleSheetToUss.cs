@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -117,6 +118,11 @@ namespace Unity.UI.Builder
                         assetPath = "/" + assetPath;
                     str = assetRef == null ? "none" : $"url('{assetPath}')";
                     break;
+#if UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
+                case StyleValueType.Variable:
+                    str = sheet.ReadVariable(handle);
+                    break;
+#endif
                 default:
                     throw new ArgumentException("Unhandled type " + handle.valueType);
             }
@@ -192,6 +198,15 @@ namespace Unity.UI.Builder
                 sb.Append(options.propertyIndent);
                 sb.Append(property.name);
                 sb.Append(":");
+
+                ToUssString(sheet, options, property, sb);
+                sb.Append(";");
+                sb.Append(BuilderConstants.NewlineCharFromEditorSettings);
+            }
+        }
+
+        public static void ToUssString(StyleSheet sheet, UssExportOptions options, StyleProperty property, StringBuilder sb)
+        {
                 if (property.name == "cursor" && property.values.Length > 1)
                 {
                     int i;
@@ -212,10 +227,6 @@ namespace Unity.UI.Builder
                     sb.Append(" ");
                     ValueHandlesToUssString(sb, sheet, options, property.name, property.values, ref valueIndex);
                 }
-
-                sb.Append(";");
-                sb.Append(BuilderConstants.NewlineCharFromEditorSettings);
-            }
         }
 
         public static void ToUssString(StyleSelectorRelationship previousRelationship, StyleSelectorPart[] parts, StringBuilder sb)
@@ -260,9 +271,9 @@ namespace Unity.UI.Builder
             return sb.ToString();
         }
 
-        public static string ToUssString(StyleSheet sheet, StyleComplexSelector complexSelector)
+        public static string ToUssString(StyleSheet sheet, StyleComplexSelector complexSelector, StringBuilder stringBuilder = null)
         {
-            var inlineBuilder = new StringBuilder();
+            var inlineBuilder = stringBuilder == null ? new StringBuilder() : stringBuilder;
 
             ToUssString(sheet, new UssExportOptions(), complexSelector, inlineBuilder);
 
@@ -299,7 +310,9 @@ namespace Unity.UI.Builder
                     // Omit special selection rule.
                     if (complexSelector.selectors.Length > 0 &&
                         complexSelector.selectors[0].parts.Length > 0 &&
-                        complexSelector.selectors[0].parts[0].value == BuilderConstants.SelectedStyleSheetSelectorName)
+                        (complexSelector.selectors[0].parts[0].value == BuilderConstants.SelectedStyleSheetSelectorName
+                        || complexSelector.selectors[0].parts[0].value.StartsWith(BuilderConstants.StyleSelectorElementName)
+                        ))
                         continue;
 
                     ToUssString(sheet, options, complexSelector, sb);

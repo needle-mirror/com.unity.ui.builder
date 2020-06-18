@@ -67,8 +67,10 @@ namespace Unity.UI.Builder
             m_DraggerIntegerField.name = "dragger-integer-field";
             m_DraggerIntegerField.AddToClassList(k_DraggerFieldUssClassName);
             m_DraggerIntegerField.RegisterValueChangedCallback(OnDraggerFieldUpdate);
+            //TODO: IMPLEMENT OUR OWN DRAG TO WORK WITH VARIABLE WORFLOW
+#if !UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
             Insert(0, m_DraggerIntegerField);
-
+#endif
             option = defaultUnit;
 
             RefreshChildFields();

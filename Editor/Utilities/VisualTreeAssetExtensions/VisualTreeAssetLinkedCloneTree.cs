@@ -87,6 +87,9 @@ namespace Unity.UI.Builder
             {
                 var templatePath = vta.GetPathFromTemplateName(templateAsset.templateAlias);
                 ve.SetProperty(BuilderConstants.LibraryItemLinkedTemplateContainerPathVEPropertyName, templatePath);
+                var instancedTemplateVTA = vta.ResolveTemplate(templateAsset.templateAlias);
+                if (instancedTemplateVTA != null)
+                    ve.SetProperty(BuilderConstants.ElementLinkedInstancedVisualTreeAssetVEPropertyName, instancedTemplateVTA);
             }
 
             List<VisualElementAsset> children;

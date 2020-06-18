@@ -6,6 +6,7 @@ using UnityEditor.UIElements;
 using UnityEditor.StyleSheets;
 using System.Linq;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Unity.UI.Builder
 {
@@ -15,7 +16,7 @@ namespace Unity.UI.Builder
         BuilderToolbar m_Toolbar;
         BuilderSelection m_Selection;
 
-        VisualElement m_CutElement;
+        List<VisualElement> m_CutElements = new List<VisualElement>();
 
         List<BuilderPaneContent> m_Panes = new List<BuilderPaneContent>();
 
@@ -115,22 +116,16 @@ namespace Unity.UI.Builder
         {
             switch (evt.commandName)
             {
-                case EventCommandNames.Cut: PerformActionOnSelection(CutElement, ClearCopyBuffer, JustNotify); return;
-                case EventCommandNames.Copy: PerformActionOnSelection(CopyElement, ClearCopyBuffer); return;
+                case EventCommandNames.Cut: CutSelection(); return;
+                case EventCommandNames.Copy: CopySelection(); return;
                 case EventCommandNames.SoftDelete:
                 case EventCommandNames.Delete: DeleteSelection(); return;
-                case EventCommandNames.Duplicate: PerformActionOnSelection(DuplicateElement, ClearCopyBuffer, Paste); return;
+                case EventCommandNames.Duplicate: DuplicateSelection(); return;
                 case EventCommandNames.Paste: Paste(); return;
 #if UNITY_2019_3_OR_NEWER
-                case EventCommandNames.Rename: PerformActionOnSelection(RenameElement); return;
+                case EventCommandNames.Rename: RenameSelection(); return;
 #endif
             }
-        }
-
-        static void RenameElement(VisualElement element)
-        {
-            var explorerItemElement = element.GetProperty(BuilderConstants.ElementLinkedExplorerItemVEPropertyName) as BuilderExplorerItem;
-            explorerItemElement?.ActivateRenameElementMode();
         }
 
         void OnUndoRedo()
@@ -189,9 +184,9 @@ namespace Unity.UI.Builder
                     break;
                 case KeyCode.Escape:
                     {
-                        if (m_CutElement != null)
+                        if (m_CutElements.Count > 0)
                         {
-                            m_CutElement = null;
+                            m_CutElements.Clear();
                             BuilderEditorUtility.SystemCopyBuffer = null;
                         }
                     }
@@ -220,48 +215,91 @@ namespace Unity.UI.Builder
                 JustNotify();
         }
 
-        public void PerformActionOnSelection(Action<VisualElement> preElementaction, Action preAction = null, Action postAction = null)
+        public bool CopySelection()
         {
-            preAction?.Invoke();
+            ClearCopyBuffer();
 
             if (m_Selection.isEmpty)
+                return false;
+
+            // UXML
+            var veas = new List<VisualElementAsset>();
+            foreach (var element in m_Selection.selection)
+            {
+                var vea = element.GetVisualElementAsset();
+                if (vea == null)
+                {
+                    veas.Clear();
+                    break; // Mixed type selections are not supported.
+                }
+
+                // Check if current element is a child of another selected element.
+                if (element.HasAnyAncestorInList(m_Selection.selection))
+                    continue;
+
+                veas.Add(vea);
+            }
+            if (veas.Count > 0)
+            {
+                BuilderEditorUtility.SystemCopyBuffer =
+                    VisualTreeAssetToUXML.GenerateUXML(m_PaneWindow.document.visualTreeAsset, null, veas);
+                return true;
+            }
+
+            // USS
+            var ussSnippetBuilder = new StringBuilder();
+            foreach (var element in m_Selection.selection)
+            {
+                var selector = element.GetStyleComplexSelector();
+                if (selector == null)
+                {
+                    ussSnippetBuilder.Clear();
+                    break; // Mixed type selections are not supported.
+                }
+
+                // Check if current element is a child of another selected element.
+                if (element.HasAnyAncestorInList(m_Selection.selection))
+                    continue;
+
+                var styleSheet = element.GetClosestStyleSheet();
+                StyleSheetToUss.ToUssString(styleSheet, selector, ussSnippetBuilder);
+            }
+            if (ussSnippetBuilder.Length > 0)
+            {
+                BuilderEditorUtility.SystemCopyBuffer = ussSnippetBuilder.ToString();
+                return true;
+            }
+
+            return false;
+        }
+
+        public void CutSelection()
+        {
+            m_CutElements.Clear();
+
+            if (!CopySelection())
                 return;
 
             foreach (var element in m_Selection.selection)
-                preElementaction(element);
+                m_CutElements.Add(element);
 
-            postAction?.Invoke();
+            JustNotify();
         }
 
-        public void DuplicateElement(VisualElement element)
+        public void DuplicateSelection()
         {
-            CopyElement(element);
+            if (CopySelection())
+                Paste();
         }
 
-        public void CutElement(VisualElement element)
+        public void RenameSelection()
         {
-            CopyElement(element);
-            m_CutElement = element;
-        }
-
-        public void CopyElement(VisualElement element)
-        {
-            var vea = element.GetVisualElementAsset();
-            if (vea != null)
-            {
-                BuilderEditorUtility.SystemCopyBuffer =
-                    VisualTreeAssetToUXML.GenerateUXML(m_PaneWindow.document.visualTreeAsset, null, vea);
+            if (m_Selection.isEmpty)
                 return;
-            }
 
-            var selector = element.GetStyleComplexSelector();
-            if (selector != null)
-            {
-                var styleSheet = element.GetClosestStyleSheet();
-                BuilderEditorUtility.SystemCopyBuffer =
-                    StyleSheetToUss.ToUssString(styleSheet, selector);
-                return;
-            }
+            var element = m_Selection.selection.First();
+            var explorerItemElement = element.GetProperty(BuilderConstants.ElementLinkedExplorerItemVEPropertyName) as BuilderExplorerItem;
+            explorerItemElement?.ActivateRenameElementMode();
         }
 
         void PasteUXML(string copyBuffer)
@@ -271,18 +309,21 @@ namespace Unity.UI.Builder
 
             VisualElementAsset parent = null;
             if (!m_Selection.isEmpty)
+            {
                 parent = m_Selection.selection.First().parent?.GetVisualElementAsset();
+                m_Selection.ClearSelection(null);
+            }
+
+            // Select all pasted elements.
+            foreach (var templateAsset in pasteVta.templateAssets)
+                if (pasteVta.IsRootElement(templateAsset))
+                    templateAsset.Select();
+            foreach (var vea in pasteVta.visualElementAssets)
+                if (pasteVta.IsRootElement(vea))
+                    vea.Select();
 
             BuilderAssetUtilities.TransferAssetToAsset(m_PaneWindow.document, parent, pasteVta);
             m_PaneWindow.document.AddStyleSheetsToAllRootElements();
-
-            var selectionParentId = parent?.id ?? m_PaneWindow.document.visualTreeAsset.GetRootUXMLElementId();
-            VisualElementAsset newSelectedItem = pasteVta.templateAssets.FirstOrDefault(tpl => tpl.parentId == selectionParentId);
-            if (newSelectedItem == null)
-                newSelectedItem = pasteVta.visualElementAssets.FirstOrDefault(asset => asset.parentId == selectionParentId);
-
-            m_Selection.ClearSelection(null);
-            newSelectedItem.Select();
 
             ScriptableObject.DestroyImmediate(pasteVta);
         }
@@ -298,11 +339,12 @@ namespace Unity.UI.Builder
             var importer = new BuilderStyleSheetImporter(); // Cannot be cached because the StyleBuilder never gets reset.
             importer.Import(pasteStyleSheet, copyBuffer);
 
-            BuilderAssetUtilities.TransferAssetToAsset(m_PaneWindow.document, mainStyleSheet, pasteStyleSheet);
-
+            // Select all pasted selectors.
             m_Selection.ClearSelection(null);
-            var scs = mainStyleSheet.complexSelectors.Last();
-            BuilderAssetUtilities.AddStyleComplexSelectorToSelection(m_PaneWindow.document, mainStyleSheet, scs);
+            foreach (var selector in pasteStyleSheet.complexSelectors)
+                BuilderAssetUtilities.AddStyleComplexSelectorToSelection(pasteStyleSheet, selector);
+
+            BuilderAssetUtilities.TransferAssetToAsset(m_PaneWindow.document, mainStyleSheet, pasteStyleSheet);
 
             ScriptableObject.DestroyImmediate(pasteStyleSheet);
         }
@@ -322,10 +364,12 @@ namespace Unity.UI.Builder
             else // Unknown string.
                 return;
 
-            if (m_CutElement != null)
+            if (m_CutElements.Count > 0)
             {
-                DeleteElement(m_CutElement);
-                m_CutElement = null;
+                foreach (var elementToCut in m_CutElements)
+                    DeleteElement(elementToCut);
+
+                m_CutElements.Clear();
                 BuilderEditorUtility.SystemCopyBuffer = null;
             }
 
@@ -335,9 +379,9 @@ namespace Unity.UI.Builder
             // call to Refresh().
             m_PaneWindow.rootVisualElement.schedule.Execute(() =>
             {
-                var currentlySelectedItem = m_Selection.selection.FirstOrDefault();
-                if(currentlySelectedItem != null)
-                    m_Selection.Select(null, currentlySelectedItem);
+                if (m_Selection.isEmpty)
+                    return;
+                m_Selection.ForceReselection();
             }).ExecuteLater(200);
 
             m_Selection.NotifyOfHierarchyChange();
@@ -385,9 +429,8 @@ namespace Unity.UI.Builder
             // 2020.1 adds support for the global <Style> tag so this limitation is lifted. However, the
             // UI Builder does not yet support the global <Style> tag. Plus, even when support to the
             // UI Builder is added, we still need to maintain support for 2019.3 via this logic.
-            if (!(vea is TemplateAsset) &&
-                m_PaneWindow.document.firstStyleSheet != null &&
-                m_PaneWindow.document.visualTreeAsset.WillBeEmptyIfRemovingOne())
+            if (m_PaneWindow.document.firstStyleSheet != null &&
+                m_PaneWindow.document.visualTreeAsset.WillBeEmptyIfRemovingOne(vea))
             {
                 var continueDeletion = BuilderDialogsUtility.DisplayDialog(
                     BuilderConstants.DeleteLastElementDialogTitle,

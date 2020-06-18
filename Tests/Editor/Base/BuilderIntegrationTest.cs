@@ -17,16 +17,22 @@ namespace Unity.UI.Builder.EditorTests
         protected const string k_TestEmptyUSSFileNameNoExt = "EmptyTestStyleSheet";
         protected const string k_TestNoUSSDocumentUXMLFileNameNoExt = "NoUSSDocument";
         protected const string k_TestMultiUSSDocumentUXMLFileNameNoExt = "MultiUSSDocument";
+        protected const string k_ParentTestUXMLFileNameNoExt = "ParentTestUXMLDocument";
+        protected const string k_ChildTestUXMLFileNameNoExt = "ChildTestUXMLDocument";
 
         protected const string k_TestEmptyUSSFileName = k_TestEmptyUSSFileNameNoExt + ".uss";
         protected const string k_TestNoUSSDocumentUXMLFileName = k_TestNoUSSDocumentUXMLFileNameNoExt + ".uxml";
         protected const string k_TestMultiUSSDocumentUXMLFileName = k_TestMultiUSSDocumentUXMLFileNameNoExt + ".uxml";
+        protected const string k_ParentTestUXMLFileName = k_ParentTestUXMLFileNameNoExt + ".uxml";
+        protected const string k_ChildTestUXMLFileName = k_ChildTestUXMLFileNameNoExt + ".uxml";
 
         protected const string k_TestUSSFilePath = "Assets/" + k_TestUSSFileName;
         protected const string k_TestUXMLFilePath = "Assets/" + k_TestUXMLFileName;
         protected const string k_TestEmptyUSSFilePath = BuilderConstants.UIBuilderTestsTestFilesPath + "/" + k_TestEmptyUSSFileName;
         protected const string k_TestNoUSSDocumentUXMLFilePath = BuilderConstants.UIBuilderTestsTestFilesPath + "/" + k_TestNoUSSDocumentUXMLFileName;
         protected const string k_TestMultiUSSDocumentUXMLFilePath = BuilderConstants.UIBuilderTestsTestFilesPath + "/" + k_TestMultiUSSDocumentUXMLFileName;
+        protected const string k_ParentTestUXMLPath = BuilderConstants.UIBuilderTestsTestFilesPath + "/" + k_ParentTestUXMLFileName;
+        protected const string k_ChildTestUXMLPath = BuilderConstants.UIBuilderTestsTestFilesPath + "/" + k_ChildTestUXMLFileName;
 
         // TODO: This needs to be converted to an actual file.
         protected static readonly string k_TestUXMLFileContent
@@ -39,6 +45,7 @@ namespace Unity.UI.Builder.EditorTests
         protected BuilderStyleSheets StyleSheetsPane { get; private set; }
         protected BuilderViewport ViewportPane { get; private set; }
         protected BuilderInspector InspectorPane { get; private set; }
+        protected BuilderCanvas Canvas { get; private set; }
 
         [SetUp]
         public virtual void Setup()
@@ -49,6 +56,7 @@ namespace Unity.UI.Builder.EditorTests
                 BuilderWindow = BuilderTestsHelper.MakeNewBuilderWindow();
 
             Selection = BuilderWindow.selection;
+            Canvas = BuilderWindow.rootVisualElement.Q<BuilderCanvas>();
             LibraryPane = BuilderWindow.rootVisualElement.Q<BuilderLibrary>();
             HierarchyPane = BuilderWindow.rootVisualElement.Q<BuilderHierarchy>();
             StyleSheetsPane = BuilderWindow.rootVisualElement.Q<BuilderStyleSheets>();
@@ -58,6 +66,7 @@ namespace Unity.UI.Builder.EditorTests
             if (EditorApplication.isPlaying)
                 return;
 
+            BuilderProjectSettings.Reset();
             ForceNewDocument();
             var createSelectorField = StyleSheetsPane.Q<TextField>();
             createSelectorField.visualInput.Blur();
@@ -205,7 +214,7 @@ namespace Unity.UI.Builder.EditorTests
 
             var builderWindow = BuilderWindow;
 
-            var inputField = StyleSheetsPane.Q<TextField>("new-selector-field");
+            var inputField = StyleSheetsPane.Q<TextField>(className: BuilderNewSelectorField.s_TextFieldUssClassName);
             inputField.visualInput.Focus();
 
             // Make

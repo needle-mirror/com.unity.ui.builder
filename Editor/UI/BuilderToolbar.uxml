@@ -8,4 +8,7 @@
         <uie:ToolbarToggle name="preview-button" text="Preview" />
         <uie:ToolbarMenu name="settings-menu" class="unity-builder__toolbar-setting-menu" />
     </uie:Toolbar>
+    <uie:Toolbar name="breadcrumbs-toolbar" class="unity-builder-toolbar">
+        <uie:ToolbarBreadcrumbs name="breadcrumbs-view" class="unity-builder__toolbar-breadcrumbs" />
+    </uie:Toolbar>
 </UXML>

@@ -25,7 +25,7 @@ namespace Unity.UI.Builder.EditorTests
         public override ConstraintResult ApplyTo(object actual)
         {
             if (actual is VisualElement visual)
-                return new ConstraintResult(this, visual.style.display.value, visual.style.display.value == m_Expected);
+                return new ConstraintResult(this, visual.resolvedStyle.display, visual.resolvedStyle.display == m_Expected);
 
             return new ConstraintResult(this, $"not a {nameof(VisualElement)}", false);
         }

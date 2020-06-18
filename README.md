@@ -2,22 +2,22 @@
 
 The **UI Builder** lets you visually create and edit UI assets (UXML and USS) for use with the **UI Toolkit** (formally UIElements). Once the package is installed, the UI Builder window can be opened via the **Window > UI Toolkit > UI Builder** menu, or double-clicking on a `.uxml` asset in the Project Browser.
 
-> Note, for 2019.3 and 2019.2, the UI Builder window can be found in **Window > UI > UI Builder**.
+> Note, for 2019.x, the UI Builder window can be found in **Window > UI > UI Builder**.
 
 **Internal Developers:** Please **join our [#devs-uibuilder](https://unity.slack.com/archives/CJ3TX00QJ) Slack channel** for feedback and questions.
 
 ## Installation
 
 Unity versions supported:
-- **2019.2**: 2019.2.21f1 or newer
-- **2019.3**: 2019.3.12f1 or newer
-- **2020.1**: 2020.1.0b7 or newer
-- **2020.2**: 2020.2.0a9 or newer
+- **2019.3**: 2019.3.15f1 or newer
+- **2019.4**: 2019.4.0f1 or newer
+- **2020.1**: 2020.1.0b12 or newer
+- **2020.2**: 2020.2.0a14 or newer
 
 To install:
 1. Open the **Window > Package Manager**.
-    * For 2019.2, 2019.3, and older 2020.1, enable **Advanced > Show preview Packages**: ![Enable Preview Packages](Documentation~/images/InstallationPackageManagerAdvancedOptions.png)
-    * For newer 2020.1 and 2020.2+, go to **Edit > Project Settings... > Package Manager**, and enable check **Enable Preview Packages**:
+    * For 2019.x, enable **Advanced > Show preview Packages**: ![Enable Preview Packages](Documentation~/images/InstallationPackageManagerAdvancedOptions.png)
+    * For newer 2020.1+, go to **Edit > Project Settings... > Package Manager**, and enable check **Enable Preview Packages**:
     ![Enable Preview Packages (new)](Documentation~/images/InstallationPackageManagerEnablePreview.png)
 1. Go back to the **Window > Package Manager**.
 1. Search for `UI Builder`:![Search Package Manager](Documentation~/images/InstallationPackageManagerSearch.png)

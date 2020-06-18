@@ -79,9 +79,9 @@ namespace Unity.UI.Builder
             m_Selection.NotifyOfHierarchyChange(document);
         }
 
-        public override void LoadDocument(VisualTreeAsset asset)
+        public override void LoadDocument(VisualTreeAsset asset, bool unloadAllSubDocuments = true)
         {
-            m_Toolbar.LoadDocument(asset);
+            m_Toolbar.LoadDocument(asset, unloadAllSubDocuments);
         }
     }
 }

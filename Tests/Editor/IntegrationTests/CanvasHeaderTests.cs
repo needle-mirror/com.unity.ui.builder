@@ -1,0 +1,86 @@
+using System.Collections;
+using System.IO;
+using NUnit.Framework;
+using UnityEditor;
+using UnityEngine;
+using UnityEngine.TestTools;
+using UnityEngine.UIElements;
+
+namespace Unity.UI.Builder.EditorTests
+{
+    class CanvasHeaderTests : BuilderIntegrationTest
+    {
+        [UnitySetUp]
+        public IEnumerator UnitySetUp()
+        {
+            CreateTestUXMLFile();
+            yield return null;
+        }
+
+        protected override IEnumerator TearDown()
+        {
+            yield return base.TearDown();
+            DeleteTestUXMLFile();
+        }
+
+        /// <summary>
+        /// Click on Canvas Header Displays Document Settings.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator ClickOnCanvasHeaderDisplaysDocumentSettings()
+        {
+            var documentSettings = InspectorPane.Q(BuilderInspectorCanvas.ContainerName);
+            Assert.That(documentSettings, Style.Display(DisplayStyle.None));
+
+            yield return UIETestEvents.Mouse.SimulateClick(Canvas.header);
+            Assert.That(documentSettings, Style.Display(DisplayStyle.Flex));
+        }
+
+        /// <summary>
+        /// The currently open UXML asset name, or <unsaved asset>`, is displayed in the Canvas header, grayed out.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator UnsavedAssetHeaderTitleText()
+        {
+            Assert.True(Canvas.TitleLabel.text.Contains("<unsaved file>"));
+
+            var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_TestUXMLFilePath);
+            var toolbar = ViewportPane.Q<BuilderToolbar>();
+            toolbar.LoadDocument(asset);
+
+            yield return UIETestHelpers.Pause();
+            Assert.True(Canvas.TitleLabel.text.Contains(k_TestUXMLFileName));
+        }
+
+        /// <summary>
+        /// Header tooltip contains project relative path to the open UXML asset.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator HeaderTooltipContainsUXMLAssetPath()
+        {
+            var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_TestUXMLFilePath);
+            var toolbar = ViewportPane.Q<BuilderToolbar>();
+            toolbar.LoadDocument(asset);
+
+            yield return UIETestHelpers.Pause();
+            Assert.That(Canvas.TitleLabel.tooltip, Is.EqualTo(k_TestUXMLFilePath));
+        }
+
+        /// <summary>
+        /// If there are unsaved changes, a `*` is appended to the asset name.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator DocumentUnsavedChangesShouldAddIndicationToTheToolbar()
+        {
+            var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_TestUXMLFilePath);
+            var toolbar = ViewportPane.Q<BuilderToolbar>();
+            toolbar.LoadDocument(asset);
+
+            yield return UIETestHelpers.Pause();
+            Assert.That(Canvas.TitleLabel.text, Is.EqualTo(k_TestUXMLFileName));
+
+            yield return AddVisualElement();
+            Assert.That(Canvas.TitleLabel.text, Is.EqualTo($"{k_TestUXMLFileName}*"));
+        }
+    }
+}

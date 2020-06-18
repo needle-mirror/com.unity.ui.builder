@@ -1,0 +1,9 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" uib="Unity.UI.Builder" editor-extension-mode="False">
+    <ui:VisualElement>
+        <Style src="BuilderVariableSampleCanvas.uss" />
+        <ui:Button text="Button" class="test-button-0" />
+        <ui:Button text="Button" class="test-button-1 test-button-0" />
+        <ui:Button text="Button" class="test-button-2 test-button-0" />
+        <ui:Button text="Button" class="test-button-3" />
+    </ui:VisualElement>
+</ui:UXML>

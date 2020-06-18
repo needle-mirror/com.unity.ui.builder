@@ -73,7 +73,6 @@
 
     </uib:TwoPaneSplitView>
     <!-- Main Split View -->
-
     <uib:BuilderTooltipPreview name="stylesheets-pane-tooltip-preview" />
     <uib:BuilderTooltipPreview name="library-tooltip-preview" />
 </UXML>

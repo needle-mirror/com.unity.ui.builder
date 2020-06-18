@@ -140,15 +140,17 @@ namespace Unity.UI.Builder
             row.RemoveFromClassList(BuilderConstants.ExplorerHeaderRowClassName);
             row.SetEnabled(true);
 
-            var isCurrentDocumentVisualTreeAsset = builderItem.SourceAsset == m_PaneWindow.document.visualTreeAsset;
-            row.EnableInClassList(BuilderConstants.LibraryCurrentlyOpenFileItemClassName, isCurrentDocumentVisualTreeAsset);
-            element.SetEnabled(!isCurrentDocumentVisualTreeAsset);
+            var listOfOpenDocuments = m_PaneWindow.document.openUXMLFiles;
+            bool isCurrentDocumentOpen = listOfOpenDocuments.Any(doc => doc.visualTreeAsset == builderItem.SourceAsset);
+            row.EnableInClassList(BuilderConstants.LibraryCurrentlyOpenFileItemClassName, isCurrentDocumentOpen);
+            element.SetEnabled(!isCurrentDocumentOpen);
 
             // Header
             if (builderItem.IsHeader)
                 row.AddToClassList(BuilderConstants.ExplorerHeaderRowClassName);
 
             var editorOnlyLabel = element.Q<Label>(k_TreeItemEditorOnlyLabelName);
+            editorOnlyLabel.text = BuilderConstants.EditorOnlyTag;
             editorOnlyLabel.style.display = builderItem.IsEditorOnly ? DisplayStyle.Flex : DisplayStyle.None;
 
             // Set Icon

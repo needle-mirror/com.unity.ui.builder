@@ -54,7 +54,7 @@ namespace Unity.UI.Builder
             RefreshUSS();
         }
 
-        public void StylingChanged(List<string> styles)
+        public void StylingChanged(List<string> styles, BuilderStylingChangeType changeType)
         {
             RefreshUSS();
         }

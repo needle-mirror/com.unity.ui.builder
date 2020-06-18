@@ -191,6 +191,16 @@ namespace Unity.UI.Builder
             return element.GetVisualElementAsset() != null || element.GetVisualTreeAsset() != null || BuilderSharedStyles.IsDocumentElement(element);
         }
 
+        public static bool IsSelector(this VisualElement element)
+        {
+            return BuilderSharedStyles.IsSelectorElement(element);
+        }
+
+        public static bool IsStyleSheet(this VisualElement element)
+        {
+            return BuilderSharedStyles.IsStyleSheetElement(element);
+        }
+
         public static StyleSheet GetClosestStyleSheet(this VisualElement element)
         {
             if (element == null)
@@ -249,6 +259,20 @@ namespace Unity.UI.Builder
                 return false;
 
             return element.focusController.focusedElement == element;
+        }
+
+        public static bool HasAnyAncestorInList(this VisualElement element, IEnumerable<VisualElement> ancestors)
+        {
+            foreach (var ancestor in ancestors)
+            {
+                if (ancestor == element)
+                    continue;
+
+                if (element.HasAncestor(ancestor))
+                    return true;
+            }
+
+            return false;
         }
 
         public static bool HasAncestor(this VisualElement element, VisualElement ancestor)

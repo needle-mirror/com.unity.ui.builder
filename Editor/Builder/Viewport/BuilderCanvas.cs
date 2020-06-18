@@ -8,7 +8,6 @@ namespace Unity.UI.Builder
 {
     internal enum BuilderCanvasBackgroundMode
     {
-        None,
         Color,
         Image,
         Camera
@@ -16,8 +15,10 @@ namespace Unity.UI.Builder
 
     internal class BuilderCanvas : VisualElement
     {
-        static readonly string s_ActiveHandleClassName = "unity-builder-canvas--active";
+        const string k_ActiveHandleClassName = "unity-builder-canvas--active";
+        const string k_HighlightedClassName = "unity-builder-canvas--highlighted";
 
+        VisualElement m_Header;
         VisualElement m_Container;
         Rect m_ThisRectOnStartDrag;
         VisualElement m_DragHoverCoverLayer;
@@ -30,8 +31,11 @@ namespace Unity.UI.Builder
 
         public new class UxmlFactory : UxmlFactory<BuilderCanvas, UxmlTraits> { }
 
+        public VisualElement header => m_Header;
         public override VisualElement contentContainer => m_Container;
 
+        public Label TitleLabel { get; }
+        public Label EditorExtensionsLabel { get; }
         public VisualElement defaultBackgroundElement => m_DefaultBackgroundElement;
         public VisualElement customBackgroundElement => m_CustomBackgroundElement;
         public VisualElement checkerboardBackgroundElement => m_CheckerboardBackgroundElement;
@@ -188,6 +192,9 @@ namespace Unity.UI.Builder
             builderTemplate.CloneTree(this);
 
             m_Container = this.Q("content-container");
+            m_Header = this.Q("header-container");
+            TitleLabel = this.Q<Label>("title");
+            EditorExtensionsLabel = this.Q<Label>("tag");
 
             m_HandleElements = new Dictionary<string, VisualElement>();
 
@@ -218,6 +225,11 @@ namespace Unity.UI.Builder
             m_DefaultBackgroundElement = this.Q("default-background-element");
             m_CustomBackgroundElement = this.Q("custom-background-element");
             m_CheckerboardBackgroundElement = this.Q("checkerboard-background-container");
+        }
+
+        public void SetHighlighted(bool enabled)
+        {
+            EnableInClassList(k_HighlightedClassName, enabled);
         }
 
         public void SetSizeFromDocumentSettings()
@@ -251,7 +263,7 @@ namespace Unity.UI.Builder
         void OnEndDrag()
         {
             m_DragHoverCoverLayer.style.display = DisplayStyle.None;
-            m_DragHoverCoverLayer.RemoveFromClassList(s_ActiveHandleClassName);
+            m_DragHoverCoverLayer.RemoveFromClassList(k_ActiveHandleClassName);
         }
 
         void OnDragLeft(Vector2 diff)
@@ -361,7 +373,7 @@ namespace Unity.UI.Builder
                     target.CaptureMouse();
                     e.StopPropagation();
 
-                    target.AddToClassList(s_ActiveHandleClassName);
+                    target.AddToClassList(k_ActiveHandleClassName);
                 }
             }
 
@@ -387,7 +399,7 @@ namespace Unity.UI.Builder
                 e.StopPropagation();
                 m_EndDrag();
 
-                target.RemoveFromClassList(s_ActiveHandleClassName);
+                target.RemoveFromClassList(k_ActiveHandleClassName);
             }
         }
     }

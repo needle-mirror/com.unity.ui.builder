@@ -138,19 +138,6 @@ namespace Unity.UI.Builder.EditorTests
 
             var newSelector = BuilderTestsHelper.GetExplorerItemsWithName(StyleSheetsPane, TestSelectorName);
             Assert.That(newSelector, Is.Not.Null);
-
-            createSelectorField.visualInput.Focus();
-            yield return UIETestEvents.KeyBoard.SimulateTyping(BuilderWindow, TestSelectorName2);
-
-            var addMenu = StyleSheetsPane.Q<ToolbarMenu>("add-new-selector-menu");
-            var addMenuItems = addMenu.menu.MenuItems();
-            Assert.AreEqual(addMenuItems.Count, 1);
-            var actionMenuItem = addMenuItems[0] as DropdownMenuAction;
-            Assert.AreEqual(actionMenuItem.name, k_TestEmptyUSSFileName);
-            actionMenuItem.Execute();
-
-            newSelector = BuilderTestsHelper.GetExplorerItemsWithName(StyleSheetsPane, TestSelectorName2);
-            Assert.That(newSelector, Is.Not.Null);
         }
 
         /// <summary>
@@ -344,7 +331,7 @@ namespace Unity.UI.Builder.EditorTests
             var builderTooltipPreviewEnabler =
                 builderTooltipPreview.Q<VisualElement>(BuilderTooltipPreview.s_EnabledElementName);
 
-            var createSelectorField = StyleSheetsPane.Q<TextField>("new-selector-field");
+            var createSelectorField = StyleSheetsPane.Q<TextField>(className: BuilderNewSelectorField.s_TextFieldUssClassName);
 
             // Everything StyleSheet is disabled now if there are no elements to contain the <Style> tag.
             Assert.That(createSelectorField.enabledInHierarchy, Is.False);
@@ -360,7 +347,7 @@ namespace Unity.UI.Builder.EditorTests
 
         // TODO: Convert to block-comment.
         readonly string m_ExpectedSelectorString
-            = WebUtility.UrlDecode($"{TestSelectorName}%20%7B%0A%20%20%20%20display:%20flex;%0A%20%20%20%20visibility:%20hidden;%0A%7D%0A");
+            = WebUtility.UrlDecode($"{TestSelectorName}%20%7B%0A%20%20%20%20display:%20none;%0A%20%20%20%20visibility:%20hidden;%0A%7D%0A");
 
         /// <summary>
         ///  With a selector selected, you can use standard short-cuts or the Edit menu to copy/paste/duplicate/delete it. You can also copy/paste the USS for the selector to/from a text file.
@@ -384,7 +371,7 @@ namespace Unity.UI.Builder.EditorTests
             displayFoldout.value = true;
 
             var displayStrip = displayFoldout.Query<ToggleButtonStrip>().Where(t => t.label.Equals("Display")).First();
-            yield return UIETestEvents.Mouse.SimulateClick(displayStrip.Q<Button>("flex"));
+            yield return UIETestEvents.Mouse.SimulateClick(displayStrip.Q<Button>("none"));
 
             var visibilityStrip = displayFoldout.Query<ToggleButtonStrip>().Where(t => t.label.Equals("Visibility")).First();
             yield return UIETestEvents.Mouse.SimulateClick(visibilityStrip.Q<Button>("hidden"));
@@ -417,7 +404,7 @@ namespace Unity.UI.Builder.EditorTests
             // Foldout out state should be persisted, so we assume it is open already.
             displayFoldout = InspectorPane.Query<PersistedFoldout>().Where(f => f.text.Equals("Display")).First();
             displayStrip = displayFoldout.Query<ToggleButtonStrip>().Where(t => t.label.Equals("Display")).First();
-            Assert.True(displayStrip.Q<Button>("flex").pseudoStates.HasFlag(PseudoStates.Checked));
+            Assert.True(displayStrip.Q<Button>("none").pseudoStates.HasFlag(PseudoStates.Checked));
 
             visibilityStrip = displayFoldout.Query<ToggleButtonStrip>().Where(t => t.label.Equals("Visibility")).First();
             Assert.True(visibilityStrip.Q<Button>("hidden").pseudoStates.HasFlag(PseudoStates.Checked));

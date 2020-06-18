@@ -1,0 +1,12 @@
+.unity-new-selector-field__options-popup {
+    -unity-slice-right: 1;
+    -unity-slice-top: 0;
+    -unity-slice-bottom: 0;
+    -unity-slice-left: 1;
+    padding-top: 2px;
+    padding-right: 0;
+    padding-left: 0;
+    padding-bottom: 4px;
+    margin: 1px;
+    -unity-text-align: upper-center;
+}

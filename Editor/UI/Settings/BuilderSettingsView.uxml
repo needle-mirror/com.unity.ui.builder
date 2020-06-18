@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:uib="Unity.UI.Builder">
+    <ui:VisualElement class="builder-settings-container">
+        <ui:Label text="UI Builder" class="builder-settings-header"/>
+        <ui:Toggle name="editor-extensions-mode-toggle" label="Enable Editor Extension Authoring by Default"/>
+        <uib:HelpBox text="This setting affects new files, and files that you open in the UI Builder for the first time. &#10;To enable/disable Editor extension authoring for an open file, select the canvas and edit its properties in the Inspector. "/>
+    </ui:VisualElement>
+</ui:UXML>

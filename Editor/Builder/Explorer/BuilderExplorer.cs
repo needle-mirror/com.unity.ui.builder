@@ -31,13 +31,13 @@ namespace Unity.UI.Builder
         bool m_SelectionMadeExternally;
 
         BuilderClassDragger m_ClassDragger;
-        BuilderHierarchyDragger m_HierarchyDragger;
+        BuilderExplorerDragger m_ExplorerDragger;
         BuilderElementContextMenu m_ContextMenuManipulator;
 
-        public VisualElement container
-        {
-            get { return m_ElementHierarchyView.container; }
-        }
+        protected bool selectionMadeExternally => m_SelectionMadeExternally;
+
+        public VisualElement container => m_ElementHierarchyView.container;
+        public BuilderPaneWindow paneWindow => m_PaneWindow;
 
         // Caching whether we need to rebuild the hierarchy on a style change.
         // We need to rebuild the hierarchy to update the file name to indicate to the user that there
@@ -53,7 +53,7 @@ namespace Unity.UI.Builder
             BuilderViewport viewport,
             BuilderSelection selection,
             BuilderClassDragger classDragger,
-            BuilderHierarchyDragger hierarchyDragger,
+            BuilderExplorerDragger explorerDragger,
             BuilderElementContextMenu contextMenuManipulator,
             VisualElement documentElementRoot,
             bool includeDocumentElementRoot,
@@ -68,7 +68,7 @@ namespace Unity.UI.Builder
             AddToClassList(s_UssClassName);
 
             m_ClassDragger = classDragger;
-            m_HierarchyDragger = hierarchyDragger;
+            m_ExplorerDragger = explorerDragger;
             m_ContextMenuManipulator = contextMenuManipulator;
 
             m_SelectionMadeExternally = false;
@@ -87,8 +87,8 @@ namespace Unity.UI.Builder
             m_ElementHierarchyView = new ElementHierarchyView(
                 m_PaneWindow,
                 m_DocumentElement,
-                selection, classDragger, hierarchyDragger,
-                contextMenuManipulator, ElementSelected, highlightOverlayPainter);
+                selection, classDragger, explorerDragger,
+                contextMenuManipulator, ElementSelectionChanged, highlightOverlayPainter);
             m_ElementHierarchyView.style.flexGrow = 1;
             Add(m_ElementHierarchyView);
 
@@ -114,26 +114,31 @@ namespace Unity.UI.Builder
             m_ElementHierarchyView.ResetHighlightOverlays();
         }
 
-        protected virtual void ElementSelected(VisualElement element)
+        protected virtual void ElementSelectionChanged(List<VisualElement> elements)
         {
             if (m_SelectionMadeExternally)
                 return;
 
-            if (element == null)
+            if (elements == null)
             {
-                m_Selection.ClearSelection(this);
-                return;
-            }
-            else if (element.ClassListContains(BuilderConstants.ExplorerItemUnselectableClassName))
-            {
-                m_SelectionMadeExternally = true;
-                m_ElementHierarchyView.ClearSelection();
-                m_SelectionMadeExternally = false;
                 m_Selection.ClearSelection(this);
                 return;
             }
 
-            m_Selection.Select(this, element);
+            m_Selection.ClearSelection(this);
+            foreach (var element in elements)
+            {
+                if (element.ClassListContains(BuilderConstants.ExplorerItemUnselectableClassName))
+                {
+                    m_SelectionMadeExternally = true;
+                    m_ElementHierarchyView.ClearSelection();
+                    m_SelectionMadeExternally = false;
+                    m_Selection.ClearSelection(this);
+                    return;
+                }
+
+                m_Selection.AddToSelection(this, element);
+            }
         }
 
         protected void UpdateHierarchy(bool hasUnsavedChanges)
@@ -151,7 +156,7 @@ namespace Unity.UI.Builder
 
             if (!m_Selection.isEmpty)
             {
-                m_ElementHierarchyView.SelectElement(m_Selection.selection.First());
+                m_ElementHierarchyView.SelectElements(m_Selection.selection);
                 m_ElementHierarchyView.IncrementVersion(VersionChangeType.Styles);
             }
 
@@ -186,21 +191,23 @@ namespace Unity.UI.Builder
                 return;
             }
 
-            var element = m_Selection.selection.First();
-            if (!IsSelectedItemValid(element))
+            foreach (var element in m_Selection.selection)
             {
-                m_SelectionMadeExternally = true;
-                m_ElementHierarchyView.ClearSelection();
-                m_SelectionMadeExternally = false;
-                return;
+                if (!IsSelectedItemValid(element))
+                {
+                    m_SelectionMadeExternally = true;
+                    m_ElementHierarchyView.ClearSelection();
+                    m_SelectionMadeExternally = false;
+                    return;
+                }
             }
 
             m_SelectionMadeExternally = true;
-            m_ElementHierarchyView.SelectElement(element);
+            m_ElementHierarchyView.SelectElements(m_Selection.selection);
             m_SelectionMadeExternally = false;
         }
 
-        public virtual void StylingChanged(List<string> styles)
+        public virtual void StylingChanged(List<string> styles, BuilderStylingChangeType changeType)
         {
             if (m_ShouldRebuildHierarchyOnStyleChange)
                 UpdateHierarchyAndSelection(m_Selection.hasUnsavedChanges);

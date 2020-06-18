@@ -2,6 +2,7 @@ using UnityEngine.UIElements;
 using System.Collections.Generic;
 using UnityEditor.UIElements.Debugger;
 using System;
+using UnityEditor;
 
 namespace Unity.UI.Builder
 {
@@ -55,6 +56,11 @@ namespace Unity.UI.Builder
             return selectorStr;
         }
 
+        internal static StyleComplexSelector GetSelector(VisualElement element)
+        {
+            return element.GetProperty(BuilderConstants.ElementLinkedStyleSelectorVEPropertyName) as StyleComplexSelector;
+        }
+
         internal static void SetSelectorString(VisualElement element, StyleSheet styleSheet, string newString)
         {
             var complexSelector = element.GetProperty(BuilderConstants.ElementLinkedStyleSelectorVEPropertyName) as StyleComplexSelector;
@@ -67,6 +73,11 @@ namespace Unity.UI.Builder
             if (complexSelector == null)
                 return null;
 
+            return GetSelectorParts(complexSelector);
+        }
+
+        internal static List<string> GetSelectorParts(StyleComplexSelector complexSelector)
+        {
             var selectorParts = new List<string>();
             foreach (var selector in complexSelector.selectors)
             {
@@ -120,15 +131,17 @@ namespace Unity.UI.Builder
                 styleSheetElement.name = styleSheet.name;
                 styleSheetElement.SetProperty(BuilderConstants.ElementLinkedStyleSheetVEPropertyName, styleSheet);
                 styleSheetElement.SetProperty(BuilderConstants.ElementLinkedStyleSheetIndexVEPropertyName, i);
+                styleSheetElement.styleSheets.Add(styleSheet);
                 selectorContainerElement.Add(styleSheetElement);
 
                 foreach (var complexSelector in styleSheet.complexSelectors)
                 {
                     var complexSelectorStr = StyleSheetToUss.ToUssSelector(complexSelector);
-                    if (complexSelectorStr == BuilderConstants.SelectedStyleSheetSelectorName)
+                    if (complexSelectorStr == BuilderConstants.SelectedStyleSheetSelectorName
+                        || complexSelectorStr.StartsWith(BuilderConstants.UssSelectorNameSymbol + BuilderConstants.StyleSelectorElementName))
                         continue;
 
-                    var ssVE = CreateNewSelectorElement(complexSelector);
+                    var ssVE = CreateNewSelectorElement(styleSheet, complexSelector);
                     styleSheetElement.Add(ssVE);
                 }
             }
@@ -150,11 +163,52 @@ namespace Unity.UI.Builder
 
             if (styleSheetElement != null)
             {
-                var ssVE = CreateNewSelectorElement(complexSelector);
+                var ssVE = CreateNewSelectorElement(styleSheet, complexSelector);
                 styleSheetElement.Add(ssVE);
             }
 
             return complexSelector;
+        }
+
+        public static void MatchSelectorElementOrderInAsset(VisualElement styleSheetElement, bool undo)
+        {
+            var styleSheet = styleSheetElement.GetStyleSheet();
+            if (styleSheet == null)
+                return;
+
+            if (undo)
+                Undo.RegisterCompleteObjectUndo(
+                    styleSheet, BuilderConstants.MoveUSSSelectorUndoMessage);
+
+            var complexSelectorsList = new List<StyleComplexSelector>();
+
+            foreach (var childElement in styleSheetElement.Children())
+            {
+                complexSelectorsList.Add(childElement.GetStyleComplexSelector());
+            }
+
+            styleSheet.complexSelectors = complexSelectorsList.ToArray();
+        }
+
+        public static void MoveSelectorBetweenStyleSheets(
+            VisualElement fromStyleSheetElement, VisualElement toStyleSheetElement, VisualElement selectorElement, bool undo)
+        {
+            var fromStyleSheet = fromStyleSheetElement.GetStyleSheet();
+            var toStyleSheet = toStyleSheetElement.GetStyleSheet();
+            var fromSelector = selectorElement.GetStyleComplexSelector();
+
+            if (undo)
+            {
+                Undo.RegisterCompleteObjectUndo(
+                    fromStyleSheet, BuilderConstants.MoveUSSSelectorUndoMessage);
+                Undo.RegisterCompleteObjectUndo(
+                    toStyleSheet, BuilderConstants.MoveUSSSelectorUndoMessage);
+            }
+
+            var toSelector = toStyleSheet.Swallow(fromStyleSheet, fromSelector);
+            fromStyleSheet.RemoveSelector(fromSelector);
+
+            selectorElement.SetProperty(BuilderConstants.ElementLinkedStyleSelectorVEPropertyName, toSelector);
         }
 
         public static VisualElement FindSelectorElement(VisualElement documentRootElement, string selectorStr)
@@ -176,13 +230,11 @@ namespace Unity.UI.Builder
             return null;
         }
 
-        static VisualElement CreateNewSelectorElement(StyleComplexSelector complexSelector)
+        static VisualElement CreateNewSelectorElement(StyleSheet styleSheet, StyleComplexSelector complexSelector)
         {
             var ssVE = new VisualElement();
-
-            ssVE.name = BuilderConstants.StyleSelectorElementName + complexSelector.ruleIndex;
-            ssVE.style.display = DisplayStyle.None;
-
+            var ssVEName = BuilderConstants.StyleSelectorElementName + complexSelector.ruleIndex;
+            ssVE.name = ssVEName;
             ssVE.SetProperty(BuilderConstants.ElementLinkedStyleSelectorVEPropertyName, complexSelector);
 
             return ssVE;

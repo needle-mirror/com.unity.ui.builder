@@ -94,9 +94,8 @@ namespace Unity.UI.Builder
         }
 
         internal static void RemoveSelector(
-            this StyleSheet styleSheet, string selectorStr, string undoMessage = null)
+            this StyleSheet styleSheet, StyleComplexSelector selector, string undoMessage = null)
         {
-            var selector = styleSheet.FindSelector(selectorStr);
             if (selector == null)
                 return;
 
@@ -108,6 +107,16 @@ namespace Unity.UI.Builder
             var selectorList = styleSheet.complexSelectors.ToList();
             selectorList.Remove(selector);
             styleSheet.complexSelectors = selectorList.ToArray();
+        }
+
+        internal static void RemoveSelector(
+            this StyleSheet styleSheet, string selectorStr, string undoMessage = null)
+        {
+            var selector = styleSheet.FindSelector(selectorStr);
+            if (selector == null)
+                return;
+
+            RemoveSelector(styleSheet, selector, undoMessage);
         }
 
         public static int AddRule(this StyleSheet styleSheet)
@@ -187,7 +196,10 @@ namespace Unity.UI.Builder
                         case StyleValueType.Color: toStyleSheet.AddValue(newProperty, fromStyleSheet.GetColor(value)); break;
                         case StyleValueType.AssetReference: toStyleSheet.AddValue(newProperty, fromStyleSheet.GetAsset(value)); break;
                         case StyleValueType.ResourcePath: toStyleSheet.AddValue(newProperty, fromStyleSheet.GetAsset(value)); break;
-                    }
+#if UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
+                        case StyleValueType.Variable: toStyleSheet.AddVariable(newProperty, fromStyleSheet.GetString(value)); break;
+#endif
+                   }
                 }
             }
             foreach (var property in fromRule.properties)
@@ -206,12 +218,17 @@ namespace Unity.UI.Builder
             StyleSheet toStyleSheet, StyleComplexSelector toSelector,
             StyleSheet fromStyleSheet, StyleComplexSelector fromSelector)
         {
-            var fromRule = fromSelector.rule;
+            SwallowStyleRule(toStyleSheet, toSelector.rule, fromStyleSheet, fromSelector.rule);
+        }
 
+        public static void SwallowStyleRule(
+           StyleSheet toStyleSheet, StyleRule toRule,
+           StyleSheet fromStyleSheet, StyleRule fromRule)
+        {
             // Add property values to sheet.
             foreach (var fromProperty in fromRule.properties)
             {
-                var toProperty = toStyleSheet.AddProperty(toSelector, fromProperty.name);
+                var toProperty = toStyleSheet.AddProperty(toRule, fromProperty.name);
                 for (int i = 0; i < fromProperty.values.Length; ++i)
                 {
                     var fromValueHandle = fromProperty.values[i];
@@ -221,12 +238,18 @@ namespace Unity.UI.Builder
             }
         }
 
+        public static StyleComplexSelector Swallow(this StyleSheet toStyleSheet, StyleSheet fromStyleSheet, StyleComplexSelector fromSelector)
+        {
+            var toSelector = toStyleSheet.AddSelector(StyleSheetToUss.ToUssSelector(fromSelector));
+            SwallowStyleRule(toStyleSheet, toSelector, fromStyleSheet, fromSelector);
+            return toSelector;
+        }
+
         public static void Swallow(this StyleSheet toStyleSheet, StyleSheet fromStyleSheet)
         {
             foreach (var fromSelector in fromStyleSheet.complexSelectors)
             {
-                var toSelector = toStyleSheet.AddSelector(StyleSheetToUss.ToUssSelector(fromSelector));
-                SwallowStyleRule(toStyleSheet, toSelector, fromStyleSheet, fromSelector);
+                Swallow(toStyleSheet, fromStyleSheet, fromSelector);
             }
         }
 

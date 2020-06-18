@@ -26,8 +26,8 @@ namespace Unity.UI.Builder
             }
         }
 
-        VisualElement m_Header;
-        Toggle m_Toggle;
+        protected VisualElement m_Header;
+        protected Toggle m_Toggle;
         VisualElement m_OverrideBox;
         VisualElement m_Container;
 
@@ -42,7 +42,7 @@ namespace Unity.UI.Builder
             }
         }
 
-        public string text
+        public virtual string text
         {
             get
             {
@@ -104,7 +104,7 @@ namespace Unity.UI.Builder
             m_Value = true;
 
             AddToClassList(ussClassName);
-            
+
             m_Header = new VisualElement()
             {
                 name = "unity-header",

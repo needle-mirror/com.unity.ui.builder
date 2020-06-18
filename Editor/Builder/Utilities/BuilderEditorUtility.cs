@@ -4,7 +4,7 @@ using UnityEngine;
 namespace Unity.UI.Builder
 {
     // TODO: Hack. We need this because EditorGUIUtility.systemCopyBuffer is always empty on Mac in BatchMode.
-    internal static class BuilderEditorUtility
+    static class BuilderEditorUtility
     {
         static string s_FakeSystemCopyBuffer = string.Empty;
 
@@ -12,7 +12,7 @@ namespace Unity.UI.Builder
         {
             get
             {
-                if( Application.isBatchMode && Application.platform == RuntimePlatform.OSXEditor)
+                if (Application.isBatchMode && Application.platform == RuntimePlatform.OSXEditor)
                     return s_FakeSystemCopyBuffer;
 
                 return EditorGUIUtility.systemCopyBuffer;

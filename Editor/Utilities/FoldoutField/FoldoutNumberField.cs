@@ -44,7 +44,7 @@ namespace Unity.UI.Builder
             header.hierarchy.Add(m_TextField);
         }
 
-        public void UpdateFromChildFields()
+        public override void UpdateFromChildFields()
         {
             var styleFields = this.Query<StyleFieldBase>().ToList();
 

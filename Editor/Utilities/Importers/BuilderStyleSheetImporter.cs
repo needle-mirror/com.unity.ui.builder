@@ -1,5 +1,10 @@
 using UnityEditor;
+
+#if UNITY_2020_2_OR_NEWER
+using UnityEditor.UIElements.StyleSheets;
+#else
 using UnityEditor.StyleSheets;
+#endif
 
 namespace Unity.UI.Builder
 {

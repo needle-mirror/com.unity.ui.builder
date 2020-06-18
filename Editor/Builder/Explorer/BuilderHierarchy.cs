@@ -22,7 +22,7 @@ namespace Unity.UI.Builder
                   selection,
                   classDragger,
                   hierarchyDragger,
-                  contextMenuManipulator,
+                  new BuilderHierarchyContextMenu(paneWindow, selection),
                   viewport.documentElement,
                   true,
                   highlightOverlayPainter,

@@ -245,9 +245,16 @@ namespace Unity.UI.Builder
                     {
                         var tree = vta.CloneTree();
                         tree.SetProperty(BuilderConstants.LibraryItemLinkedTemplateContainerPathVEPropertyName, assetPath);
+                        tree.name = vta.name;
                         return tree;
                     },
-                    (inVta, inParent) => inVta.AddTemplateInstance(inParent, assetPath) as VisualElementAsset,
+                    (inVta, inParent, ve) =>
+                    {
+                        var vea = inVta.AddTemplateInstance(inParent, assetPath) as VisualElementAsset;
+                        vea.AddProperty("name", vta.name);
+                        ve.SetProperty(BuilderConstants.ElementLinkedInstancedVisualTreeAssetVEPropertyName, vta);
+                        return vea;
+                    },
                     null, vta);
                 newItem.SetIcon((Texture2D) EditorGUIUtility.IconContent("UxmlScript Icon").image);
                 newItem.HasPreview = true;

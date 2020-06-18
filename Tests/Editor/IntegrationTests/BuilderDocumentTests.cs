@@ -13,6 +13,8 @@ namespace Unity.UI.Builder.EditorTests
     class BuilderDocumentTests : BuilderIntegrationTest
     {
         const string k_NewUxmlFilePath = "Assets/BuildDocumentTests__TestUI.uxml";
+        const int k_NoUSSElementCount = 1;
+        const int k_MultiUSSElementCount = 4;
 
         public override void Setup()
         {
@@ -52,7 +54,7 @@ namespace Unity.UI.Builder.EditorTests
             Assert.AreEqual(document.openUSSFiles.Count, 0);
 
             Assert.False(document.visualTreeAsset.IsEmpty());
-            Assert.That(BuilderWindow.documentRootElement.childCount, Is.EqualTo(1));
+            Assert.That(BuilderWindow.documentRootElement.childCount, Is.EqualTo(k_NoUSSElementCount));
 
             var labelInDocument = BuilderWindow.documentRootElement.Children().First();
             Assert.That(labelInDocument.GetType(), Is.EqualTo(typeof(Label)));
@@ -66,7 +68,7 @@ namespace Unity.UI.Builder.EditorTests
             Assert.AreEqual(document.openUSSFiles.Count, 2);
 
             Assert.False(document.visualTreeAsset.IsEmpty());
-            Assert.That(BuilderWindow.documentRootElement.childCount, Is.EqualTo(1));
+            Assert.That(BuilderWindow.documentRootElement.childCount, Is.EqualTo(k_MultiUSSElementCount));
 
             yield return UIETestHelpers.Pause(1);
 
@@ -78,11 +80,11 @@ namespace Unity.UI.Builder.EditorTests
 
         void UndoRedoCheckWithTextField()
         {
-            Assert.That(BuilderWindow.documentRootElement.childCount, Is.EqualTo(2));
+            Assert.That(BuilderWindow.documentRootElement.childCount, Is.EqualTo(k_MultiUSSElementCount + 1));
             Undo.PerformUndo();
-            Assert.That(BuilderWindow.documentRootElement.childCount, Is.EqualTo(1));
+            Assert.That(BuilderWindow.documentRootElement.childCount, Is.EqualTo(k_MultiUSSElementCount));
             Undo.PerformRedo();
-            Assert.That(BuilderWindow.documentRootElement.childCount, Is.EqualTo(2));
+            Assert.That(BuilderWindow.documentRootElement.childCount, Is.EqualTo(k_MultiUSSElementCount + 1));
         }
 
         [UnityTest]
@@ -173,7 +175,7 @@ namespace Unity.UI.Builder.EditorTests
             BuilderWindow.LoadDocument(asset);
             Assert.AreEqual(BuilderWindow.document.visualTreeAsset, asset);
 
-            Assert.That(BuilderWindow.documentRootElement.childCount, Is.EqualTo(1));
+            Assert.That(BuilderWindow.documentRootElement.childCount, Is.EqualTo(k_MultiUSSElementCount));
 
             AddElementCodeOnly<TextField>();
             // Test restoration of backup.
@@ -267,7 +269,7 @@ namespace Unity.UI.Builder.EditorTests
             var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_TestMultiUSSDocumentUXMLFilePath);
             BuilderWindow.LoadDocument(asset);
 
-            Assert.That(BuilderWindow.documentRootElement.childCount, Is.EqualTo(1));
+            Assert.That(BuilderWindow.documentRootElement.childCount, Is.EqualTo(k_MultiUSSElementCount));
 
             AddElementCodeOnly<TextField>();
 
@@ -295,7 +297,7 @@ namespace Unity.UI.Builder.EditorTests
 
             BuilderWindow.LoadDocument(asset);
 
-            Assert.That(BuilderWindow.documentRootElement.childCount, Is.EqualTo(1));
+            Assert.That(BuilderWindow.documentRootElement.childCount, Is.EqualTo(k_MultiUSSElementCount));
 
             AddElementCodeOnly<TextField>();
 

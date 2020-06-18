@@ -1,0 +1,5 @@
+﻿<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <ui:Template name="SampleSection" src="/Packages/com.unity.ui.builder/Editor/UI/SampleDocument/BuilderSampleCanvasSection.uxml" />
+    <ui:Template name="ChildTestUXMLDocument" src="/Packages/com.unity.ui.builder/Tests/Editor/TestFiles/ChildTestUXMLDocument.uxml" />
+    <ui:Instance template="ChildTestUXMLDocument" name="ChildTestUXMLDocument" />
+</ui:UXML>

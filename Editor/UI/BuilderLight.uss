@@ -82,6 +82,10 @@
 /* Builder Canvas                                                            */
 /*****************************************************************************/
 
+.unity-builder-canvas__header {
+    background-color: rgb(126, 126, 126);
+}
+
 .unity-builder-canvas__container {
     border-color: rgb(126, 126, 126);
 }
@@ -98,6 +102,14 @@
 
 .unity-builder-canvas__special-visual-element-initial-size {
     border-color: rgb(56, 56, 56);
+}
+
+.unity-builder-canvas--highlighted .unity-builder-viewport__shared-styles-and-document {
+    border-color: rgb(63, 146, 214);
+}`
+
+.unity-builder-canvas--highlighted .unity-builder-canvas__header {
+    background-color: rgb(63, 146, 214);
 }
 
 /*****************************************************************************/
@@ -131,6 +143,15 @@
 
 .unity-base-text-field .unity-builder-code__input:focus {
     background-color: rgb(184, 184, 184);
+}
+
+/*****************************************************************************/
+/* Builder Label Pill                                                        */
+/*****************************************************************************/
+
+.unity-builder-tag-pill {
+    border-color: #000000;
+    color: #000000;
 }
 
 /*****************************************************************************/
@@ -239,6 +260,25 @@
 
 .unity-builder-tooltip-preview__enabler {
     border-color: rgb(68, 68, 68);
+}
+
+/*****************************************************************************/
+/* Variable Info Tooltip                                                     */
+/*****************************************************************************/
+.unity-builder-inspector__varinfo-tooltip {
+    background-color: #e4e4e4;
+}
+
+.unity-builder-inspector__varinfo-source-label {
+    color: #101010;
+}
+
+.unity-builder-inspector__varinfo-edit-button {
+    color: #3966c5;
+}
+
+.unity-builder-inspector__varinfo-edit-button:hover {
+    border-color: #3966c5;
 }
 
 /*****************************************************************************/

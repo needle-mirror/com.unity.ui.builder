@@ -141,6 +141,7 @@ namespace Unity.UI.Builder
             m_Canvas = this.Q<BuilderCanvas>("canvas");
             m_Canvas.document = paneWindow.document;
             m_SharedStylesAndDocumentElement = this.Q("shared-styles-and-document");
+            m_SharedStylesAndDocumentElement.pseudoStates |= PseudoStates.Root; // To apply variables of the active theme that are defined in the :root selector
             m_StyleSelectorElementContainer = this.Q(BuilderConstants.StyleSelectorElementContainerName);
             m_DocumentElement = this.Q("document");
             m_Canvas.documentElement = m_DocumentElement;
@@ -166,6 +167,7 @@ namespace Unity.UI.Builder
             m_Viewport.RegisterCallback<MouseDownEvent>(OnMissPick);
             m_Viewport.RegisterCallback<GeometryChangedEvent>(OnGeometryChanged);
 
+            m_Canvas.header.AddManipulator(new Clickable(OnCanvasHeaderClick));
             m_ContextMenuManipulator?.RegisterCallbacksOnTarget(m_Viewport);
 
             // Make sure this gets focus when the pane gets focused.
@@ -232,6 +234,11 @@ namespace Unity.UI.Builder
                 m_Canvas.height = maxCanvasHeight;
 
             CenterCanvas();
+        }
+
+        void OnCanvasHeaderClick(EventBase obj)
+        {
+            m_Selection.Select(null, documentElement);
         }
 
         void OnGeometryChanged(GeometryChangedEvent evt)
@@ -427,10 +434,22 @@ namespace Unity.UI.Builder
             m_BuilderMover.Activate(m_Selection, m_PaneWindow.document.visualTreeAsset, selectedElement);
             m_BuilderAnchorer.Activate(m_Selection, m_PaneWindow.document.visualTreeAsset, selectedElement);
 
-            if (m_Selection.selectionType == BuilderSelectionType.Element || m_Selection.selectionType == BuilderSelectionType.ElementInTemplateInstance)
-                m_BuilderSelectionIndicator.Activate(selectedElement);
-            else
-                m_BuilderSelectionIndicator.Deactivate();
+
+            m_Canvas.SetHighlighted(false);
+            switch (m_Selection.selectionType)
+            {
+                case BuilderSelectionType.Element:
+                case BuilderSelectionType.ElementInTemplateInstance:
+                    m_BuilderSelectionIndicator.Activate(selectedElement);
+                    break;
+                case BuilderSelectionType.VisualTreeAsset:
+                    m_Canvas.SetHighlighted(true);
+                    m_BuilderSelectionIndicator.Deactivate();
+                    break;
+                default:
+                    m_BuilderSelectionIndicator.Deactivate();
+                    break;
+            }
         }
 
         void ClearInnerSelection()
@@ -439,6 +458,7 @@ namespace Unity.UI.Builder
             m_BuilderMover.Deactivate();
             m_BuilderAnchorer.Deactivate();
             m_BuilderSelectionIndicator.Deactivate();
+            m_Canvas.SetHighlighted(false);
         }
 
         public void HierarchyChanged(VisualElement element, BuilderHierarchyChangeType changeType)
@@ -448,14 +468,23 @@ namespace Unity.UI.Builder
 
         public void SelectionChanged()
         {
-            if (m_Selection.isEmpty)
+            if (m_Selection.isEmpty || m_Selection.selectionCount > 1)
                 ClearInnerSelection();
             else
                 SetInnerSelection(m_Selection.selection.First());
         }
 
-        public void StylingChanged(List<string> styles)
+        public void StylingChanged(List<string> styles, BuilderStylingChangeType changeType)
         {
+
+#if UNITY_2020_1_OR_NEWER
+            m_Canvas.EditorExtensionsLabel.style.display = paneWindow.document.UXMLFileSettings.EditorExtensionMode
+                ? DisplayStyle.Flex
+                : DisplayStyle.None;
+#else
+            m_Canvas.EditorExtensionsLabel.style.display = DisplayStyle.None;
+#endif
+
             if (m_Selection.isEmpty || styles == null)
                 return;
 

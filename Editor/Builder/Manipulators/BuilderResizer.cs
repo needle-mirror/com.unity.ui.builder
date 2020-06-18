@@ -235,12 +235,12 @@ namespace Unity.UI.Builder
             m_HandleElements["bottom-handle"].pseudoStates &= ~PseudoStates.Hover;
         }
 
-        public override void StylingChanged(List<string> styles)
+        public override void StylingChanged(List<string> styles, BuilderStylingChangeType changeType)
         {
             if (m_Target == null)
                 return;
 
-            base.StylingChanged(styles);
+            base.StylingChanged(styles, changeType);
 
             if (styles == null)
                 return;

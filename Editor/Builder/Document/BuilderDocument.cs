@@ -49,7 +49,7 @@ namespace Unity.UI.Builder
         // Getters
         //
 
-        BuilderDocumentOpenUXML activeOpenUXMLFile
+        public BuilderDocumentOpenUXML activeOpenUXMLFile
         {
             get
             {
@@ -73,6 +73,7 @@ namespace Unity.UI.Builder
         public VisualTreeAsset visualTreeAsset => activeOpenUXMLFile.visualTreeAsset;
         public StyleSheet firstStyleSheet => activeOpenUXMLFile.firstStyleSheet;
         public List<BuilderDocumentOpenUSS> openUSSFiles => activeOpenUXMLFile.openUSSFiles;
+        public List<BuilderDocumentOpenUXML> openUXMLFiles => m_OpenUXMLFiles;
 
         //
         // Getter/Setters
@@ -238,9 +239,6 @@ namespace Unity.UI.Builder
         public void UpdateActiveStyleSheet(BuilderSelection selection, StyleSheet styleSheet, IBuilderSelectionNotifier source)
             => activeOpenUXMLFile.UpdateActiveStyleSheet(selection, styleSheet, source);
 
-        public bool UpdateActiveStyleSheetFromSelection(BuilderSelection selection)
-            => activeOpenUXMLFile.UpdateActiveStyleSheetFromSelection(selection);
-
         //
         // Save / Load
         //
@@ -279,6 +277,47 @@ namespace Unity.UI.Builder
         }
 
         //
+        // Sub Document
+        //
+
+        public void AddSubDocument()
+        {
+            var newUXMLFile = new BuilderDocumentOpenUXML();
+            newUXMLFile.openSubDocumentParentIndex = m_ActiveOpenUXMLFileIndex;
+            m_OpenUXMLFiles.Add(newUXMLFile);
+            int newIndex = m_OpenUXMLFiles.Count - 1;
+            m_ActiveOpenUXMLFileIndex = newIndex;
+        }
+
+        void GoToSubdocument(BuilderDocumentOpenUXML targetDocument)
+        {
+            while (activeOpenUXMLFile != targetDocument)
+            {
+                int scrapIndex = m_ActiveOpenUXMLFileIndex;
+                m_ActiveOpenUXMLFileIndex = activeOpenUXMLFile.openSubDocumentParentIndex;
+                m_OpenUXMLFiles.RemoveAt(scrapIndex); 
+            }
+        }
+
+        public void GoToSubdocument(VisualElement documentRootElement, BuilderPaneWindow paneWindow, BuilderDocumentOpenUXML targetDocument)
+        {
+            if (targetDocument == activeOpenUXMLFile)
+                return;
+
+            if (!CheckForUnsavedChanges())
+                return;
+            NewDocument(documentRootElement);
+            GoToSubdocument(targetDocument);
+            paneWindow.OnEnableAfterAllSerialization();
+        }
+
+        public void GoToRootDocument(VisualElement documentRootElement, BuilderPaneWindow paneWindow) 
+        {
+            var parentDoc = paneWindow.document.openUXMLFiles[0];
+            GoToSubdocument(documentRootElement, paneWindow, parentDoc);
+        }
+
+        //
         // Asset Change Detection
         //
 
@@ -297,8 +336,13 @@ namespace Unity.UI.Builder
         public void HierarchyChanged(VisualElement element, BuilderHierarchyChangeType changeType)
             => activeOpenUXMLFile.HierarchyChanged(element);
 
-        public void StylingChanged(List<string> styles)
-            => activeOpenUXMLFile.StylingChanged();
+        public void StylingChanged(List<string> styles, BuilderStylingChangeType changeType)
+        {
+            if (changeType == BuilderStylingChangeType.Default)
+            {
+                activeOpenUXMLFile.StylingChanged();
+            }
+        }
 
         //
         // Serialization
@@ -342,5 +386,7 @@ namespace Unity.UI.Builder
         }
 
         public void SaveSettingsToDisk() => activeOpenUXMLFile.settings.SaveSettingsToDisk();
+
+        public BuilderUXMLFileSettings UXMLFileSettings => activeOpenUXMLFile.FileSettings;
     }
 }

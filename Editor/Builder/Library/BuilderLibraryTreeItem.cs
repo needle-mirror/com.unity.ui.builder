@@ -15,7 +15,7 @@ namespace Unity.UI.Builder
         public VisualTreeAsset SourceAsset { get; }
         public string SourceAssetPath { get; }
         public Func<VisualElement> MakeVisualElementCallback { get; }
-        public Func<VisualTreeAsset, VisualElementAsset, VisualElementAsset> MakeElementAssetCallback { get; }
+        public Func<VisualTreeAsset, VisualElementAsset, VisualElement, VisualElementAsset> MakeElementAssetCallback { get; }
         public Texture2D Icon { get; private set; }
         public Texture2D LargeIcon { get; private set; }
         public bool IsEditorOnly { get; set; }
@@ -26,7 +26,7 @@ namespace Unity.UI.Builder
 
         public BuilderLibraryTreeItem(
             string name, string iconName, Type type, Func<VisualElement> makeVisualElementCallback,
-            Func<VisualTreeAsset, VisualElementAsset, VisualElementAsset> makeElementAssetCallback = null,
+            Func<VisualTreeAsset, VisualElementAsset, VisualElement, VisualElementAsset> makeElementAssetCallback = null,
             List<TreeViewItem<string>> children = null, VisualTreeAsset asset = null, int id = default)
             : base(GetItemId(name, type, asset, id) , name, children)
         {
@@ -37,13 +37,6 @@ namespace Unity.UI.Builder
                 SourceAssetPath = AssetDatabase.GetAssetPath(SourceAsset);
 
             Type = type;
-            var @namespace = Type?.Namespace;
-            if (@namespace != null)
-            {
-                if (@namespace.Contains(nameof(UnityEditor)) || @namespace.Contains("Unity.Editor"))
-                    IsEditorOnly = true;
-            }
-
             if (!string.IsNullOrEmpty(iconName))
             {
                 AssignIcon(iconName);

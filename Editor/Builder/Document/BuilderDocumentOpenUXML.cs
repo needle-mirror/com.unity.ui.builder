@@ -34,16 +34,22 @@ namespace Unity.UI.Builder
         [SerializeField]
         BuilderDocumentSettings m_Settings;
 
+        [SerializeField]
+        int m_OpenSubDocumentParentIndex = -1;
+
         //
         // Unserialized Data
         //
 
-        bool m_HasUnsavedChanges = false;
-        bool m_DocumentBeingSavedExplicitly = false;
+        bool m_HasUnsavedChanges;
+        bool m_DocumentBeingSavedExplicitly;
+        BuilderUXMLFileSettings m_FileSettings;
 
         //
         // Getters
         //
+
+        public BuilderUXMLFileSettings FileSettings => m_FileSettings ?? (m_FileSettings = new BuilderUXMLFileSettings(visualTreeAsset));
 
         public StyleSheet activeStyleSheet
         {
@@ -159,6 +165,15 @@ namespace Unity.UI.Builder
             }
         }
 
+        public int openSubDocumentParentIndex
+        {
+            get { return m_OpenSubDocumentParentIndex; }
+            set
+            {
+                m_OpenSubDocumentParentIndex = value;
+            }
+        }
+
         //
         // Initialize / Construct / Enable / Clear
         //
@@ -172,6 +187,7 @@ namespace Unity.UI.Builder
             ClearBackups();
             m_OpenendVisualTreeAssetOldPath = string.Empty;
             m_ActiveStyleSheet = null;
+            m_FileSettings = null;
 
             if (m_VisualTreeAsset != null)
             {
@@ -276,6 +292,14 @@ namespace Unity.UI.Builder
 
                 AddStyleSheetsToRootAsset(asset, newUssPath, newUssIndex);
             }
+
+            foreach (var asset in visualTreeAsset.templateAssets)
+            {
+                if (!visualTreeAsset.IsRootElement(asset))
+                    continue; // Not a root asset.
+
+                AddStyleSheetsToRootAsset(asset, newUssPath, newUssIndex);
+            }
         }
 
         void AddStyleSheetToRootIfNeeded(VisualElement element)
@@ -305,27 +329,6 @@ namespace Unity.UI.Builder
 
             m_ActiveStyleSheet = styleSheet;
             selection.ForceReselection(source);
-        }
-
-        public bool UpdateActiveStyleSheetFromSelection(BuilderSelection selection)
-        {
-            var originalActiveStyleSheet = m_ActiveStyleSheet;
-            if (m_ActiveStyleSheet == null)
-            {
-                m_ActiveStyleSheet = firstStyleSheet;
-            }
-            else
-            {
-                var selectedElement = selection.isEmpty ? null : selection.selection.First();
-                if (selectedElement != null)
-                {
-                    if (BuilderSharedStyles.IsStyleSheetElement(selectedElement))
-                        m_ActiveStyleSheet = selectedElement.GetStyleSheet();
-                    else if (BuilderSharedStyles.IsSelectorElement(selectedElement))
-                        m_ActiveStyleSheet = selectedElement.GetClosestStyleSheet();
-                }
-            }
-            return originalActiveStyleSheet != m_ActiveStyleSheet;
         }
 
         //
@@ -560,14 +563,17 @@ namespace Unity.UI.Builder
             hasUnsavedChanges = true;
 
             // Make sure active stylesheet is still in the document.
+            bool found = false;
             foreach (var openUSSFile in m_OpenUSSFiles)
             {
-                if (m_ActiveStyleSheet == openUSSFile.Sheet)
+                if (m_ActiveStyleSheet != openUSSFile.Sheet)
                     continue;
 
-                m_ActiveStyleSheet = firstStyleSheet;
+                found = true;
                 break;
             }
+            if (!found)
+                m_ActiveStyleSheet = firstStyleSheet;
         }
 
         //
@@ -581,6 +587,7 @@ namespace Unity.UI.Builder
             var styleSheetsUsed = m_VisualTreeAsset.GetAllReferencedStyleSheets();
             while (m_OpenUSSFiles.Count < styleSheetsUsed.Count)
                 m_OpenUSSFiles.Add(new BuilderDocumentOpenUSS());
+
             for (int i = 0; i < styleSheetsUsed.Count; ++i)
             {
                 if (m_OpenUSSFiles[i].Sheet == styleSheetsUsed[i])
@@ -588,6 +595,7 @@ namespace Unity.UI.Builder
 
                 m_OpenUSSFiles[i].Set(styleSheetsUsed[i], null);
             }
+
             while (m_OpenUSSFiles.Count > styleSheetsUsed.Count)
             {
                 var lastIndex = m_OpenUSSFiles.Count - 1;

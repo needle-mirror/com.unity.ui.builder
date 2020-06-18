@@ -17,7 +17,8 @@ namespace Unity.UI.Builder
             ElementAttributes = 1 << 3,
             ElementInheritedStyles = 1 << 4,
             LocalStyles = 1 << 5,
-            VisualTreeAsset = 1 << 6
+            VisualTreeAsset = 1 << 6,
+            MultiSelection = 1 << 7,
         }
 
         // View Data
@@ -51,6 +52,8 @@ namespace Unity.UI.Builder
         // Utilities
         BuilderInspectorMatchingSelectors m_MatchingSelectors;
         BuilderInspectorStyleFields m_StyleFields;
+        public BuilderInspectorMatchingSelectors matchingSelectors => m_MatchingSelectors;
+        public BuilderInspectorStyleFields styleFields => m_StyleFields;
 
         // Sections
         BuilderInspectorCanvas m_CanvasSection;
@@ -71,7 +74,7 @@ namespace Unity.UI.Builder
         // Current Selection
         StyleRule m_CurrentRule;
         VisualElement m_CurrentVisualElement;
-        
+
         // Cached Selection
         VisualElement m_CachedVisualElement;
 
@@ -80,6 +83,7 @@ namespace Unity.UI.Builder
 
         // Minor Sections
         Label m_NothingSelectedSection;
+        VisualElement m_MultiSelectionSection;
 
         public BuilderSelection selection => m_Selection;
         public BuilderDocument document => m_PaneWindow.document;
@@ -200,6 +204,12 @@ namespace Unity.UI.Builder
             m_NothingSelectedSection = this.Q<Label>("nothing-selected-label");
             m_Sections.Add(m_NothingSelectedSection);
 
+            // Multi-Selection Section
+            m_MultiSelectionSection = this.Q("multi-selection-unsupported-message");
+            m_MultiSelectionSection.Add(new IMGUIContainer(
+                () => EditorGUILayout.HelpBox(BuilderConstants.MultiSelectionNotSupportedMessage, MessageType.Info, true)));
+            m_Sections.Add(m_MultiSelectionSection);
+
             // Canvas Section
             m_CanvasSection = new BuilderInspectorCanvas(this);
             m_Sections.Add(m_CanvasSection.root);
@@ -282,6 +292,8 @@ namespace Unity.UI.Builder
                 EnableSection(m_LocalStylesSection.root);
             if (section.HasFlag(Section.VisualTreeAsset))
                 EnableSection(m_CanvasSection.root);
+            if (section.HasFlag(Section.MultiSelection))
+                EnableSection(m_MultiSelectionSection);
         }
 
         void ResetSections()
@@ -386,6 +398,11 @@ namespace Unity.UI.Builder
 
             // Determine what to show based on selection.
             ResetSections();
+            if (m_Selection.selectionCount > 1)
+            {
+                EnableSections(Section.MultiSelection);
+                return;
+            }
             switch (m_Selection.selectionType)
             {
                 case BuilderSelectionType.Nothing:
@@ -428,6 +445,8 @@ namespace Unity.UI.Builder
 
             // Create the fields for the overridable styles.
             m_LocalStylesSection.Refresh();
+
+            m_CanvasSection.Refresh();
         }
 
         public void OnAfterBuilderDeserialize()
@@ -442,6 +461,11 @@ namespace Unity.UI.Builder
 
         public void SelectionChanged()
         {
+            if (m_CurrentVisualElement != null && BuilderSharedStyles.IsSelectorElement(m_CurrentVisualElement))
+            {
+                StyleSheetUtilities.RemoveFakeSelector(m_CurrentVisualElement);
+            }
+
             m_CurrentVisualElement = null;
 
             foreach (var element in m_Selection.selection)
@@ -460,10 +484,18 @@ namespace Unity.UI.Builder
                 m_CachedVisualElement = m_CurrentVisualElement;
             }
 
-            RefreshUI();
+            if (m_CurrentVisualElement != null && BuilderSharedStyles.IsSelectorElement(m_CurrentVisualElement))
+            {
+                StyleSheetUtilities.AddFakeSelector(m_CurrentVisualElement);
+                m_Selection.NotifyOfStylingChange(null, null, BuilderStylingChangeType.RefreshOnly);
+            }
+            else
+            {
+                RefreshUI();
+            }
         }
 
-        public void StylingChanged(List<string> styles)
+        public void StylingChanged(List<string> styles, BuilderStylingChangeType changeType = BuilderStylingChangeType.Default)
         {
             if (styles != null)
             {

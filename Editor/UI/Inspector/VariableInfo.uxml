@@ -1,0 +1,14 @@
+<UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:uib="Unity.UI.Builder">
+    <Label name="inspector-varinfo-name-label" class="unity-builder-inspector__varinfo-name-label"/>
+    <VisualElement class="unity-builder-inspector__varinfo-source-container">
+        <Label name  = "inspector-varinfo-source-label"
+            class = "unity-builder-inspector__varinfo-source-label" 
+            text  = "Variable inherited from: "/>
+        <Label name  = "inspector-varinfo-source"
+            class = "unity-builder-inspector__varinfo-source"/>
+    </VisualElement>
+    <VisualElement class="unity-builder-inspector__varinfo-edit-container">
+        <Button name="inspector-varinfo-edit-button" class="unity-builder-inspector__varinfo-edit-button"/>
+        <!--Label name="inspector-varinfo-edit-shortcut" class="unity-builder-varinfo-edit-shortcut" text="shortcut"/-->
+    </VisualElement>
+</UXML>

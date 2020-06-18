@@ -1,0 +1,19 @@
+.unity-new-selector-field__options-popup {
+    background-image: resource("Builtin Skins/LightSkin/Images/btn mid.png");
+}
+
+.unity-new-selector-field__options-popup:hover:active {
+    background-image: resource("Builtin Skins/LightSkin/Images/btn mid act.png");
+}
+
+.unity-new-selector-field__options-popup:checked {
+    background-image: resource("Builtin Skins/LightSkin/Images/btn mid on.png");
+}
+
+.unity-new-selector-field__options-popup:hover:active:checked {
+    background-image: resource("Builtin Skins/LightSkin/Images/btn mid onact.png");
+}
+
+.unity-new-selector-field__options-popup:checked:focus {
+    background-image: resource("Builtin Skins/LightSkin/Images/btn mid on focus.png");
+}

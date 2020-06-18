@@ -9,3 +9,15 @@
 .unity-builder-style-row__content-container {
     margin-left: 0;
 }
+
+.unity-builder-inspector_help-box {
+    margin-right: 5px;
+}
+
+#editor-extensions-mode-toggle {
+    flex-grow: 1;
+}
+
+#editor-extensions-mode-toggle > Label {
+    min-width: 155px;
+}

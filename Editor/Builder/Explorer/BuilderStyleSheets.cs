@@ -14,10 +14,10 @@ namespace Unity.UI.Builder
         static readonly string kHelpTooltipPath = BuilderConstants.UIBuilderPackagePath + "/Explorer/BuilderStyleSheetsNewSelectorHelpTips.uxml";
 
         ToolbarMenu m_AddUSSMenu;
+        BuilderNewSelectorField m_NewSelectorField;
         TextField m_NewSelectorTextField;
         VisualElement m_NewSelectorTextInputField;
         ToolbarMenu m_PseudoStatesMenu;
-        ToolbarMenu m_NewSelectorAddMenu;
         BuilderTooltipPreview m_TooltipPreview;
 
         bool m_FieldFocusedFromStandby;
@@ -25,17 +25,12 @@ namespace Unity.UI.Builder
 
         BuilderDocument document => m_PaneWindow?.document;
 
-        static readonly List<string> kNewSelectorPseudoStatesNames = new List<string>()
-        {
-            ":hover", ":active", ":selected", ":checked", ":focus"
-        };
-
         public BuilderStyleSheets(
             BuilderPaneWindow paneWindow,
             BuilderViewport viewport,
             BuilderSelection selection,
             BuilderClassDragger classDragger,
-            BuilderHierarchyDragger hierarchyDragger,
+            BuilderStyleSheetsDragger styleSheetsDragger,
             HighlightOverlayPainter highlightOverlayPainter,
             BuilderTooltipPreview tooltipPreview)
             : base(
@@ -43,7 +38,7 @@ namespace Unity.UI.Builder
                   viewport,
                   selection,
                   classDragger,
-                  hierarchyDragger,
+                  styleSheetsDragger,
                   new BuilderStyleSheetsContextMenu(paneWindow, selection),
                   viewport.styleSelectorElementContainer,
                   false,
@@ -64,7 +59,8 @@ namespace Unity.UI.Builder
             var parent = this.Q("new-selector-item");
 
             // Init text field.
-            m_NewSelectorTextField = parent.Q<TextField>("new-selector-field");
+            m_NewSelectorField = parent.Q<BuilderNewSelectorField>("new-selector-field");
+            m_NewSelectorTextField = m_NewSelectorField.textField;
             m_NewSelectorTextField.SetValueWithoutNotify(BuilderConstants.ExplorerInExplorerNewClassSelectorInfoMessage);
             m_NewSelectorTextInputField = m_NewSelectorTextField.Q("unity-text-input");
             m_NewSelectorTextInputField.RegisterCallback<KeyDownEvent>(OnEnter, TrickleDown.TrickleDown);
@@ -87,17 +83,6 @@ namespace Unity.UI.Builder
             m_NewSelectorTextField.RegisterCallback<ChangeEvent<string>>((evt) =>
             {
                 var field = evt.target as TextField;
-
-                if (!string.IsNullOrEmpty(evt.newValue) && evt.newValue != BuilderConstants.UssSelectorClassNameSymbol)
-                {
-                    m_NewSelectorAddMenu.SetEnabled(true);
-                    m_PseudoStatesMenu.SetEnabled(true);
-                }
-                else
-                {
-                    m_NewSelectorAddMenu.SetEnabled(false);
-                    m_PseudoStatesMenu.SetEnabled(false);
-                }
 
                 if (!m_FieldFocusedFromStandby)
                     return;
@@ -124,7 +109,6 @@ namespace Unity.UI.Builder
                 if (string.IsNullOrEmpty(field.text) || field.text == BuilderConstants.UssSelectorClassNameSymbol)
                 {
                     field.SetValueWithoutNotify(BuilderConstants.ExplorerInExplorerNewClassSelectorInfoMessage);
-                    m_NewSelectorAddMenu.SetEnabled(false);
                     m_PseudoStatesMenu.SetEnabled(false);
                 }
 
@@ -135,15 +119,11 @@ namespace Unity.UI.Builder
             m_AddUSSMenu = parent.Q<ToolbarMenu>("add-uss-menu");
             SetUpAddUSSMenu();
 
-            // Setup new selector button.
-            m_NewSelectorAddMenu = parent.Q<ToolbarMenu>("add-new-selector-menu");
-            m_NewSelectorAddMenu.SetEnabled(false);
-            SetUpAddMenu();
-
             // Setup pseudo states menu.
-            m_PseudoStatesMenu = parent.Q<ToolbarMenu>("add-pseudo-state-menu");
-            m_PseudoStatesMenu.SetEnabled(false);
-            SetUpPseudoStatesMenu();
+            m_PseudoStatesMenu = m_NewSelectorField.pseudoStatesMenu;
+
+            // Update sub title.
+            UpdateSubtitleFromActiveUSS();
         }
 
         protected override bool IsSelectedItemValid(VisualElement element)
@@ -168,13 +148,6 @@ namespace Unity.UI.Builder
 
             evt.PreventDefault();
             evt.StopImmediatePropagation();
-        }
-
-        void OnAddPress(StyleSheet styleSheet)
-        {
-            CreateNewSelector(styleSheet);
-
-            PostEnterRefocus();
         }
 
         void CreateNewSelector(StyleSheet styleSheet)
@@ -271,62 +244,6 @@ namespace Unity.UI.Builder
             }
         }
 
-        void SetUpAddMenu()
-        {
-            m_NewSelectorAddMenu.menu.MenuItems().Clear();
-
-            if (m_PaneWindow.document.firstStyleSheet == null)
-            {
-                m_NewSelectorAddMenu.menu.AppendAction(
-                    BuilderConstants.ExplorerStyleSheetsPaneAddToNewUSSMenu,
-                    action =>
-                    {
-                        OnAddPress(null);
-                    });
-                m_NewSelectorAddMenu.menu.AppendAction(
-                    BuilderConstants.ExplorerStyleSheetsPaneAddToExistingUSSMenu,
-                    action =>
-                    {
-                        var successfullyAdded = BuilderStyleSheetsUtilities.AddExistingUSSToAsset(m_PaneWindow);
-                        if (successfullyAdded)
-                            OnAddPress(document.firstStyleSheet);
-                    });
-            }
-            else
-            {
-                foreach (var openUSSFile in m_PaneWindow.document.openUSSFiles)
-                {
-                    var styleSheet = openUSSFile.Sheet;
-                    m_NewSelectorAddMenu.menu.AppendAction(
-                        styleSheet.name + BuilderConstants.UssExtension,
-                        action =>
-                        {
-                            var newUSS = action.userData as StyleSheet;
-                            OnAddPress(newUSS);
-
-                            if (newUSS != document.activeStyleSheet)
-                            {
-                                document.UpdateActiveStyleSheet(m_Selection, newUSS, this);
-                                UpdateHierarchy(m_Selection.hasUnsavedChanges);
-                            }
-                        },
-                        action => (UnityEngine.Object)action.userData == document.activeStyleSheet
-                            ? DropdownMenuAction.Status.Checked
-                            : DropdownMenuAction.Status.Normal,
-                        styleSheet);
-                }
-            }
-        }
-
-        void SetUpPseudoStatesMenu()
-        {
-            foreach (var state in kNewSelectorPseudoStatesNames)
-                m_PseudoStatesMenu.menu.AppendAction(state, a =>
-                {
-                    m_NewSelectorTextField.value += a.name;
-                });
-        }
-
         void ShowTooltip()
         {
             if (m_TooltipPreview == null)
@@ -358,24 +275,25 @@ namespace Unity.UI.Builder
             SetUpAddUSSMenu();
         }
 
-        protected override void ElementSelected(VisualElement element)
+        void UpdateSubtitleFromActiveUSS()
         {
-            base.ElementSelected(element);
-
-            // Initial element selection will be called before the document has been set.
-            if (document == null)
+            if (pane == null)
                 return;
 
-            var activeStyleSheetChanged = document.UpdateActiveStyleSheetFromSelection(m_Selection);
-            if (activeStyleSheetChanged)
-                UpdateHierarchyAndSelection(m_Selection.hasUnsavedChanges);
+            if (document == null || document.activeStyleSheet == null)
+            {
+                pane.subTitle = string.Empty;
+                return;
+            }
+
+            pane.subTitle = document.activeStyleSheet.name + BuilderConstants.UssExtension;
         }
 
-        public override void SelectionChanged()
+        protected override void ElementSelectionChanged(List<VisualElement> elements)
         {
-            base.SelectionChanged();
+            base.ElementSelectionChanged(elements);
 
-            document.UpdateActiveStyleSheetFromSelection(m_Selection);
+            UpdateSubtitleFromActiveUSS();
         }
 
         public override void HierarchyChanged(VisualElement element, BuilderHierarchyChangeType changeType)
@@ -383,13 +301,7 @@ namespace Unity.UI.Builder
             base.HierarchyChanged(element, changeType);
 
             UpdateNewSelectorFieldEnabledStateFromDocument();
-        }
-
-        public override void StylingChanged(List<string> styles)
-        {
-            base.StylingChanged(styles);
-
-            SetUpAddMenu();
+            UpdateSubtitleFromActiveUSS();
         }
     }
 }

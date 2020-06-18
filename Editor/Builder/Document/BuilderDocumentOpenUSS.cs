@@ -35,8 +35,6 @@ namespace Unity.UI.Builder
 
         public void Set(StyleSheet styleSheet, string ussPath)
         {
-            Clear();
-
             if (string.IsNullOrEmpty(ussPath))
                 ussPath = AssetDatabase.GetAssetPath(styleSheet);
 
@@ -48,14 +46,22 @@ namespace Unity.UI.Builder
 
         public void Clear()
         {
-            var path = AssetPath;
+            RestoreFromBackup();
 
             ClearBackup();
             m_StyleSheet = null;
 
+            // Note: Leaving here as a warning to NOT do this in the
+            // future. The problem is that the lines below will force
+            // a re-import of the current UXML as well as this USS. This
+            // causes the UXML to re-import still referencing the USS being
+            // removed. It also causes the Library to start pointing at a
+            // deleted asset in memory (because of the force-reimport).
+            // I replaced this with a `RestoreFromBackup()` above for now.
+            //
             // Restore from file system in case of unsaved changes.
-            if (!string.IsNullOrEmpty(path))
-                AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
+            //if (!string.IsNullOrEmpty(path))
+                //AssetDatabase.ImportAsset(path, ImportAssetOptions.ForceSynchronousImport);
         }
 
         public void FixRuleReferences()

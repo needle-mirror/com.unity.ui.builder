@@ -28,4 +28,10 @@
         <Style path="Packages/com.unity.ui.builder/Editor/UI/SampleDocument/BuilderSampleCanvas.uss" />
         <Style path="Packages/com.unity.ui.builder/Editor/UI/SampleDocument/BuilderSampleCanvas2.uss" />
     </ui:Label>
+    <ui:VisualElement name="multi-selection-sandbox">
+        <ui:VisualElement name="1" class="box" style="background-color: rgba(255, 0, 0, 255);" />
+        <ui:VisualElement name="2" class="box" style="background-color: rgba(255, 91, 0, 255);" />
+        <ui:VisualElement name="3" class="box" style="background-color: rgba(28, 0, 255, 255);" />
+        <ui:VisualElement name="4" class="box" style="background-color: rgba(0, 255, 81, 255);" />
+    </ui:VisualElement>
 </ui:UXML>

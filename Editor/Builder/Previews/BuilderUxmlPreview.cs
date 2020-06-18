@@ -47,7 +47,7 @@ namespace Unity.UI.Builder
             RefreshUXML();
         }
 
-        public void StylingChanged(List<string> styles)
+        public void StylingChanged(List<string> styles, BuilderStylingChangeType changeType)
         {
             RefreshUXML();
         }

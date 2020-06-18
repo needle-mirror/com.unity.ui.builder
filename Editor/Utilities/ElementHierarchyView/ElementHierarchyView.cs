@@ -40,9 +40,8 @@ namespace Unity.UI.Builder
         HighlightOverlayPainter m_TreeViewHoverOverlay;
 
         VisualElement m_Container;
-        ElementHierarchySearchBar m_SearchBar;
 
-        Action<VisualElement> m_SelectElementCallback;
+        Action<List<VisualElement>> m_SelectElementCallback;
 
         List<VisualElement> m_SearchResultsHightlights;
         IPanel m_CurrentPanelDebug;
@@ -51,7 +50,7 @@ namespace Unity.UI.Builder
         VisualElement m_DocumentRootElement;
         BuilderSelection m_Selection;
         BuilderClassDragger m_ClassDragger;
-        BuilderHierarchyDragger m_HierarchyDragger;
+        BuilderExplorerDragger m_ExplorerDragger;
         BuilderElementContextMenu m_ContextMenuManipulator;
 
         public VisualElement container
@@ -64,16 +63,16 @@ namespace Unity.UI.Builder
             VisualElement documentRootElement,
             BuilderSelection selection,
             BuilderClassDragger classDragger,
-            BuilderHierarchyDragger hierarchyDragger,
+            BuilderExplorerDragger explorerDragger,
             BuilderElementContextMenu contextMenuManipulator,
-            Action<VisualElement> selectElementCallback,
+            Action<List<VisualElement>> selectElementCallback,
             HighlightOverlayPainter highlightOverlayPainter)
         {
             m_PaneWindow = paneWindow;
             m_DocumentRootElement = documentRootElement;
             m_Selection = selection;
             m_ClassDragger = classDragger;
-            m_HierarchyDragger = hierarchyDragger;
+            m_ExplorerDragger = explorerDragger;
             m_ContextMenuManipulator = contextMenuManipulator;
 
             this.focusable = true;
@@ -100,20 +99,20 @@ namespace Unity.UI.Builder
             m_Container.name = "explorer-container";
             m_Container.style.flexGrow = 1;
             m_ClassDragger.builderHierarchyRoot = m_Container;
-            m_HierarchyDragger.builderHierarchyRoot = m_Container;
+            m_ExplorerDragger.builderHierarchyRoot = m_Container;
             Add(m_Container);
 
-            m_SearchBar = new ElementHierarchySearchBar(this);
-            Add(m_SearchBar);
-
-            // TODO: Hiding for now since search does not work, especially with style class pills.
-            m_SearchBar.style.display = DisplayStyle.None;
             m_ClassPillTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
                 BuilderConstants.UIBuilderPackagePath + "/BuilderClassPill.uxml");
 
             // Create TreeView.
             m_TreeRootItems = new List<ITreeViewItem>();
             m_TreeView = new TreeView(m_TreeRootItems, 20, MakeItem, FillItem);
+#if UNITY_2020_1_OR_NEWER
+            m_TreeView.selectionType = SelectionType.Multiple;
+#else
+            m_TreeView.selectionType = SelectionType.Single; // ListView/TreeView do not support selecting mutliple items via code.
+#endif
             m_TreeView.viewDataKey = "unity-builder-explorer-tree";
             m_TreeView.style.flexGrow = 1;
 #if UNITY_2020_1_OR_NEWER
@@ -129,13 +128,6 @@ namespace Unity.UI.Builder
             m_Container.Add(m_TreeView);
 
             m_ContextMenuManipulator.RegisterCallbacksOnTarget(m_Container);
-        }
-
-        void ActivateSearchBar(ExecuteCommandEvent evt)
-        {
-            Debug.Log(evt.commandName);
-            if (evt.commandName == "Find")
-                m_SearchBar.Focus();
         }
 
         void FillItem(VisualElement element, ITreeViewItem item)
@@ -183,6 +175,12 @@ namespace Unity.UI.Builder
                 // Register right-click events for context menu actions.
                 m_ContextMenuManipulator.RegisterCallbacksOnTarget(explorerItem);
 
+                // Register drag-and-drop events for reparenting.
+                m_ExplorerDragger.RegisterCallbacksOnTarget(explorerItem);
+
+                // Allow reparenting.
+                explorerItem.SetProperty(BuilderConstants.ExplorerItemElementLinkVEPropertyName, documentElement);
+
                 if (styleSheetAsset == m_PaneWindow.document.activeStyleSheet)
                     row.AddToClassList(BuilderConstants.ExplorerActiveStyleSheetClassName);
 
@@ -192,6 +190,12 @@ namespace Unity.UI.Builder
             {
                 var selectorParts = BuilderSharedStyles.GetSelectorParts(documentElement);
 
+                // Register right-click events for context menu actions.
+                m_ContextMenuManipulator.RegisterCallbacksOnTarget(explorerItem);
+
+                // Register drag-and-drop events for reparenting.
+                m_ExplorerDragger.RegisterCallbacksOnTarget(explorerItem);
+
                 foreach (var partStr in selectorParts)
                 {
                     if (partStr.StartsWith(BuilderConstants.UssSelectorClassNameSymbol))
@@ -199,6 +203,7 @@ namespace Unity.UI.Builder
                         m_ClassPillTemplate.CloneTree(labelCont);
                         var pill = labelCont.contentContainer.ElementAt(labelCont.childCount - 1);
                         var pillLabel = pill.Q<Label>("class-name-label");
+                        pill.name = "unity-builder-tree-class-pill";
                         pill.AddToClassList("unity-debugger-tree-item-pill");
                         pill.SetProperty(BuilderConstants.ExplorerStyleClassPillClassNameVEPropertyName, partStr);
                         pill.userData = documentElement;
@@ -239,8 +244,8 @@ namespace Unity.UI.Builder
                     }
                 }
 
-                // Register right-click events for context menu actions.
-                m_ContextMenuManipulator.RegisterCallbacksOnTarget(explorerItem);
+                // Allow reparenting.
+                explorerItem.SetProperty(BuilderConstants.ExplorerItemElementLinkVEPropertyName, documentElement);
 
                 return;
             }
@@ -261,7 +266,7 @@ namespace Unity.UI.Builder
                 row.AddToClassList(BuilderConstants.ExplorerItemHiddenClassName);
 
             // Register drag-and-drop events for reparenting.
-            m_HierarchyDragger.RegisterCallbacksOnTarget(explorerItem);
+            m_ExplorerDragger.RegisterCallbacksOnTarget(explorerItem);
 
             // Allow reparenting.
             explorerItem.SetProperty(BuilderConstants.ExplorerItemElementLinkVEPropertyName, documentElement);
@@ -444,9 +449,12 @@ namespace Unity.UI.Builder
                 return;
             }
 
-            var item = items.First() as TreeViewItem<VisualElement>;
-            var element = item != null ? item.data : null;
-            m_SelectElementCallback(element);
+            var elements = new List<VisualElement>();
+            foreach (TreeViewItem<VisualElement> item in items)
+                if (item != null)
+                    elements.Add(item.data);
+
+            m_SelectElementCallback(elements);
         }
 
         void HighlightAllElementsMatchingSelectorElement(VisualElement selectorElement)
@@ -561,67 +569,25 @@ namespace Unity.UI.Builder
             m_SearchResultsHightlights.Clear();
         }
 
-        public void SelectElement(VisualElement element)
+        public void SelectElements(IEnumerable<VisualElement> elements)
         {
-            SelectElement(element, string.Empty);
-        }
+            m_TreeView.ClearSelection();
 
-        public void SelectElement(VisualElement element, string query)
-        {
-            SelectElement(element, query, SearchHighlight.None);
-        }
-
-        public void SelectElement(VisualElement element, string query, SearchHighlight searchHighlight)
-        {
-            ClearSearchResults();
-
-            var item = FindElement(m_TreeRootItems, element);
-            if (item == null)
+            if (elements == null)
                 return;
+
+            foreach (var element in elements)
+            {
+                var item = FindElement(m_TreeRootItems, element);
+                if (item == null)
+                    continue;
 
 #if UNITY_2020_1_OR_NEWER
-            m_TreeView.SetSelection(item.id);
-            m_TreeView.ScrollToItem(item.id);
+                m_TreeView.AddToSelection(item.id);
+                m_TreeView.ScrollToItem(item.id);
 #else
-            m_TreeView.SelectItem(item.id);
+                m_TreeView.SelectItem(item.id);
 #endif
-
-            if (string.IsNullOrEmpty(query))
-                return;
-
-            var selected = m_TreeView.Query(classes: "unity-list-view__item--selected").First();
-            if (selected == null || searchHighlight == SearchHighlight.None)
-                return;
-
-            var content = selected.Q("unity-treeview-item-content");
-            var labelContainers = content.Query(classes: "unity-builder-explorer-tree-item-label-cont").ToList();
-            foreach (var labelContainer in labelContainers)
-            {
-                var label = labelContainer.Q<Label>();
-
-                if (label.ClassListContains("unity-debugger-tree-item-type") && searchHighlight != SearchHighlight.Type)
-                    continue;
-
-                if (label.ClassListContains("unity-debugger-tree-item-name") && searchHighlight != SearchHighlight.Name)
-                    continue;
-
-                if (label.ClassListContains("unity-debugger-tree-item-classlist") && searchHighlight != SearchHighlight.Class)
-                    continue;
-
-                var text = label.text;
-                var indexOf = text.IndexOf(query, StringComparison.OrdinalIgnoreCase);
-                if (indexOf < 0)
-                    continue;
-
-                var highlight = new VisualElement();
-                m_SearchResultsHightlights.Add(highlight);
-                highlight.AddToClassList("unity-debugger-highlight");
-                int letterSize = 8;
-                highlight.style.width = query.Length * letterSize;
-                highlight.style.left = indexOf * letterSize;
-                labelContainer.Insert(0, highlight);
-
-                break;
             }
         }
 

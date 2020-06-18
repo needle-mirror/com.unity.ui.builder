@@ -18,8 +18,12 @@ namespace Unity.UI.Builder
         public float ZoomScale = BuilderConstants.ViewportInitialZoom;
         public Vector2 PanOffset = BuilderConstants.ViewportInitialContentOffset;
 
-        public float CanvasBackgroundOpacity = 1.0f;
-        public BuilderCanvasBackgroundMode CanvasBackgroundMode = BuilderCanvasBackgroundMode.None;
+        public float ColorModeBackgroundOpacity = 1.0f;
+        public float ImageModeCanvasBackgroundOpacity = 1.0f;
+        public float CameraModeCanvasBackgroundOpacity = 1.0f;
+
+        public bool EnableCanvasBackground;
+        public BuilderCanvasBackgroundMode CanvasBackgroundMode = BuilderCanvasBackgroundMode.Color;
         public Color CanvasBackgroundColor = new Color(0, 0, 0, 255);
         public Texture2D CanvasBackgroundImage;
         public ScaleMode CanvasBackgroundImageScaleMode = ScaleMode.ScaleAndCrop;

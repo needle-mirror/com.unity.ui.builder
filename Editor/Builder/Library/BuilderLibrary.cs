@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 
 namespace Unity.UI.Builder
 {
-    class BuilderLibrary : BuilderPaneContent
+    class BuilderLibrary : BuilderPaneContent, IBuilderSelectionNotifier
     {
         public enum BuilderLibraryTab
         {
@@ -36,6 +36,8 @@ namespace Unity.UI.Builder
         BuilderLibraryPlainView m_ControlsPlainView;
         BuilderLibraryTreeView m_ControlsTreeView;
 
+        bool m_EditorExtensionMode;
+
         [SerializeField] bool m_ShowPackageTemplates;
         [SerializeField] LibraryViewMode m_ViewMode = LibraryViewMode.IconTile;
         [SerializeField] BuilderLibraryTab m_ActiveTab = BuilderLibraryTab.Controls;
@@ -63,6 +65,7 @@ namespace Unity.UI.Builder
             var template = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(BuilderConstants.LibraryUssPathNoExt + ".uxml");
             template.CloneTree(this);
 
+            m_EditorExtensionMode = paneWindow.document.UXMLFileSettings.EditorExtensionMode;
             m_LibraryContentContainer = this.Q<VisualElement>(k_ContentContainerName);
 
             m_HeaderButtonStrip = this.Q<ToggleButtonStrip>();
@@ -142,7 +145,11 @@ namespace Unity.UI.Builder
                 if (m_ControlsTreeView != null)
                     return m_ControlsTreeView;
 
-                m_ControlsTreeView = new BuilderLibraryTreeView(BuilderLibraryContent.StandardControlsTree);
+                var controlsTree = m_EditorExtensionMode
+                    ? BuilderLibraryContent.StandardControlsTree
+                    : BuilderLibraryContent.StandardControlsTreeNoEditor;
+
+                m_ControlsTreeView = new BuilderLibraryTreeView(controlsTree);
                 m_ControlsTreeView.viewDataKey = "unity-ui-builder-library-controls-tree";
                 SetUpLibraryView(m_ControlsTreeView);
 
@@ -176,7 +183,11 @@ namespace Unity.UI.Builder
                 if (m_ControlsPlainView != null)
                     return m_ControlsPlainView;
 
-                m_ControlsPlainView = new BuilderLibraryPlainView(BuilderLibraryContent.StandardControlsTree);
+                var controlsTree = m_EditorExtensionMode
+                    ? BuilderLibraryContent.StandardControlsTree
+                    : BuilderLibraryContent.StandardControlsTreeNoEditor;
+
+                m_ControlsPlainView = new BuilderLibraryPlainView(controlsTree);
                 m_ControlsPlainView.viewDataKey = "unity-ui-builder-library-controls-plane";
                 SetUpLibraryView(m_ControlsPlainView);
 
@@ -233,6 +244,18 @@ namespace Unity.UI.Builder
         public void ResetCurrentlyLoadedUxmlStyles()
         {
             RefreshView();
+        }
+
+        public void SelectionChanged() { }
+        public void HierarchyChanged(VisualElement element, BuilderHierarchyChangeType changeType) { }
+
+        public void StylingChanged(List<string> styles, BuilderStylingChangeType changeType)
+        {
+            if (m_EditorExtensionMode != m_PaneWindow.document.UXMLFileSettings.EditorExtensionMode)
+            {
+                m_EditorExtensionMode = m_PaneWindow.document.UXMLFileSettings.EditorExtensionMode;
+                RebuildView();
+            }
         }
     }
 }

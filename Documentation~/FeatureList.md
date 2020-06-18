@@ -32,31 +32,31 @@
 1. Can drag a style class pill from the StyleSheets pane onto an element in the Hierarchy to add the class. `Tested`
 1. Dragging a style class onto an element inside a template instance or C# type in the Viewport adds it to the parent instance or C# element. `Tested`
 1. Dragging a style class onto an element inside a template instance or C# type in the Hierarchy does nothing. `Tested`
+1. Can drag one or more selectors to re-order them within the same StyleSheet.
+1. Can drag one or more selectors to another StyleSheet to move them to that StyleSheet.
+1. Can drag one or more StyleSheets between each other to re-order them.
 1. In the toolbar of the StyleSheets pane there's a field that lets you create new selectors. This field is disabled if there are no elements in the UXML document. `Tested`
     1. After the field is focused, the explanation text is replaced with a default `.` and the cursor is set right after the `.` to let you quickly add a class-based selector. `Tested`
-    1. You can commit and add your selector using the **Add** button/menu:
-        1. If there are no USS files in the UXML document, the options to **Add to New USS** and **Add to Existing USS** will be available.
-        1. If there is at least one USS file in the UXML document, the **Add** menu will contain the list of USS files in the UXML document, with the *active* StyleSheet checked.
-            1. Selecting the *active* StyleSheet (the checked one) will add the selector to this USS. `Tested`
-            1. Selecting a different unchecked StyleSheet will add the selector to this USS and change the *active* StyleSheet.
     1. You can commit and add your selector to the *active* StyleSheet by pressing **Enter**. `Tested`
-        1. If there is no USS in document, the Save Dialog Option to create a new USS file will be prompted and selector will be added to the newly created and added USS file. `Tested`
+    1. If there is no USS in document, the Save Dialog Option to create a new USS file will be prompted and selector will be added to the newly created and added USS file. `Tested`
     1. If the selector string contains invalid characters, an error message will display and the new selector will not be created - keeping the focus on the rename field. `Tested`
-    1. You can discover and append `:pseudoStates` from the **States** menu.
+    1. You can discover and append `:pseudoStates` from the **:** menu.
     1. While the text field is selected, you should see a large tooltip displaying the selector cheatsheet. `Tested`
 1. When selecting or hovering over a style selector in the StyleSheets pane, all elements in the Canvas that match the selector are highlighted.
 1. With a selector selected, you can use standard short-cuts or the Edit menu to copy/paste/duplicate/delete it. You can also copy/paste the USS for the selector to/from a text file. `Tested`
 1. Selecting an element or a the main document (VisualTreeAsset) should deselect any selected tree items in the StyleSheets pane. `Tested`
-1. Selecting a StyleSheet or a selector within it will set the current *active* StyleSheet to this StyleSheet, updating the highlight (bold) of the *active* StyleSheet. `Tested`
+1. Right-clicking on a StyleSheet and selecting "Set as Active USS" will set the current *active* StyleSheet to this StyleSheet, updating the highlight (bold) of the *active* StyleSheet. `Tested`
 1. When pasting a selector in the StyleSheets pane, it will be added to the *active* StyleSheet. `Tested`
 
 ## Hierarchy
 
 1. The root items should display the currently loaded .uxml filename.
 1. Can click to select an element. `Tested`
-1. Can drag element onto other elements in the Hierarchy to re-parent. `Tested`
-1. Can drag an element between other elements to reorder, with live preview in the Canvas. `Tested`
-1. Can drag an element onto other elements in the Viewport to re-parent. `Tested`
+1. Can shift+click to select multiple elements.
+1. Can ctrl+click to select an additional element.
+1. Can drag element(s) onto other elements in the Hierarchy to re-parent. `Tested`
+1. Can drag element(s) between other elements to reorder, with live preview in the Canvas. `Tested`
+1. Can drag element(s) onto other elements in the Viewport to re-parent. `Tested`
 1. Elements are displayed using their #name in blue. If they have no name, they are displayed using their C# type in white. `Tested`
 1. You can always show the C# type of an element, even if it has a #name, by enabling the **Type** option from the `...` options menu in the top right of the Hierarchy pane.
 1. You can show currently added style classes of an element by enabling the **Class List** option from the `...` options menu in the top right of the Hierarchy pane.
@@ -65,8 +65,8 @@
 1. Dragging an element onto a template instance or C# type element in the Viewport re-parents it to the parent instance or C# element. `Tested`
 1. Dragging an element onto a template instance or C# type element in the Hierarchy re-parents it to the parent instance or C# element. `Tested`
 1. Dragging child elements of a template instance or C# type element within the element or outside does not work. `Tested`
-1. With an element selected, you can use the standard short-cuts and Edit menu to copy/paste/duplicate/delete it. The copied element is pasted at the same level of the hierarchy as the source element. If the source element's parent is deleted, the copied element is pasted at the root. `Tested`
-1. Can copy/paste the UXML for the element to/from a text file. `Tested`
+1. With one or more elements selected, you can use the standard short-cuts and Edit menu to copy/paste/duplicate/delete it/them. The copied element(s) is/are pasted at the same level of the hierarchy as the destination element. If the source element's parent is deleted, the copied element is pasted at the root. `Tested`
+1. Can copy/paste the UXML for the element(s) selected to/from a text file. `Tested`
 1. Right-clicking anywhere in the Hierarchy opens the Copy/Paste/Duplicate/Delete/Rename context menu.
 1. Can double-click on an item to rename it. `Tested`
 1. Can use the Rename command (optional hotkey like F2) to rename an item. `Tested`
@@ -75,6 +75,11 @@
 1. When editing name of element in Hierarchy, clicking somewhere else will commit the change (if the new name is valid). `Tested`
 1. Selecting an style selector or a the main StyleSheet in the StyleSheets pane should deselect any selected tree items in the Hierarchy. `Tested`
 1. Elements have the correct icon to their left - same icon as in the Library pane.
+1. The right-click menu on a TemplateContainer will have the option "Open in UI Builder" that opens for editing the UXML document instances by inside the TemplateContainer.
+1. Clicking on an element that is part of a multi-selection should re-select just that element.
+1. Sub-Documents:
+    1. Can open a UXML instance as a sub-document via the right-click menu on a `TemplateContainer`.
+    1. Can return to parent document by right-clicking on the sub-document's .uxml root item in the Hierarchy and selecting **Return to Parent Document**.
 
 ## Library
 
@@ -92,15 +97,15 @@
 1. Can click and drag onto a Viewport element to create new instance as a child. This will also focus the Viewport pane. `Tested`
 1. Can click and drag onto a Hierarchy element to create new instance as a child, or between elements to create as a sibling.  `Tested`
 1. Can create (double-click or drag) template instances from other `.uxml` files. `Tested`
+1. When creating template instances from other `.uxml`, the `TemplateContainer` name will be initialized with the name of the `.uxml` asset being instanced.
 1. When creating a new empty VisualElement, it has an artificial minimum size and border which is reset as soon as you parent a child element under it or change its styling. `Tested`
 1. Library pane updates if new `.uxml` files are added/deleted/moved/renamed to/from the project. `Tested`
+1. Sub-documents and their parents will all be grayed-out and disabled in the Library pane.
 
 ## Viewport
 
 ### Header
 
-1. The currently open UXML asset name, or `<unsaved asset>`, is displayed in the Viewport header, grayed out. `Tested`
-1. If there are unsaved changes, a `*` is appended to the asset name. `Tested`
 1. The current UI Builder package version is displayed in the **Viewport** title bar. `Tested`
 
 ### Toolbar
@@ -115,10 +120,19 @@
 1. Can preview Light/Dark/Runtime themes inside the Canvas via the **Theme** popup field, independent from the current Editor Theme. **Default Theme** uses the current Editor Theme, while the other options force a theme to be used in the Canvas. If the runtime package is not installed, the Runtime theme will be substituted by the Light Editor theme.
 1. Pressing **Preview** toggles _Preview_ mode, where you can no longer select elements by clicking them in the Viewport. Instead, Viewport elements receive regular mouse and focus events.
 1. The `...` can be used to show/hide the UXML and USS Preview panes. This state is remembered across domain reloads.
+1. A breadcrumb toolbar will appear when currently viewing a sub-document. Can click on parent documents to return to them.
+
+### Canvas Header
+
+1. Click on Canvas header displays document settings `Tested`
+1. The currently open UXML asset name, or `<unsaved asset>`, is displayed in the Canvas header, grayed out. `Tested`
+1. If there are unsaved changes, a `*` is appended to the asset name. `Tested`
+1. Header tooltip contains project relative path to the open UXML asset. `Tested`
 
 ### Canvas
 
 1. Selected element has a blue border around it.
+1. If there are multiple elements selected, no blue selection border or header should be displayed.
 1. Selected element has a title header displaying the type of the element if it has no name, otherwise the name.
 1. Can be resized via handles on all 4 sides.
 1. Canvas has a minimum size.
@@ -139,17 +153,23 @@
 1. Canvas size is remembered for each asset and restored when loading the asset. It also means it survives Editor restarts.
 1. Clicking the root item (with the .uxml filename) in the Hierarchy displays the Canvas options in the Inspector:
     1. Can see and change the Canvas height and width.
-    1. Can set the custom Canvas background color/image Opacity.
+    1. Can enable/disable custom Canvas background via checkbox on Foldout header.
+    1. Can set the custom Canvas background color/image Opacity per Background mode.
     1. Can set the Canvas background to be a solid color via the Color Background mode.
     1. Can set the Canvas background to be an image, can set the ScaleMode of the image, and can have the Canvas resize to match the image via the **Fit Canvas to Image** button.
     1. Can set the Canvas background to be a render texture for a chosen Camera.
     1. All of these settings are remembered next time you open the same UXML document.
-    1. If no background is selected, or if fully transparent, and the Runtime Theme is selected, the Canvas will use the checkerboard-style transparent background.
+    1. If custom Canvas background is disabled, or if fully transparent, and the Runtime Theme is selected, the Canvas will use the checkerboard-style transparent background.
 1. Can double click on an element that has a text attribute, or has sponsored a child element to serve as the text element, to edit its text in-place, directly in the Canvas.
     1. Once the in-place text field appears, it should have the same alignment, font style, and font size in order to perfectly overlap the existing text.
     1. Typing in the text field should increase its size and if appropriate, increase the size of its target element just as if the text attribute was being edited.
     1. Pressing ESC should undo any changes and restore the text value to what it was before editing.
     1. If the existing text value includes new-lines, the in-place text field will be set to multi-line mode and will need Shift+Enter to commit the new value.
+1. Clicking on the root item (with the .uxml filename) in the Hierarchy displays the Document Settings in the Inspector:
+    1. UI Builder is now configured by default to be used for runtime UI. As such, many Editor-Only controls will not be available in the Library.
+    1. To see Editor-Only controls and controls meant for use within the Editor, you can enable **Editor Extension Authoring** from the new Document settings Inspector by selecting the Canvas header or .uxml document in the Hierarchy.
+    1. The **Editor Extension Authoring** setting is saved inside the UXML asset and therefore version controlled. This is unlike the Canvas settings which are temporary preferences.
+    1. You can enable **Editor Extension Authoring** for all new documents or documents not opened by UI Builder before in the **Project Settings > UI Builder** settings.
 
 ### Viewport Surface
 
@@ -162,7 +182,7 @@
 
 ## Previews
 
-### UXML
+### UXML Preview
 
 1. Updates text on any changes to hierarchy, attributes, or inline styles.
 1. Shows unsaved StyleSheet as path="&#42;unsaved in-memory StyleSheet with...".
@@ -176,15 +196,17 @@
 1. If asset is saved on disk, a button to open the `.uxml` asset in the default IDE will appear in the top-right corner of the pane header.
 1. Special symbols in attribute values, like `\t \n & < > ' "`, are escaped properly when generating the UXML.
 
-### USS
+### USS Preview
 
-1. Displays the contents of the currently *active* StyleSheet. Contents are updated if the *active* StyleSheet changes.
+1. Displays the contents of the currently selected StyleSheet (or the StyleSheet of the last selected USS selector).
 1. Updates on all StyleSheet/Selector changes.
 1. Dimension (Length) styles have the unit added to the USS (`px` or `%`).
 1. Pane header displays the name of the `.uss` asset being previewed.
 1. If asset is saved on disk, a button to open the `.uss` asset in the default IDE will appear in the top-right corner of the pane header.
 
 ## Inspector
+
+1. If multiple items are selected, the inspector should just show a message saying multi-selection editing is not supported and otherwise be blank.
 
 ### StyleSheet Inspector
 
@@ -241,3 +263,10 @@
 1. Foldout style fields (like Margin and Padding) properly add the unit or keyword for each child style property.
 1. If the optional Vector Graphics package is installed, the background image style will allow assigning a vector image (scalable image) asset type.
 1. When focusing a size, margin, padding, or border style field, the selected element will have a color overlay showing its size/margin/padding/border.
+
+### Variables
+
+1. If a style is getting its value from a USS variable, its style field label in the Inspector will appear highlighted.
+1. Can now click on the label of a style field using a USS variable to see where the variable value is coming from (via a tooltip popup).
+1. Selectors can now use USS variables for their style values via a new per-field variable mode. This is not supported on elements via inline styles.
+1. Style field variable mode can be activated by double-clicking on its label or via a button in the tooltip popup.

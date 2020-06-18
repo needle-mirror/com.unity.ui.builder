@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -20,6 +21,10 @@ namespace Unity.UI.Builder
         static readonly string s_TreeItemHoverWithDragBetweenElementsSupportClassName = "unity-builder-explorer__between-element-item--dragger-hover";
         static readonly string s_TreeViewItemName = "unity-tree-view__item";
         static readonly int s_DistanceToActivation = 5;
+
+        // It's possible to have multiple BuilderDraggers on the same element. This ensures
+        // a kind of capture without using the capture system and just between BuilderDraggers.
+        static BuilderDragger s_CurrentlyActiveBuilderDragger = null;
 
         Vector2 m_Start;
         bool m_Active;
@@ -49,12 +54,12 @@ namespace Unity.UI.Builder
         public BuilderDragger(
             BuilderPaneWindow paneWindow,
             VisualElement root, BuilderSelection selection,
-            BuilderViewport viewport, BuilderParentTracker parentTracker)
+            BuilderViewport viewport = null, BuilderParentTracker parentTracker = null)
         {
             m_PaneWindow = paneWindow;
             m_Root = root;
             Viewport = viewport;
-            m_Canvas = viewport.documentElement;
+            m_Canvas = viewport?.documentElement;
             m_Selection = selection;
             m_ParentTracker = parentTracker;
 
@@ -99,9 +104,31 @@ namespace Unity.UI.Builder
 
         }
 
-        protected virtual bool StopEventOnMouseDown()
+        protected virtual bool StopEventOnMouseDown(MouseDownEvent evt)
         {
-            return true;
+            // TODO: ListView right now does not allow selecting a single
+            // item that is already part of multi-selection, and having
+            // only that item selected. Clicking on any already-selected
+            // item in ListView does nothing. This needs to be fixed in trunk.
+            //
+            // Once we do fix this however, we'll have to do something like this
+            // because otherwise single-click will de-select all other items
+            // BEFORE we start a multi-selection drag, meaning only one
+            // element will be dragged. This attempts to stop the MouseDownEvent
+            // from "doing the right thing" inside ListView when dragging...
+            //
+            // See: https://unity3d.atlassian.net/browse/UIT-1011
+
+            var leafTarget = evt.leafTarget as VisualElement;
+            var item = leafTarget?.GetFirstOfType<BuilderExplorerItem>();
+            if (item == null)
+                return false;
+
+            var documentElement = item.GetProperty(BuilderConstants.ElementLinkedDocumentVisualElementVEPropertyName) as VisualElement;
+            if (m_Selection.selection.Contains(documentElement))
+                return true;
+
+            return false;
         }
 
         protected virtual bool IsPickedElementValid(VisualElement element)
@@ -109,9 +136,19 @@ namespace Unity.UI.Builder
             return true;
         }
 
-        protected virtual bool SupportsDragBetweenElements()
+        protected virtual bool SupportsDragBetweenElements(VisualElement element)
         {
             return false;
+        }
+
+        protected virtual bool SupportsDragInEmptySpace()
+        {
+            return true;
+        }
+
+        protected virtual VisualElement GetDefaultTargetElement()
+        {
+            return m_Canvas;
         }
 
         protected void FixElementSizeAndPosition(VisualElement target)
@@ -166,6 +203,9 @@ namespace Unity.UI.Builder
 
         bool TryToPickInCanvas(Vector2 mousePosition)
         {
+            if (Viewport == null)
+                return false;
+
             var localMouse = m_Canvas.WorldToLocal(mousePosition);
             if (!m_Canvas.ContainsPoint(localMouse))
             {
@@ -196,6 +236,9 @@ namespace Unity.UI.Builder
 
         bool IsElementTheScrollView(VisualElement pickedElement)
         {
+            if (!SupportsDragInEmptySpace())
+                return false;
+
             if (pickedElement == null)
                 return false;
 
@@ -219,24 +262,36 @@ namespace Unity.UI.Builder
                 return false;
             }
 
-            var supportsDragBetweenElements = SupportsDragBetweenElements();
-
+            // Pick element under mouse.
             var pickedElement = Panel.PickAllWithoutValidatingLayout(builderHierarchyRoot, mousePosition);
-            if (!IsElementTheScrollView(pickedElement))
+
+            // Pick the first valid element by walking up the tree.
+            VisualElement pickedDocumentElement = null;
+            VisualElement explorerItemReorderZone = null;
+            while (true)
             {
-                while (true)
-                {
-                    if (pickedElement == null)
-                        break;
+                if (pickedElement == null)
+                    break;
 
-                    if (pickedElement.GetProperty(BuilderConstants.ExplorerItemElementLinkVEPropertyName) != null)
-                        break;
+                if (IsElementTheScrollView(pickedElement))
+                    break;
 
-                    if (supportsDragBetweenElements && pickedElement.ClassListContains(BuilderConstants.ExplorerItemReorderZoneClassName))
-                        break;
+                if (pickedElement.ClassListContains(BuilderConstants.ExplorerItemReorderZoneClassName))
+                    explorerItemReorderZone = pickedElement;
 
-                    pickedElement = pickedElement.parent;
-                }
+                pickedDocumentElement = pickedElement.GetProperty(BuilderConstants.ExplorerItemElementLinkVEPropertyName) as VisualElement;
+                if (pickedDocumentElement != null)
+                    break;
+
+                pickedElement = pickedElement.parent;
+            }
+
+            // Check if reordering on top of current pickedElement is supported.
+            var supportsDragBetweenElements = false;
+            if (explorerItemReorderZone != null && SupportsDragBetweenElements(pickedDocumentElement))
+            {
+                pickedElement = explorerItemReorderZone;
+                supportsDragBetweenElements = true;
             }
 
             // Don't allow selection of elements inside template instances.
@@ -249,13 +304,10 @@ namespace Unity.UI.Builder
             {
                 linkedCanvasPickedElement = pickedElement.GetProperty(BuilderConstants.ExplorerItemElementLinkVEPropertyName) as VisualElement;
             }
-            if (pickedElement != null &&
-                !IsElementTheScrollView(pickedElement) &&
-                linkedCanvasPickedElement.GetVisualElementAsset() == null)
-                pickedElement = null;
 
             // Validate element with implementation.
-            if (pickedElement != null && !IsPickedElementValid(linkedCanvasPickedElement))
+            var hoverElementIsValid = pickedElement != null && (IsElementTheScrollView(pickedElement) || IsPickedElementValid(linkedCanvasPickedElement));
+            if (!hoverElementIsValid && !supportsDragBetweenElements)
                 pickedElement = null;
 
             m_LastHoverElement = pickedElement;
@@ -274,7 +326,8 @@ namespace Unity.UI.Builder
                     m_LastRowHoverElement = m_LastRowHoverElement.parent;
             }
 
-            m_LastRowHoverElement.AddToClassList(s_TreeItemHoverHoverClassName);
+            if (hoverElementIsValid)
+                m_LastRowHoverElement.AddToClassList(s_TreeItemHoverHoverClassName);
 
             if (supportsDragBetweenElements)
                 m_LastRowHoverElement.AddToClassList(s_TreeItemHoverWithDragBetweenElementsSupportClassName);
@@ -319,23 +372,27 @@ namespace Unity.UI.Builder
             m_LastRowHoverElement?.RemoveFromClassList(s_TreeItemHoverHoverClassName);
             m_LastRowHoverElement?.RemoveFromClassList(s_TreeItemHoverWithDragBetweenElementsSupportClassName);
             m_DraggedElement.RemoveFromClassList(s_DraggedPreviewClassName);
-            m_ParentTracker.Deactivate();
+            m_ParentTracker?.Deactivate();
         }
 
         void OnMouseDown(MouseDownEvent evt)
         {
+            if (s_CurrentlyActiveBuilderDragger != null && s_CurrentlyActiveBuilderDragger != this)
+                return;
+
             var target = evt.currentTarget as VisualElement;
+
             if (m_WeStartedTheDrag && target.HasMouseCapture())
             {
                 evt.StopImmediatePropagation();
                 evt.PreventDefault();
                 return;
             }
-            
+
             if (!CanStartManipulation(evt))
                 return;
-            
-            var stopEvent = StopEventOnMouseDown();
+
+            var stopEvent = StopEventOnMouseDown(evt);
             if (stopEvent)
                 evt.StopImmediatePropagation();
 
@@ -347,6 +404,7 @@ namespace Unity.UI.Builder
                 return;
             }
 
+            s_CurrentlyActiveBuilderDragger = this;
             m_Start = evt.mousePosition;
             m_WeStartedTheDrag = true;
             target.CaptureMouse();
@@ -357,6 +415,9 @@ namespace Unity.UI.Builder
             var target = evt.currentTarget as VisualElement;
 
             if (!target.HasMouseCapture() || !m_WeStartedTheDrag)
+                return;
+
+            if (s_CurrentlyActiveBuilderDragger != null && s_CurrentlyActiveBuilderDragger != this)
                 return;
 
             if (!m_Active)
@@ -394,6 +455,40 @@ namespace Unity.UI.Builder
             return sibling;
         }
 
+        void SelectItemOnSingleClick(MouseUpEvent evt)
+        {
+            // TODO: ListView right now does not allow selecting a single
+            // item that is already part of multi-selection, and having
+            // only that item selected. Clicking on any already-selected
+            // item in ListView does nothing. This needs to be fixed in trunk.
+            //
+            // In the meantime, we use this leaked mouse click hack, which
+            // also accounts for another bug in ListView, to catch these
+            // unhandled selection events and do the single-item selection
+            // ourselves.
+            //
+            // See: https://unity3d.atlassian.net/browse/UIT-1011
+
+            if (m_Selection.selectionCount <= 1)
+                return;
+
+            if (evt.modifiers.HasFlag(EventModifiers.Control)
+                || evt.modifiers.HasFlag(EventModifiers.Shift)
+                || evt.modifiers.HasFlag(EventModifiers.Command))
+                return;
+
+            var element = evt.target as VisualElement;
+            var ancestor = element is BuilderExplorerItem ? element as BuilderExplorerItem : element?.GetFirstAncestorOfType<BuilderExplorerItem>();
+            if (ancestor == null)
+                return;
+
+            var documentElement = ancestor.GetProperty(BuilderConstants.ElementLinkedDocumentVisualElementVEPropertyName) as VisualElement;
+            if (documentElement == null)
+                return;
+
+            m_Selection.Select(null, documentElement);
+        }
+
         void OnMouseUp(MouseUpEvent evt)
         {
             if (evt.button != (int) MouseButton.LeftMouse)
@@ -410,19 +505,24 @@ namespace Unity.UI.Builder
                 return;
 
             target.ReleaseMouse();
+            s_CurrentlyActiveBuilderDragger = null;
+            m_WeStartedTheDrag = false;
 
             if (!m_Active)
+            {
+                SelectItemOnSingleClick(evt);
                 return;
+            }
 
             if (m_Active)
             {
                 var currentMouse = evt.mousePosition;
                 if (m_LastHoverElement != null)
                 {
-                    var localCanvasMouse = m_Canvas.WorldToLocal(currentMouse);
+                    var localCanvasMouse = Viewport != null ? m_Canvas.WorldToLocal(currentMouse) : Vector2.zero;
                     var localHierarchyMouse = builderHierarchyRoot.WorldToLocal(currentMouse);
 
-                    if (m_Canvas.ContainsPoint(localCanvasMouse))
+                    if (Viewport != null && m_Canvas.ContainsPoint(localCanvasMouse))
                     {
                         PerformAction(m_LastHoverElement, DestinationPane.Viewport);
                     }
@@ -436,13 +536,14 @@ namespace Unity.UI.Builder
                     }
                 }
 
-                evt.StopPropagation();
                 m_Active = false;
             }
             else
             {
                 FailAction(target);
             }
+
+            evt.StopPropagation();
 
             EndDragInner();
         }
@@ -451,7 +552,9 @@ namespace Unity.UI.Builder
         {
             index = -1;
             if (IsElementTheScrollView(m_LastRowHoverElement))
-                pickedElement = m_Canvas;
+            {
+                pickedElement = GetDefaultTargetElement();
+            }
             else if (m_LastHoverElement.ClassListContains(BuilderConstants.ExplorerItemReorderZoneClassName))
             {
                 var reorderZone = m_LastHoverElement;
@@ -472,7 +575,9 @@ namespace Unity.UI.Builder
                 }
             }
             else
+            {
                 pickedElement = m_LastHoverElement.GetProperty(BuilderConstants.ExplorerItemElementLinkVEPropertyName) as VisualElement;
+            }
         }
 
         void OnEsc(KeyUpEvent evt)

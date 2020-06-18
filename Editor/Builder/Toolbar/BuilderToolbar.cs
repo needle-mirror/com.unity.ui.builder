@@ -6,6 +6,8 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using Object = UnityEngine.Object;
 using PackageInfo = UnityEditor.PackageManager.PackageInfo;
+using Toolbar = UnityEditor.UIElements.Toolbar;
+using System;
 
 namespace Unity.UI.Builder
 {
@@ -13,6 +15,8 @@ namespace Unity.UI.Builder
     {
         public const string FitCanvasButtonName = "fit-canvas-button";
         public const string PreviewToggleName = "preview-button";
+        public const string BreadcrumbsToolbarName = "breadcrumbs-toolbar";
+        public const string BreadcrumbsName = "breadcrumbs-view";
 
         BuilderPaneWindow m_PaneWindow;
         BuilderSelection m_Selection;
@@ -28,6 +32,8 @@ namespace Unity.UI.Builder
         ToolbarButton m_FitCanvasButton;
         ToolbarMenu m_CanvasThemeMenu;
         ToolbarMenu m_SettingsMenu;
+        Toolbar m_BreadcrumbsToolbar;
+        ToolbarBreadcrumbs m_Breadcrumbs = new ToolbarBreadcrumbs();
 
         string m_LastSavePath = "Assets";
 
@@ -79,12 +85,18 @@ namespace Unity.UI.Builder
             SetUpCanvasThemeMenu();
             ChangeCanvasTheme(document.currentCanvasTheme);
             UpdateCanvasThemeMenuStatus();
+            SetViewportSubTitle();
 
             // Track unsaved changes state change.
-            SetViewportSubTitle();
+            SetCanvasTitle();
 
             m_SettingsMenu = this.Q<ToolbarMenu>("settings-menu");
             SetupSettingsMenu();
+
+            // Breadcrumbs & BreadCrumbs Toolbar
+            m_BreadcrumbsToolbar = this.Q<Toolbar>(BreadcrumbsToolbarName);
+            m_Breadcrumbs = this.Q<ToolbarBreadcrumbs>(BreadcrumbsName);
+            SetToolbarBreadCrumbs();
 
             // Get Builder package version.
             var packageInfo = PackageInfo.FindForAssetPath("Packages/" + BuilderConstants.BuilderPackageName);
@@ -106,6 +118,45 @@ namespace Unity.UI.Builder
         {
             UnregisterCallback<DetachFromPanelEvent>(UnregisterCallbacks);
             BuilderAssetModificationProcessor.Unregister(this);
+        }
+
+        public void SetToolbarBreadCrumbs()
+        {
+            m_Breadcrumbs.Clear();
+            var allHierarchyDocuments = new List<BuilderDocumentOpenUXML>();
+            var allOpenDocuments = m_PaneWindow.document.openUXMLFiles;
+
+            foreach (var Doc in allOpenDocuments)
+                if (Doc.openSubDocumentParentIndex > -1 || allOpenDocuments.IndexOf(Doc) == 0)
+                    allHierarchyDocuments.Add(Doc);
+
+            if (allHierarchyDocuments.Count == 1)
+            {
+                m_BreadcrumbsToolbar.style.display = DisplayStyle.None;
+                return;
+            }
+            
+            m_BreadcrumbsToolbar.style.display = DisplayStyle.Flex;
+
+            foreach (var Doc in allHierarchyDocuments)
+            {
+                string docName = BreadcrumbFileName(Doc);
+                Action onBreadCrumbClick = () => document.GoToSubdocument(m_Viewport.documentElement, m_PaneWindow, Doc);
+                bool clickedOnSameDocument = document.activeOpenUXMLFile == Doc;
+                m_Breadcrumbs.PushItem(docName, clickedOnSameDocument ? null : onBreadCrumbClick);
+            }
+        }
+
+        string BreadcrumbFileName(BuilderDocumentOpenUXML breadDoc)
+        {
+            var newFileName = breadDoc.uxmlFileName;
+
+            if (string.IsNullOrEmpty(newFileName))
+                newFileName = BuilderConstants.ToolbarUnsavedFileDisplayMessage;
+            else if (breadDoc.hasUnsavedChanges)
+                newFileName = newFileName + BuilderConstants.ToolbarUnsavedFileSuffix;
+
+            return newFileName;
         }
 
         public void OnAssetChange() { }
@@ -159,10 +210,13 @@ namespace Unity.UI.Builder
             return loadPath;
         }
 
-        public void NewDocument(bool checkForUnsavedChanges = true)
+        public bool NewDocument(bool checkForUnsavedChanges = true, bool unloadAllSubdocuments = true)
         {
             if (checkForUnsavedChanges && !document.CheckForUnsavedChanges())
-                return;
+                return false;
+
+            if (unloadAllSubdocuments)
+                document.GoToRootDocument(m_Viewport.documentElement, m_PaneWindow);
 
             m_Selection.ClearSelection(null);
 
@@ -176,7 +230,9 @@ namespace Unity.UI.Builder
 
             m_Library?.ResetCurrentlyLoadedUxmlStyles();
 
-            SetViewportSubTitle();
+            SetCanvasTitle();
+
+            return true;
         }
 
         void NewTestDocument()
@@ -189,6 +245,19 @@ namespace Unity.UI.Builder
             var originalAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(testAsset);
             LoadDocumentInternal(originalAsset);
         }
+
+#if UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
+        void NewTestVariablesDocument()
+        {
+            if (!document.CheckForUnsavedChanges())
+                return;
+
+            var testAsset = BuilderConstants.UIBuilderPackagePath +
+                            "/SampleDocument/BuilderVariableSampleCanvas.uxml";
+            var originalAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(testAsset);
+            LoadDocumentInternal(originalAsset);
+        }
+#endif
 
         internal void SaveDocument(bool isSaveAs)
         {
@@ -208,7 +277,7 @@ namespace Unity.UI.Builder
             m_LastSavePath = Path.GetDirectoryName(document.uxmlPath);
 
             // Set doc field value.
-            SetViewportSubTitle();
+            SetCanvasTitle();
 
             // Only updating UI to remove "*" from file names.
             m_Selection.ResetUnsavedChanges();
@@ -221,12 +290,10 @@ namespace Unity.UI.Builder
 
         public void OnAfterBuilderDeserialize()
         {
-            VisualTreeAsset docFieldValue = null;
-            if (!string.IsNullOrEmpty(m_PaneWindow.document.uxmlPath))
-                docFieldValue = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(m_PaneWindow.document.uxmlPath);
+            SetCanvasTitle();
             SetViewportSubTitle();
-
             ChangeCanvasTheme(document.currentCanvasTheme);
+            SetToolbarBreadCrumbs();
         }
 
         void LoadDocument(ChangeEvent<Object> evt)
@@ -239,10 +306,13 @@ namespace Unity.UI.Builder
             LoadDocumentInternal(visualTreeAsset);
         }
 
-        public bool LoadDocument(VisualTreeAsset visualTreeAsset, bool assetModifiedExternally = false)
+        public bool LoadDocument(VisualTreeAsset visualTreeAsset, bool unloadAllSubdocuments = true, bool assetModifiedExternally = false)
         {
             if (!document.CheckForUnsavedChanges(assetModifiedExternally))
                 return false;
+            
+            if (unloadAllSubdocuments)
+                document.GoToRootDocument(m_Viewport.documentElement, m_PaneWindow);
 
             LoadDocumentInternal(visualTreeAsset);
 
@@ -265,9 +335,7 @@ namespace Unity.UI.Builder
 
             m_LastSavePath = Path.GetDirectoryName(document.uxmlPath);
 
-            SetViewportSubTitle();
-
-            ChangeCanvasTheme(document.currentCanvasTheme);
+            OnAfterBuilderDeserialize();
         }
 
         void SetUpFileMenu()
@@ -283,6 +351,13 @@ namespace Unity.UI.Builder
                 {
                     NewTestDocument();
                 });
+
+#if UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
+                m_FileMenu.menu.AppendAction("New (Test Variables)", a =>
+                {
+                    NewTestVariablesDocument();
+                });
+#endif
             }
 
             m_FileMenu.menu.AppendAction("Open...", a =>
@@ -387,12 +462,13 @@ namespace Unity.UI.Builder
 
         void ChangeCanvasTheme(BuilderDocument.CanvasTheme theme)
         {
-            ApplyCanvasTheme(m_Viewport.documentElement, theme);
+            ApplyCanvasTheme(m_Viewport.sharedStylesAndDocumentElement, theme);
             ApplyCanvasBackground(m_Viewport.canvas.defaultBackgroundElement, theme);
             ApplyCanvasTheme(m_TooltipPreview, theme);
             ApplyCanvasBackground(m_TooltipPreview, theme);
 
             document.ChangeDocumentTheme(m_Viewport.documentElement, theme);
+            m_Inspector?.selection.NotifyOfStylingChange(null, null, BuilderStylingChangeType.RefreshOnly);
         }
 
         void ApplyCanvasTheme(VisualElement element, BuilderDocument.CanvasTheme theme)
@@ -492,6 +568,15 @@ namespace Unity.UI.Builder
 
         void SetViewportSubTitle()
         {
+            var subTitle = string.Empty;
+            if (!string.IsNullOrEmpty(m_BuilderPackageVersion))
+                subTitle += $"UI Builder {m_BuilderPackageVersion}";
+
+            m_Viewport.subTitle = subTitle;
+        }
+
+        void SetCanvasTitle()
+        {
             var newFileName = document.uxmlFileName;
 
             if (string.IsNullOrEmpty(newFileName))
@@ -499,12 +584,8 @@ namespace Unity.UI.Builder
             else if (document.hasUnsavedChanges)
                 newFileName = newFileName + BuilderConstants.ToolbarUnsavedFileSuffix;
 
-            var subTitle = newFileName;
-
-            if (!string.IsNullOrEmpty(m_BuilderPackageVersion))
-                subTitle += $"{BuilderConstants.SubtitlePrefix}UI Builder {m_BuilderPackageVersion}";
-
-            m_Viewport.subTitle = subTitle;
+            m_Viewport.canvas.TitleLabel.text = newFileName;
+            m_Viewport.canvas.TitleLabel.tooltip = document.uxmlPath;
         }
 
         void SetupSettingsMenu()
@@ -517,18 +598,39 @@ namespace Unity.UI.Builder
             m_SettingsMenu.menu.AppendAction("Show UXML \u2215 USS Previews"
                 , a => builder.codePreviewVisible = !builder.codePreviewVisible
                 , a => builder.codePreviewVisible ? DropdownMenuAction.Status.Checked : DropdownMenuAction.Status.Normal);
+
+#if UNITY_2020_1_OR_NEWER
+            AddBuilderProjectSettingsMenu();
+#endif
+        }
+
+        void AddBuilderProjectSettingsMenu()
+        {
+            m_SettingsMenu.menu.AppendAction("Settings"
+                , a => ShowSettingsWindow()
+                , a => DropdownMenuAction.Status.Normal);
+        }
+
+        void ShowSettingsWindow()
+        {
+            var projectSettingsWindow = EditorWindow.GetWindow<ProjectSettingsWindow>();
+            projectSettingsWindow.Show();
+            projectSettingsWindow.SelectProviderByName(BuilderSettingsProvider.Name);
         }
 
         public void SelectionChanged() {}
 
         public void HierarchyChanged(VisualElement element, BuilderHierarchyChangeType changeType)
         {
-            SetViewportSubTitle();
+            SetToolbarBreadCrumbs();
+            SetCanvasTitle();
         }
 
-        public void StylingChanged(List<string> styles)
+        public void StylingChanged(List<string> styles, BuilderStylingChangeType changeType)
         {
-            SetViewportSubTitle();
+            SetToolbarBreadCrumbs();
+            SetCanvasTitle();
         }
+
     }
 }

@@ -1,11 +1,17 @@
 using System;
 using System.IO;
 using UnityEditor;
+using UnityEngine.UIElements;
 
 namespace Unity.UI.Builder
 {
     internal static class BuilderStyleSheetsUtilities
     {
+        public static void SetActiveUSS(BuilderSelection selection, BuilderPaneWindow paneWindow, StyleSheet styleSheet)
+        {
+            paneWindow.document.UpdateActiveStyleSheet(selection, styleSheet, null);
+        }
+
         public static void AddUSSToAsset(BuilderPaneWindow paneWindow, string ussPath)
         {
             BuilderAssetUtilities.AddStyleSheetToAsset(paneWindow.document, ussPath);

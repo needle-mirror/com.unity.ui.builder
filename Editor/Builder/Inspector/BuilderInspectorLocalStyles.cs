@@ -42,11 +42,11 @@ namespace Unity.UI.Builder
                     var currentStyleFields = styleRow.Query<BindableElement>().ToList();
 
 #if UNITY_2019_2
-                if (styleRow.ClassListContains(BuilderConstants.Version_2019_3_OrNewer))
-                {
-                    styleRow.AddToClassList(BuilderConstants.HiddenStyleClassName);
-                    continue;
-                }
+                    if (styleRow.ClassListContains(BuilderConstants.Version_2019_3_OrNewer))
+                    {
+                        styleRow.AddToClassList(BuilderConstants.HiddenStyleClassName);
+                        continue;
+                    }
 #else
                     if (styleRow.ClassListContains(BuilderConstants.Version_2019_2))
                     {
@@ -116,9 +116,17 @@ namespace Unity.UI.Builder
         {
             var foldout = (PersistedFoldout) (obj.userData as VisualElement)?.parent;
             Assert.IsNotNull(foldout);
-            if (m_StyleCategories.TryGetValue(foldout, out var styleFields))
+            List<BindableElement> styleFields;
+
+            if (m_StyleCategories.TryGetValue(foldout, out styleFields))
             {
-                m_StyleFields.UnsetStyleProperties(styleFields);
+                var tempFields = new List<BindableElement>();
+                foreach (var styleField in styleFields)
+                {
+                    if (!(styleField is FoldoutField))
+                        tempFields.Add(styleField);
+                }
+                m_StyleFields.UnsetStyleProperties(tempFields);
             }
         }
 

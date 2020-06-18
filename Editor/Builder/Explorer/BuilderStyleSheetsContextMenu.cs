@@ -48,13 +48,24 @@ namespace Unity.UI.Builder
                     ? DropdownMenuAction.Status.Normal
                     : DropdownMenuAction.Status.Disabled);
 
-            evt.menu.AppendSeparator();
-
             evt.menu.AppendAction(
                 BuilderConstants.ExplorerStyleSheetsPaneRemoveUSSMenu,
                 a =>
                 {
                     BuilderStyleSheetsUtilities.RemoveUSSFromAsset(paneWindow, selectedStyleSheetIndex);
+                },
+                isStyleSheet
+                    ? DropdownMenuAction.Status.Normal
+                    : DropdownMenuAction.Status.Disabled);
+
+            evt.menu.AppendSeparator();
+
+            evt.menu.AppendAction(
+                BuilderConstants.ExplorerStyleSheetsPaneSetActiveUSS,
+                a =>
+                {
+                    selection.Select(null, documentElement);
+                    BuilderStyleSheetsUtilities.SetActiveUSS(selection, paneWindow, selectedStyleSheet);
                 },
                 isStyleSheet
                     ? DropdownMenuAction.Status.Normal

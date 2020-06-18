@@ -67,9 +67,19 @@ namespace Unity.UI.Builder
             return window;
         }
 
+        protected static T GetWindowWithRectAndInit<T>(Rect rect) where T : BuilderPaneWindow
+        {
+            var window = GetWindowWithRect<T>(rect);
+
+            window.minSize = BuilderConstants.BuilderWindowDefaultMinSize;
+            window.maxSize = BuilderConstants.BuilderWindowDefaultMaxSize;
+            window.Show();
+            return window;
+        }
+
         protected void SetTitleContent(string windowTitle, string windowIconPath = null)
         {
-            if(string.IsNullOrEmpty(windowTitle))
+            if (string.IsNullOrEmpty(windowTitle))
                 return;
 
             Texture2D iconTex = null;
@@ -159,9 +169,14 @@ namespace Unity.UI.Builder
             // Nothing to do by default.
         }
 
-        public virtual void LoadDocument(VisualTreeAsset asset)
+        public virtual void LoadDocument(VisualTreeAsset asset, bool unloadAllSubdocuments = true)
         {
             // Nothing to do by default.
+        }
+
+        public virtual bool NewDocument(bool checkForUnsavedChanges = true, bool unloadAllSubdocuments = true)
+        {
+            return true;
         }
 
         public virtual void PrimaryViewportWindowChanged()

@@ -4,6 +4,7 @@ using UnityEngine.Assertions;
 using UnityEngine.UIElements;
 using UnityEngine;
 using System.IO;
+using System.Linq;
 
 namespace Unity.UI.Builder
 {
@@ -69,6 +70,17 @@ namespace Unity.UI.Builder
 
         static void AppendElementNonStyleAttributes(VisualElementAsset vea, StringBuilder stringBuilder, bool writingToFile)
         {
+            // In 2019.3, je pense, "class" and "style" are now regular attributes??
+            AppendElementAttributes(vea, stringBuilder, writingToFile, "class", "style");
+        }
+
+        static void AppendHeaderAttributes(VisualTreeAsset vta, StringBuilder stringBuilder, bool writingToFile)
+        {
+            AppendElementAttributes(vta.GetRootUXMLElement(), stringBuilder, writingToFile, "ui", "uie");
+        }
+
+        static void AppendElementAttributes(VisualElementAsset vea, StringBuilder stringBuilder, bool writingToFile, params string[] ignoredAttributes)
+        {
             var fieldInfo = VisualElementAssetExtensions.AttributesListFieldInfo;
             if (fieldInfo == null)
             {
@@ -88,8 +100,7 @@ namespace Unity.UI.Builder
                     if (writingToFile && name == BuilderConstants.SelectedVisualElementAssetAttributeName)
                         continue;
 
-                    // In 2019.3, je pense, "class" and "style" are now regular attributes??
-                    if (name == "class" || name == "style")
+                    if (ignoredAttributes.Contains(name))
                         continue;
 
                     AppendElementAttribute(name, value, stringBuilder);
@@ -381,21 +392,25 @@ namespace Unity.UI.Builder
             }
         }
 
-        public static string GenerateUXML(VisualTreeAsset vta, string vtaPath, VisualElementAsset vea)
+        public static string GenerateUXML(VisualTreeAsset vta, string vtaPath, List<VisualElementAsset> veas)
         {
             var stringBuilder = new StringBuilder();
 
             stringBuilder.Append(BuilderConstants.UxmlHeader);
+            stringBuilder.Append(">");
             stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
 
             var idToChildren = VisualTreeAssetUtilities.GenerateIdToChildren(vta);
 
-            // Templates
-            var usedTemplates = new HashSet<string>();
-            GatherUsedTemplates(vta, vea, idToChildren, usedTemplates);
-            AppendTemplateRegistrations(vta, vtaPath, stringBuilder, usedTemplates);
+            foreach (var vea in veas)
+            {
+                // Templates
+                var usedTemplates = new HashSet<string>();
+                GatherUsedTemplates(vta, vea, idToChildren, usedTemplates);
+                AppendTemplateRegistrations(vta, vtaPath, stringBuilder, usedTemplates);
 
-            GenerateUXMLRecursive(vta, vtaPath, vea, idToChildren, stringBuilder, 1, true);
+                GenerateUXMLRecursive(vta, vtaPath, vea, idToChildren, stringBuilder, 1, true);
+            }
 
             stringBuilder.Append(BuilderConstants.UxmlFooter);
             stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
@@ -448,6 +463,7 @@ namespace Unity.UI.Builder
                 (vta.templateAssets == null || vta.templateAssets.Count <= 0))
             {
                 stringBuilder.Append(BuilderConstants.UxmlHeader);
+                stringBuilder.Append(">");
                 stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
                 stringBuilder.Append(BuilderConstants.UxmlFooter);
                 stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
@@ -457,6 +473,10 @@ namespace Unity.UI.Builder
             var idToChildren = VisualTreeAssetUtilities.GenerateIdToChildren(vta);
 
             stringBuilder.Append(BuilderConstants.UxmlHeader);
+#if UNITY_2020_1_OR_NEWER
+            AppendHeaderAttributes(vta, stringBuilder, writingToFile);
+#endif
+            stringBuilder.Append(">");
             stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
 
             // Templates

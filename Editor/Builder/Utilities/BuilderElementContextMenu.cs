@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -17,6 +18,7 @@ namespace Unity.UI.Builder
 
         protected BuilderDocument document => m_PaneWindow.document;
         protected BuilderPaneWindow paneWindow => m_PaneWindow;
+        protected BuilderSelection selection => m_Selection;
 
         public BuilderElementContextMenu(BuilderPaneWindow paneWindow, BuilderSelection selection)
         {
@@ -112,10 +114,16 @@ namespace Unity.UI.Builder
             return ((MouseButton)evt.button == m_CurrentActivator.button);
         }
 
+        void ReselectIfNecessary(VisualElement documentElement)
+        {
+            if (!m_Selection.selection.Contains(documentElement))
+                m_Selection.Select(null, documentElement);
+        }
+
         public virtual void BuildElementContextualMenu(ContextualMenuPopulateEvent evt, VisualElement target)
         {
             var documentElement = target.GetProperty(BuilderConstants.ElementLinkedDocumentVisualElementVEPropertyName) as VisualElement;
-            
+
             var isValidTarget = documentElement != null && (documentElement.IsPartOfCurrentDocument() || documentElement.GetStyleComplexSelector() != null);
             if (isValidTarget)
                 evt.StopImmediatePropagation();
@@ -124,11 +132,9 @@ namespace Unity.UI.Builder
                 "Copy",
                 a =>
                 {
-                    m_Selection.Select(null, documentElement);
+                    ReselectIfNecessary(documentElement);
                     if (documentElement.IsPartOfCurrentDocument() || documentElement.GetStyleComplexSelector() != null)
-                        m_PaneWindow.commandHandler.PerformActionOnSelection(
-                            m_PaneWindow.commandHandler.CopyElement,
-                            m_PaneWindow.commandHandler.ClearCopyBuffer);
+                        m_PaneWindow.commandHandler.CopySelection();
                 },
                 isValidTarget
                     ? DropdownMenuAction.Status.Normal
@@ -138,7 +144,6 @@ namespace Unity.UI.Builder
                 "Paste",
                 a =>
                 {
-                    m_Selection.Select(null, documentElement);
                     m_PaneWindow.commandHandler.Paste();
                 },
                 string.IsNullOrEmpty(BuilderEditorUtility.SystemCopyBuffer)
@@ -167,12 +172,8 @@ namespace Unity.UI.Builder
                 "Duplicate",
                 a =>
                 {
-                    m_Selection.Select(null, documentElement);
-                    if (documentElement.IsPartOfCurrentDocument() || documentElement.GetStyleComplexSelector() != null)
-                        m_PaneWindow.commandHandler.PerformActionOnSelection(
-                            m_PaneWindow.commandHandler.DuplicateElement,
-                            m_PaneWindow.commandHandler.ClearCopyBuffer,
-                            m_PaneWindow.commandHandler.Paste);
+                    ReselectIfNecessary(documentElement);
+                    m_PaneWindow.commandHandler.DuplicateSelection();
                 },
                 isValidTarget
                     ? DropdownMenuAction.Status.Normal
@@ -184,7 +185,7 @@ namespace Unity.UI.Builder
                 "Delete",
                 a =>
                 {
-                    m_Selection.Select(null, documentElement);
+                    ReselectIfNecessary(documentElement);
                     m_PaneWindow.commandHandler.DeleteSelection();
                 },
                 isValidTarget

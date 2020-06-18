@@ -39,13 +39,3 @@
 .unity-builder-library__tree-item-edit-button:hover {
     background-image: resource("com.unity.ui.builder/Icons/Selected/CodePreview/GoToDashboard");
 }
-
-.unity-builder-library__tree-item-editor-only-label {
-    border-color: #000000;
-    color: #000000;
-}
-
-.unity-list-view:focus > .unity-list-view__item--selected .unity-builder-library__tree-item-editor-only-label {
-    color: #FFFFFF;
-    border-color: #FFFFFF;
-}

@@ -49,5 +49,7 @@ namespace Unity.UI.Builder
             AddToClassList(BuilderConstants.FoldoutFieldPropertyName);
             header.AddToClassList(BuilderConstants.FoldoutFieldHeaderClassName);
         }
+
+        public virtual void UpdateFromChildFields() { }
     }
 }

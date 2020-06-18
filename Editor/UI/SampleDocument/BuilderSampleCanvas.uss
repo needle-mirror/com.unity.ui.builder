@@ -5,3 +5,11 @@
 Label.section-text {
     background-color: rgb(14, 117, 1);
 }
+
+.box {
+    min-height: 24px;
+    margin-left: 4px;
+    margin-right: 4px;
+    margin-top: 4px;
+    margin-bottom: 4px;
+}

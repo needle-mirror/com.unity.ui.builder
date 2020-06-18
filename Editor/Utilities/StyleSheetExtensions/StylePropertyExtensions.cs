@@ -12,6 +12,18 @@ namespace Unity.UI.Builder
 {
     internal static class StylePropertyExtensions
     {
+#if UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
+        public static bool IsVariable(this StyleProperty property)
+        {
+            return property.values.Length > 0 && property.values[0].IsVarFunction();
+        }
+
+        public static string ReadVariable(this StyleSheet styleSheet, StyleProperty property)
+        {
+            return styleSheet.ReadVariable(property.values[2]);
+        }
+#endif
+
         public static StyleValueHandle AddValueHandle(
             this StyleSheet styleSheet, StyleProperty property, int index, StyleValueType type)
         {
@@ -151,6 +163,27 @@ namespace Unity.UI.Builder
             return newValue;
         }
 
+#if UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
+        internal static StyleValueHandle[] AddVariable(this StyleSheet styleSheet, StyleProperty property, string value)
+        {
+            // Undo/Redo
+            Undo.RegisterCompleteObjectUndo(styleSheet, BuilderConstants.ChangeUIStyleValueUndoMessage);
+
+            // Add the function name
+            var funcHandle = styleSheet.AddValueHandle(property, (int)StyleValueFunction.Var, StyleValueType.Function);
+
+            // Add the argument count
+            var index = styleSheet.AddValueToArray(1);
+            var argHandle = styleSheet.AddValueHandle(property, index, StyleValueType.Float);
+
+            // Add the variable name
+            index = styleSheet.AddValueToArray(value);
+            var newValue = styleSheet.AddValueHandle(property, index, StyleValueType.Variable);
+
+            return new StyleValueHandle[] { funcHandle, argHandle, newValue };
+        }
+#endif
+
         internal static void RemoveValue(this StyleSheet styleSheet, StyleProperty property, StyleValueHandle valueHandle)
         {
             // Undo/Redo
@@ -163,5 +196,15 @@ namespace Unity.UI.Builder
             valuesList.Remove(valueHandle);
             property.values = valuesList.ToArray();
         }
+
+#if UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
+        internal static void RemoveVariable(this StyleSheet styleSheet, StyleProperty property)
+        {
+            // Undo/Redo
+            Undo.RegisterCompleteObjectUndo(styleSheet, BuilderConstants.ChangeUIStyleValueUndoMessage);
+
+            Array.Clear(property.values, 0, property.values.Length);
+        }
+#endif
     }
 }

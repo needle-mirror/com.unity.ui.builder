@@ -54,7 +54,7 @@ namespace Unity.UI.Builder
         [MenuItem(BuilderConstants.BuilderMenuEntry)]
         public static Builder ShowWindow()
         {
-            return GetWindowAndInit<Builder>();
+            return GetWindowWithRectAndInit<Builder>(BuilderConstants.BuilderWindowDefaultRect);
         }
 
         public static Builder ActiveWindow
@@ -114,8 +114,9 @@ namespace Unity.UI.Builder
 
             // Create the rest of the panes.
             var classDragger = new BuilderClassDragger(this, root, selection, m_Viewport, m_Viewport.parentTracker);
+            var styleSheetsDragger = new BuilderStyleSheetsDragger(this, root, selection);
             var hierarchyDragger = new BuilderHierarchyDragger(this, root, selection, m_Viewport, m_Viewport.parentTracker);
-            var styleSheetsPane = new BuilderStyleSheets(this, m_Viewport, selection, classDragger, hierarchyDragger, m_HighlightOverlayPainter, styleSheetsPaneTooltipPreview);
+            var styleSheetsPane = new BuilderStyleSheets(this, m_Viewport, selection, classDragger, styleSheetsDragger, m_HighlightOverlayPainter, styleSheetsPaneTooltipPreview);
             var hierarchy = new BuilderHierarchy(this, m_Viewport, selection, classDragger, hierarchyDragger, contextMenuManipulator, m_HighlightOverlayPainter);
             var libraryDragger = new BuilderLibraryDragger(this, root, selection, m_Viewport, m_Viewport.parentTracker, hierarchy.container, libraryTooltipPreview);
             m_Library = new BuilderLibrary(this, m_Viewport, selection, libraryDragger, libraryTooltipPreview);
@@ -140,6 +141,7 @@ namespace Unity.UI.Builder
                 styleSheetsPane,
                 hierarchy,
                 m_Inspector,
+                m_Library,
                 m_UxmlPreview,
                 m_UssPreview,
                 m_Toolbar,
@@ -187,9 +189,14 @@ namespace Unity.UI.Builder
             m_Selection.NotifyOfHierarchyChange(document);
         }
 
-        public override void LoadDocument(VisualTreeAsset asset)
+        public override void LoadDocument(VisualTreeAsset asset, bool unloadAllSubdocuments = true)
         {
-            m_Toolbar.LoadDocument(asset);
+            m_Toolbar.LoadDocument(asset, unloadAllSubdocuments);
+        }
+
+        public override bool NewDocument(bool checkForUnsavedChanges = true, bool unloadAllSubdocuments = true)
+        {
+            return m_Toolbar.NewDocument(checkForUnsavedChanges, unloadAllSubdocuments);
         }
 
         protected override void OnEnable()

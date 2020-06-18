@@ -5,6 +5,10 @@ using System;
 using UnityEngine.UIElements;
 using UnityEngine;
 
+#if UNITY_2020_2_OR_NEWER
+using UnityEditor.UIElements.StyleSheets;
+#endif
+
 namespace Unity.UI.Builder
 {
     internal static class StyleComplexSelectorExtensions

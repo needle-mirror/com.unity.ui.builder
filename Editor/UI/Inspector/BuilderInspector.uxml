@@ -30,6 +30,9 @@
             class="unity-builder-inspector__nothing-selected-label"
             text="" /> <!-- Nothing selected. :) -->
 
+        <!-- Multi-Selection Unsupported Message -->
+        <VisualElement name="multi-selection-unsupported-message" class="unity-builder-inspector__multi-selection-message" />
+
         <!-- Canvas Inspector -->
         <Instance template="CanvasInspector" name="canvas-inspector" />
 

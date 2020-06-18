@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using UnityEditor;
@@ -78,8 +79,7 @@ namespace Unity.UI.Builder
 
             // Generate field label.
             var fieldLabel = BuilderNameUtilities.ConvertDashToHuman(attribute.name);
-
-            BindableElement fieldElement = null;
+            BindableElement fieldElement;
             if (attribute is UxmlStringAttributeDescription)
             {
                 var uiField = new TextField(fieldLabel);
@@ -259,13 +259,7 @@ namespace Unity.UI.Builder
 
             if (attribute is UxmlStringAttributeDescription && fieldElement is TextField)
             {
-                string value;
-                if (veValueAbstract is Enum)
-                    value = (veValueAbstract as Enum).ToString();
-                else
-                    value = veValueAbstract.ToString();
-
-                (fieldElement as TextField).SetValueWithoutNotify(value);
+                (fieldElement as TextField).SetValueWithoutNotify(GetAttributeStringValue(veValueAbstract));
             }
             else if (attribute is UxmlFloatAttributeDescription && fieldElement is FloatField)
             {
@@ -326,10 +320,27 @@ namespace Unity.UI.Builder
             {
                 (fieldElement as TextField).SetValueWithoutNotify(veValueAbstract.ToString());
             }
-            
+
             styleRow.RemoveFromClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
             if (IsAttributeOverriden(attribute))
                 styleRow.AddToClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
+        }
+
+        string GetAttributeStringValue(object attributeValue)
+        {
+            string value;
+            if (attributeValue is Enum @enum)
+                value = @enum.ToString();
+            else if (attributeValue is IList<string> list)
+            {
+                value = string.Join(",", list);
+            }
+            else
+            {
+                value = attributeValue.ToString();
+            }
+
+            return value;
         }
 
         bool IsAttributeOverriden(UxmlAttributeDescription attribute)
@@ -448,17 +459,17 @@ namespace Unity.UI.Builder
                 action =>
                 {
                     var fieldElement = action.userData as BindableElement;
-                    if (fieldElement == null) 
+                    if (fieldElement == null)
                         return DropdownMenuAction.Status.Disabled;
-                    
+
                     var attributeName = fieldElement.bindingPath;
                     var vea = currentVisualElement.GetVisualElementAsset();
-                    return vea.HasAttribute(attributeName) 
-                        ? DropdownMenuAction.Status.Normal 
+                    return vea.HasAttribute(attributeName)
+                        ? DropdownMenuAction.Status.Normal
                         : DropdownMenuAction.Status.Disabled;
                 },
                 evt.target);
-            
+
             evt.menu.AppendAction(
                 BuilderConstants.ContextMenuUnsetAllMessage,
                 UnsetAllAttributes,
@@ -469,7 +480,7 @@ namespace Unity.UI.Builder
                     {
                         if (attribute?.name == null)
                             continue;
-                
+
                         if(IsAttributeOverriden(attribute))
                             return DropdownMenuAction.Status.Normal;
                     }
@@ -482,20 +493,20 @@ namespace Unity.UI.Builder
         void UnsetAllAttributes(DropdownMenuAction action)
         {
             var attributeList = currentVisualElement.GetAttributeDescriptions();
-            
+
             // Undo/Redo
             Undo.RegisterCompleteObjectUndo(m_Inspector.visualTreeAsset, BuilderConstants.ChangeAttributeValueUndoMessage);
-            
+
             foreach (var attribute in attributeList)
             {
                 if (attribute?.name == null)
                     continue;
-                
+
                 // Unset value in asset.
                 var vea = currentVisualElement.GetVisualElementAsset();
                 vea.RemoveAttribute(attribute.name);
             }
-            
+
             var fields = m_AttributesSection.Query<BindableElement>().Where(e => !string.IsNullOrEmpty(e.bindingPath)).ToList();
             foreach (var fieldElement in fields)
             {
@@ -514,7 +525,7 @@ namespace Unity.UI.Builder
         {
             var fieldElement = action.userData as BindableElement;
             var attributeName = fieldElement.bindingPath;
-            
+
 
             // Undo/Redo
             Undo.RegisterCompleteObjectUndo(m_Inspector.visualTreeAsset, BuilderConstants.ChangeAttributeValueUndoMessage);
@@ -654,7 +665,7 @@ namespace Unity.UI.Builder
             styleRow.AddToClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
 
             var styleFields = styleRow.Query<BindableElement>().ToList();
-            
+
             foreach (var styleField in styleFields)
             {
                 styleField.RemoveFromClassList(BuilderConstants.InspectorLocalStyleResetClassName);

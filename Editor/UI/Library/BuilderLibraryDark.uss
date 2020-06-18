@@ -30,8 +30,3 @@
 .unity-builder-library__tree-item-edit-button:hover {
     background-image: resource("com.unity.ui.builder/Icons/Selected/CodePreview/GoToDashboard");
 }
-
-.unity-builder-library__tree-item-editor-only-label {
-    color: #E4E4E4;
-    border-color: #E4E4E4;
-}

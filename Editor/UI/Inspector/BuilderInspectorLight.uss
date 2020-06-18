@@ -2,6 +2,7 @@
 /* Inspector                                                                 */
 /*****************************************************************************/
 
+.unity-builder-inspector__category-foldout > .unity-foldout__header > .unity-label,
 .unity-builder-inspector__category-foldout > .unity-foldout__header > .unity-toggle {
     border-color: rgb(117, 117, 117);
     background-color: rgb(146, 146, 146);
@@ -26,6 +27,43 @@
 
 .unity-builder-inspector__style--override .unity-builder-inspector-blue-override-box {
     background-color: rgb(26, 26, 26);
+}
+
+.unity-builder-inspector__style--variable .unity-builder-inspector__variable-field-label {
+    border-color: #B5B5B5;
+    background-color: #D1D1D1;
+}
+
+.unity-label:hover > .unity-builder-inspector__variable-field-label {
+    border-color: #555555;
+}
+
+.unity-base-field:focus .unity-builder-inspector__variable-field-label {
+    color: #003C88;
+}
+
+.unity-builder-inspector__style--variable-editing .unity-builder-inspector__variable-field-label {
+    border-color: rgb(43, 126, 194);
+    background-color: rgba(63, 146, 214, 0.3);
+}
+
+.unity-builder-inspector__style--variable-editing.unity-builder--readonly .unity-builder-inspector__variable-field-label {
+    border-color: rgb(126, 126, 126);
+    background-color: rgba(126, 126, 126, 0.3);
+}
+
+/*****************************************************************************/
+/* Variable Field                                                            */
+/*****************************************************************************/
+
+.unity-builder-variable-field__placeholder-label {
+    color: rgba(0, 0, 0, 0.3);
+    -unity-font-style: italic;
+}
+
+.unity-builder-inspector__style--variable-editing.unity-builder--readonly .unity-builder-variable-field .unity-base-field__input {
+    background-color: rgb(220, 220, 220);
+    color: rgba(0, 0, 0, 0.5);
 }
 
 /*****************************************************************************/
@@ -834,4 +872,24 @@
 
 .unity-builder-inspector--flex-row-reverse .unity-builder-inspector_justify-content-field #space-around:checked:hover > .unity-button-strip__button-icon {
     background-image: resource("com.unity.ui.builder/Icons/Light/Inspector/Justify Content/Flex Row/Space Around Reverse");
+}
+
+/*****************************************************************************/
+/* Canvas                                                                    */
+/*****************************************************************************/
+
+.unity-builder-inspector_canvas-background-mode Button  {
+    align-items: center;
+}
+
+.unity-builder-inspector_canvas-background-mode #Color > .unity-button-strip__button-icon  {
+    background-image: resource("com.unity.ui.builder/Icons/Light/Inspector/Canvas/color_picker");
+}
+
+.unity-builder-inspector_canvas-background-mode #Image > .unity-button-strip__button-icon {
+    background-image: resource("com.unity.ui.builder/Icons/Light/Inspector/Canvas/RawImage");
+}
+
+.unity-builder-inspector_canvas-background-mode #Camera > .unity-button-strip__button-icon  {
+    background-image: resource("SceneViewCamera.png");
 }

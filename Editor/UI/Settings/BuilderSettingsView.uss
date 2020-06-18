@@ -1,0 +1,14 @@
+.builder-settings-container {
+    margin-left: 9px;
+    margin-top: 1px;
+}
+
+.builder-settings-header {
+    font-size: 19px;
+    -unity-font-style: bold;
+    margin-bottom: 12px;
+}
+
+.unity-toggle > .unity-label {
+    min-width: 255px;
+}

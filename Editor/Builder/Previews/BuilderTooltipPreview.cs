@@ -1,5 +1,6 @@
+using System;
 using UnityEngine.UIElements;
-using UnityEditor;
+using UnityEngine;
 
 namespace Unity.UI.Builder
 {
@@ -21,6 +22,9 @@ namespace Unity.UI.Builder
 
         public override VisualElement contentContainer => m_Container;
 
+        public event Action onShow; 
+        public event Action onHide;
+
         public BuilderTooltipPreview()
         {
             AddToClassList(s_UssClassName);
@@ -34,16 +38,20 @@ namespace Unity.UI.Builder
             m_Container.name = "content-container";
             m_Container.AddToClassList(s_ContainerClassName);
             m_Enabler.Add(m_Container);
+
+            this.RegisterCallback<GeometryChangedEvent>(e => EnsureVisibilityInParent());
         }
 
         public void Show()
         {
+            onShow?.Invoke();
             m_Enabler.style.display = DisplayStyle.Flex;
         }
 
         public void Hide()
         {
             m_Enabler.style.display = DisplayStyle.None;
+            onHide?.Invoke();
         }
 
         public void Enable()
@@ -54,6 +62,18 @@ namespace Unity.UI.Builder
         public void Disable()
         {
             this.style.display = DisplayStyle.None;
+        }
+
+        public void EnsureVisibilityInParent()
+        {
+            if (parent != null && !float.IsNaN(layout.width) && !float.IsNaN(layout.height))
+            {
+                float left = Mathf.Min(style.left.value.value, parent.layout.width - resolvedStyle.width - 10f);
+                float top = Mathf.Min(style.top.value.value, parent.layout.height - resolvedStyle.height - 10f);
+
+                style.left = left;
+                style.top = top;
+            }
         }
     }
 }

@@ -30,9 +30,9 @@ namespace Unity.UI.Builder
             var viewport = viewportWindow.viewport;
 
             var classDragger = new BuilderClassDragger(this, root, selection, viewport, viewport.parentTracker);
-            var hierarchyDragger = new BuilderHierarchyDragger(this, root, selection, viewport, viewport.parentTracker);
+            var styleSheetsDragger = new BuilderStyleSheetsDragger(this, root, selection);
 
-            m_StyleSheetsPane = new BuilderStyleSheets(this, viewport, selection, classDragger, hierarchyDragger, null, null);
+            m_StyleSheetsPane = new BuilderStyleSheets(this, viewport, selection, classDragger, styleSheetsDragger, null, null);
 
             selection.AddNotifier(m_StyleSheetsPane);
 

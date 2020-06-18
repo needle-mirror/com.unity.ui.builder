@@ -147,12 +147,12 @@ namespace Unity.UI.Builder
             m_TooltipPreview.Enable();
         }
 
-        protected override bool StopEventOnMouseDown()
+        protected override bool StopEventOnMouseDown(MouseDownEvent evt)
         {
             return false;
         }
 
-        protected override bool SupportsDragBetweenElements()
+        protected override bool SupportsDragBetweenElements(VisualElement element)
         {
             return true;
         }
