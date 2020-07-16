@@ -14,6 +14,7 @@ namespace Unity.UI.Builder
         public int CanvasY;
         public int CanvasWidth = (int)BuilderConstants.CanvasInitialWidth;
         public int CanvasHeight = (int)BuilderConstants.CanvasInitialHeight;
+        public bool MatchGameView;
 
         public float ZoomScale = BuilderConstants.ViewportInitialZoom;
         public Vector2 PanOffset = BuilderConstants.ViewportInitialContentOffset;

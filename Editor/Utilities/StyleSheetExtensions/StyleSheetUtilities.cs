@@ -9,10 +9,8 @@ using UnityEditor.UIElements.StyleSheets;
 using UnityEditor.StyleSheets;
 #endif
 
-#if UNITY_2019_3_OR_NEWER
 using UnityEngine.UIElements.StyleSheets;
 using System.Text.RegularExpressions;
-#endif
 
 namespace Unity.UI.Builder
 {
@@ -100,7 +98,6 @@ namespace Unity.UI.Builder
             RemoveFakeSelector(e.target as VisualElement);
         }
 
-#if UNITY_2019_3_OR_NEWER
         public static Dimension.Unit ConvertToDimensionUnit(LengthUnit unit)
         {
             return unit == LengthUnit.Percent ? Dimension.Unit.Percent : Dimension.Unit.Pixel;
@@ -118,6 +115,5 @@ namespace Unity.UI.Builder
 
             return cleanName;
         }
-#endif
     }
 }

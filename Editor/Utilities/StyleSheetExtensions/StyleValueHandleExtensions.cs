@@ -3,9 +3,7 @@ using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
-#if UNITY_2019_3_OR_NEWER
 using UnityEngine.UIElements.StyleSheets;
-#endif
 using Object = UnityEngine.Object;
 
 namespace Unity.UI.Builder
@@ -21,10 +19,8 @@ namespace Unity.UI.Builder
                     index = to.AddValueToArray(from.GetKeyword(valueHandle)); break;
                 case StyleValueType.Float:
                     index = to.AddValueToArray(from.GetFloat(valueHandle)); break;
-#if UNITY_2019_3_OR_NEWER
                 case StyleValueType.Dimension:
                     index = to.AddValueToArray(from.GetDimension(valueHandle)); break;
-#endif
                 case StyleValueType.Color:
                     index = to.AddValueToArray(from.GetColor(valueHandle)); break;
                 case StyleValueType.String:
@@ -54,7 +50,6 @@ namespace Unity.UI.Builder
             return floats.Count - 1;
         }
 
-#if UNITY_2019_3_OR_NEWER
         public static int AddValueToArray(this StyleSheet styleSheet, Dimension value)
         {
             var dimensions = styleSheet.dimensions.ToList();
@@ -63,7 +58,6 @@ namespace Unity.UI.Builder
 
             return dimensions.Count - 1;
         }
-#endif
 
         public static int AddValueToArray(this StyleSheet styleSheet, Color value)
         {
@@ -120,23 +114,19 @@ namespace Unity.UI.Builder
             return styleSheet.ReadFloat(valueHandle);
         }
 
-#if UNITY_2019_3_OR_NEWER
         public static Dimension GetDimension(this StyleSheet styleSheet, StyleValueHandle valueHandle)
         {
             return styleSheet.ReadDimension(valueHandle);
         }
-#endif
 
         public static Color GetColor(this StyleSheet styleSheet, StyleValueHandle valueHandle)
         {
-#if UNITY_2019_3_OR_NEWER
             if (valueHandle.valueType == StyleValueType.Enum)
             {
                 var colorName = styleSheet.ReadAsString(valueHandle);
                 StyleSheetColor.TryGetColor(colorName.ToLower(), out var value);
                 return value;
             }
-#endif
             return styleSheet.ReadColor(valueHandle);
         }
 
@@ -163,7 +153,7 @@ namespace Unity.UI.Builder
                     return styleSheet.assets[valueHandle.valueIndex];
             }
         }
-#if UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
+
         public static StyleValueFunction GetFunction(this StyleSheet styleSheet, StyleValueHandle valueHandle)
         {
             return styleSheet.ReadFunction(valueHandle);
@@ -173,7 +163,7 @@ namespace Unity.UI.Builder
         {
             return styleSheet.ReadVariable(valueHandle);
         }
-#endif
+
         public static string GetEnum(this StyleSheet styleSheet, StyleValueHandle valueHandle)
         {
             return styleSheet.ReadEnum(valueHandle);
@@ -192,7 +182,6 @@ namespace Unity.UI.Builder
             styleSheet.floats[valueHandle.valueIndex] = value;
         }
 
-#if UNITY_2019_3_OR_NEWER
         public static void SetValue(this StyleSheet styleSheet, StyleValueHandle valueHandle, Dimension value)
         {
             // Undo/Redo
@@ -200,7 +189,6 @@ namespace Unity.UI.Builder
 
             styleSheet.dimensions[valueHandle.valueIndex] = value;
         }
-#endif
 
         public static void SetValue(this StyleSheet styleSheet, StyleValueHandle valueHandle, Color value)
         {

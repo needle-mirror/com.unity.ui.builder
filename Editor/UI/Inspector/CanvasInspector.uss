@@ -21,3 +21,11 @@
 #editor-extensions-mode-toggle > Label {
     min-width: 155px;
 }
+
+.match-game-view-toggle {
+    margin-top: 10px;
+}
+
+.match-game-view-helpbox {
+    margin: 5px 10px 10px;
+}

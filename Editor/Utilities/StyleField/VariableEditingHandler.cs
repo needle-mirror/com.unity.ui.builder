@@ -1,4 +1,3 @@
-#if UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
 using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine.UIElements;
@@ -65,11 +64,13 @@ namespace Unity.UI.Builder
         public VariableEditingHandler(BindableElement field)
         {
             targetField = field;
+
             labelElement = new Label();
-            labelElement.pickingMode = PickingMode.Position;
+            //labelElement.pickingMode = PickingMode.Position;
 
             var fieldLabel = targetField.GetValueByReflection("labelElement") as Label;
-            fieldLabel.RegisterCallback<MouseDownEvent>(OnMouseDownEvent);
+            // TODO: Will need to bring this back once we can also do the dragger at the same time.
+            //fieldLabel.RegisterCallback<MouseDownEvent>(OnMouseDownEvent);
             labelElement.RegisterValueChangedCallback(e => { e.StopImmediatePropagation(); });
 
             fieldLabel.Add(labelElement);
@@ -88,21 +89,24 @@ namespace Unity.UI.Builder
 
         void InitVariableField()
         {
-            if (variableField == null)
-            {
-                variableField = new VariableField();
-                variableField.AddToClassList(BuilderConstants.HiddenStyleClassName);
-                targetField.Add(variableField);
-                var input = variableField.Q(TextField.textInputUssName);
-                variableField.RegisterCallback<GeometryChangedEvent>((e) => {
-                    if (!m_ShowingStyleVariableField)
-                        return;
-                    m_ShowingStyleVariableField = false;
-                    input.Focus();
-                });
-                variableField.RegisterValueChangedCallback<string>(e => e.StopImmediatePropagation());
-                input.RegisterCallback<BlurEvent>(e => OnVariableEditingFinished());
-            }
+            if (variableField != null)
+                return;
+
+            variableField = new VariableField();
+            variableField.AddToClassList(BuilderConstants.HiddenStyleClassName);
+            targetField.Add(variableField);
+
+            var input = variableField.Q(TextField.textInputUssName);
+            variableField.RegisterCallback<GeometryChangedEvent>((e) => {
+                if (!m_ShowingStyleVariableField)
+                    return;
+
+                m_ShowingStyleVariableField = false;
+                input.Focus();
+            });
+
+            variableField.RegisterValueChangedCallback<string>(e => e.StopImmediatePropagation());
+            input.RegisterCallback<BlurEvent>(e => OnVariableEditingFinished());
         }
 
         void OnVariableEditingFinished()
@@ -122,6 +126,7 @@ namespace Unity.UI.Builder
             }
 
             HideStyleVariableField();
+            variableInfoTooltip?.Hide();
         }
 
         public void ShowVariableField()
@@ -137,7 +142,7 @@ namespace Unity.UI.Builder
             variableField.placeholderText = editingEnabled ? s_PlaceholderText : s_ReadOnlyPlaceholderText;
             variableField.value = m_InitialText = varName;
 
-            var visualInput = targetField[1];
+            var visualInput = targetField.GetVisualInput();
 
             visualInput?.AddToClassList(BuilderConstants.HiddenStyleClassName);
             m_ShowingStyleVariableField = true;
@@ -147,11 +152,13 @@ namespace Unity.UI.Builder
                 targetField.RemoveFromClassList(BuilderConstants.ReadOnlyStyleClassName);
             else
                 targetField.AddToClassList(BuilderConstants.ReadOnlyStyleClassName);
+
+            ShowPopup(this);
         }
 
         void HideStyleVariableField()
         {
-            var visualInput = targetField[1];
+            var visualInput = targetField.GetVisualInput();
 
             targetField.RemoveFromClassList(BuilderConstants.InspectorLocalStyleVariableEditingClassName);
             visualInput?.RemoveFromClassList(BuilderConstants.HiddenStyleClassName);
@@ -328,4 +335,3 @@ namespace Unity.UI.Builder
         }
     }
 }
-#endif

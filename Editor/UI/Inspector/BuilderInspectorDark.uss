@@ -29,9 +29,10 @@
     background-color: #1E1E1E;
 }
 
-.unity-label:hover > .unity-builder-inspector__variable-field-label {
+/* TODO: Will need to bring this back once we can also do the dragger at the same time. */
+/*.unity-label:hover > .unity-builder-inspector__variable-field-label {
     border-color: #787878;
-}
+}*/
 
 .unity-base-field:focus .unity-builder-inspector__variable-field-label {
     color: #81B4FF;

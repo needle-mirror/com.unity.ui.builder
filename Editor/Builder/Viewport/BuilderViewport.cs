@@ -140,6 +140,7 @@ namespace Unity.UI.Builder
             m_Surface.pickingMode = PickingMode.Ignore;
             m_Canvas = this.Q<BuilderCanvas>("canvas");
             m_Canvas.document = paneWindow.document;
+            m_Canvas.SetSelection(selection);
             m_SharedStylesAndDocumentElement = this.Q("shared-styles-and-document");
             m_SharedStylesAndDocumentElement.pseudoStates |= PseudoStates.Root; // To apply variables of the active theme that are defined in the :root selector
             m_StyleSelectorElementContainer = this.Q(BuilderConstants.StyleSelectorElementContainerName);

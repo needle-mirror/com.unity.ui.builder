@@ -47,7 +47,7 @@ namespace Unity.UI.Builder
             var styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(ussPath);
             if (styleSheet == null)
             {
-                BuilderDialogsUtility.DisplayDialog("Invalid Asset Type", @"Asset at path {ussPath} is not a StyleSheet.");
+                BuilderDialogsUtility.DisplayDialog("Invalid Asset Type", $"Asset at path {ussPath} is not a StyleSheet.");
                 return;
             }
 
@@ -226,7 +226,7 @@ namespace Unity.UI.Builder
             vea.AddStyleClass(className);
         }
 
-        public static void RemoveStyleClassToElementInAsset(BuilderDocument document, VisualElement ve, string className)
+        public static void RemoveStyleClassFromElementInAsset(BuilderDocument document, VisualElement ve, string className)
         {
             Undo.RegisterCompleteObjectUndo(
                 document.visualTreeAsset, BuilderConstants.RemoveStyleClassUndoMessage);

@@ -41,11 +41,11 @@ namespace Unity.UI.Builder
 
             if (codePreviewVisible)
             {
-                codeSplit.UnCollapseChild(0);
+                codeSplit.UnCollapse();
             }
             else
             {
-                codeSplit.CollapseChild(0);
+                codeSplit.CollapseChild(1);
             }
         }
 

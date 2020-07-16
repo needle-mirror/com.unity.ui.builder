@@ -281,9 +281,7 @@ namespace Unity.UI.Builder
                 new BuilderLibraryTreeItem("Toolbar Button", "ToolbarElement", typeof(ToolbarButton), () => new ToolbarButton { text = "Button" }),
                 new BuilderLibraryTreeItem("Toolbar Spacer", "ToolbarElement", typeof(ToolbarSpacer), () => new ToolbarSpacer()),
                 new BuilderLibraryTreeItem("Toolbar Toggle", "ToolbarElement", typeof(ToolbarToggle), () => new ToolbarToggle { label = "Toggle" }),
-#if UNITY_2019_3_OR_NEWER
                 new BuilderLibraryTreeItem("Toolbar Breadcrumbs", "ToolbarElement", typeof(ToolbarBreadcrumbs), () => new ToolbarBreadcrumbs()),
-#endif
                 new BuilderLibraryTreeItem("Toolbar Search Field", "ToolbarElement", typeof(ToolbarSearchField), () => new ToolbarSearchField()),
                 new BuilderLibraryTreeItem("Toolbar Popup Search Field", "ToolbarElement", typeof(ToolbarPopupSearchField), () => new ToolbarPopupSearchField()),
             }) { IsEditorOnly = true, IsHeader = true };

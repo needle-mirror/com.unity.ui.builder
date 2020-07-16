@@ -4,6 +4,29 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-preview.2] - 2020-07-16
+
+- Added ability to lock the Canvas to the size of the Game view via the Canvas settings inspector.
+- Hierarchy and StyleSheets panes no longer expand all tree items by default.
+- Added back value click-and-drag dragger on style fields.
+- Activating Variable Mode on a Style Field and showing variable info are both now accessible via the right-click context menu on a field.
+- Creating a new selector via the New Selector Field in the StyleSheets pane will now select it right after. This will also expand its StyleSheet if it is collapsed.
+- Added ability to enable/disable Editor Extensions Authoring via the Library top-right 3-dots menu.
+- Improved performance of the Inspector and selection changing.
+- Added checks for circular dependency injection for UXML templates.
+- Fixed Invalid Asset Type message dialog not displaying the path to the asset being added.
+- Fixed ReadOnly attribute value not being read by the Builder Inspector correctly.
+- Fixed removing class via Inspector class pill creating a new empty selector.
+- Fixed double-clicking on a class pill in Inspector throwing errors and duplicating existing selector.
+- Fixed extra newline added to USS if a selector is selected when saving.
+- Fixed active USS being forgotten when saving or domain reloading.
+- Fixed dragging from folder/section in Library throwing null references exception.
+- Fixed setting Border Width (combined) to 0px only setting Border Width Left to 0px, but the not Right/Top/Bottom.
+- Fixed extra context menu separators being added to Hierarchy right-click menu on elements inside template.
+- Fixed generated UXML with inline styles being written with newlines on Windows.
+- Fixed adding a new selector expanding all USS files in the StyleSheets pane.
+- Fixed saving resetting the expanded states of USS files in the StyleSheets pane.
+
 ## [1.0.0-preview.1] - 2020-06-18
 
 - **Unity 2019.2 is no longer supported.**
@@ -18,7 +41,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
     - To see Editor-Only controls and controls meant for use within the Editor, you can enable **Editor Extension Authoring** from the new Document settings Inspector by selecting the Canvas header or .uxml document in the Hierarchy.
     - The **Editor Extension Authoring** setting is saved inside the UXML asset and therefore version controlled. This is unlike the Canvas settings which are temporary preferences.
     - You can enable **Editor Extension Authoring** for all new documents or documents not opened by UI Builder before in the **Project Settings > UI Builder** settings.
-- (2019.3+) Variables Support:
+- Variables Support:
     - If a style is getting its value from a USS variable, its style field label in the Inspector will appear highlighted.
     - Can now click on the label of a style field using a USS variable to see where the variable value is coming from (via a tooltip popup).
     - Selectors can now use USS variables for their style values via a new per-field variable mode. This is not supported on elements via inline styles.
@@ -28,21 +51,23 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
     - Can return to parent document by right-clicking on the sub-document's .uxml root item in the Hierarchy and selecting **Return to Parent Document**.
     - Sub-documents and their parents will all be grayed-out and disabled in the Library pane.
     - A breadcrumb toolbar will appear when currently viewing a sub-document. Can click on parent documents to return to them.
-- Improved clarity of Library pane by moving Editor-Only tags to category headers instead of per-item.
-- Re-designed Canvas Background settings. Custom background is not enabled/disabled via checkbox on Foldout header and Opacity is now remembered per type of custom background.
-- The StyleSheets pane "States" menu has been moved inside the new selector field with the new label: ":".
-- The StyleSheets pane "Add" menu has been removed. New selectors can now only be added by pressing Enter in the new selector field.
-- Can now drag-and-drop selectors in the StyleSheets pane to reorder them or move them to another StyleSheet.
-- Active StyleSheet will no have to be manually switched via right-click menu on the StyleSheet. It is no longer driven by current selection.
-- Canvas now has a header displaying the open UXML file name (which is no longer listed in the Viewport's header).
-- Canvas and document settings in the Inspector can now be accessed also by clicking on the new Canvas header.
-- List-based attributes, like the Mask field's `choices` attribute, now show and edit properly in the Inspector's Attributes section as comma-separated strings.
-- Instanced UXML templates inside main UXML document from the Library will now have their name initialized to be their .uxml asset name.
-- Added right-click option to open a TemplateContainer's UXML asset directly from the Hierarchy.
-- Fixed right-click Unset on an Inspector category (ie. Margin & Padding) not properly un-setting all style properties within the category.
-- Fixed initial size of the UI Builder window being too small the first time it's installed.
-- Fixed removing of a USS from the document sometimes reloading the UXML immediately after and re-adding the removed USS.
-- Fixed USS files not being added or removed properly to/from the document if all root elements were TemplateContainers.
+- Other:
+    - Improved clarity of Library pane by moving Editor-Only tags to category headers instead of per-item.
+    - Re-designed Canvas Background settings. Custom background is not enabled/disabled via checkbox on Foldout header and Opacity is now remembered per type of custom background.
+    - The StyleSheets pane "States" menu has been moved inside the new selector field with the new label: ":".
+    - The StyleSheets pane "Add" menu has been removed. New selectors can now only be added by pressing Enter in the new selector field.
+    - Can now drag-and-drop selectors in the StyleSheets pane to reorder them or move them to another StyleSheet.
+    - Active StyleSheet will no have to be manually switched via right-click menu on the StyleSheet. It is no longer driven by current selection.
+    - Canvas now has a header displaying the open UXML file name (which is no longer listed in the Viewport's header).
+    - Canvas and document settings in the Inspector can now be accessed also by clicking on the new Canvas header.
+    - List-based attributes, like the Mask field's `choices` attribute, now show and edit properly in the Inspector's Attributes section as comma-separated strings.
+    - Instanced UXML templates inside main UXML document from the Library will now have their name initialized to be their .uxml asset name.
+    - Added right-click option to open a TemplateContainer's UXML asset directly from the Hierarchy.
+- Fixes:
+    - Fixed right-click Unset on an Inspector category (ie. Margin & Padding) not properly un-setting all style properties within the category.
+    - Fixed initial size of the UI Builder window being too small the first time it's installed.
+    - Fixed removing of a USS from the document sometimes reloading the UXML immediately after and re-adding the removed USS.
+    - Fixed USS files not being added or removed properly to/from the document if all root elements were TemplateContainers.
 
 ## [0.11.2] - 2020-05-14
 

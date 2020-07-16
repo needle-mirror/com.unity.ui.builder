@@ -13,6 +13,10 @@
             <uie:IntegerField name="canvas-width" label="Width" class="unity-builder-double-field" />
             <uie:IntegerField name="canvas-height" label="Height" class="unity-builder-double-field" />
         </uib:BuilderStyleRow>
+        <uib:BuilderStyleRow class="unity-builder-double-field-row">
+            <Toggle name="match-game-view" class="match-game-view-toggle" label="Match Game View "/>
+        </uib:BuilderStyleRow>
+        <uib:HelpBox name="match-game-view-hint" class="match-game-view-helpbox" text="This option automatically resizes the Canvas to match the Game view resolution."/>
     </uib:PersistedFoldout>
     <uib:FoldoutWithCheckbox
         name="canvas-background-foldout"

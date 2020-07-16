@@ -19,9 +19,7 @@ namespace Unity.UI.Builder
 
         public void TryEnableVectorGraphicTypeSupport()
         {
-#if UNITY_2019_3_OR_NEWER
             AddType(typeof(VectorImage), "Vector");
-#endif
         }
     }
 }

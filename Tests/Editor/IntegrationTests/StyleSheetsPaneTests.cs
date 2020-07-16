@@ -80,11 +80,7 @@ namespace Unity.UI.Builder.EditorTests
         /// <summary>
         /// StyleSheets > With a selector selected, you can use standard short-cuts or the Edit menu to copy/paste/duplicate/delete it. You can also copy/paste the USS for the selector to/from a text file.
         /// </summary>
-#if UNITY_2019_2
-        [UnityTest, Ignore("Fails on 2019.2 only (but all functionality works when manually doing the same steps). We'll drop 2019.2 support soon anyway.")]
-#else
         [UnityTest]
-#endif
         public IEnumerator DeleteSelectorViaRightClickMenu()
         {
             yield return EnsureSelectorsCanBeAddedAndReloadBuilder();
@@ -170,11 +166,7 @@ namespace Unity.UI.Builder.EditorTests
         /// <summary>
         /// In the StyleSheets pane, you can select selectors by clicking on the row or a style class pill.
         /// </summary>
-#if UNITY_2019_2
-        [UnityTest, Ignore("Fails on 2019.2 only (but all functionality works when manually doing the same steps). We'll drop 2019.2 support soon anyway.")]
-#else
         [UnityTest]
-#endif
         public IEnumerator SelectSelectorWithRowAndPillClick()
         {
             yield return EnsureSelectorsCanBeAddedAndReloadBuilder();
@@ -182,18 +174,19 @@ namespace Unity.UI.Builder.EditorTests
             yield return AddSelector(TestSelectorName);
             var stylesTreeView = StyleSheetsPane.Q<TreeView>();
 
+            Selection.ClearSelection(null);
             Assert.That(stylesTreeView.GetSelectedItem(), Is.Null);
 
-            //Select by clicking on the row
+            // Select by clicking on the row
             var createdSelector = GetStyleSelectorNodeWithName(TestSelectorName);
             yield return UIETestEvents.Mouse.SimulateClick(createdSelector);
             Assert.That(stylesTreeView.GetSelectedItem(), Is.Not.Null);
 
-            //Deselect
+            // Deselect
             yield return UIETestEvents.Mouse.SimulateClick(StyleSheetsPane);
             Assert.That(stylesTreeView.GetSelectedItem(), Is.Null);
 
-            //Select by clicking on the style class pill
+            // Select by clicking on the style class pill
             yield return UIETestEvents.Mouse.SimulateClick(createdSelector.Q<Label>());
             Assert.That(stylesTreeView.GetSelectedItem(), Is.Not.Null);
         }
@@ -237,11 +230,7 @@ namespace Unity.UI.Builder.EditorTests
         /// <summary>
         /// Can drag a style class pill from the StyleSheets pane onto an element in the Hierarchy to add the class.
         /// </summary>
-#if UNITY_2019_2
-        [UnityTest, Ignore("Fails on 2019.2 only (but all functionality works when manually doing the same steps). We'll drop 2019.2 support soon anyway.")]
-#else
         [UnityTest]
-#endif
         public IEnumerator DragStylePillToHierarchy()
         {
             AddElementCodeOnly();
@@ -352,11 +341,7 @@ namespace Unity.UI.Builder.EditorTests
         /// <summary>
         ///  With a selector selected, you can use standard short-cuts or the Edit menu to copy/paste/duplicate/delete it. You can also copy/paste the USS for the selector to/from a text file.
         /// </summary>
-#if UNITY_2019_2
-        [UnityTest, Ignore("Fails on 2019.2 only (but all functionality works when manually doing the same steps). We'll drop 2019.2 support soon anyway.")]
-#else
         [UnityTest]
-#endif
         public IEnumerator SelectorToAndFromUSSConversion()
         {
             yield return EnsureSelectorsCanBeAddedAndReloadBuilder();
@@ -413,11 +398,7 @@ namespace Unity.UI.Builder.EditorTests
         /// <summary>
         ///  Selecting an element or a the main document (VisualTreeAsset) should deselect any selected tree items in the StyleSheets pane.
         /// </summary>
-#if UNITY_2019_2
-        [UnityTest, Ignore("Fails on 2019.2 only (but all functionality works when manually doing the same steps). We'll drop 2019.2 support soon anyway.")]
-#else
         [UnityTest]
-#endif
         public IEnumerator StyleSheetsItemsDeselect()
         {
             yield return EnsureSelectorsCanBeAddedAndReloadBuilder();

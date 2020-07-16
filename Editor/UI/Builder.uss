@@ -165,13 +165,6 @@ BuilderExplorerItem {
     background-image: none;
 }
 
-.unity-builder-explorer__rename-textfield__pre-2019-3 {
-    padding-top: 2px;
-    padding-bottom: 0;
-    margin-top: 0;
-    margin-bottom: 1px;
-}
-
 .unity-builder-explorer__rename-textfield {
     padding-top: 2px;
     padding-bottom: 0;

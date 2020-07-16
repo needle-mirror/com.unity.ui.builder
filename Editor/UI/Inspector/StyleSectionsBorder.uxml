@@ -1,11 +1,6 @@
 <UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:uib="Unity.UI.Builder">
-    <!-- Border Color -->
-    <uib:BuilderStyleRow binding-path="border-color" class="unity-builder-2019-2">
-        <uie:ColorField label="Color" tooltip="border-color" />
-    </uib:BuilderStyleRow>
-
     <!-- Border Width -->
-    <uib:BuilderStyleRow name="inspector-style-section-foldout-border-color" class="unity-builder-2019-3-or-newer">
+    <uib:BuilderStyleRow name="inspector-style-section-foldout-border-color">
         <uib:FoldoutColorField
             text="Color"
             tooltip="border-color"
@@ -15,22 +10,22 @@
             value="false">
 
             <!-- Border Left Color -->
-            <uib:BuilderStyleRow binding-path="border-left-color" class="unity-builder-2019-3-or-newer">
+            <uib:BuilderStyleRow binding-path="border-left-color">
                 <uie:ColorField label="Left" tooltip="border-left-color" />
             </uib:BuilderStyleRow>
 
             <!-- Border Right Color -->
-            <uib:BuilderStyleRow binding-path="border-right-color" class="unity-builder-2019-3-or-newer">
+            <uib:BuilderStyleRow binding-path="border-right-color">
                 <uie:ColorField label="Right" tooltip="border-right-color" />
             </uib:BuilderStyleRow>
 
             <!-- Border Top Color -->
-            <uib:BuilderStyleRow binding-path="border-top-color" class="unity-builder-2019-3-or-newer">
+            <uib:BuilderStyleRow binding-path="border-top-color">
                 <uie:ColorField label="Top" tooltip="border-top-color" />
             </uib:BuilderStyleRow>
 
             <!-- Border Bottom Color -->
-            <uib:BuilderStyleRow binding-path="border-bottom-color" class="unity-builder-2019-3-or-newer">
+            <uib:BuilderStyleRow binding-path="border-bottom-color">
                 <uie:ColorField label="Bottom" tooltip="border-bottom-color" />
             </uib:BuilderStyleRow>
         </uib:FoldoutColorField>

@@ -198,6 +198,17 @@ namespace Unity.UI.Builder
             return styleRow;
         }
 
+        string GetRemapAttributeNameToCSProperty(string attributeName)
+        {
+            if (currentVisualElement is ObjectField && attributeName == "type")
+                return "objectType";
+            else if (attributeName == "readonly")
+                return "isReadOnly";
+
+            var camel = BuilderNameUtilities.ConvertDashToCamel(attributeName);
+            return camel;
+        }
+
         object GetCustomValueAbstract(string attributeName)
         {
             if (currentVisualElement is ScrollView)
@@ -221,13 +232,6 @@ namespace Unity.UI.Builder
                     return scrollView.showVertical;
                 }
             }
-            else if (currentVisualElement is ObjectField objectField)
-            {
-                if (attributeName == "type")
-                {
-                    return objectField.objectType;
-                }
-            }
 
             return null;
         }
@@ -238,9 +242,8 @@ namespace Unity.UI.Builder
             var attribute = fieldElement.GetProperty(BuilderConstants.InspectorLinkedAttributeDescriptionVEPropertyName) as UxmlAttributeDescription;
 
             var veType = currentVisualElement.GetType();
-            var camel = BuilderNameUtilities.ConvertDashToCamel(attribute.name);
-
-            var fieldInfo = veType.GetProperty(camel, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.IgnoreCase);
+            var csPropertyName = GetRemapAttributeNameToCSProperty(attribute.name);
+            var fieldInfo = veType.GetProperty(csPropertyName, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.IgnoreCase);
 
             object veValueAbstract = null;
             if (fieldInfo == null)

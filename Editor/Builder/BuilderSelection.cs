@@ -44,9 +44,7 @@ namespace Unity.UI.Builder
 
     internal class BuilderSelection
     {
-#if UNITY_2019_3_OR_NEWER
         static readonly StylePropertyReader s_StylePropertyReader = new StylePropertyReader();
-#endif
         List<IBuilderSelectionNotifier> m_Notifiers;
 
         IBuilderSelectionNotifier m_CurrentNotifier;
@@ -233,7 +231,7 @@ namespace Unity.UI.Builder
                 // Need to enforce this specific style is updated.
                 element.IncrementVersion(VersionChangeType.Opacity | VersionChangeType.Overflow);
 
-#elif UNITY_2019_3_OR_NEWER
+#else
                 var stylesData = new UnityEngine.UIElements.StyleSheets.VisualElementStylesData(false);
                 element.m_Style = stylesData;
                 
@@ -242,15 +240,6 @@ namespace Unity.UI.Builder
 
                 // Need to enforce this specific style is updated.
                 element.IncrementVersion(VersionChangeType.Opacity | VersionChangeType.Overflow);
-#else
-                var stylesData = new UnityEngine.UIElements.StyleSheets.VisualElementStylesData(false);
-                element.m_Style = stylesData;
-
-                var propIds = UnityEngine.UIElements.StyleSheets.StyleSheetCache.GetPropertyIDs(vta.inlineSheet, vea.ruleIndex);
-                element.specifiedStyle.ApplyRule(vta.inlineSheet, Int32.MaxValue, rule, propIds);
-
-                // Need to enforce this specific style is updated.
-                element.IncrementVersion(VersionChangeType.Overflow);
 #endif
             }
 

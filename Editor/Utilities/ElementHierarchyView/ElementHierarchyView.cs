@@ -121,10 +121,7 @@ namespace Unity.UI.Builder
             m_TreeView.onSelectionChanged += OnSelectionChange;
 #endif
 
-#if UNITY_2019_3_OR_NEWER
             m_TreeView.RegisterCallback<MouseDownEvent>(OnLeakedMouseClick);
-#endif
-
             m_Container.Add(m_TreeView);
 
             m_ContextMenuManipulator.RegisterCallbacksOnTarget(m_Container);
@@ -411,15 +408,17 @@ namespace Unity.UI.Builder
             if (wasTreeFocused)
                 m_TreeView.Q<ListView>()?.Focus();
 
+            hierarchyHasChanged = false;
+        }
+
+        public void ExpandAllChildren()
+        {
             // Auto-expand all items on load.
             if (m_TreeRootItems != null)
                 foreach (var item in m_TreeView.rootItems)
                     m_TreeView.ExpandItem(item.id);
-
-            hierarchyHasChanged = false;
         }
 
-#if UNITY_2019_3_OR_NEWER
         void OnLeakedMouseClick(MouseDownEvent evt)
         {
             if (!(evt.target is ScrollView))
@@ -428,7 +427,6 @@ namespace Unity.UI.Builder
             m_TreeView.ClearSelection();
             evt.StopPropagation();
         }
-#endif
 
 #if UNITY_2020_1_OR_NEWER
         void OnSelectionChange(IEnumerable<ITreeViewItem> items)

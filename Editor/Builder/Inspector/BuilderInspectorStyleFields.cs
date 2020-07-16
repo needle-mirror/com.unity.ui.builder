@@ -8,10 +8,7 @@ using UnityEditor.UIElements;
 using Object = UnityEngine.Object;
 using UnityEngine.Assertions;
 using UnityEditor;
-
-#if UNITY_2019_3_OR_NEWER
 using UnityEngine.UIElements.StyleSheets;
-#endif
 
 namespace Unity.UI.Builder
 {
@@ -21,6 +18,7 @@ namespace Unity.UI.Builder
         BuilderSelection m_Selection;
 
         Dictionary<string, List<VisualElement>> m_StyleFields;
+        Dictionary<string, PropertyInfo> m_ComputedStylesPropertyInfos;
 
         List<string> s_StyleChangeList = new List<string>();
 
@@ -38,6 +36,9 @@ namespace Unity.UI.Builder
             m_Selection = inspector.selection;
 
             m_StyleFields = new Dictionary<string, List<VisualElement>>();
+            m_ComputedStylesPropertyInfos = new Dictionary<string, PropertyInfo>();
+
+            CreateReflectionCaches();
         }
 
         public List<VisualElement> GetFieldListForStyleName(string styleName)
@@ -69,17 +70,23 @@ namespace Unity.UI.Builder
             return ussStyleName;
         }
 
-        PropertyInfo FindStylePropertyInfo(string styleName)
+        void CreateReflectionCaches()
         {
-            var cSharpStyleName = ConvertUssStyleNameToCSharpStyleName(styleName);
-
             foreach (PropertyInfo field in StyleSheetUtilities.ComputedStylesFieldInfos)
             {
-                var styleNameFrom = BuilderNameUtilities.ConverStyleCSharpNameToUssName(field.Name);
-                if (styleNameFrom == cSharpStyleName)
-                    return field;
+                var styleNameFrom = BuilderNameUtilities.ConvertStyleCSharpNameToUssName(field.Name);
+                m_ComputedStylesPropertyInfos[styleNameFrom] = field;
             }
-            return null;
+        }
+
+        PropertyInfo FindStylePropertyInfo(string styleName)
+        {
+            if (string.IsNullOrEmpty(styleName))
+                return null;
+
+            var cSharpStyleName = ConvertUssStyleNameToCSharpStyleName(styleName);
+            m_ComputedStylesPropertyInfos.TryGetValue(cSharpStyleName, out PropertyInfo result);
+            return result;
         }
 
         void RegisterFocusCallbackOnHighlightingField(VisualElement field)
@@ -130,11 +137,9 @@ namespace Unity.UI.Builder
             {
                 var uiField = fieldElement as IntegerField;
 
-#if UNITY_2019_3_OR_NEWER
-                if (BuilderConstants.SpecialSnowflakeLengthSytles.Contains(styleName))
+                if (BuilderConstants.SpecialSnowflakeLengthStyles.Contains(styleName))
                     uiField.RegisterValueChangedCallback(e => OnFieldDimensionChange(e, styleName));
                 else
-#endif
                     uiField.RegisterValueChangedCallback(e => OnFieldValueChangeIntToFloat(e, styleName));
             }
             else if (val is StyleFloat && fieldElement is PercentSlider)
@@ -165,11 +170,7 @@ namespace Unity.UI.Builder
             else if (val is StyleLength && fieldElement is IntegerField)
             {
                 var uiField = fieldElement as IntegerField;
-#if UNITY_2019_3_OR_NEWER
                 uiField.RegisterValueChangedCallback(e => OnFieldDimensionChange(e, styleName));
-#else
-                uiField.RegisterValueChangedCallback(e => OnFieldValueChange(e, styleName));
-#endif
             }
             else if (val is StyleLength && fieldElement is DimensionStyleField)
             {
@@ -380,27 +381,42 @@ namespace Unity.UI.Builder
             {
                 var newCommonValue = inputArray[0];
                 var newCommonValueWithUnit = newValue;
+                bool needToForceSet = false;
 
                 for (int i = 0; i < styleFields.Count; ++i)
                 {
-                    if (i == 0 && styleFields[0] is DimensionStyleField)
+                    var styleField = styleFields[i];
+
+                    if (i == 0 && styleField is DimensionStyleField)
                     {
-                        styleFields[i].value = newCommonValueWithUnit;
-#if UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
+                        if (newCommonValueWithUnit != styleFields[i].value)
+                            needToForceSet = true;
+
+                        styleField.value = newCommonValueWithUnit;
                         if (!newCommonValueWithUnit.StartsWith(BuilderConstants.UssVariablePrefix))
-                        {
                             newCommonValueWithUnit = styleFields[i].value;
-                        }
-#else
-                        newCommonValueWithUnit = styleFields[i].value;
-#endif
+
                         continue;
                     }
 
-                    if (styleFields[i] is DimensionStyleField)
-                        styleFields[i].value = newCommonValueWithUnit;
+                    if (styleField is DimensionStyleField)
+                        styleField.value = newCommonValueWithUnit;
                     else
-                        styleFields[i].value = newCommonValue;
+                        styleField.value = newCommonValue;
+
+                    // We need to force-set the rest of the fields because it's possible only
+                    // the first one was set. The first one will get a value without a unit
+                    // and so even if the value is the same as what it already has, it will
+                    // not match on the unit and will cause a change event. But then we set
+                    // newCommonValueWithUnit to be the new value + the unit (so we can make
+                    // sure all the fields have the same unit in the end). This means that if
+                    // some of the fields already had the same value and unit, they will not
+                    // be set (bolded). This forces the set.
+                    if (needToForceSet)
+                    {
+                        var styleName = styleField.GetProperty(BuilderConstants.InspectorStylePropertyNameVEPropertyName) as string;
+                        DispatchChangeEvent(styleName, styleField);
+                    }
                 }
             }
             else
@@ -430,13 +446,10 @@ namespace Unity.UI.Builder
                 var styleName = foldoutColorField.bindingPathArray[i];
                 var styleProperty = GetOrCreateStylePropertyByStyleName(styleName);
 
-#if UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
                 // If the property was bound to a variable then clear it
                 if (styleProperty.values.Length != 0 && styleProperty.IsVariable())
-                {
                     styleProperty.values = new StyleValueHandle[0];
-                }
-#endif
+
                 if (styleProperty.values.Length == 0)
                     styleSheet.AddValue(styleProperty, newValue);
                 else // TODO: Assume only one value.
@@ -457,11 +470,7 @@ namespace Unity.UI.Builder
             var valType = val.GetType();
             var cSharpStyleName = ConvertUssStyleNameToCSharpStyleName(styleName);
             var styleProperty = GetStyleProperty(currentRule, cSharpStyleName);
-#if UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
             bool useStyleProperty = styleProperty != null && !styleProperty.IsVariable();
-#else
-            bool useStyleProperty = styleProperty != null;
-#endif
 
             if (val is StyleFloat && fieldElement is FloatField)
             {
@@ -583,11 +592,7 @@ namespace Unity.UI.Builder
 
                 var value = (int)style.value.value;
                 if (useStyleProperty)
-#if UNITY_2019_3_OR_NEWER
                     value = (int)styleSheet.GetDimension(styleProperty.values[0]).value;
-#else
-                    value = styleSheet.GetInt(styleProperty.values[0]);
-#endif
 
                 uiField.SetValueWithoutNotify(value);
             }
@@ -605,14 +610,12 @@ namespace Unity.UI.Builder
                         var keyword = styleSheet.GetKeyword(styleValue);
                         uiField.keyword = keyword;
                     }
-#if UNITY_2019_3_OR_NEWER
                     else if (styleValue.valueType == StyleValueType.Dimension)
                     {
                         var dimension = styleSheet.GetDimension(styleValue);
                         uiField.unit = dimension.unit;
                         uiField.length = dimension.value;
                     }
-#endif
                     else if (styleValue.valueType == StyleValueType.Float)
                     {
                         var length = styleSheet.GetFloat(styleValue);
@@ -645,14 +648,12 @@ namespace Unity.UI.Builder
                         var keyword = styleSheet.GetKeyword(styleValue);
                         uiField.keyword = keyword;
                     }
-#if UNITY_2019_3_OR_NEWER
                     else if (styleValue.valueType == StyleValueType.Dimension)
                     {
                         var dimension = styleSheet.GetDimension(styleValue);
                         uiField.unit = dimension.unit;
                         uiField.length = dimension.value;
                     }
-#endif
                     else if (styleValue.valueType == StyleValueType.Float)
                     {
                         var length = styleSheet.GetFloat(styleValue);
@@ -669,12 +670,8 @@ namespace Unity.UI.Builder
                         uiField.keyword = StyleSheetUtilities.ConvertStyleKeyword(style.keyword);
                     else
                     {
-#if UNITY_2019_3_OR_NEWER
                         uiField.unit = StyleSheetUtilities.ConvertToDimensionUnit(style.value.unit);
                         uiField.length = style.value.value;
-#else
-                        uiField.SetValueWithoutNotify(value.ToString());
-#endif
                     }
                 }
             }
@@ -715,11 +712,9 @@ namespace Unity.UI.Builder
                         case Texture2D texture2D:
                             value.texture = texture2D;
                             break;
-#if UNITY_2019_3_OR_NEWER
                         case VectorImage vectorImage:
                             value.vectorImage = vectorImage;
                             break;
-#endif
                     }
                 }
                 else
@@ -807,15 +802,13 @@ namespace Unity.UI.Builder
             Assert.IsNotNull(styleRow);
             if (styleRow == null)
                 return;
-#if UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
-            var handler = StyleVariableUtilities.GetOrCreateVarHandler(fieldElement as BindableElement);
 
+            var handler = StyleVariableUtilities.GetOrCreateVarHandler(fieldElement as BindableElement);
             if (handler != null)
             {
                 handler.editingEnabled = BuilderSharedStyles.IsSelectorElement(currentVisualElement);
                 handler.RefreshField();
             }
-#endif
 
             var styleFields = styleRow.Query<BindableElement>().ToList();
 
@@ -835,11 +828,10 @@ namespace Unity.UI.Builder
                 }
             }
 
-            if (styleProperty != null || isRowOverride)
-                styleRow.AddToClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
-            else
+            var isFieldOverridden = styleProperty != null || isRowOverride;
+            styleRow.EnableInClassList(BuilderConstants.InspectorLocalStyleOverrideClassName, isFieldOverridden);
+            if (!isFieldOverridden)
             {
-                styleRow.RemoveFromClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
                 foreach (var styleField in styleFields)
                 {
                     styleField.RemoveFromClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
@@ -958,10 +950,7 @@ namespace Unity.UI.Builder
                 }
             }
 
-            if (isDirty)
-                foldoutElement.header.AddToClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
-            else
-                foldoutElement.header.RemoveFromClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
+            foldoutElement.header.EnableInClassList(BuilderConstants.InspectorLocalStyleOverrideClassName, isDirty);
         }
 
         void RefreshStyleFoldoutColorField(FoldoutColorField foldoutElement)
@@ -986,11 +975,7 @@ namespace Unity.UI.Builder
                     if (value.a < 0.1f)
                         value.a = 255.0f;
 
-#if UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
                     if (styleProperty != null && !styleProperty.IsVariable())
-#else
-                    if (styleProperty != null)
-#endif
                     {
                         isDirty = true;
                         value = styleSheet.GetColor(styleProperty.values[0]);
@@ -1000,10 +985,7 @@ namespace Unity.UI.Builder
                 }
             }
 
-            if (isDirty)
-                foldoutElement.header.AddToClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
-            else
-                foldoutElement.header.RemoveFromClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
+            foldoutElement.header.EnableInClassList(BuilderConstants.InspectorLocalStyleOverrideClassName, isDirty);
         }
 
         void BuildStyleFieldContextualMenu(ContextualMenuPopulateEvent evt)
@@ -1025,9 +1007,15 @@ namespace Unity.UI.Builder
                 UnsetAllStyleProperties,
                 UnsetAllActionStatus,
                 evt.target);
+
+            evt.menu.AppendSeparator();
+            evt.menu.AppendAction(
+                BuilderConstants.ContextMenuViewVariableMessage,
+                ViewVariableViaContextMenu,
+                VariableActionStatus,
+                evt.target);
         }
 
-#if UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
         bool OnFieldVariableChangeImplInBatch(string newValue, string styleName)
         {
             StyleSheet styleSheet = m_Inspector.styleSheet;
@@ -1061,7 +1049,6 @@ namespace Unity.UI.Builder
             bool isNewValue = OnFieldVariableChangeImplInBatch(newValue, styleName);
             PostStyleFieldSteps(target, styleName, isNewValue, true);
         }
-#endif
 
         public DropdownMenuAction.Status UnsetAllActionStatus(DropdownMenuAction action)
         {
@@ -1071,6 +1058,26 @@ namespace Unity.UI.Builder
             return currentRule.properties.Any(property => !property.name.StartsWith(BuilderConstants.UssVariablePrefix))
                 ? DropdownMenuAction.Status.Normal
                 : DropdownMenuAction.Status.Disabled;
+        }
+
+        DropdownMenuAction.Status VariableActionStatus(DropdownMenuAction action)
+        {
+            var bindableElement = action.userData as BindableElement;
+            if (bindableElement == null)
+                return DropdownMenuAction.Status.Disabled;
+
+            var varEditingHandler = StyleVariableUtilities.GetVarHandler(bindableElement);
+            if (varEditingHandler == null)
+                return DropdownMenuAction.Status.Disabled;
+
+            return DropdownMenuAction.Status.Normal;
+        }
+
+        void ViewVariableViaContextMenu(DropdownMenuAction action)
+        {
+            var bindableElement = action.userData as BindableElement;
+            var varEditingHandler = StyleVariableUtilities.GetVarHandler(bindableElement);
+            varEditingHandler.ShowVariableField();
         }
 
         DropdownMenuAction.Status UnsetActionStatus(DropdownMenuAction action)
@@ -1328,14 +1335,12 @@ namespace Unity.UI.Builder
             var styleProperty = GetOrCreateStylePropertyByStyleName(styleName);
             var isNewValue = IsNewValue(styleProperty, StyleValueType.Keyword);
 
-#if UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
             if (!isNewValue && styleProperty.IsVariable())
             {
                 Undo.RegisterCompleteObjectUndo(styleSheet, BuilderConstants.ChangeUIStyleValueUndoMessage);
                 styleProperty.values = new StyleValueHandle[0];
                 isNewValue = true;
             }
-#endif
 
             if (isNewValue)
                 styleSheet.AddValue(styleProperty, keyword, BuilderConstants.ChangeUIStyleValueUndoMessage);
@@ -1351,7 +1356,6 @@ namespace Unity.UI.Builder
             PostStyleFieldSteps(target, styleName, isNewValue);
         }
 
-#if UNITY_2019_3_OR_NEWER
         bool OnFieldDimensionChangeImplBatch(float newValue, Dimension.Unit newUnit, VisualElement target, string styleName)
         {
             var styleProperty = GetOrCreateStylePropertyByStyleName(styleName);
@@ -1390,21 +1394,17 @@ namespace Unity.UI.Builder
         {
             OnFieldDimensionChangeImpl(e.newValue, Dimension.Unit.Pixel, e.target as VisualElement, styleName);
         }
-#endif
 
         void OnDimensionStyleFieldValueChange(ChangeEvent<string> e, string styleName)
         {
             var dimensionStyleField = e.target as DimensionStyleField;
-#if UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
             bool isVar = e.newValue.Trim().StartsWith(BuilderConstants.UssVariablePrefix);
 
             if (isVar && BuilderSharedStyles.IsSelectorElement(currentVisualElement))
             {
                 OnFieldVariableChange(StyleSheetUtilities.GetCleanVariableName(e.newValue), dimensionStyleField, styleName);
             }
-            else
-#endif
-            if (dimensionStyleField.isKeyword)
+            else if (dimensionStyleField.isKeyword)
             {
                 OnFieldKeywordChange(
                     dimensionStyleField.keyword,
@@ -1413,18 +1413,11 @@ namespace Unity.UI.Builder
             }
             else
             {
-#if UNITY_2019_3_OR_NEWER
                 OnFieldDimensionChangeImpl(
                     dimensionStyleField.length,
                     dimensionStyleField.unit,
                     dimensionStyleField,
                     styleName);
-#else
-                OnFieldValueChangeImpl(
-                    dimensionStyleField.length,
-                    dimensionStyleField,
-                    styleName);
-#endif
             }
         }
 
@@ -1468,14 +1461,13 @@ namespace Unity.UI.Builder
             var styleProperty = GetOrCreateStylePropertyByStyleName(styleName);
             var isNewValue = styleProperty.values.Length == 0;
 
-#if UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
             if (!isNewValue && styleProperty.IsVariable())
             {
                 Undo.RegisterCompleteObjectUndo(styleSheet, BuilderConstants.ChangeUIStyleValueUndoMessage);
                 styleProperty.values = new StyleValueHandle[0];
                 isNewValue = true;
             }
-#endif
+
             var newValue = (float)e.newValue;
 
             if (isNewValue)
@@ -1517,16 +1509,13 @@ namespace Unity.UI.Builder
         void OnNumericStyleFieldValueChange(ChangeEvent<string> e, string styleName)
         {
             var numericStyleField = e.target as NumericStyleField;
-#if UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
             bool isVar = e.newValue.Trim().StartsWith(BuilderConstants.UssVariablePrefix);
 
             if (isVar && BuilderSharedStyles.IsSelectorElement(currentVisualElement))
             {
                 OnFieldVariableChange(StyleSheetUtilities.GetCleanVariableName(e.newValue), numericStyleField, styleName);
             }
-            else
-#endif
-            if (numericStyleField.isKeyword)
+            else if (numericStyleField.isKeyword)
             {
                 OnFieldKeywordChange(
                     numericStyleField.keyword,
@@ -1545,16 +1534,13 @@ namespace Unity.UI.Builder
         void OnIntegerStyleFieldValueChange(ChangeEvent<string> e, string styleName)
         {
             var styleField = e.target as IntegerStyleField;
-#if UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
             bool isVar = e.newValue.Trim().StartsWith(BuilderConstants.UssVariablePrefix);
 
             if (isVar && BuilderSharedStyles.IsSelectorElement(currentVisualElement))
             {
                 OnFieldVariableChange(StyleSheetUtilities.GetCleanVariableName(e.newValue), styleField, styleName);
             }
-            else
-#endif
-            if (styleField.isKeyword)
+            else if (styleField.isKeyword)
             {
                 OnFieldKeywordChange(
                     styleField.keyword,
@@ -1577,14 +1563,13 @@ namespace Unity.UI.Builder
             // The UI Builder does not support color keyword value. Color set by a builder will be in rgba format.
             var isNewValue = IsNewValue(styleProperty, StyleValueType.Color);
 
-#if UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
             if (!isNewValue && styleProperty.IsVariable())
             {
                 Undo.RegisterCompleteObjectUndo(styleSheet, BuilderConstants.ChangeUIStyleValueUndoMessage);
                 styleProperty.values = new StyleValueHandle[0];
                 isNewValue = true;
             }
-#endif
+
             if (isNewValue)
                 styleSheet.AddValue(styleProperty, e.newValue);
             else // TODO: Assume only one value.
@@ -1699,14 +1684,12 @@ namespace Unity.UI.Builder
                     styleSheet.RemoveValue(styleProperty, styleProperty.values[0]);
                     isNewValue = true;
                 }
-#if UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
                 else if (styleProperty.IsVariable())
                 {
                     Undo.RegisterCompleteObjectUndo(styleSheet, BuilderConstants.ChangeUIStyleValueUndoMessage);
                     styleProperty.values = new StyleValueHandle[0];
                     isNewValue = true;
                 }
-#endif
             }
 
             if (styleName == "background-image")
@@ -1746,14 +1729,12 @@ namespace Unity.UI.Builder
             var styleProperty = GetOrCreateStylePropertyByStyleName(styleName);
             var isNewValue = styleProperty.values.Length == 0;
 
-#if UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
             if (!isNewValue && styleProperty.IsVariable())
             {
                 Undo.RegisterCompleteObjectUndo(styleSheet, BuilderConstants.ChangeUIStyleValueUndoMessage);
                 styleProperty.values = new StyleValueHandle[0];
                 isNewValue = true;
             }
-#endif
 
             if (isNewValue)
                 styleSheet.AddValue(styleProperty, e.newValue);
@@ -1768,14 +1749,12 @@ namespace Unity.UI.Builder
             var styleProperty = GetOrCreateStylePropertyByStyleName(styleName);
             var isNewValue = styleProperty.values.Length == 0;
 
-#if UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
             if (!isNewValue && styleProperty.IsVariable())
             {
                 Undo.RegisterCompleteObjectUndo(styleSheet, BuilderConstants.ChangeUIStyleValueUndoMessage);
                 styleProperty.values = new StyleValueHandle[0];
                 isNewValue = true;
             }
-#endif
 
             if (isNewValue)
                 styleSheet.AddValue(styleProperty, e.newValue);

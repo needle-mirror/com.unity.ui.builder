@@ -249,11 +249,7 @@ namespace Unity.UI.Builder.EditorTests
         /// <summary>
         /// Selecting an style selector or a the main StyleSheet in the StyleSheets pane should deselect any selected tree items in the Hierarchy.
         /// </summary>
-#if UNITY_2019_2
-        [UnityTest, Ignore("Fails on 2019.2 only (but all functionality works when manually doing the same steps). We'll drop 2019.2 support soon anyway.")]
-#else
         [UnityTest]
-#endif
         public IEnumerator SelectingStyleSelectorOrStyleSheetDeselectsHierarchyItems()
         {
             AddElementCodeOnly();
@@ -469,11 +465,7 @@ namespace Unity.UI.Builder.EditorTests
         /// Right-clicking on a TemplateContainer within an open UXML file should allow to "Open as Sub-Document"
         /// and then returning back to the parent through clicking on "Return to Parent Document" on header.
         /// </summary>
-#if UNITY_2019_2
-        [UnityTest, Ignore("Fails on 2019.2 only (but all functionality works when manually doing the same steps). We'll drop 2019.2 support soon anyway.")]
-#else
         [UnityTest]
-#endif
         public IEnumerator SubDocumentFunctionalityViaRightClickMenu()
         {
             var panel = BuilderWindow.rootVisualElement.panel as BaseVisualElementPanel;
@@ -482,10 +474,7 @@ namespace Unity.UI.Builder.EditorTests
             Assert.That(menu.menuIsDisplayed, Is.False);
 
             // Load Test UXML File
-            var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_ParentTestUXMLPath);
-            Assert.That(asset, Is.Not.Null);
-            BuilderWindow.LoadDocument(asset);
-            yield return UIETestHelpers.Pause(1);
+            yield return LoadTestUXMLDocument(k_ParentTestUXMLPath);
 
             // Check that Breadcrumbs toolbar is NOT present
             var toolbar = ViewportPane.Q<BuilderToolbar>();
@@ -505,8 +494,8 @@ namespace Unity.UI.Builder.EditorTests
             // Simulate right click on child TemplateContainer
             yield return UIETestEvents.Mouse.SimulateClick(childInHierarchy[0], MouseButton.RightMouse);
             Assert.That(menu.menuIsDisplayed, Is.True);
-            
-            var subdocumentClick = menu.FindMenuAction(BuilderConstants.ExplorerHierarchyPaneOpenSubDocument); 
+
+            var subdocumentClick = menu.FindMenuAction(BuilderConstants.ExplorerHierarchyPaneOpenSubDocument);
             Assert.That(subdocumentClick, Is.Not.Null);
 
             subdocumentClick.Execute();
@@ -524,7 +513,7 @@ namespace Unity.UI.Builder.EditorTests
             yield return UIETestEvents.Mouse.SimulateClick(parentRoot, MouseButton.RightMouse);
             Assert.That(menu.menuIsDisplayed, Is.True);
 
-            var parentClick = menu.FindMenuAction(BuilderConstants.ExplorerHierarchyReturnToParentDocument); 
+            var parentClick = menu.FindMenuAction(BuilderConstants.ExplorerHierarchyReturnToParentDocument);
             Assert.That(parentClick, Is.Not.Null);
             parentClick.Execute();
 
@@ -547,6 +536,7 @@ namespace Unity.UI.Builder.EditorTests
             var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_ParentTestUXMLPath);
             Assert.That(asset, Is.Not.Null);
             BuilderWindow.LoadDocument(asset);
+            HierarchyPane.elementHierarchyView.ExpandAllChildren();
             yield return UIETestHelpers.Pause(1);
 
             // Open child
@@ -557,7 +547,7 @@ namespace Unity.UI.Builder.EditorTests
             yield return UIETestEvents.Mouse.SimulateClick(childInHierarchy[0], MouseButton.RightMouse);
             Assert.That(menu.menuIsDisplayed, Is.True);
 
-            var subdocumentClick = menu.FindMenuAction(BuilderConstants.ExplorerHierarchyPaneOpenSubDocument); 
+            var subdocumentClick = menu.FindMenuAction(BuilderConstants.ExplorerHierarchyPaneOpenSubDocument);
             Assert.That(subdocumentClick, Is.Not.Null);
 
             subdocumentClick.Execute();

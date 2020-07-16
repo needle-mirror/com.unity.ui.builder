@@ -23,13 +23,6 @@ namespace Unity.UI.Builder
         bool m_ControlWasPressed;
         IVisualElementScheduledItem m_ControlUnpressScheduleItem;
 
-#if UNITY_2019_2
-        // TODO: Hack. We need this because of a bug on Mac where we
-        // get double command events.
-        // Case: https://fogbugz.unity3d.com/f/cases/1180090/
-        long m_LastFrameCount;
-#endif
-
         public BuilderCommandHandler(
             BuilderPaneWindow paneWindow,
             BuilderSelection selection)
@@ -89,15 +82,6 @@ namespace Unity.UI.Builder
 
         public void OnCommandValidate(ValidateCommandEvent evt)
         {
-#if UNITY_2019_2
-            // TODO: Hack. We need this because of a bug on Mac where we
-            // get double command events.
-
-            if (m_LastFrameCount == Time.frameCount)
-                return;
-            m_LastFrameCount = Time.frameCount;
-#endif
-
             switch (evt.commandName)
             {
                 case EventCommandNames.Cut: evt.StopPropagation(); return;
@@ -106,9 +90,7 @@ namespace Unity.UI.Builder
                 case EventCommandNames.Delete: evt.StopPropagation(); return;
                 case EventCommandNames.Duplicate: evt.StopPropagation(); return;
                 case EventCommandNames.Paste: evt.StopPropagation(); return;
-#if UNITY_2019_3_OR_NEWER
                 case EventCommandNames.Rename: evt.StopPropagation(); return;
-#endif
             }
         }
 
@@ -122,9 +104,7 @@ namespace Unity.UI.Builder
                 case EventCommandNames.Delete: DeleteSelection(); return;
                 case EventCommandNames.Duplicate: DuplicateSelection(); return;
                 case EventCommandNames.Paste: Paste(); return;
-#if UNITY_2019_3_OR_NEWER
                 case EventCommandNames.Rename: RenameSelection(); return;
-#endif
             }
         }
 

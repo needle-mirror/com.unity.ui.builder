@@ -1,4 +1,3 @@
-#if UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
 using System.Linq;
 using System.Text.RegularExpressions;
 using UnityEngine.UIElements;
@@ -111,4 +110,3 @@ namespace Unity.UI.Builder
         }
     }
 }
-#endif

@@ -1,4 +1,3 @@
-#if UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
 using System;
 using System.IO;
 using UnityEditor;
@@ -14,7 +13,9 @@ namespace Unity.UI.Builder
         VariableEditingHandler m_CurrentHandler;
         Label m_VarNameLabel;
         Label m_SelectorSourceLabel;
+#if false // TODO: Will need to bring this back once we can also do the dragger at the same time.
         Button m_EditButton;
+#endif
         bool m_Showing = true;
 
         public VariableEditingHandler currentHandler => m_CurrentHandler;
@@ -36,8 +37,8 @@ namespace Unity.UI.Builder
 
             m_SelectorSourceLabel = this.Q<Label>("inspector-varinfo-source");
 
+#if false // TODO: Will need to bring this back once we can also do the dragger at the same time.
             m_EditButton = this.Q<Button>("inspector-varinfo-edit-button");
-            m_EditButton.text = "View variable";
 
             /*
             var shorcutLabel = this.Q<Label>("inspector-varinfo-edit-shortcut");
@@ -52,6 +53,10 @@ namespace Unity.UI.Builder
                 m_CurrentHandler.ShowVariableField();
             };
 #endif
+#endif // false
+
+// TODO: Will need to bring this back once we can also do the dragger at the same time.
+#if false
             RegisterCallback<FocusOutEvent>(e => {
                 if (m_CurrentHandler != null)
                 {
@@ -59,6 +64,7 @@ namespace Unity.UI.Builder
                     m_CurrentHandler = null;
                 }
             });
+#endif
 
             this.RegisterCallback<GeometryChangedEvent>(e => {
                 if (m_Showing)
@@ -107,7 +113,8 @@ namespace Unity.UI.Builder
             style.top = pos.y;
             m_Showing = true;
             Show();
-            Focus();
+            // TODO: Will need to bring this back once we can also do the dragger at the same time.
+            //Focus();
         }
 
         void AdjustXPosition()
@@ -119,4 +126,4 @@ namespace Unity.UI.Builder
         }
     }
 }
-#endif
+

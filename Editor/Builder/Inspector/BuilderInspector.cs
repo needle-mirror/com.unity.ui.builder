@@ -254,12 +254,14 @@ namespace Unity.UI.Builder
 
         void ResetSection(VisualElement section)
         {
-            section.AddToClassList(BuilderConstants.HiddenStyleClassName);
+            // For performance reasons, it's important NOT to use a style class!
+            section.style.display = DisplayStyle.None;
         }
 
         void EnableSection(VisualElement section)
         {
-            section.RemoveFromClassList(BuilderConstants.HiddenStyleClassName);
+            // For performance reasons, it's important NOT to use a style class!
+            section.style.display = DisplayStyle.Flex;
         }
 
         void EnableFields()
@@ -425,6 +427,7 @@ namespace Unity.UI.Builder
                     break;
                 case BuilderSelectionType.VisualTreeAsset:
                     EnableSections(Section.VisualTreeAsset);
+                    m_CanvasSection.Refresh();
                     return;
             }
             if (m_Selection.selectionType == BuilderSelectionType.ElementInTemplateInstance)

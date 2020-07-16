@@ -275,6 +275,30 @@ namespace Unity.UI.Builder
             activeOpenUXMLFile.LoadDocument(visualTreeAsset, documentElement);
             SaveToDisk();
         }
+        //
+        // Circular Dependencies 
+        //
+
+        public bool WillCauseCircularDependency(VisualTreeAsset vtaCheck)
+        {
+            // Perform check on current active document
+            var activeVTA = activeOpenUXMLFile.visualTreeAsset;
+            if (activeVTA.TemplateExists(vtaCheck))
+                return false;
+            
+            // Crawl up hierarchy if there are open subdocuments
+            int parentInd = activeOpenUXMLFile.openSubDocumentParentIndex;
+            while (parentInd > -1)
+            {
+                var parentuxml = openUXMLFiles[parentInd];
+                var parentvta = parentuxml.visualTreeAsset;
+                if (parentvta.TemplateExists(vtaCheck))
+                    return false;
+                parentInd = parentuxml.openSubDocumentParentIndex;
+            }
+            return true;
+        }
+        
 
         //
         // Sub Document

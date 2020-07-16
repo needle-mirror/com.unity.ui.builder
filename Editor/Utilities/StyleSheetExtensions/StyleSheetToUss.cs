@@ -84,7 +84,6 @@ namespace Unity.UI.Builder
                         }
                     }
                     break;
-#if UNITY_2019_3_OR_NEWER
                 case StyleValueType.Dimension:
                     var dim = sheet.ReadDimension(handle);
                     if (dim.value == 0)
@@ -92,7 +91,6 @@ namespace Unity.UI.Builder
                     else
                         str = dim.ToString();
                     break;
-#endif
                 case StyleValueType.Color:
                     UnityEngine.Color color = sheet.ReadColor(handle);
                     str = ToUssString(color, options.useColorCode);
@@ -118,11 +116,9 @@ namespace Unity.UI.Builder
                         assetPath = "/" + assetPath;
                     str = assetRef == null ? "none" : $"url('{assetPath}')";
                     break;
-#if UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
                 case StyleValueType.Variable:
                     str = sheet.ReadVariable(handle);
                     break;
-#endif
                 default:
                     throw new ArgumentException("Unhandled type " + handle.valueType);
             }
@@ -167,25 +163,10 @@ namespace Unity.UI.Builder
 
         static bool IsLength(string name)
         {
-            if (BuilderConstants.SpecialSnowflakeLengthSytles.Contains(name))
+            if (BuilderConstants.SpecialSnowflakeLengthStyles.Contains(name))
                 return true;
 
-#if UNITY_2019_3_OR_NEWER
             return false;
-#else
-            foreach (System.Reflection.PropertyInfo field in StyleSheetUtilities.ComputedStylesFieldInfos)
-            {
-                var styleName = BuilderNameUtilities.ConverStyleCSharpNameToUssName(field.Name);
-                if (styleName != name)
-                    continue;
-
-                var dummyElement = new VisualElement();
-                var val = field.GetValue(dummyElement.computedStyle, null);
-                if (val is StyleLength)
-                    return true;
-            }
-            return false;
-#endif
         }
 
         public static void ToUssString(StyleSheet sheet, UssExportOptions options, StyleRule rule, StringBuilder sb)
@@ -303,6 +284,8 @@ namespace Unity.UI.Builder
             var sb = new StringBuilder();
             if (sheet.complexSelectors != null)
             {
+                bool isFirst = true;
+
                 for (var complexSelectorIndex = 0; complexSelectorIndex < sheet.complexSelectors.Length; ++complexSelectorIndex)
                 {
                     var complexSelector = sheet.complexSelectors[complexSelectorIndex];
@@ -315,11 +298,12 @@ namespace Unity.UI.Builder
                         ))
                         continue;
 
-                    ToUssString(sheet, options, complexSelector, sb);
-                    if (complexSelectorIndex != sheet.complexSelectors.Length - 1)
-                    {
+                    if (isFirst)
+                        isFirst = false;
+                    else
                         sb.Append(BuilderConstants.NewlineCharFromEditorSettings);
-                    }
+
+                    ToUssString(sheet, options, complexSelector, sb);
                 }
             }
 

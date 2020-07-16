@@ -35,7 +35,6 @@ namespace Unity.UI.Builder
             }
         }
 
-#if UNITY_2019_3_OR_NEWER
         public Dimension.Unit unit
         {
             get
@@ -57,7 +56,6 @@ namespace Unity.UI.Builder
                 SetValueWithoutNotify(option);
             }
         }
-#endif
 
         public DimensionStyleField() : this(string.Empty) { }
 
@@ -67,10 +65,7 @@ namespace Unity.UI.Builder
             m_DraggerIntegerField.name = "dragger-integer-field";
             m_DraggerIntegerField.AddToClassList(k_DraggerFieldUssClassName);
             m_DraggerIntegerField.RegisterValueChangedCallback(OnDraggerFieldUpdate);
-            //TODO: IMPLEMENT OUR OWN DRAG TO WORK WITH VARIABLE WORFLOW
-#if !UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
             Insert(0, m_DraggerIntegerField);
-#endif
             option = defaultUnit;
 
             RefreshChildFields();
@@ -97,11 +92,8 @@ namespace Unity.UI.Builder
                 return m_Units;
 
             var syntaxParser = new StyleSyntaxParser();
-#if UNITY_2019_3_OR_NEWER
+
             var syntaxFound = StylePropertyCache.TryGetSyntax(binding, out var syntax);
-#else
-            var syntaxFound = StyleFieldConstants.StylePropertySyntaxCache.TryGetValue(binding, out var syntax);
-#endif
             if (!syntaxFound)
                 return StyleFieldConstants.KLDefault;
 
@@ -110,17 +102,13 @@ namespace Unity.UI.Builder
                 return StyleFieldConstants.KLDefault;
 
             var hasLength = FindUnitInExpression(expression, DataType.Length);
-#if UNITY_2019_3_OR_NEWER
             var hasPercent = FindUnitInExpression(expression, DataType.Percentage);
-#endif
 
             m_Units.Clear();
             if (hasLength)
                 m_Units.Add(StyleFieldConstants.UnitPixel);
-#if UNITY_2019_3_OR_NEWER
             if (hasPercent)
                 m_Units.Add(StyleFieldConstants.UnitPercent);
-#endif
 
             return m_Units;
         }

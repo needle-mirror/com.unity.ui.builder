@@ -246,7 +246,6 @@ namespace Unity.UI.Builder
             LoadDocumentInternal(originalAsset);
         }
 
-#if UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
         void NewTestVariablesDocument()
         {
             if (!document.CheckForUnsavedChanges())
@@ -257,7 +256,6 @@ namespace Unity.UI.Builder
             var originalAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(testAsset);
             LoadDocumentInternal(originalAsset);
         }
-#endif
 
         internal void SaveDocument(bool isSaveAs)
         {
@@ -352,12 +350,10 @@ namespace Unity.UI.Builder
                     NewTestDocument();
                 });
 
-#if UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
                 m_FileMenu.menu.AppendAction("New (Test Variables)", a =>
                 {
                     NewTestVariablesDocument();
                 });
-#endif
             }
 
             m_FileMenu.menu.AppendAction("Open...", a =>
@@ -499,10 +495,8 @@ namespace Unity.UI.Builder
                     break;
                 case BuilderDocument.CanvasTheme.Runtime:
                     themeStyleSheet = runtimeStyleSheet;
-#if UNITY_2019_3_OR_NEWER
                     m_Viewport.canvas.defaultBackgroundElement.style.display = DisplayStyle.None;
                     m_Viewport.canvas.checkerboardBackgroundElement.style.display = DisplayStyle.Flex;
-#endif
                     break;
                 case BuilderDocument.CanvasTheme.Default:
                     themeStyleSheet = null;

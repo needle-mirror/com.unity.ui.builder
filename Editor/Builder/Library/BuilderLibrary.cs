@@ -10,7 +10,7 @@ namespace Unity.UI.Builder
     {
         public enum BuilderLibraryTab
         {
-            Controls,
+            Standard,
             Project
         }
 
@@ -40,7 +40,7 @@ namespace Unity.UI.Builder
 
         [SerializeField] bool m_ShowPackageTemplates;
         [SerializeField] LibraryViewMode m_ViewMode = LibraryViewMode.IconTile;
-        [SerializeField] BuilderLibraryTab m_ActiveTab = BuilderLibraryTab.Controls;
+        [SerializeField] BuilderLibraryTab m_ActiveTab = BuilderLibraryTab.Standard;
 
         public BuilderLibrary(
             BuilderPaneWindow paneWindow, BuilderViewport viewport,
@@ -73,13 +73,18 @@ namespace Unity.UI.Builder
             m_HeaderButtonStrip.labels = new List<string> { BuilderConstants.LibraryStandardControlsTabName, BuilderConstants.LibraryProjectTabName };
             m_HeaderButtonStrip.RegisterValueChangedCallback(e =>
             {
-                m_ActiveTab = (BuilderLibraryTab) Enum.Parse(typeof(BuilderLibraryTab), e.newValue);
-                SaveViewData();
-                RefreshView();
+                SwitchLibraryTab((BuilderLibraryTab)Enum.Parse(typeof(BuilderLibraryTab), e.newValue));
             });
 
             AddFocusable(m_HeaderButtonStrip);
             BuilderLibraryContent.OnLibraryContentUpdated += RebuildView;
+        }
+
+        void SwitchLibraryTab(BuilderLibraryTab newTab)
+        {
+            m_ActiveTab = newTab;
+            SaveViewData();
+            RefreshView();
         }
 
         protected override void InitEllipsisMenu()
@@ -100,6 +105,23 @@ namespace Unity.UI.Builder
                 a => m_ViewMode == LibraryViewMode.TreeView
                     ? DropdownMenuAction.Status.Checked
                     : DropdownMenuAction.Status.Normal);
+
+            pane.AppendActionToEllipsisMenu(BuilderConstants.LibraryEditorExtensionsAuthoring,
+                a => ToggleEditorExtensionsAuthoring(),
+                a => m_PaneWindow.document.UXMLFileSettings.EditorExtensionMode
+                    ? DropdownMenuAction.Status.Checked
+                    : DropdownMenuAction.Status.Normal);
+        }
+
+        void ToggleEditorExtensionsAuthoring()
+        {
+            var newValue = !m_PaneWindow.document.UXMLFileSettings.EditorExtensionMode;
+            m_PaneWindow.document.UXMLFileSettings.EditorExtensionMode = newValue;
+            m_Selection.NotifyOfStylingChangePostStylingUpdate();
+            SwitchLibraryTab(BuilderLibraryTab.Standard);
+
+            if (newValue)
+                Builder.ShowWarning(BuilderConstants.InspectorEditorExtensionAuthoringActivated);
         }
 
         internal override void OnViewDataReady()
@@ -218,7 +240,7 @@ namespace Unity.UI.Builder
             m_HeaderButtonStrip.SetValueWithoutNotify(m_ActiveTab.ToString());
             switch (m_ActiveTab)
             {
-                case BuilderLibraryTab.Controls:
+                case BuilderLibraryTab.Standard:
                     if (m_ViewMode == LibraryViewMode.TreeView)
                         SetActiveView(ControlsTreeView);
                     else

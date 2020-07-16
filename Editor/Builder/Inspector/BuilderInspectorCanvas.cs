@@ -29,6 +29,8 @@ namespace Unity.UI.Builder
         // Fields
         IntegerField m_CanvasWidth;
         IntegerField m_CanvasHeight;
+        Toggle m_MatchGameViewToggle;
+        HelpBox m_MatchGameViewHelpBox;
         PercentSlider m_ColorOpacityField;
         PercentSlider m_ImageOpacityField;
         PercentSlider m_CameraOpacityField;
@@ -51,11 +53,7 @@ namespace Unity.UI.Builder
             get
             {
                 var fieldValue = m_CameraField.value;
-#if UNITY_2019_3_OR_NEWER
                 var camera = fieldValue as Camera;
-#else
-                var camera = (fieldValue as GameObject)?.GetComponent<Camera>();
-#endif
                 return camera;
             }
         }
@@ -87,6 +85,10 @@ namespace Unity.UI.Builder
             m_CanvasHeight.isDelayed = true;
             m_CanvasHeight.RegisterValueChangedCallback(OnHeightChange);
             m_Canvas.RegisterCallback<GeometryChangedEvent>(OnCanvasSizeChange);
+
+            m_MatchGameViewToggle = root.Q<Toggle>("match-game-view");
+            m_MatchGameViewToggle.RegisterValueChangedCallback(OnMatchGameViewModeChanged);
+            m_MatchGameViewHelpBox = root.Q<HelpBox>("match-game-view-hint");
 
             // Background Opacity
             m_ColorOpacityField = root.Q<PercentSlider>("background-color-opacity-field");
@@ -223,6 +225,17 @@ namespace Unity.UI.Builder
             m_EditorExtensionsModeToggle?.SetValueWithoutNotify(m_Document.UXMLFileSettings.EditorExtensionMode);
 
             ApplyBackgroundOptions();
+            RefreshMatchGameViewToggle();
+        }
+
+        void RefreshMatchGameViewToggle()
+        {
+            m_CanvasWidth.SetEnabled(!settings.MatchGameView);
+            m_CanvasHeight.SetEnabled(!settings.MatchGameView);
+            m_MatchGameViewToggle.SetValueWithoutNotify(settings.MatchGameView);
+            m_MatchGameViewHelpBox.style.display = settings.MatchGameView
+                ? DisplayStyle.Flex
+                : DisplayStyle.None;
         }
 
         Camera FindCameraByName()
@@ -412,6 +425,14 @@ namespace Unity.UI.Builder
             PostSettingsChange();
         }
 
+        void OnMatchGameViewModeChanged(ChangeEvent<bool> evt)
+        {
+            settings.MatchGameView = evt.newValue;
+            RefreshMatchGameViewToggle();
+            m_Canvas.matchGameView = settings.MatchGameView;
+            PostSettingsChange();
+        }
+
         void OnBackgroundOpacityChange(float opacity)
         {
             customBackgroundElement.style.opacity = opacity;
@@ -464,11 +485,8 @@ namespace Unity.UI.Builder
             if (ReferenceEquals(previousCamera, evt.newValue))
                 return;
 
-#if UNITY_2019_3_OR_NEWER
             var camera = evt.newValue as Camera;
-#else
-            var camera = (evt.newValue as GameObject)?.GetComponent<Camera>();
-#endif
+
             settings.CanvasBackgroundCameraName = camera == null ? null : camera.name;
             PostSettingsChange();
             ApplyBackgroundOptions();

@@ -11,22 +11,16 @@ namespace Unity.UI.Builder
 {
     internal static class VisualTreeAssetLinkedCloneTree
     {
-#if UNITY_2019_3_OR_NEWER
         static readonly StylePropertyReader s_StylePropertyReader = new StylePropertyReader();
-#endif
         static readonly Dictionary<string, VisualElement> s_TemporarySlotInsertionPoints = new Dictionary<string, VisualElement>();
 
         static VisualElement CloneSetupRecursively(VisualTreeAsset vta, VisualElementAsset root,
             Dictionary<int, List<VisualElementAsset>> idToChildren, CreationContext context)
         {
-#if UNITY_2019_3_OR_NEWER
             var resolvedSheets = new List<StyleSheet>();
             foreach (var sheetPath in root.stylesheetPaths)
-            {
                 resolvedSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(sheetPath));
-            }
             root.stylesheets = resolvedSheets;
-#endif
 
             var ve = VisualTreeAsset.Create(root, context);
 
@@ -68,16 +62,11 @@ namespace Unity.UI.Builder
                     var rule = vta.inlineSheet.rules[root.ruleIndex];
 #if UNITY_2020_1_OR_NEWER
                     ve.SetInlineRule(vta.inlineSheet, rule);
-#elif UNITY_2019_3_OR_NEWER
+#else
                     var stylesData = new VisualElementStylesData(false);
                     ve.SetInlineStyles(stylesData);
                     s_StylePropertyReader.SetInlineContext(vta.inlineSheet, rule, root.ruleIndex);
                     stylesData.ApplyProperties(s_StylePropertyReader, null);
-#else
-                    var stylesData = new VisualElementStylesData(false);
-                    ve.SetInlineStyles(stylesData);
-                    var propIds = StyleSheetCache.GetPropertyIDs(vta.inlineSheet, root.ruleIndex);
-                    stylesData.ApplyRule(vta.inlineSheet, Int32.MaxValue, rule, propIds);
 #endif
                 }
             }

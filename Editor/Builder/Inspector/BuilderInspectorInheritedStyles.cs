@@ -228,14 +228,16 @@ namespace Unity.UI.Builder
             currentVisualElement.RemoveFromClassList(className);
 
             // Update VisualTreeAsset.
-            BuilderAssetUtilities.RemoveStyleClassToElementInAsset(
+            BuilderAssetUtilities.RemoveStyleClassFromElementInAsset(
                 m_PaneWindow.document, currentVisualElement, className);
 
             // We actually want to get the notification back and refresh ourselves.
             m_Selection.NotifyOfHierarchyChange(null);
             m_Selection.NotifyOfStylingChange(null);
+
+            evt.StopPropagation();
         }
-        
+
         Clickable CreateClassPillClickableManipulator()
         {
             var clickable = new Clickable(OnClassPillDoubleClick);
@@ -253,6 +255,9 @@ namespace Unity.UI.Builder
 
         void RefreshClassListContainer()
         {
+            if (currentVisualElement == null)
+                return;
+
             m_ClassListContainer.Clear();
             if (BuilderSharedStyles.IsSelectorElement(currentVisualElement))
                 return;
@@ -270,6 +275,7 @@ namespace Unity.UI.Builder
                 var pillLabel = pill.Q<Label>("class-name-label");
                 var pillDeleteButton = pill.Q<Button>("delete-class-button");
                 pillDeleteButton.userData = className;
+                pill.userData = className;
 
                 // Add ellipsis if the class name is too long.
                 var classNameShortened = BuilderNameUtilities.CapStringLengthAndAddEllipsis(className, BuilderConstants.ClassNameInPillMaxLength);
@@ -304,9 +310,8 @@ namespace Unity.UI.Builder
 
         void OnClassPillDoubleClick(EventBase evt)
         {
-            var pill = evt.target as VisualElement;
-            var pillDeleteButton = pill.Q<Button>("delete-class-button");
-            var className = pillDeleteButton.userData as string;
+            var pill = evt.currentTarget as VisualElement;
+            var className = pill.userData as string;
             var selectorString = BuilderConstants.UssSelectorClassNameSymbol + className;
             var selectorElement = pill.GetProperty(BuilderConstants.InspectorClassPillLinkedSelectorElementVEPropertyName) as VisualElement;
 
@@ -382,6 +387,9 @@ namespace Unity.UI.Builder
 
         void RefreshMatchingSelectorsContainer()
         {
+            if (currentVisualElement == null)
+                return;
+
             m_MatchingSelectorsFoldout.Clear();
             if (BuilderSharedStyles.IsSelectorElement(currentVisualElement))
                 return;

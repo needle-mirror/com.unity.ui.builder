@@ -38,6 +38,7 @@
 1. In the toolbar of the StyleSheets pane there's a field that lets you create new selectors. This field is disabled if there are no elements in the UXML document. `Tested`
     1. After the field is focused, the explanation text is replaced with a default `.` and the cursor is set right after the `.` to let you quickly add a class-based selector. `Tested`
     1. You can commit and add your selector to the *active* StyleSheet by pressing **Enter**. `Tested`
+    1. Newly created selector is automatically selected and if the StyleSheet is collapsed in the StyleSheets tree view, it gets expanded.
     1. If there is no USS in document, the Save Dialog Option to create a new USS file will be prompted and selector will be added to the newly created and added USS file. `Tested`
     1. If the selector string contains invalid characters, an error message will display and the new selector will not be created - keeping the focus on the rename field. `Tested`
     1. You can discover and append `:pseudoStates` from the **:** menu.
@@ -85,17 +86,18 @@
 
 1. Can switch between **Standard** and **Project** tab using tabs in the Library header. `Tested`
 1. **Standard** tab shows built-in elements. `Tested`
-1. **Standard** tab mode can be switched to the tree view representation using **Tree View** option from the `...` options menu in the top right of the Library pane.  `Tested`
+1. **Standard** tab mode can be switched to the tree view representation using **Tree View** option from the `...` options menu in the top right of the Library pane. `Tested`
 1. **Project** tab contains UXML assets (`.uxml`) in the project `Asset/` folder under the **Assets** header. If there are no assets to display, the **Assets** header will be presented with no items.
 1. In the **Project** tab, the UXML item context menu contains an action to **Add** template to the current document as an instance, **Open in UI Builder**, and **Open with IDE**.
 1. You can view UXML assets (`.uxml`) within the `Packages/` folder under the **Assets** heading using the **Show Package Files** option from the `...` options menu in the top right of the Library pane.
+1. Can enable/disable Editor Extension Authoring via the `...` options menu in the top right of the Library pane.
 1. **Project** tab contains available project-defined custom controls with `UxmlFactory` defined under the **Custom Controls** heading. If there are no custom controls available, this heading will not be displayed. `Tested`
 1. **Standard** tab items that are only supported for Editor Extensions have an "Editor Only" tag beside them (in **Tree View** mode only).
 1. Hovering over items in the Library **Project** view tab shows a preview of that element in a floating preview box. The preview uses the current Theme selected for the Canvas.
 1. Can double click to create a new element instance at the root. `Tested`
 1. Items that have corresponding `.uxml` assets have an "Open" button (icon) visible (on hover) that opens the asset for editing in UI Builder. The currently open `.uxml` asset in the Library is grayed out and is not instantiable to prevent infinite recursion. `Tested`
 1. Can click and drag onto a Viewport element to create new instance as a child. This will also focus the Viewport pane. `Tested`
-1. Can click and drag onto a Hierarchy element to create new instance as a child, or between elements to create as a sibling.  `Tested`
+1. Can click and drag onto a Hierarchy element to create new instance as a child, or between elements to create as a sibling. `Tested`
 1. Can create (double-click or drag) template instances from other `.uxml` files. `Tested`
 1. When creating template instances from other `.uxml`, the `TemplateContainer` name will be initialized with the name of the `.uxml` asset being instanced.
 1. When creating a new empty VisualElement, it has an artificial minimum size and border which is reset as soon as you parent a child element under it or change its styling. `Tested`
@@ -131,28 +133,29 @@
 
 ### Canvas
 
-1. Selected element has a blue border around it.
-1. If there are multiple elements selected, no blue selection border or header should be displayed.
-1. Selected element has a title header displaying the type of the element if it has no name, otherwise the name.
-1. Can be resized via handles on all 4 sides.
-1. Canvas has a minimum size.
-1. Right-clicking an element in the Canvas opens the Copy/Paste/Duplicate/Delete/Rename context menu.
+1. Selected element has a blue border around it. `Tested`
+1. If there are multiple elements selected, no blue selection border or header should be displayed. `Tested`
+1. Selected element has a title header displaying the type of the element if it has no name, otherwise the name. `Tested`
+1. Can be resized via handles on all 4 sides. `Tested`
+1. Canvas has a minimum size. `Tested`
+1. Right-clicking an element in the Canvas opens the Copy/Paste/Duplicate/Delete/Rename context menu. `Tested`
 1. With an element selected, you can use the standard short-cuts and Edit menu to copy/paste/duplicate/delete it. The copied element and its children are pasted as children of the parent of the currently selected element. If nothing is selected, they are pasted at the root.
-1. Can click to select element.
-1. Selecting an element inside a template instance or C# type selects the parent instance or C# element.
-1. Relative position elements have bottom, right, and bottom-right handles that change inline `height` and `width` styles.
-1. Absolute position elements have all four side handles and all four corner handles visible.
-1. Absolute position elements have four anchor handles visible to set or unset the `left`/`right`/`top`/`bottom` inline styles.
-1. Absolute position elements can be moved by clicking and dragging, changing `top`/`right`/`left`/`bottom` inline styles depending on anchor state.
-1. Resize and position handles change different styles depending on anchor state (ie. if `left` and `right` styles are set, changing the width changes the `right` style - otherwise, changing the width changes the `width` style).
-1. Canvas size is restored after Domain Reload or Window reload. It is reset when opening/creating a new document.
-1. Canvas size is remembered per-document.
-1. When changing Width or Height in the Inspector, the corresponding resize handles in the canvas are highlighted.
-1. When hovering over elements in the Canvas, the corresponding entry in the Hierarchy is highlighted.
-1. When hovering over elements in the Canvas, all StyleSheets pane entries of style selectors that match this element are highlighted.
+1. Can click to select element. `Tested`
+1. Selecting an element inside a template instance or C# type selects the parent instance or C# element. `Tested`
+1. Relative position elements have bottom, right, and bottom-right handles that change inline `height` and `width` styles. `Tested`
+1. Absolute position elements have all four side handles and all four corner handles visible. `Tested`
+1. Absolute position elements have four anchor handles visible to set or unset the `left`/`right`/`top`/`bottom` inline styles. `Tested`
+1. Absolute position elements can be moved by clicking and dragging, changing `top`/`right`/`left`/`bottom` inline styles depending on anchor state. `Tested`
+1. Resize and position handles change different styles depending on anchor state (ie. if `left` and `right` styles are set, changing the width changes the `right` style - otherwise, changing the width changes the `width` style). `Tested`
+1. Canvas size is restored after Domain Reload or Window reload. It is reset when opening/creating a new document. `Tested`
+1. Canvas size is remembered per-document. `Tested`
+1. When changing Width or Height in the Inspector, the corresponding resize handles in the canvas are highlighted. `Tested`
+1. When hovering over elements in the Canvas, the corresponding entry in the Hierarchy is highlighted. `Tested`
+1. When hovering over elements in the Canvas, all StyleSheets pane entries of style selectors that match this element are highlighted. `Tested`
 1. Canvas size is remembered for each asset and restored when loading the asset. It also means it survives Editor restarts.
 1. Clicking the root item (with the .uxml filename) in the Hierarchy displays the Canvas options in the Inspector:
     1. Can see and change the Canvas height and width.
+    1. Can set to "Match Game View" to lock the Canvas size to the size of the Game view. Resizing manually in the Viewport will turn this lock off.
     1. Can enable/disable custom Canvas background via checkbox on Foldout header.
     1. Can set the custom Canvas background color/image Opacity per Background mode.
     1. Can set the Canvas background to be a solid color via the Color Background mode.
@@ -190,8 +193,8 @@
 1. Shows `<Style>` tags for all root elements.
 1. The `UnityEngine.UIElements` namespace is aliased to `ui:` and `UnityEditor.UIElements` namespace is aliased to `uie:`.
 1. Custom C# elements not in the `UnityEngine.UIElements` and `UnityEditor.UIElements` namespaces have no namespace alias and appear as their full type.
-1. (2019.3+) A relative path to a `.uss` asset is used in the `src` attribute of the `<Style>` tag if the asset is in the same folder as the main asset, or a subfolder of that folder. Otherwise, an absolute path is used.
-1. (2019.3+) A relative path to a `.uxml` asset is used in the `src` attribute of the `<Template>` tag if the asset is in the same folder as the main asset, or a subfolder of that folder. Otherwise, an absolute path is used.
+1. A relative path to a `.uss` asset is used in the `src` attribute of the `<Style>` tag if the asset is in the same folder as the main asset, or a subfolder of that folder. Otherwise, an absolute path is used.
+1. A relative path to a `.uxml` asset is used in the `src` attribute of the `<Template>` tag if the asset is in the same folder as the main asset, or a subfolder of that folder. Otherwise, an absolute path is used.
 1. Pane header displays the name of the `.uxml` asset being previewed.
 1. If asset is saved on disk, a button to open the `.uxml` asset in the default IDE will appear in the top-right corner of the pane header.
 1. Special symbols in attribute values, like `\t \n & < > ' "`, are escaped properly when generating the UXML.
@@ -259,7 +262,7 @@
 1. Right-clicking **Unset All** on a style field or styles category foldout is the same as **Unset** except it unsets all overridden style fields.
 1. Align section toggle button strips change icons depending on the value of the flex-direction style.
 1. Length style fields have a dropdown to select **Keyword** or **Unit**.
-1. (2019.3+) Some Length style fields support the `%` **Unit**.
+1. Some Length style fields support the `%` **Unit**.
 1. Foldout style fields (like Margin and Padding) properly add the unit or keyword for each child style property.
 1. If the optional Vector Graphics package is installed, the background image style will allow assigning a vector image (scalable image) asset type.
 1. When focusing a size, margin, padding, or border style field, the selected element will have a color overlay showing its size/margin/padding/border.
@@ -267,6 +270,8 @@
 ### Variables
 
 1. If a style is getting its value from a USS variable, its style field label in the Inspector will appear highlighted.
-1. Can now click on the label of a style field using a USS variable to see where the variable value is coming from (via a tooltip popup).
 1. Selectors can now use USS variables for their style values via a new per-field variable mode. This is not supported on elements via inline styles.
-1. Style field variable mode can be activated by double-clicking on its label or via a button in the tooltip popup.
+1. Right-clicking on a style field and selecting "Show Variable" will:
+    1. See where the variable value is coming from (via a tooltip popup).
+    1. Activate variable mode.
+    1. Un-focusing the variable mode field will switch the field back to normal mode and hide the tooltip popup.

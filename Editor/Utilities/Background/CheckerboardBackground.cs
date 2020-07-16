@@ -31,12 +31,9 @@ namespace Unity.UI.Builder
             pickingMode = PickingMode.Ignore;
             RegisterCallback<CustomStyleResolvedEvent>(OnCustomStyleResolved);
             style.position = Position.Absolute;
-#if UNITY_2019_3_OR_NEWER
             generateVisualContent += OnGenerateVisualContent;
-#endif
         }
 
-#if UNITY_2019_3_OR_NEWER
         void OnGenerateVisualContent(MeshGenerationContext context)
         {
             var quadSize = localBound.size / k_NumberOfQuadsInRow;
@@ -88,7 +85,6 @@ namespace Unity.UI.Builder
             mesh.SetNextIndex(3);
             mesh.SetNextIndex(2);
         }
-#endif
 
         void OnCustomStyleResolved(CustomStyleResolvedEvent e)
         {

@@ -7,8 +7,10 @@
         <Label name  = "inspector-varinfo-source"
             class = "unity-builder-inspector__varinfo-source"/>
     </VisualElement>
+    <!-- TODO: Will need to bring this back once we can also do the dragger at the same time.
     <VisualElement class="unity-builder-inspector__varinfo-edit-container">
-        <Button name="inspector-varinfo-edit-button" class="unity-builder-inspector__varinfo-edit-button"/>
-        <!--Label name="inspector-varinfo-edit-shortcut" class="unity-builder-varinfo-edit-shortcut" text="shortcut"/-->
+        <Button name="inspector-varinfo-edit-button" text="View Variable" class="unity-builder-inspector__varinfo-edit-button"/>
+        Label name="inspector-varinfo-edit-shortcut" class="unity-builder-varinfo-edit-shortcut" text="shortcut"/>
     </VisualElement>
+    -->
 </UXML>

@@ -17,12 +17,6 @@ namespace Unity.UI.Builder
         static readonly string s_UssPath = BuilderConstants.UIBuilderPackagePath + "/Explorer/BuilderNewSelectorField.uss";
         static readonly string s_UxmlPath = BuilderConstants.UIBuilderPackagePath + "/Explorer/BuilderNewSelectorField.uxml";
 
-#if UNITY_2019_2
-        static readonly string s_UssPath2019_2 = BuilderConstants.UIBuilderPackagePath + "/Explorer/BuilderNewSelectorField2019_2.uss";
-        static readonly string s_UssPathDark2019_2 = BuilderConstants.UIBuilderPackagePath + "/Explorer/BuilderNewSelectorFieldDark2019_2.uss";
-        static readonly string s_UssPathLight2019_2 = BuilderConstants.UIBuilderPackagePath + "/Explorer/BuilderNewSelectorFieldLight2019_2.uss";
-#endif
-
         static readonly string s_UssClassName = "unity-new-selector-field";
         static readonly string s_OptionsPopupUssClassName = "unity-new-selector-field__options-popup";
         static readonly string s_TextFieldName = "unity-text-field";
@@ -45,14 +39,6 @@ namespace Unity.UI.Builder
             AddToClassList(s_UssClassName);
 
             styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(s_UssPath));
-
-#if UNITY_2019_2
-            styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(s_UssPath2019_2));
-            if (EditorGUIUtility.isProSkin)
-                styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(s_UssPathDark2019_2));
-            else
-                styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(s_UssPathLight2019_2));
-#endif
 
             var template = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(s_UxmlPath);
             template.CloneTree(this);

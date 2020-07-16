@@ -96,8 +96,11 @@ namespace Unity.UI.Builder.EditorTests
                 yield return UIETestHelpers.Pause();
             }
 
-            public static IEnumerator SimulateScroll(Vector2 delta, Vector2 position)
+            public static IEnumerator SimulateScroll(VisualElement target, Vector2 delta, Vector2 position)
             {
+                Assert.That(target.panel, Is.Not.Null);
+                var root = UIETestHelpers.GetRoot(target);
+
                 var evt = new Event
                 {
                     type = EventType.ScrollWheel,
@@ -105,7 +108,8 @@ namespace Unity.UI.Builder.EditorTests
                     mousePosition = position
                 };
 
-                UIETestEvents.MakeEvent(evt);
+                var scrollEvent = UIETestEvents.MakeEvent(evt);
+                root.SendEvent(scrollEvent);
                 yield return UIETestHelpers.Pause();
             }
 
@@ -193,7 +197,6 @@ namespace Unity.UI.Builder.EditorTests
             }
         }
 
-#if UNITY_2019_3_OR_NEWER
         internal static class Pointer
         {
             public static EventBase MakeEvent(TouchPhase phase, Vector2 position, EventModifiers modifiers = EventModifiers.None, MouseButton button = MouseButton.LeftMouse)
@@ -246,6 +249,5 @@ namespace Unity.UI.Builder.EditorTests
                 return touch;
             }
         }
-#endif
     }
 }

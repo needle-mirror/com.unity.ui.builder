@@ -22,6 +22,7 @@ namespace Unity.UI.Builder
         VisualElement m_Container;
         Rect m_ThisRectOnStartDrag;
         VisualElement m_DragHoverCoverLayer;
+        IVisualElementScheduledItem m_CanvasToGameViewSizeUpdater;
 
         VisualElement m_DefaultBackgroundElement;
         VisualElement m_CustomBackgroundElement;
@@ -54,6 +55,13 @@ namespace Unity.UI.Builder
             }
         }
 
+        BuilderSelection m_Selection;
+
+        public void SetSelection(BuilderSelection selection)
+        {
+            m_Selection = selection;
+        }
+
         public VisualElement documentElement { get; set; }
         public VisualElement editorLayer { get; set; }
 
@@ -62,6 +70,7 @@ namespace Unity.UI.Builder
         private float m_Width;
         private float m_Height;
         private float m_ZoomScale = 1.0f;
+        private bool m_MatchGameView = false;
 
         public float x
         {
@@ -145,6 +154,45 @@ namespace Unity.UI.Builder
                 }
 
                 UpdateRenderSize();
+            }
+        }
+
+        public bool matchGameView
+        {
+            get => m_MatchGameView;
+            set
+            {
+                if (m_MatchGameView == value)
+                    return;
+
+                m_MatchGameView = value;
+                if (document != null)
+                {
+                    document.settings.MatchGameView = value;
+                    document.SaveSettingsToDisk();
+                }
+                m_Selection?.NotifyOfStylingChange();
+
+                if (m_MatchGameView)
+                {
+                    if (m_CanvasToGameViewSizeUpdater != null)
+                        return;
+
+                    m_CanvasToGameViewSizeUpdater = schedule.Execute(() =>
+                    {
+                        if (matchGameView)
+                        {
+                            width = GameView.GetSizeOfMainGameView().x;
+                            height = GameView.GetSizeOfMainGameView().y;
+                        }
+                    });
+                    m_CanvasToGameViewSizeUpdater.Every(BuilderConstants.CanvasGameViewSyncInterval);
+                }
+                else
+                {
+                    m_CanvasToGameViewSizeUpdater?.Pause();
+                    m_CanvasToGameViewSizeUpdater = null;
+                }
             }
         }
 
@@ -243,6 +291,7 @@ namespace Unity.UI.Builder
             y = document.settings.CanvasY;
             width = document.settings.CanvasWidth;
             height = document.settings.CanvasHeight;
+            matchGameView = document.settings.MatchGameView;
         }
 
         public void ResetSize()
@@ -258,6 +307,12 @@ namespace Unity.UI.Builder
 
             m_DragHoverCoverLayer.style.display = DisplayStyle.Flex;
             m_DragHoverCoverLayer.style.cursor = handle.computedStyle.cursor;
+
+            if (matchGameView)
+            {
+                Builder.ShowWarning(BuilderConstants.DocumentMatchGameViewModeDisabled);
+                matchGameView = false;
+            }
         }
 
         void OnEndDrag()

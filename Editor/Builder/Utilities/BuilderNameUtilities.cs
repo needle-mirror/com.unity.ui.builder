@@ -61,7 +61,7 @@ namespace Unity.UI.Builder
             return lowerCase;
         }
 
-        public static string ConverStyleCSharpNameToUssName(string csharpName)
+        public static string ConvertStyleCSharpNameToUssName(string csharpName)
         {
             var dash = ConvertCamelToDash(csharpName);
             if (dash.StartsWith("unity-"))

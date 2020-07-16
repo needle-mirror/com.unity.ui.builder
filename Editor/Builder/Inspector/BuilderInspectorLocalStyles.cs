@@ -41,24 +41,8 @@ namespace Unity.UI.Builder
                     var bindingPath = styleRow.bindingPath;
                     var currentStyleFields = styleRow.Query<BindableElement>().ToList();
 
-#if UNITY_2019_2
-                    if (styleRow.ClassListContains(BuilderConstants.Version_2019_3_OrNewer))
-                    {
-                        styleRow.AddToClassList(BuilderConstants.HiddenStyleClassName);
-                        continue;
-                    }
-#else
-                    if (styleRow.ClassListContains(BuilderConstants.Version_2019_2))
-                    {
-                        styleRow.AddToClassList(BuilderConstants.HiddenStyleClassName);
-                        continue;
-                    }
-#endif
-
                     if (styleRow.ClassListContains("unity-builder-double-field-row"))
-                    {
                         m_StyleFields.BindDoubleFieldRow(styleRow);
-                    }
 
                     foreach (var styleField in currentStyleFields)
                     {
@@ -148,6 +132,9 @@ namespace Unity.UI.Builder
 
         public void Refresh()
         {
+            if (m_Inspector.currentVisualElement == null)
+                return;
+
             if (BuilderSharedStyles.IsSelectorElement(m_Inspector.currentVisualElement))
                 m_LocalStylesSection.text = BuilderConstants.InspectorLocalStylesSectionTitleForSelector;
             else
@@ -189,36 +176,18 @@ namespace Unity.UI.Builder
             foreach (var pair in m_StyleCategories)
             {
                 var styleCategory = pair.Key;
-                if (styleCategory.Q(className: BuilderConstants.InspectorLocalStyleOverrideClassName) == null)
-                    styleCategory.RemoveFromClassList(BuilderConstants.InspectorCategoryFoldoutOverrideClassName);
-                else
-                    styleCategory.AddToClassList(BuilderConstants.InspectorCategoryFoldoutOverrideClassName);
+                var hasOverridenField = styleCategory.Q(className: BuilderConstants.InspectorLocalStyleOverrideClassName) != null;
+                styleCategory.EnableInClassList(BuilderConstants.InspectorCategoryFoldoutOverrideClassName, hasOverridenField);
             }
         }
 
         void UpdateFlexColumnGlobalState(Enum newValue)
         {
-            m_LocalStylesSection.RemoveFromClassList(BuilderConstants.InspectorFlexColumnModeClassName);
-            m_LocalStylesSection.RemoveFromClassList(BuilderConstants.InspectorFlexColumnReverseModeClassName);
-            m_LocalStylesSection.RemoveFromClassList(BuilderConstants.InspectorFlexRowModeClassName);
-            m_LocalStylesSection.RemoveFromClassList(BuilderConstants.InspectorFlexRowReverseModeClassName);
-
             var newDirection = (FlexDirection)newValue;
-            switch (newDirection)
-            {
-                case FlexDirection.Column:
-                    m_LocalStylesSection.AddToClassList(BuilderConstants.InspectorFlexColumnModeClassName);
-                    break;
-                case FlexDirection.ColumnReverse:
-                    m_LocalStylesSection.AddToClassList(BuilderConstants.InspectorFlexColumnReverseModeClassName);
-                    break;
-                case FlexDirection.Row:
-                    m_LocalStylesSection.AddToClassList(BuilderConstants.InspectorFlexRowModeClassName);
-                    break;
-                case FlexDirection.RowReverse:
-                    m_LocalStylesSection.AddToClassList(BuilderConstants.InspectorFlexRowReverseModeClassName);
-                    break;
-            }
+            m_LocalStylesSection.EnableInClassList(BuilderConstants.InspectorFlexColumnModeClassName, newDirection == FlexDirection.Column);
+            m_LocalStylesSection.EnableInClassList(BuilderConstants.InspectorFlexColumnReverseModeClassName, newDirection == FlexDirection.ColumnReverse);
+            m_LocalStylesSection.EnableInClassList(BuilderConstants.InspectorFlexRowModeClassName, newDirection == FlexDirection.Row);
+            m_LocalStylesSection.EnableInClassList(BuilderConstants.InspectorFlexRowReverseModeClassName, newDirection == FlexDirection.RowReverse);
         }
     }
 }

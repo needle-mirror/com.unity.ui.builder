@@ -5,6 +5,9 @@ using UnityEngine.UIElements;
 
 namespace Unity.UI.Builder
 {
+    /// <summary>
+    /// A SplitView that contains two resizable panes. One pane is fixed-size while the other pane has flex-grow style set to 1 to take all remaining space. The border between he panes is draggable to resize both panes. Both horizontal and vertical modes are supported. Requires _exactly_ two child elements to operate.
+    /// </summary>
     internal class TwoPaneSplitView : VisualElement
     {
         static readonly string s_UssPath = BuilderConstants.UtilitiesPath + "/TwoPaneSplitView/TwoPaneSplitView.uss";
@@ -20,19 +23,19 @@ namespace Unity.UI.Builder
         static readonly string s_VerticalClassName = "unity-two-pane-split-view--vertical";
         static readonly string s_HorizontalClassName = "unity-two-pane-split-view--horizontal";
 
-        public enum Orientation
-        {
-            Horizontal,
-            Vertical
-        }
+        /// <summary>
+        /// Instantiates a <see cref="TwoPaneSplitView"/> using the data read from a UXML file.
+        /// </summary>
+        public new class UxmlFactory : UxmlFactory<TwoPaneSplitView, UxmlTraits> {}
 
-        public new class UxmlFactory : UxmlFactory<TwoPaneSplitView, UxmlTraits> { }
-
+        /// <summary>
+        /// Defines <see cref="UxmlTraits"/> for the <see cref="TwoPaneSplitView"/>.
+        /// </summary>
         public new class UxmlTraits : VisualElement.UxmlTraits
         {
             UxmlIntAttributeDescription m_FixedPaneIndex = new UxmlIntAttributeDescription { name = "fixed-pane-index", defaultValue = 0 };
-            UxmlIntAttributeDescription m_FixedPaneInitialSize = new UxmlIntAttributeDescription { name = "fixed-pane-initial-size", defaultValue = 100 };
-            UxmlStringAttributeDescription m_Orientation = new UxmlStringAttributeDescription { name = "orientation", defaultValue = "horizontal" };
+            UxmlIntAttributeDescription m_FixedPaneInitialDimension = new UxmlIntAttributeDescription { name = "fixed-pane-initial-dimension", defaultValue = 100 };
+            UxmlEnumAttributeDescription<TwoPaneSplitViewOrientation> m_Orientation = new UxmlEnumAttributeDescription<TwoPaneSplitViewOrientation> { name = "orientation", defaultValue = TwoPaneSplitViewOrientation.Horizontal };
 
             public override IEnumerable<UxmlChildElementDescription> uxmlChildElementsDescription
             {
@@ -43,11 +46,8 @@ namespace Unity.UI.Builder
             {
                 base.Init(ve, bag, cc);
                 var fixedPaneIndex = m_FixedPaneIndex.GetValueFromBag(bag, cc);
-                var fixedPaneInitialSize = m_FixedPaneInitialSize.GetValueFromBag(bag, cc);
-                var orientationStr = m_Orientation.GetValueFromBag(bag, cc);
-                var orientation = orientationStr == "horizontal"
-                    ? Orientation.Horizontal
-                    : Orientation.Vertical;
+                var fixedPaneInitialSize = m_FixedPaneInitialDimension.GetValueFromBag(bag, cc);
+                var orientation = m_Orientation.GetValueFromBag(bag, cc);
 
                 ((TwoPaneSplitView)ve).Init(fixedPaneIndex, fixedPaneInitialSize, orientation);
             }
@@ -59,7 +59,13 @@ namespace Unity.UI.Builder
         VisualElement m_FixedPane;
         VisualElement m_FlexedPane;
 
+        /// <summary>
+        /// The child element that is set as the fixed size pane.
+        /// </summary>
         public VisualElement fixedPane => m_FixedPane;
+        /// <summary>
+        /// The child element that is set as the flexable size pane.
+        /// </summary>
         public VisualElement flexedPane => m_FlexedPane;
 
         VisualElement m_DragLine;
@@ -69,11 +75,54 @@ namespace Unity.UI.Builder
 
         VisualElement m_Content;
 
-        Orientation m_Orientation;
+        TwoPaneSplitViewOrientation m_Orientation;
         int m_FixedPaneIndex;
         float m_FixedPaneInitialDimension;
 
-        public int fixedPaneIndex => m_FixedPaneIndex;
+        /// <summary>
+        /// 0 for setting first child as the fixed pane, 1 for the second child element.
+        /// </summary>
+        public int fixedPaneIndex
+        {
+            get => m_FixedPaneIndex;
+            set
+            {
+                if (value == m_FixedPaneIndex)
+                    return;
+
+                Init(value, m_FixedPaneInitialDimension, m_Orientation);
+            }
+        }
+
+        /// <summary>
+        /// The inital width or height for the fixed pane.
+        /// </summary>
+        public float fixedPaneInitialDimension
+        {
+            get => m_FixedPaneInitialDimension;
+            set
+            {
+                if (value == m_FixedPaneInitialDimension)
+                    return;
+
+                Init(m_FixedPaneIndex, value, m_Orientation);
+            }
+        }
+
+        /// <summary>
+        /// Orientation of the split view.
+        /// </summary>
+        public TwoPaneSplitViewOrientation orientation
+        {
+            get => m_Orientation;
+            set
+            {
+                if (value == m_Orientation)
+                    return;
+
+                Init(m_FixedPaneIndex, m_FixedPaneInitialDimension, value);
+            }
+        }
 
         TwoPaneSplitViewResizer m_Resizer;
 
@@ -101,14 +150,24 @@ namespace Unity.UI.Builder
             m_DragLineAnchor.Add(m_DragLine);
         }
 
+        /// <summary>
+        /// Parameterized constructor.
+        /// </summary>
+        /// <param name="fixedPaneIndex">0 for setting first child as the fixed pane, 1 for the second child element.</param>
+        /// <param name="fixedPaneStartDimension">Set an inital width or height for the fixed pane.</param>
+        /// <param name="orientation">Orientation of the split view.</param>
         public TwoPaneSplitView(
             int fixedPaneIndex,
             float fixedPaneStartDimension,
-            Orientation orientation) : this()
+            TwoPaneSplitViewOrientation orientation) : this()
         {
             Init(fixedPaneIndex, fixedPaneStartDimension, orientation);
         }
 
+        /// <summary>
+        /// Collapse one of the panes of the split view. This will hide the resizer and make the other child take up all available space.
+        /// </summary>
+        /// <param name="index">Index of child to collapse.</param>
         public void CollapseChild(int index)
         {
             if (m_LeftPane == null)
@@ -118,23 +177,26 @@ namespace Unity.UI.Builder
             m_DragLineAnchor.style.display = DisplayStyle.None;
             if (index == 0)
             {
-                m_LeftPane.style.width = StyleKeyword.Initial;
-                m_LeftPane.style.height = StyleKeyword.Initial;
-                m_LeftPane.style.flexGrow = 1;
-                m_RightPane.style.display = DisplayStyle.None;
-            }
-            else
-            {
                 m_RightPane.style.width = StyleKeyword.Initial;
                 m_RightPane.style.height = StyleKeyword.Initial;
                 m_RightPane.style.flexGrow = 1;
                 m_LeftPane.style.display = DisplayStyle.None;
             }
+            else
+            {
+                m_LeftPane.style.width = StyleKeyword.Initial;
+                m_LeftPane.style.height = StyleKeyword.Initial;
+                m_LeftPane.style.flexGrow = 1;
+                m_RightPane.style.display = DisplayStyle.None;
+            }
 
             m_CollapseMode = true;
         }
 
-        public void UnCollapseChild(int index)
+        /// <summary>
+        /// Un-collapse the split view. This will restore the split view to the state it was before the previous collapse.
+        /// </summary>
+        public void UnCollapse()
         {
             if (m_LeftPane == null)
                 return;
@@ -152,7 +214,7 @@ namespace Unity.UI.Builder
             Init(m_FixedPaneIndex, m_FixedPaneInitialDimension, m_Orientation);
         }
 
-        public void Init(int fixedPaneIndex, float fixedPaneInitialDimension, Orientation orientation)
+        internal void Init(int fixedPaneIndex, float fixedPaneInitialDimension, TwoPaneSplitViewOrientation orientation)
         {
             m_Orientation = orientation;
             m_FixedPaneIndex = fixedPaneIndex;
@@ -160,7 +222,7 @@ namespace Unity.UI.Builder
 
             m_Content.RemoveFromClassList(s_HorizontalClassName);
             m_Content.RemoveFromClassList(s_VerticalClassName);
-            if (m_Orientation == Orientation.Horizontal)
+            if (m_Orientation == TwoPaneSplitViewOrientation.Horizontal)
                 m_Content.AddToClassList(s_HorizontalClassName);
             else
                 m_Content.AddToClassList(s_VerticalClassName);
@@ -168,7 +230,7 @@ namespace Unity.UI.Builder
             // Create drag anchor line.
             m_DragLineAnchor.RemoveFromClassList(s_HandleDragLineAnchorHorizontalClassName);
             m_DragLineAnchor.RemoveFromClassList(s_HandleDragLineAnchorVerticalClassName);
-            if (m_Orientation == Orientation.Horizontal)
+            if (m_Orientation == TwoPaneSplitViewOrientation.Horizontal)
                 m_DragLineAnchor.AddToClassList(s_HandleDragLineAnchorHorizontalClassName);
             else
                 m_DragLineAnchor.AddToClassList(s_HandleDragLineAnchorVerticalClassName);
@@ -176,7 +238,7 @@ namespace Unity.UI.Builder
             // Create drag
             m_DragLine.RemoveFromClassList(s_HandleDragLineHorizontalClassName);
             m_DragLine.RemoveFromClassList(s_HandleDragLineVerticalClassName);
-            if (m_Orientation == Orientation.Horizontal)
+            if (m_Orientation == TwoPaneSplitViewOrientation.Horizontal)
                 m_DragLine.AddToClassList(s_HandleDragLineHorizontalClassName);
             else
                 m_DragLine.AddToClassList(s_HandleDragLineVerticalClassName);
@@ -217,30 +279,37 @@ namespace Unity.UI.Builder
 
             m_LeftPane = m_Content[0];
             if (m_FixedPaneIndex == 0)
-            {
                 m_FixedPane = m_LeftPane;
-                if (m_Orientation == Orientation.Horizontal)
-                    m_LeftPane.style.width = m_FixedPaneInitialDimension;
-                else
-                    m_LeftPane.style.height = m_FixedPaneInitialDimension;
-            }
             else
-            {
                 m_FlexedPane = m_LeftPane;
-            }
 
             m_RightPane = m_Content[1];
             if (m_FixedPaneIndex == 1)
-            {
                 m_FixedPane = m_RightPane;
-                if (m_Orientation == Orientation.Horizontal)
-                    m_RightPane.style.width = m_FixedPaneInitialDimension;
-                else
-                    m_RightPane.style.height = m_FixedPaneInitialDimension;
+            else
+                m_FlexedPane = m_RightPane;
+
+            m_FixedPane.style.flexBasis = StyleKeyword.Null;
+            m_FixedPane.style.flexShrink = StyleKeyword.Null;
+            m_FixedPane.style.flexGrow = StyleKeyword.Null;
+            m_FlexedPane.style.flexGrow = StyleKeyword.Null;
+            m_FlexedPane.style.flexShrink = StyleKeyword.Null;
+            m_FlexedPane.style.flexBasis = StyleKeyword.Null;
+
+            m_FixedPane.style.width = StyleKeyword.Null;
+            m_FixedPane.style.height = StyleKeyword.Null;
+            m_FlexedPane.style.width = StyleKeyword.Null;
+            m_FlexedPane.style.height = StyleKeyword.Null;
+
+            if (m_Orientation == TwoPaneSplitViewOrientation.Horizontal)
+            {
+                m_FixedPane.style.width = m_FixedPaneInitialDimension;
+                m_FixedPane.style.height = StyleKeyword.Null;
             }
             else
             {
-                m_FlexedPane = m_RightPane;
+                m_FixedPane.style.width = StyleKeyword.Null;
+                m_FixedPane.style.height = m_FixedPaneInitialDimension;
             }
 
             m_FixedPane.style.flexShrink = 0;
@@ -249,7 +318,7 @@ namespace Unity.UI.Builder
             m_FlexedPane.style.flexShrink = 0;
             m_FlexedPane.style.flexBasis = 0;
 
-            if (m_Orientation == Orientation.Horizontal)
+            if (m_Orientation == TwoPaneSplitViewOrientation.Horizontal)
             {
                 if (m_FixedPaneIndex == 0)
                     m_DragLineAnchor.style.left = m_FixedPaneInitialDimension;
@@ -294,7 +363,7 @@ namespace Unity.UI.Builder
             var maxLength = this.resolvedStyle.width;
             var dragLinePos = m_DragLineAnchor.resolvedStyle.left;
             var activeElementPos = m_FixedPane.resolvedStyle.left;
-            if (m_Orientation == Orientation.Vertical)
+            if (m_Orientation == TwoPaneSplitViewOrientation.Vertical)
             {
                 maxLength = this.resolvedStyle.height;
                 dragLinePos = m_DragLineAnchor.resolvedStyle.top;
@@ -315,7 +384,7 @@ namespace Unity.UI.Builder
                 }
                 else
                 {
-                    if (m_Orientation == Orientation.Horizontal)
+                    if (m_Orientation == TwoPaneSplitViewOrientation.Horizontal)
                         m_DragLineAnchor.style.left = activeElementPos;
                     else
                         m_DragLineAnchor.style.top = activeElementPos;
@@ -327,5 +396,20 @@ namespace Unity.UI.Builder
         {
             get { return m_Content; }
         }
+    }
+
+    /// <summary>
+    /// Determines the orientation of the two resizable panes.
+    /// </summary>
+    public enum TwoPaneSplitViewOrientation
+    {
+        /// <summary>
+        /// Split view panes layout is left/right with vertical resizable split.
+        /// </summary>
+        Horizontal,
+        /// <summary>
+        /// Split view panes layout is top/bottom with horizontal resizable split.
+        /// </summary>
+        Vertical
     }
 }

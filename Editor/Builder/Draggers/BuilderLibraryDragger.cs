@@ -48,7 +48,7 @@ namespace Unity.UI.Builder
             if (isCurrentDocumentVisualTreeAsset)
                 return false;
 
-            var madeElement = m_LibraryItem.MakeVisualElementCallback();
+            var madeElement = m_LibraryItem.MakeVisualElementCallback?.Invoke();
             if (madeElement == null)
                 return false;
 
@@ -119,6 +119,14 @@ namespace Unity.UI.Builder
 
             // We should have an item reference here if the OnDragStart() worked.
             var item = m_LibraryItem;
+            var itemVTA = item.SourceAsset;
+
+            if (!paneWindow.document.WillCauseCircularDependency(itemVTA))
+            {
+                BuilderDialogsUtility.DisplayDialog(BuilderConstants.InvalidWouldCauseCircularDependencyMessage,
+                    BuilderConstants.InvalidWouldCauseCircularDependencyMessageDescription, null);
+                return;
+            }
 
             if (item.MakeElementAssetCallback == null)
                 BuilderAssetUtilities.AddElementToAsset(

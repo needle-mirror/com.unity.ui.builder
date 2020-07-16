@@ -125,8 +125,7 @@ namespace Unity.UI.Builder
             var documentElement = target.GetProperty(BuilderConstants.ElementLinkedDocumentVisualElementVEPropertyName) as VisualElement;
 
             var isValidTarget = documentElement != null && (documentElement.IsPartOfCurrentDocument() || documentElement.GetStyleComplexSelector() != null);
-            if (isValidTarget)
-                evt.StopImmediatePropagation();
+            evt.StopImmediatePropagation();
 
             evt.menu.AppendAction(
                 "Copy",

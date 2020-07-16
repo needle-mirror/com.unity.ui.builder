@@ -1,4 +1,3 @@
-#if UNITY_2019_3_OR_NEWER // UNITY_BUILDER_VARIABLE_SUPPORT
 using System.Linq;
 using UnityEngine.UIElements;
 using UnityEditor.UIElements.Debugger;
@@ -79,4 +78,3 @@ namespace Unity.UI.Builder
         }
     }
 }
-#endif

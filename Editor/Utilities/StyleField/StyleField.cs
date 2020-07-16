@@ -18,12 +18,6 @@ namespace Unity.UI.Builder
         static readonly string s_UssPath = BuilderConstants.UtilitiesPath + "/StyleField/StyleField.uss";
         static readonly string s_UxmlPath = BuilderConstants.UtilitiesPath + "/StyleField/StyleField.uxml";
 
-#if UNITY_2019_2
-        static readonly string s_UssPath2019_2 = BuilderConstants.UtilitiesPath + "/StyleField/StyleField2019_2.uss";
-        static readonly string s_UssPathDark2019_2 = BuilderConstants.UtilitiesPath + "/StyleField/StyleFieldDark2019_2.uss";
-        static readonly string s_UssPathLight2019_2 = BuilderConstants.UtilitiesPath + "/StyleField/StyleFieldLight2019_2.uss";
-#endif
-
         static readonly string s_UssClassName = "unity-style-field";
         static readonly string s_OptionsPopupUssClassName = "unity-style-field__options-popup";
         static readonly string s_VisualInputName = "unity-visual-input";
@@ -82,14 +76,6 @@ namespace Unity.UI.Builder
             AddToClassList(s_UssClassName);
 
             styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(s_UssPath));
-
-#if UNITY_2019_2
-            styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(s_UssPath2019_2));
-            if (EditorGUIUtility.isProSkin)
-                styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(s_UssPathDark2019_2));
-            else
-                styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(s_UssPathLight2019_2));
-#endif
 
             var template = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(s_UxmlPath);
             template.CloneTree(this);

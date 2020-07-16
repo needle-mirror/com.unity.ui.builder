@@ -45,7 +45,7 @@ namespace Unity.UI.Builder.EditorTests
 
             // Zoom With Scroll Wheel
             yield return UIETestEvents.Mouse.SimulateClick(ViewportPane);
-            yield return UIETestEvents.Mouse.SimulateScroll(Vector2.one * 100, ViewportPane.worldBound.center);
+            yield return UIETestEvents.Mouse.SimulateScroll(ViewportPane, Vector2.one * 100, ViewportPane.worldBound.center);
 
             yield return UIETestEvents.Mouse.SimulateMouseEvent(BuilderWindow,
                 EventType.MouseDown,

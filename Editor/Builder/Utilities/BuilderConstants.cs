@@ -33,6 +33,7 @@ namespace Unity.UI.Builder
         public static readonly float ViewportInitialZoom = 1.0f;
         public static readonly Vector2 ViewportInitialContentOffset = new Vector2(20.0f, 20.0f);
         public static readonly int DoubleClickDelay = 50;
+        public static readonly int CanvasGameViewSyncInterval = 100;
 
         // Paths
         public const string UIBuilderPackageRootPath = "Packages/" + BuilderPackageName;
@@ -126,13 +127,14 @@ namespace Unity.UI.Builder
         public static readonly string ContextMenuSetMessage = "Set";
         public static readonly string ContextMenuUnsetMessage = "Unset";
         public static readonly string ContextMenuUnsetAllMessage = "Unset All";
+        public static readonly string ContextMenuViewVariableMessage = "View Variable";
         public static readonly string FontCannotBeNoneMessage = "UI Builder: Font cannot be set to none.";
         public static readonly string InspectorClassPillDoubleClickToCreate = "Double-click to create new USS selector.";
         public static readonly string InspectorClassPillDoubleClickToSelect = "Double-click to select and edit USS selector.";
         public static readonly string InspectorLocalStylesSectionTitleForSelector = "Styles";
         public static readonly string InspectorLocalStylesSectionTitleForElement = "Inlined Styles";
         public static readonly string MultiSelectionNotSupportedMessage = "Multi-selection editing is not supported.";
-        public static readonly string InspectorEditorExtensionAuthoringActivated = "You can create Editor extensions in this file";
+        public static readonly string InspectorEditorExtensionAuthoringActivated = "You can now use Editor-only controls in this document.";
 
         //
         // Explorer
@@ -154,7 +156,6 @@ namespace Unity.UI.Builder
         public static readonly string ExplorerItemReorderZoneClassName = "unity-builder-explorer__reorder-zone";
         public static readonly string ExplorerItemReorderZoneAboveClassName = "unity-builder-explorer__reorder-zone-above";
         public static readonly string ExplorerItemReorderZoneBelowClassName = "unity-builder-explorer__reorder-zone-below";
-        public static readonly string ExplorerItemRenameTextfieldClassNamePre2019_3 = "unity-builder-explorer__rename-textfield__pre-2019-3";
         public static readonly string ExplorerItemRenameTextfieldClassName = "unity-builder-explorer__rename-textfield";
         public static readonly string ExplorerItemNameLabelClassName = "unity-builder-explorer__name-label";
         public static readonly string ExplorerItemTypeLabelClassName = "unity-builder-explorer__type-label";
@@ -195,6 +196,7 @@ namespace Unity.UI.Builder
         // Library Menu
         public const string LibraryShowPackageFiles = "Show Package Files";
         public const string LibraryViewModeToggle = "Tree View";
+        public const string LibraryEditorExtensionsAuthoring = "Editor Extensions Authoring";
         public const string LibraryProjectTabName = "Project";
         public const string LibraryStandardControlsTabName = "Standard";
 
@@ -299,6 +301,8 @@ namespace Unity.UI.Builder
         public static readonly string ExtractInlineStylesNoUSSDialogExistingUSSOption = "Add to Existing USS";
         public static readonly string DeleteLastElementDialogTitle = "UI Builder: Deleting last element.";
         public static readonly string DeleteLastElementDialogMessage = "You are about to delete the last element. Since USS files are attached to root elements, with no elements in the document, no USS files can be attached. Any existing USS files attached will be removed. You can always undo this operation and get everything back. Continue?";
+        public static readonly string InvalidWouldCauseCircularDependencyMessage = "Invalid operation.";
+        public static readonly string InvalidWouldCauseCircularDependencyMessageDescription = "Can not add as TemplateContainer, as would create a circular dependency.";
 
         //
         // Messages
@@ -312,6 +316,7 @@ namespace Unity.UI.Builder
         public static readonly string TypeAttributeInvalidTypeMessage = "{0} attribute is an invalid type. Make sure to include assembly name.";
         public static readonly string TypeAttributeMustDeriveFromMessage = "{0} attribute type must derive from {1}";
         public static readonly string BuiltInAssetPathsNotSupportedMessage = "Built-in resource paths are not supported in USS.";
+        public static readonly string DocumentMatchGameViewModeDisabled = "Match Game View mode disabled.";
 
         // Settings
         public const string BuilderEditorExtensionModeToggleLabel = "Enable Editor Extension by default";
@@ -347,7 +352,7 @@ namespace Unity.UI.Builder
         public static readonly string USSVariableInvalidCharFiller = "-";
 
         // Styles
-        public static readonly List<string> SpecialSnowflakeLengthSytles = new List<string>()
+        public static readonly List<string> SpecialSnowflakeLengthStyles = new List<string>()
         {
             "border-left-width",
             "border-right-width",
@@ -377,10 +382,6 @@ namespace Unity.UI.Builder
         {
             {"nowrap", "no-wrap"}
         };
-
-        // Version Style Classes
-        public static readonly string Version_2019_2 = "unity-builder-2019-2";
-        public static readonly string Version_2019_3_OrNewer = "unity-builder-2019-3-or-newer";
 
         //
         // Complex Getters

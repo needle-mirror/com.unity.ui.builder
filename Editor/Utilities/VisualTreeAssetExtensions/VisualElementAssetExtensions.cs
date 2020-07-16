@@ -14,11 +14,7 @@ namespace Unity.UI.Builder
 
         public static List<string> GetStyleSheetPaths(this VisualElementAsset vea)
         {
-#if UNITY_2019_3_OR_NEWER
             return vea.stylesheetPaths;
-#else
-            return vea.stylesheets;
-#endif
         }
 
         public static bool HasParent(this VisualElementAsset vea)
@@ -133,13 +129,10 @@ namespace Unity.UI.Builder
 
         public static void ClearStyleSheets(this VisualElementAsset vea)
         {
-#if UNITY_2019_3_OR_NEWER
             vea.stylesheets.Clear();
-#endif
             vea.GetStyleSheetPaths().Clear();
         }
 
-#if UNITY_2019_3_OR_NEWER
         public static void AddStyleSheet(this VisualElementAsset vea, StyleSheet styleSheet)
         {
             if (styleSheet == null || vea.stylesheets.Contains(styleSheet))
@@ -147,7 +140,6 @@ namespace Unity.UI.Builder
 
             vea.stylesheets.Add(styleSheet);
         }
-#endif
 
         public static void AddStyleSheetPath(this VisualElementAsset vea, string styleSheetPath)
         {

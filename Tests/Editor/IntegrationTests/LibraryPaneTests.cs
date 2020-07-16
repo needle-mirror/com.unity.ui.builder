@@ -61,7 +61,7 @@ namespace Unity.UI.Builder.EditorTests
         {
             // Switch back to the controls mode
             if (LibraryPane != null)
-                yield return SwitchLibraryTab(BuilderLibrary.BuilderLibraryTab.Controls);
+                yield return SwitchLibraryTab(BuilderLibrary.BuilderLibraryTab.Standard);
 
             yield return base.TearDown();
             DeleteTestUXMLFile();
@@ -177,6 +177,8 @@ namespace Unity.UI.Builder.EditorTests
             yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
                 veLabel.worldBound.center,
                 explorerItem.worldBound.center);
+
+            HierarchyPane.elementHierarchyView.ExpandAllChildren();
 
             var hierarchyItems = BuilderTestsHelper.GetExplorerItemsWithName(HierarchyPane, nameof(VisualElement));
             var documentElement1 = BuilderTestsHelper.GetLinkedDocumentElement(hierarchyItems[0]);
@@ -343,7 +345,7 @@ namespace Unity.UI.Builder.EditorTests
         [UnityTest]
         public IEnumerator SwitchLibraryBetweenTabs()
         {
-            yield return SwitchLibraryTab(BuilderLibrary.BuilderLibraryTab.Controls);
+            yield return SwitchLibraryTab(BuilderLibrary.BuilderLibraryTab.Standard);
             var controlsNode = FindLibraryItemWithData(BuilderConstants.LibraryControlsSectionHeaderName);
             Assert.That(controlsNode, Is.Not.Null);
 
@@ -361,7 +363,7 @@ namespace Unity.UI.Builder.EditorTests
         [UnityTest]
         public IEnumerator SwitchLibraryBetweenViewModes()
         {
-            yield return SwitchLibraryTab(BuilderLibrary.BuilderLibraryTab.Controls);
+            yield return SwitchLibraryTab(BuilderLibrary.BuilderLibraryTab.Standard);
 
             LibraryPane.SetViewMode(BuilderLibrary.LibraryViewMode.IconTile);
             yield return UIETestHelpers.Pause();

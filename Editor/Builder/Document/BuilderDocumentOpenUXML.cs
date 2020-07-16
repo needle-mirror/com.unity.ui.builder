@@ -276,9 +276,7 @@ namespace Unity.UI.Builder
                 if (string.IsNullOrEmpty(localUssPath))
                     continue;
 
-#if UNITY_2019_3_OR_NEWER
                 rootAsset.AddStyleSheet(m_OpenUSSFiles[i].Sheet);
-#endif
                 rootAsset.AddStyleSheetPath(localUssPath);
             }
         }
@@ -563,6 +561,15 @@ namespace Unity.UI.Builder
             hasUnsavedChanges = true;
 
             // Make sure active stylesheet is still in the document.
+            ValidateActiveStyleSheet();
+        }
+
+        //
+        // Serialization
+        //
+
+        void ValidateActiveStyleSheet()
+        {
             bool found = false;
             foreach (var openUSSFile in m_OpenUSSFiles)
             {
@@ -576,17 +583,15 @@ namespace Unity.UI.Builder
                 m_ActiveStyleSheet = firstStyleSheet;
         }
 
-        //
-        // Serialization
-        //
-
         public void OnAfterBuilderDeserialize(VisualElement documentElement)
         {
             // Refresh StyleSheets.
-            m_ActiveStyleSheet = null;
             var styleSheetsUsed = m_VisualTreeAsset.GetAllReferencedStyleSheets();
             while (m_OpenUSSFiles.Count < styleSheetsUsed.Count)
                 m_OpenUSSFiles.Add(new BuilderDocumentOpenUSS());
+
+            // Make sure active stylesheet is still in the document.
+            ValidateActiveStyleSheet();
 
             for (int i = 0; i < styleSheetsUsed.Count; ++i)
             {

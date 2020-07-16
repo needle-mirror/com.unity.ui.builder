@@ -3,18 +3,18 @@
         1|1 1 1
          |
         1|1 1 1 -->
-    <uib:TwoPaneSplitView style="min-width: 150px;" fixed-pane-index="0" fixed-pane-initial-size="300" orientation="horizontal">
+    <uib:TwoPaneSplitView style="min-width: 150px;" fixed-pane-index="0" fixed-pane-initial-dimension="300" orientation="Horizontal">
 
         <!-- Left Column (Explorer + Library)
             1 0 0 0
             =
             1 0 0 0 -->
-        <uib:TwoPaneSplitView name="left-column" style="min-width: 200px;" fixed-pane-index="0" fixed-pane-initial-size="450" orientation="vertical">
+        <uib:TwoPaneSplitView name="left-column" style="min-width: 200px;" fixed-pane-index="0" fixed-pane-initial-dimension="450" orientation="Vertical">
             <!-- Left Column (StyleSheets + Hierarchy)
                 1 0 0 0
                 =
                 1 0 0 0 -->
-            <uib:TwoPaneSplitView name="explorer" style="min-height: 350px;" fixed-pane-index="0" fixed-pane-initial-size="200" orientation="vertical">
+            <uib:TwoPaneSplitView name="explorer" style="min-height: 350px;" fixed-pane-index="0" fixed-pane-initial-dimension="200" orientation="Vertical">
                 <uib:BuilderPane name="style-sheets" title="StyleSheets" style="min-height: 100px;" />
                 <uib:BuilderPane name="hierarchy" title="Hierarchy" style="min-height: 100px;" class="unity-builder-pane__splitter-obstructed" />
             </uib:TwoPaneSplitView>
@@ -30,13 +30,13 @@
             0 1 1|1
                  |
             0 1 1|1 -->
-        <uib:TwoPaneSplitView style="min-width: 300px;" fixed-pane-index="1" fixed-pane-initial-size="300" orientation="horizontal" class="unity-builder__pane">
+        <uib:TwoPaneSplitView style="min-width: 300px;" fixed-pane-index="1" fixed-pane-initial-dimension="300" orientation="Horizontal" class="unity-builder__pane">
 
             <!-- Middle Column (Viewport + Previews)
                 0 1 1 0
                   ===
                 0 1 1 0 -->
-            <uib:TwoPaneSplitView name="middle-column" style="min-width: 200px;" fixed-pane-index="1" fixed-pane-initial-size="20" orientation="vertical" class="unity-builder__pane" >
+            <uib:TwoPaneSplitView name="middle-column" style="min-width: 200px;" fixed-pane-index="1" fixed-pane-initial-dimension="20" orientation="Vertical" class="unity-builder__pane" >
                 <!-- Viewport
                     0 1 1 0
 
@@ -46,7 +46,7 @@
                     0 0 0 0
 
                     0 1|1 0 -->
-                <uib:TwoPaneSplitView name="code-preview-pane" style="min-height: 20px;" fixed-pane-index="1" fixed-pane-initial-size="200" orientation="horizontal">
+                <uib:TwoPaneSplitView name="code-preview-pane" style="min-height: 20px;" fixed-pane-index="1" fixed-pane-initial-dimension="200" orientation="Horizontal">
                     <!-- Core Previews
                         0 0 0 0
 

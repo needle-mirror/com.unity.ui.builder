@@ -15,12 +15,21 @@ namespace Unity.UI.Builder
             typeof(VisualTreeAsset).GetField("m_Usings", BindingFlags.Instance | BindingFlags.NonPublic);
 
         static readonly IComparer<VisualTreeAsset.UsingEntry> s_UsingEntryPathComparer = new UsingEntryPathComparer();
+        static readonly IComparer<VisualTreeAsset.UsingEntry> s_UsingEntryAssetComparer = new UsingEntryAssetComparer();
 
         class UsingEntryPathComparer : IComparer<VisualTreeAsset.UsingEntry>
         {
             public int Compare(VisualTreeAsset.UsingEntry x, VisualTreeAsset.UsingEntry y)
             {
                 return Comparer<string>.Default.Compare(x.path, y.path);
+            }
+        }
+        
+        class UsingEntryAssetComparer : IComparer<VisualTreeAsset.UsingEntry>
+        {
+            public int Compare(VisualTreeAsset.UsingEntry x, VisualTreeAsset.UsingEntry y)
+            {
+                return Comparer<VisualTreeAsset>.Default.Compare(x.asset, y.asset);
             }
         }
 
@@ -220,7 +229,6 @@ namespace Unity.UI.Builder
 
         public static void ConvertAllAssetReferencesToPaths(this VisualTreeAsset vta)
         {
-#if UNITY_2019_3_OR_NEWER
             var sheets = new HashSet<StyleSheet>();
             foreach (var asset in vta.visualElementAssets)
             {
@@ -274,12 +282,10 @@ namespace Unity.UI.Builder
             {
                 Debug.LogError("UI Builder: VisualTreeAsset.m_Usings field has not been found! Update the reflection code!");
             }
-#endif
         }
 
         static void GetAllReferencedStyleSheets(VisualElementAsset vea, HashSet<StyleSheet> sheets)
         {
-#if UNITY_2019_3_OR_NEWER
             var styleSheets = vea.stylesheets;
             if (styleSheets != null)
             {
@@ -287,7 +293,7 @@ namespace Unity.UI.Builder
                     if (styleSheet != null) // Possible if the path is not valid.
                         sheets.Add(styleSheet);
             }
-#endif
+
             var styleSheetPaths = vea.GetStyleSheetPaths();
             if (styleSheetPaths != null)
             {
@@ -350,6 +356,23 @@ namespace Unity.UI.Builder
             }
 
             return Path.GetFileNameWithoutExtension(path);
+        }
+
+        public static bool TemplateExists(this VisualTreeAsset windowVTA, VisualTreeAsset draggingInVTA)
+        {
+            var fieldInfo = UsingsListFieldInfo;
+            if (fieldInfo != null && draggingInVTA != null)
+            {
+                var usings = fieldInfo.GetValue(draggingInVTA) as List<VisualTreeAsset.UsingEntry>;
+                if (usings != null && usings.Count > 0)
+                {
+                    var lookingFor = new VisualTreeAsset.UsingEntry(null, windowVTA);
+                    int index = usings.BinarySearch(lookingFor, s_UsingEntryAssetComparer);
+                    if (index >= 0)
+                        return true;
+                }
+            }
+            return false;
         }
 
         public static TemplateAsset AddTemplateInstance(
@@ -462,12 +485,10 @@ namespace Unity.UI.Builder
                     }
                 }
 
-#if UNITY_2019_3_OR_NEWER
                 // If we change the paths above, they are clearly not going to match
                 // the styleSheets (assets) anymore. We can end up with the assets
                 // added back later in the Save process.
                 element.stylesheets.Clear();
-#endif
             }
         }
 

@@ -59,6 +59,7 @@ namespace Unity.UI.Builder
             value = value.Replace("<", "&lt;");
             value = value.Replace(">", "&gt;");
             value = value.Replace("\n", "&#10;");
+            value = value.Replace("\r", "");
             value = value.Replace("\t", "&#x9;");
 
             stringBuilder.Append(" ");
@@ -142,12 +143,8 @@ namespace Unity.UI.Builder
                             if (index >= 0)
                             {
                                 string path = usings[index].path;
-#if UNITY_2019_3_OR_NEWER
                                 path = GetProcessedPathForSrcAttribute(vtaPath, path);
                                 AppendElementAttribute("src", path, stringBuilder);
-#else
-                                AppendElementAttribute("path", path, stringBuilder);
-#endif
                             }
                         }
                     }
@@ -218,14 +215,10 @@ namespace Unity.UI.Builder
 
             Indent(stringBuilder, depth + 1);
             stringBuilder.Append("<Style");
-#if UNITY_2019_3_OR_NEWER
             {
                 path = GetProcessedPathForSrcAttribute(vtaPath, path);
                 AppendElementAttribute("src", path, stringBuilder);
             }
-#else
-            AppendElementAttribute("path", path, stringBuilder);
-#endif
             stringBuilder.Append(" />");
             stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
 
@@ -279,6 +272,7 @@ namespace Unity.UI.Builder
                         // Need to remove newlines here before we give it to
                         // AppendElementAttribute() so we don't add "&#10;" everywhere.
                         ruleStr = ruleStr.Replace("\n", " ");
+                        ruleStr = ruleStr.Replace("\r", "");
                         ruleStr = ruleStr.Trim();
 
                         AppendElementAttribute("style", ruleStr, stringBuilder);
@@ -290,7 +284,8 @@ namespace Unity.UI.Builder
             bool hasChildTags = false;
 
             // Add special children.
-#if UNITY_2019_3_OR_NEWER2
+            // TODO: What's the difference between these two ifdef options?
+#if false
             var styleSheets = root.stylesheets;
             if (styleSheets != null && styleSheets.Count > 0)
             {

@@ -235,6 +235,36 @@ namespace Unity.UI.Builder
             return element.parent.GetClosestElementPartOfCurrentDocument();
         }
 
+        static void FindElementsRecursive(VisualElement parent, Func<VisualElement, bool> predicate, List<VisualElement> selected)
+        {
+            if (predicate(parent))
+                selected.Add(parent);
+
+            foreach (var child in parent.Children())
+                FindElementsRecursive(child, predicate, selected);
+        }
+
+        public static List<VisualElement> FindElements(this VisualElement element, Func<VisualElement, bool> predicate)
+        {
+            var selected = new List<VisualElement>();
+
+            FindElementsRecursive(element, predicate, selected);
+
+            return selected;
+        }
+
+        public static VisualElement FindElement(this VisualElement element, Func<VisualElement, bool> predicate)
+        {
+            var selected = new List<VisualElement>();
+
+            FindElementsRecursive(element, predicate, selected);
+
+            if (selected.Count == 0)
+                return null;
+
+            return selected[0];
+        }
+
         static void FindSelectedElementsRecursive(VisualElement parent, List<VisualElement> selected)
         {
             if (parent.IsSelected())
@@ -347,6 +377,16 @@ namespace Unity.UI.Builder
                         throw new NotSupportedException($"The `{value}` value is not supported for {s_BuilderElementStyleProperty.name} property.");
                 }
             });
+        }
+
+        public static VisualElement GetVisualInput(this VisualElement ve)
+        {
+            var visualInput = ve.GetValueByReflection("visualInput") as VisualElement;
+
+            if (visualInput == null)
+                visualInput = ve.Q("unity-visual-input");
+
+            return visualInput;
         }
     }
 

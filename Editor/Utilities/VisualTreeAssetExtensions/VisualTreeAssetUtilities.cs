@@ -193,12 +193,8 @@ namespace Unity.UI.Builder
             // See: https://unity3d.atlassian.net/browse/UIT-469
             if (vta.IsRootElement(vea) && newParent != null)
             {
-#if UNITY_2019_3_OR_NEWER
                 vea.stylesheetPaths.Clear();
                 vea.stylesheets.Clear();
-#else
-                vea.stylesheets.Clear();
-#endif
             }
 
             SetInitElementWithParent(vta, vea, newParent, idToChildren, index);

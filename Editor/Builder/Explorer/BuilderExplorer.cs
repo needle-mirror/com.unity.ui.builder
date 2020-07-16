@@ -32,10 +32,10 @@ namespace Unity.UI.Builder
 
         BuilderClassDragger m_ClassDragger;
         BuilderExplorerDragger m_ExplorerDragger;
-        BuilderElementContextMenu m_ContextMenuManipulator;
 
         protected bool selectionMadeExternally => m_SelectionMadeExternally;
 
+        internal ElementHierarchyView elementHierarchyView => m_ElementHierarchyView;
         public VisualElement container => m_ElementHierarchyView.container;
         public BuilderPaneWindow paneWindow => m_PaneWindow;
 
@@ -69,12 +69,10 @@ namespace Unity.UI.Builder
 
             m_ClassDragger = classDragger;
             m_ExplorerDragger = explorerDragger;
-            m_ContextMenuManipulator = contextMenuManipulator;
 
             m_SelectionMadeExternally = false;
 
             m_Selection = selection;
-
 
             // Query the UI
             if (!string.IsNullOrEmpty(toolbarUxmlPath))

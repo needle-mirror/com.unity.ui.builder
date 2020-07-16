@@ -77,11 +77,8 @@ namespace Unity.UI.Builder
                 name = BuilderConstants.ExplorerItemRenameTextfieldName,
                 isDelayed = true
             };
-#if UNITY_2019_3_OR_NEWER
             renameTextfield.AddToClassList(BuilderConstants.ExplorerItemRenameTextfieldClassName);
-#else
-            renameTextfield.AddToClassList(BuilderConstants.ExplorerItemRenameTextfieldClassNamePre2019_3);
-#endif
+
             renameTextfield.SetValueWithoutNotify(
                 string.IsNullOrEmpty(documentElement.name)
                     ? documentElement.typeName

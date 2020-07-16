@@ -9,15 +9,10 @@ namespace Unity.UI.Builder
     internal class ButtonStrip : VisualElement
     {
         static readonly string s_UssPathNoExt = BuilderConstants.UtilitiesPath + "/ButtonStrip/ButtonStrip";
-#if UNITY_2019_3_OR_NEWER
+
         static readonly string s_UssPath = s_UssPathNoExt + ".uss";
         static readonly string s_UssDarkPath = s_UssPathNoExt + "Dark.uss";
         static readonly string s_UssLightPath = s_UssPathNoExt + "Light.uss";
-#else
-        static readonly string s_UssPath = s_UssPathNoExt + "2019_2.uss";
-        static readonly string s_UssDarkPath = s_UssPathNoExt + "Dark2019_2.uss";
-        static readonly string s_UssLightPath = s_UssPathNoExt + "Light2019_2.uss";
-#endif
 
         static readonly string s_UssClassName = "unity-button-strip";
         static readonly string s_ButtonClassName = s_UssClassName + "__button";

@@ -243,6 +243,9 @@ namespace Unity.UI.Builder
                 var newItem = new BuilderLibraryTreeItem(asset.name + ".uxml", null, typeof(TemplateContainer),
                     () =>
                     {
+                        if (vta == null)
+                            return null;
+
                         var tree = vta.CloneTree();
                         tree.SetProperty(BuilderConstants.LibraryItemLinkedTemplateContainerPathVEPropertyName, assetPath);
                         tree.name = vta.name;

@@ -79,11 +79,7 @@ namespace Unity.UI.Builder.EditorTests
             Assert.AreEqual(0, Selection.selection.Count());
         }
 
-#if UNITY_2019_2
-        [UnityTest, Ignore("Fails on 2019.2 only (but all functionality works when manually doing the same steps). We'll drop 2019.2 support soon anyway.")]
-#else
         [UnityTest]
-#endif
         public IEnumerable SelectionUndoRedo()
         {
             var selectionType = BuilderSelectionType.Element;

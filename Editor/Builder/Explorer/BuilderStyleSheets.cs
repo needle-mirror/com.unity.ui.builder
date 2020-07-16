@@ -207,10 +207,17 @@ namespace Unity.UI.Builder
             }
 
             var selectorContainerElement = m_Viewport.styleSelectorElementContainer;
-            BuilderSharedStyles.CreateNewSelector(selectorContainerElement, styleSheet, newSelectorStr);
+            var newComplexSelector = BuilderSharedStyles.CreateNewSelector(selectorContainerElement, styleSheet, newSelectorStr);
 
             m_Selection.NotifyOfHierarchyChange();
             m_Selection.NotifyOfStylingChange();
+
+            // Try to selected newly created selector.
+            var newSelectorElement =
+                m_Viewport.styleSelectorElementContainer.FindElement(
+                    (e) => e.GetStyleComplexSelector() == newComplexSelector);
+            if (newSelectorElement != null)
+                m_Selection.Select(null, newSelectorElement);
         }
 
         void SetUpAddUSSMenu()

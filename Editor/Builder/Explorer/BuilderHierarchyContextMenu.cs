@@ -7,15 +7,16 @@ namespace Unity.UI.Builder
         public BuilderHierarchyContextMenu(BuilderPaneWindow paneWindow, BuilderSelection selection)
             : base(paneWindow, selection)
         {}
+
         public override void BuildElementContextualMenu(ContextualMenuPopulateEvent evt, VisualElement target)
         {
             base.BuildElementContextualMenu(evt, target);
             var documentElement = target.GetProperty(BuilderConstants.ElementLinkedDocumentVisualElementVEPropertyName) as VisualElement;
             var vta = documentElement?.GetProperty(BuilderConstants.ElementLinkedInstancedVisualTreeAssetVEPropertyName) as VisualTreeAsset;
 
-            evt.menu.AppendSeparator();
             if (vta != null)
             {
+                evt.menu.AppendSeparator();
                 evt.menu.AppendAction(
                     BuilderConstants.ExplorerHierarchyOpenInBuilder,
                     action =>
@@ -34,8 +35,9 @@ namespace Unity.UI.Builder
             var activeDocumentsParentIndex = document.activeOpenUXMLFile.openSubDocumentParentIndex;
             if (documentElement == null && activeDocumentsParentIndex > -1)
             {
+                evt.menu.AppendSeparator();
                 evt.menu.AppendAction(
-                    BuilderConstants.ExplorerHierarchyReturnToParentDocument, 
+                    BuilderConstants.ExplorerHierarchyReturnToParentDocument,
                     action =>
                     {
                         var parentDocument = document.openUXMLFiles[activeDocumentsParentIndex];

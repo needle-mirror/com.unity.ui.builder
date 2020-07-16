@@ -112,6 +112,9 @@ namespace Unity.UI.Builder.EditorTests
             BuilderStyleSheetsUtilities.AddUSSToAsset(builderWindow, path);
 
             yield return UIETestHelpers.Pause(1);
+
+            StyleSheetsPane.elementHierarchyView.ExpandAllChildren();
+            HierarchyPane.elementHierarchyView.ExpandAllChildren();
         }
 
         protected void AddElementCodeOnly(string name = "")
@@ -130,6 +133,7 @@ namespace Unity.UI.Builder.EditorTests
             BuilderAssetUtilities.AddElementToAsset(BuilderWindow.document, element);
             BuilderWindow.OnEnableAfterAllSerialization();
             Selection.NotifyOfHierarchyChange();
+            HierarchyPane.elementHierarchyView.ExpandAllChildren();
         }
 
         protected IEnumerator EnsureSelectorsCanBeAddedAndReloadBuilder()
@@ -157,6 +161,9 @@ namespace Unity.UI.Builder.EditorTests
             }
 
             yield return UIETestHelpers.Pause(1);
+
+            StyleSheetsPane.elementHierarchyView.ExpandAllChildren();
+            HierarchyPane.elementHierarchyView.ExpandAllChildren();
         }
 
         protected IEnumerator AddVisualElement()
@@ -267,6 +274,16 @@ namespace Unity.UI.Builder.EditorTests
         protected void DeleteTestUXMLFile()
         {
             AssetDatabase.DeleteAsset(k_TestUXMLFilePath);
+        }
+
+        protected IEnumerator LoadTestUXMLDocument(string filePath = k_TestUXMLFilePath)
+        {
+            var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(filePath);
+            Assert.That(asset, Is.Not.Null);
+            BuilderWindow.LoadDocument(asset);
+            yield return UIETestHelpers.Pause();
+            HierarchyPane.elementHierarchyView.ExpandAllChildren();
+            StyleSheetsPane.elementHierarchyView.ExpandAllChildren();
         }
 
         internal BuilderExplorerItem GetStyleSelectorNodeWithName(string selectorName)

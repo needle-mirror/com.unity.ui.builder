@@ -1,10 +1,7 @@
 using System;
 using System.Collections.Generic;
 using UnityEngine.UIElements;
-
-#if UNITY_2019_3_OR_NEWER
 using UnityEngine.UIElements.StyleSheets;
-#endif
 
 namespace Unity.UI.Builder
 {
@@ -245,7 +242,6 @@ namespace Unity.UI.Builder
 
             var isNewValue = styleProperty.values.Length == 0;
 
-#if UNITY_2019_3_OR_NEWER
             // If the current style property is saved as a float instead of a dimension,
             // it means it's a user file where they left out the unit. We need to resave
             // it here as a dimension to create final proper uss.
@@ -258,9 +254,6 @@ namespace Unity.UI.Builder
             var dimension = new Dimension();
             dimension.unit = Dimension.Unit.Pixel;
             dimension.value = value;
-#else
-            var dimension = value;
-#endif
 
             if (isNewValue)
                 styleSheet.AddValue(styleProperty, dimension);
