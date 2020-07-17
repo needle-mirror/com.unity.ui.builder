@@ -29,7 +29,9 @@ namespace Unity.UI.Builder
         {
             public int Compare(VisualTreeAsset.UsingEntry x, VisualTreeAsset.UsingEntry y)
             {
-                return Comparer<VisualTreeAsset>.Default.Compare(x.asset, y.asset);
+                var xAsset = x.asset as VisualTreeAsset;
+                var yAsset = y.asset as VisualTreeAsset;
+                return xAsset == yAsset ? 0 : -1;
             }
         }
 

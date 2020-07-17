@@ -4,6 +4,10 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-preview.3] - 2020-07-17
+
+- Fixed errors when instantiating a UXML template via drag-and-drop.
+
 ## [1.0.0-preview.2] - 2020-07-16
 
 - Added ability to lock the Canvas to the size of the Game view via the Canvas settings inspector.
