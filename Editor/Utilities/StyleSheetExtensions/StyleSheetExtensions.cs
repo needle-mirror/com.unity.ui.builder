@@ -195,7 +195,8 @@ namespace Unity.UI.Builder
                         case StyleValueType.AssetReference: toStyleSheet.AddValue(newProperty, fromStyleSheet.GetAsset(value)); break;
                         case StyleValueType.ResourcePath: toStyleSheet.AddValue(newProperty, fromStyleSheet.GetAsset(value)); break;
                         case StyleValueType.Variable: toStyleSheet.AddVariable(newProperty, fromStyleSheet.GetString(value)); break;
-                   }
+                        case StyleValueType.Keyword: toStyleSheet.AddValue(newProperty, fromStyleSheet.GetKeyword(value)); break;
+                    }
                 }
             }
             foreach (var property in fromRule.properties)

@@ -22,8 +22,8 @@ namespace Unity.UI.Builder
                   selection,
                   classDragger,
                   hierarchyDragger,
-                  new BuilderHierarchyContextMenu(paneWindow, selection),
-                  viewport.documentElement,
+                  contextMenuManipulator,
+                  viewport.documentRootElement,
                   true,
                   highlightOverlayPainter,
                   null)
@@ -57,6 +57,13 @@ namespace Unity.UI.Builder
                 a => ChangeVisibilityState(BuilderElementInfoVisibilityState.ClassList),
                 a => m_ElementInfoVisibilityState
                 .HasFlag(BuilderElementInfoVisibilityState.ClassList)
+                ? DropdownMenuAction.Status.Checked
+                : DropdownMenuAction.Status.Normal);
+
+            pane.AppendActionToEllipsisMenu("Attached StyleSheets",
+                a => ChangeVisibilityState(BuilderElementInfoVisibilityState.StyleSheets),
+                a => m_ElementInfoVisibilityState
+                .HasFlag(BuilderElementInfoVisibilityState.StyleSheets)
                 ? DropdownMenuAction.Status.Checked
                 : DropdownMenuAction.Status.Normal);
         }

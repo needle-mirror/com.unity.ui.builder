@@ -48,7 +48,7 @@ namespace Unity.UI.Builder
             BuilderTooltipPreview tooltipPreview)
         {
             m_PaneWindow = paneWindow;
-            m_DocumentElement = viewport.documentElement;
+            m_DocumentElement = viewport.documentRootElement;
             m_Selection = selection;
             m_Dragger = dragger;
             m_TooltipPreview = tooltipPreview;
@@ -65,7 +65,7 @@ namespace Unity.UI.Builder
             var template = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(BuilderConstants.LibraryUssPathNoExt + ".uxml");
             template.CloneTree(this);
 
-            m_EditorExtensionMode = paneWindow.document.UXMLFileSettings.EditorExtensionMode;
+            m_EditorExtensionMode = paneWindow.document.fileSettings.editorExtensionMode;
             m_LibraryContentContainer = this.Q<VisualElement>(k_ContentContainerName);
 
             m_HeaderButtonStrip = this.Q<ToggleButtonStrip>();
@@ -108,15 +108,15 @@ namespace Unity.UI.Builder
 
             pane.AppendActionToEllipsisMenu(BuilderConstants.LibraryEditorExtensionsAuthoring,
                 a => ToggleEditorExtensionsAuthoring(),
-                a => m_PaneWindow.document.UXMLFileSettings.EditorExtensionMode
+                a => m_PaneWindow.document.fileSettings.editorExtensionMode
                     ? DropdownMenuAction.Status.Checked
                     : DropdownMenuAction.Status.Normal);
         }
 
         void ToggleEditorExtensionsAuthoring()
         {
-            var newValue = !m_PaneWindow.document.UXMLFileSettings.EditorExtensionMode;
-            m_PaneWindow.document.UXMLFileSettings.EditorExtensionMode = newValue;
+            var newValue = !m_PaneWindow.document.fileSettings.editorExtensionMode;
+            m_PaneWindow.document.fileSettings.editorExtensionMode = newValue;
             m_Selection.NotifyOfStylingChangePostStylingUpdate();
             SwitchLibraryTab(BuilderLibraryTab.Standard);
 
@@ -160,7 +160,7 @@ namespace Unity.UI.Builder
                 : LibraryViewMode.IconTile);
         }
 
-        BuilderLibraryTreeView ControlsTreeView
+        BuilderLibraryTreeView controlsTreeView
         {
             get
             {
@@ -168,8 +168,8 @@ namespace Unity.UI.Builder
                     return m_ControlsTreeView;
 
                 var controlsTree = m_EditorExtensionMode
-                    ? BuilderLibraryContent.StandardControlsTree
-                    : BuilderLibraryContent.StandardControlsTreeNoEditor;
+                    ? BuilderLibraryContent.standardControlsTree
+                    : BuilderLibraryContent.standardControlsTreeNoEditor;
 
                 m_ControlsTreeView = new BuilderLibraryTreeView(controlsTree);
                 m_ControlsTreeView.viewDataKey = "unity-ui-builder-library-controls-tree";
@@ -179,7 +179,7 @@ namespace Unity.UI.Builder
             }
         }
 
-        BuilderLibraryTreeView ProjectTreeView
+        BuilderLibraryTreeView projectTreeView
         {
             get
             {
@@ -187,8 +187,8 @@ namespace Unity.UI.Builder
                     return m_ProjectTreeView;
 
                 var projectContentTree = m_ShowPackageTemplates
-                    ? BuilderLibraryContent.ProjectContentTree
-                    : BuilderLibraryContent.ProjectContentTreeNoPackages;
+                    ? BuilderLibraryContent.projectContentTree
+                    : BuilderLibraryContent.projectContentTreeNoPackages;
 
                 m_ProjectTreeView = new BuilderLibraryTreeView(projectContentTree);
                 m_ProjectTreeView.viewDataKey = "unity-ui-builder-library-project-view";
@@ -198,7 +198,7 @@ namespace Unity.UI.Builder
             }
         }
 
-        BuilderLibraryPlainView ControlsPlainView
+        BuilderLibraryPlainView controlsPlainView
         {
             get
             {
@@ -206,8 +206,8 @@ namespace Unity.UI.Builder
                     return m_ControlsPlainView;
 
                 var controlsTree = m_EditorExtensionMode
-                    ? BuilderLibraryContent.StandardControlsTree
-                    : BuilderLibraryContent.StandardControlsTreeNoEditor;
+                    ? BuilderLibraryContent.standardControlsTree
+                    : BuilderLibraryContent.standardControlsTreeNoEditor;
 
                 m_ControlsPlainView = new BuilderLibraryPlainView(controlsTree);
                 m_ControlsPlainView.viewDataKey = "unity-ui-builder-library-controls-plane";
@@ -242,13 +242,13 @@ namespace Unity.UI.Builder
             {
                 case BuilderLibraryTab.Standard:
                     if (m_ViewMode == LibraryViewMode.TreeView)
-                        SetActiveView(ControlsTreeView);
+                        SetActiveView(controlsTreeView);
                     else
-                        SetActiveView(ControlsPlainView);
+                        SetActiveView(controlsPlainView);
                     break;
 
                 case BuilderLibraryTab.Project:
-                    SetActiveView(ProjectTreeView);
+                    SetActiveView(projectTreeView);
                     break;
 
                 default:
@@ -260,7 +260,7 @@ namespace Unity.UI.Builder
         {
             m_LibraryContentContainer.Add(builderLibraryView);
             builderLibraryView.Refresh();
-            primaryFocusable = builderLibraryView.PrimaryFocusable;
+            primaryFocusable = builderLibraryView.primaryFocusable;
         }
 
         public void ResetCurrentlyLoadedUxmlStyles()
@@ -273,9 +273,9 @@ namespace Unity.UI.Builder
 
         public void StylingChanged(List<string> styles, BuilderStylingChangeType changeType)
         {
-            if (m_EditorExtensionMode != m_PaneWindow.document.UXMLFileSettings.EditorExtensionMode)
+            if (m_EditorExtensionMode != m_PaneWindow.document.fileSettings.editorExtensionMode)
             {
-                m_EditorExtensionMode = m_PaneWindow.document.UXMLFileSettings.EditorExtensionMode;
+                m_EditorExtensionMode = m_PaneWindow.document.fileSettings.editorExtensionMode;
                 RebuildView();
             }
         }

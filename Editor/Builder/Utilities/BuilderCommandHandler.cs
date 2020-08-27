@@ -167,7 +167,7 @@ namespace Unity.UI.Builder
                         if (m_CutElements.Count > 0)
                         {
                             m_CutElements.Clear();
-                            BuilderEditorUtility.SystemCopyBuffer = null;
+                            BuilderEditorUtility.systemCopyBuffer = null;
                         }
                     }
                     break;
@@ -221,7 +221,7 @@ namespace Unity.UI.Builder
             }
             if (veas.Count > 0)
             {
-                BuilderEditorUtility.SystemCopyBuffer =
+                BuilderEditorUtility.systemCopyBuffer =
                     VisualTreeAssetToUXML.GenerateUXML(m_PaneWindow.document.visualTreeAsset, null, veas);
                 return true;
             }
@@ -246,7 +246,7 @@ namespace Unity.UI.Builder
             }
             if (ussSnippetBuilder.Length > 0)
             {
-                BuilderEditorUtility.SystemCopyBuffer = ussSnippetBuilder.ToString();
+                BuilderEditorUtility.systemCopyBuffer = ussSnippetBuilder.ToString();
                 return true;
             }
 
@@ -286,11 +286,22 @@ namespace Unity.UI.Builder
         {
             var importer = new BuilderVisualTreeAssetImporter(); // Cannot be cached because the StyleBuilder never gets reset.
             importer.ImportXmlFromString(copyBuffer, out var pasteVta);
-
+            
+            /* If the current parent element is linked to a VisualTreeAsset, it could mean
+            that our parent is the TemplateContainer belonging to our parent document and the
+            current open document is a sub-document opened in-place. In such a case, we don't
+            want to use our parent's VisualElementAsset, as that belongs to our parent document.
+            So instead, we just use no parent, indicating that we are adding this new element
+            to the root of our document. */
             VisualElementAsset parent = null;
             if (!m_Selection.isEmpty)
             {
-                parent = m_Selection.selection.First().parent?.GetVisualElementAsset();
+                var selectionParent = m_Selection.selection.First().parent;
+                parent = selectionParent?.GetVisualElementAsset();
+
+                if (selectionParent?.GetVisualTreeAsset() == m_PaneWindow.document.visualTreeAsset)
+                    parent = null;
+                
                 m_Selection.ClearSelection(null);
             }
 
@@ -331,7 +342,7 @@ namespace Unity.UI.Builder
 
         public void Paste()
         {
-            var copyBuffer = BuilderEditorUtility.SystemCopyBuffer;
+            var copyBuffer = BuilderEditorUtility.systemCopyBuffer;
 
             if (string.IsNullOrEmpty(copyBuffer))
                 return;
@@ -350,7 +361,7 @@ namespace Unity.UI.Builder
                     DeleteElement(elementToCut);
 
                 m_CutElements.Clear();
-                BuilderEditorUtility.SystemCopyBuffer = null;
+                BuilderEditorUtility.systemCopyBuffer = null;
             }
 
             m_PaneWindow.OnEnableAfterAllSerialization();
@@ -436,7 +447,7 @@ namespace Unity.UI.Builder
 
         public void ClearCopyBuffer()
         {
-            BuilderEditorUtility.SystemCopyBuffer = null;
+            BuilderEditorUtility.systemCopyBuffer = null;
         }
 
         public void ClearSelectionNotify()

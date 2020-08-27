@@ -44,11 +44,11 @@ namespace Unity.UI.Builder
             if (m_LibraryItem == null)
                 return false;
 
-            var isCurrentDocumentVisualTreeAsset = m_LibraryItem.SourceAsset == paneWindow.document.visualTreeAsset;
+            var isCurrentDocumentVisualTreeAsset = m_LibraryItem.sourceAsset == paneWindow.document.visualTreeAsset;
             if (isCurrentDocumentVisualTreeAsset)
                 return false;
 
-            var madeElement = m_LibraryItem.MakeVisualElementCallback?.Invoke();
+            var madeElement = m_LibraryItem.makeVisualElementCallback?.Invoke();
             if (madeElement == null)
                 return false;
 
@@ -96,7 +96,7 @@ namespace Unity.UI.Builder
             var item =
                 target.GetProperty(BuilderConstants.LibraryItemLinkedManipulatorVEPropertyName)
                 as BuilderLibraryTreeItem;
-            m_DragPreviewElement = item.MakeVisualElementCallback();
+            m_DragPreviewElement = item.makeVisualElementCallback();
             m_DragPreviewElement.AddToClassList(s_DragPreviewElementClassName);
 
             if (index < 0)
@@ -119,7 +119,7 @@ namespace Unity.UI.Builder
 
             // We should have an item reference here if the OnDragStart() worked.
             var item = m_LibraryItem;
-            var itemVTA = item.SourceAsset;
+            var itemVTA = item.sourceAsset;
 
             if (!paneWindow.document.WillCauseCircularDependency(itemVTA))
             {
@@ -128,12 +128,12 @@ namespace Unity.UI.Builder
                 return;
             }
 
-            if (item.MakeElementAssetCallback == null)
+            if (item.makeElementAssetCallback == null)
                 BuilderAssetUtilities.AddElementToAsset(
                     paneWindow.document, m_DragPreviewElement, index);
             else
                 BuilderAssetUtilities.AddElementToAsset(
-                    paneWindow.document, m_DragPreviewElement, item.MakeElementAssetCallback, index);
+                    paneWindow.document, m_DragPreviewElement, item.makeElementAssetCallback, index);
 
             selection.NotifyOfHierarchyChange(null);
             selection.NotifyOfStylingChange(null);
@@ -146,7 +146,7 @@ namespace Unity.UI.Builder
 
             // If we dragged into the Viewport, focus the Viewport.
             if (pane == DestinationPane.Viewport)
-                Viewport.pane.Focus();
+                viewport.pane.Focus();
         }
 
         protected override void EndDrag()

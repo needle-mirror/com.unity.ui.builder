@@ -1,3 +1,12 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
-    <ui:Button text="Button" style="width: 100px; height: 100px;" />
+    <ui:Template name="GrandChildTestUXMLDocument" path="Packages/com.unity.ui.builder/Tests/Editor/TestFiles/GrandChildTestUXMLDocument.uxml" />
+    <ui:Instance template="GrandChildTestUXMLDocument" name="GrandChildTestUXMLDocument">
+        <Style src="LayoutTestStyleSheet.uss" />
+    </ui:Instance>
+    <ui:Button text="Button" style="width: 100px; height: 100px;" >
+        <Style src="LayoutTestStyleSheet.uss" />
+    </ui:Button>
+    <ui:VisualElement name="TestElement">
+        <Style src="LayoutTestStyleSheet.uss" />
+    </ui:VisualElement>
 </ui:UXML>

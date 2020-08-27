@@ -98,7 +98,7 @@ namespace Unity.UI.Builder
                 return false;
             }
             
-            if (!BuilderNameUtilities.AttributeRegex.IsMatch(className))
+            if (!BuilderNameUtilities.attributeRegex.IsMatch(className))
             {
                 Builder.ShowWarning(BuilderConstants.ClassNameValidationSpacialCharacters);
                 return false;
@@ -130,7 +130,7 @@ namespace Unity.UI.Builder
                 m_AddClassField.visualInput.Focus();
                 return;
             }
-            
+
             ExtractLocalStylesToNewClass(className);
         }
 
@@ -158,7 +158,7 @@ namespace Unity.UI.Builder
             m_Selection.NotifyOfStylingChange(null);
         }
 
-        void ExtractLocalStylesToNewClass(string className)
+        StyleSheet GetOrCreateOrAddMainStyleSheet()
         {
             // Get StyleSheet.
             var mainStyleSheet = m_PaneWindow.document.activeStyleSheet;
@@ -176,26 +176,35 @@ namespace Unity.UI.Builder
                     // New
                     case 0:
                         if (!BuilderStyleSheetsUtilities.CreateNewUSSAsset(m_PaneWindow))
-                            return;
+                            return null;
                         break;
                     // Existing
                     case 1:
                         if (!BuilderStyleSheetsUtilities.AddExistingUSSToAsset(m_PaneWindow))
-                            return;
+                            return null;
                         break;
                     // Cancel
                     case 2:
-                        return;
+                        return null;
                 }
 
                 mainStyleSheet = m_PaneWindow.document.activeStyleSheet;
             }
+            return mainStyleSheet;
+        }
+
+        void ExtractLocalStylesToNewClass(string className)
+        {
+            // Get StyleSheet.
+            var mainStyleSheet = GetOrCreateOrAddMainStyleSheet();
+            if (mainStyleSheet == null)
+                return;
 
             PreAddStyleClass(className);
 
             // Create new selector in main StyleSheet.
             var selectorString = BuilderConstants.UssSelectorClassNameSymbol + className;
-            var selectorsRootElement = BuilderSharedStyles.GetSelectorContainerElement(m_Selection.documentElement);
+            var selectorsRootElement = BuilderSharedStyles.GetSelectorContainerElement(m_Selection.documentRootElement);
             var newSelector = BuilderSharedStyles.CreateNewSelector(selectorsRootElement, mainStyleSheet, selectorString);
 
             // Transfer all properties from inline styles rule to new selector.
@@ -318,11 +327,11 @@ namespace Unity.UI.Builder
             if (selectorElement == null)
             {
                 // Get StyleSheet.
-                var mainStyleSheet = m_PaneWindow.document.firstStyleSheet;
+                var mainStyleSheet = GetOrCreateOrAddMainStyleSheet();
                 if (mainStyleSheet == null)
                     return;
 
-                var selectorsRootElement = BuilderSharedStyles.GetSelectorContainerElement(m_Selection.documentElement);
+                var selectorsRootElement = BuilderSharedStyles.GetSelectorContainerElement(m_Selection.documentRootElement);
                 BuilderSharedStyles.CreateNewSelector(selectorsRootElement, mainStyleSheet, selectorString);
 
                 m_Selection.NotifyOfStylingChange();

@@ -145,7 +145,7 @@ namespace Unity.UI.Builder
                 {
                     m_PaneWindow.commandHandler.Paste();
                 },
-                string.IsNullOrEmpty(BuilderEditorUtility.SystemCopyBuffer)
+                string.IsNullOrEmpty(BuilderEditorUtility.systemCopyBuffer)
                     ? DropdownMenuAction.Status.Disabled
                     : DropdownMenuAction.Status.Normal);
 
@@ -190,6 +190,73 @@ namespace Unity.UI.Builder
                 isValidTarget
                     ? DropdownMenuAction.Status.Normal
                     : DropdownMenuAction.Status.Disabled);
+
+            var linkedInstancedVTA = documentElement?.GetProperty(BuilderConstants.ElementLinkedInstancedVisualTreeAssetVEPropertyName) as VisualTreeAsset;
+            var linkedOpenVTA = documentElement?.GetProperty(BuilderConstants.ElementLinkedVisualTreeAssetVEPropertyName) as VisualTreeAsset;
+            var linkedVEA = documentElement?.GetProperty(BuilderConstants.ElementLinkedVisualElementAssetVEPropertyName) as TemplateAsset;
+            var activeOpenUXML = document.activeOpenUXMLFile;
+
+            var isLinkedOpenVTAActiveVTA = linkedOpenVTA == activeOpenUXML.visualTreeAsset;
+            var isLinkedInstancedVTAActiveVTA = linkedInstancedVTA == activeOpenUXML.visualTreeAsset;
+            var isLinkedVEADirectChild = activeOpenUXML.visualTreeAsset.templateAssets.Contains(linkedVEA);
+
+            var showOpenInBuilder = linkedInstancedVTA != null;
+            var showReturnToParentAction = isLinkedOpenVTAActiveVTA && activeOpenUXML.isChildSubDocument;
+            var showOpenInIsolationAction = isLinkedVEADirectChild;
+            var showOpenInPlaceAction = showOpenInIsolationAction;
+            var showSibilngOpenActions = !isLinkedOpenVTAActiveVTA && isLinkedInstancedVTAActiveVTA;
+
+            if (showOpenInBuilder || showReturnToParentAction || showOpenInIsolationAction || showOpenInPlaceAction || showSibilngOpenActions)
+                evt.menu.AppendSeparator();
+
+            if (showOpenInBuilder)
+            {
+                evt.menu.AppendAction(
+                    BuilderConstants.ExplorerHierarchyOpenInBuilder,
+                    action => { paneWindow.LoadDocument(linkedInstancedVTA); });
+            }
+
+            if (showReturnToParentAction)
+            {
+                evt.menu.AppendAction(
+                    BuilderConstants.ExplorerHierarchyReturnToParentDocument +
+                    BuilderConstants.SingleSpace + "(" + activeOpenUXML.openSubDocumentParent.visualTreeAsset.name + ")",
+                    action => document.GoToSubdocument(documentElement, paneWindow, activeOpenUXML.openSubDocumentParent));
+            }
+
+            if (showOpenInIsolationAction)
+            {
+                evt.menu.AppendAction(
+                    BuilderConstants.ExplorerHierarchyPaneOpenSubDocument,
+                    action => BuilderHierarchyUtilities.OpenAsSubDocument(paneWindow, linkedInstancedVTA));
+            }
+
+            if (showOpenInPlaceAction)
+            {
+                evt.menu.AppendAction(
+                    BuilderConstants.ExplorerHierarchyPaneOpenSubDocumentInPlace,
+                    action => BuilderHierarchyUtilities.OpenAsSubDocument(paneWindow, linkedInstancedVTA, linkedVEA));
+            }
+
+            if (showSibilngOpenActions)
+            {
+                evt.menu.AppendAction(
+                    BuilderConstants.ExplorerHierarchyPaneOpenSubDocument,
+                    action =>
+                    {
+                        document.GoToSubdocument(documentElement, paneWindow, activeOpenUXML.openSubDocumentParent);
+                        BuilderHierarchyUtilities.OpenAsSubDocument(paneWindow, linkedInstancedVTA);
+                    });
+
+                evt.menu.AppendAction(
+                    BuilderConstants.ExplorerHierarchyPaneOpenSubDocumentInPlace,
+                    action =>
+                    {
+                        document.GoToSubdocument(documentElement, paneWindow, activeOpenUXML.openSubDocumentParent);
+                        BuilderHierarchyUtilities.OpenAsSubDocument(paneWindow, linkedInstancedVTA, linkedVEA);
+                    });
+            }
+
         }
     }
 }

@@ -22,7 +22,7 @@ namespace Unity.UI.Builder
         public BuilderSelection selection => m_Selection;
         public BuilderViewport viewport => m_Viewport;
         public BuilderToolbar toolbar => m_Toolbar;
-        public VisualElement documentRootElement => m_Viewport.documentElement;
+        public VisualElement documentRootElement => m_Viewport.documentRootElement;
         public BuilderCanvas canvas => m_Viewport.canvas;
 
         public bool codePreviewVisible
@@ -108,7 +108,7 @@ namespace Unity.UI.Builder
 
             // Create viewport first.
             m_Viewport = new BuilderViewport(this, selection, contextMenuManipulator);
-            selection.documentElement = m_Viewport.documentElement;
+            selection.documentRootElement = m_Viewport.documentRootElement;
             var overlayHelper = viewport.Q<OverlayPainterHelperElement>();
             overlayHelper.painter = m_HighlightOverlayPainter;
 
@@ -175,7 +175,7 @@ namespace Unity.UI.Builder
         public override void OnEnableAfterAllSerialization()
         {
             // Perform post-serialization functions.
-            document.OnAfterBuilderDeserialize(m_Viewport.documentElement);
+            document.OnAfterBuilderDeserialize(m_Viewport.documentRootElement);
             m_Toolbar.OnAfterBuilderDeserialize();
             m_Library.OnAfterBuilderDeserialize();
             m_Inspector.OnAfterBuilderDeserialize();

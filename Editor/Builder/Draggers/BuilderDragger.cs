@@ -46,7 +46,7 @@ namespace Unity.UI.Builder
         protected BuilderPaneWindow paneWindow { get { return m_PaneWindow; } }
         protected BuilderSelection selection { get { return m_Selection; } }
 
-        protected BuilderViewport Viewport { get; set; }
+        protected BuilderViewport viewport { get; set; }
 
         List<ManipulatorActivationFilter> activators { get; set; }
         ManipulatorActivationFilter m_CurrentActivator;
@@ -58,8 +58,8 @@ namespace Unity.UI.Builder
         {
             m_PaneWindow = paneWindow;
             m_Root = root;
-            Viewport = viewport;
-            m_Canvas = viewport?.documentElement;
+            this.viewport = viewport;
+            m_Canvas = viewport?.documentRootElement;
             m_Selection = selection;
             m_ParentTracker = parentTracker;
 
@@ -203,7 +203,7 @@ namespace Unity.UI.Builder
 
         bool TryToPickInCanvas(Vector2 mousePosition)
         {
-            if (Viewport == null)
+            if (viewport == null)
                 return false;
 
             var localMouse = m_Canvas.WorldToLocal(mousePosition);
@@ -519,10 +519,10 @@ namespace Unity.UI.Builder
                 var currentMouse = evt.mousePosition;
                 if (m_LastHoverElement != null)
                 {
-                    var localCanvasMouse = Viewport != null ? m_Canvas.WorldToLocal(currentMouse) : Vector2.zero;
+                    var localCanvasMouse = viewport != null ? m_Canvas.WorldToLocal(currentMouse) : Vector2.zero;
                     var localHierarchyMouse = builderHierarchyRoot.WorldToLocal(currentMouse);
 
-                    if (Viewport != null && m_Canvas.ContainsPoint(localCanvasMouse))
+                    if (viewport != null && m_Canvas.ContainsPoint(localCanvasMouse))
                     {
                         PerformAction(m_LastHoverElement, DestinationPane.Viewport);
                     }

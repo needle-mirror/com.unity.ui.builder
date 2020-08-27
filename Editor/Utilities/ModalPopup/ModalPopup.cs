@@ -36,7 +36,7 @@ namespace Unity.UI.Builder
             set { m_Title.text = value; }
         }
 
-        public override VisualElement contentContainer => m_Container;
+        public override VisualElement contentContainer => m_Container == null ? this : m_Container;
 
         public ModalPopup()
         {

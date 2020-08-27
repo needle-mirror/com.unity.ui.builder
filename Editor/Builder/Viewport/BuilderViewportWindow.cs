@@ -15,7 +15,7 @@ namespace Unity.UI.Builder
         public BuilderSelection selection => m_Selection;
 
         public BuilderViewport viewport => m_Viewport;
-        public VisualElement documentRootElement => m_Viewport.documentElement;
+        public VisualElement documentRootElement => m_Viewport.documentRootElement;
         public BuilderCanvas canvas => m_Viewport.canvas;
 
         //[MenuItem(BuilderConstants.BuilderMenuEntry + " Viewport")]
@@ -39,7 +39,7 @@ namespace Unity.UI.Builder
 
             // Create viewport first.
             m_Viewport = new BuilderViewport(this, selection, null);
-            selection.documentElement = m_Viewport.documentElement;
+            selection.documentRootElement = m_Viewport.documentRootElement;
 
             // Create the rest of the panes.
             m_Toolbar = new BuilderToolbar(this, selection, m_Viewport, null, null, null, null);
@@ -67,7 +67,7 @@ namespace Unity.UI.Builder
         public override void OnEnableAfterAllSerialization()
         {
             // Perform post-serialization functions.
-            document.OnAfterBuilderDeserialize(m_Viewport.documentElement);
+            document.OnAfterBuilderDeserialize(m_Viewport.documentRootElement);
             m_Toolbar.OnAfterBuilderDeserialize();
 
             // Restore selection.

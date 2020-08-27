@@ -11,7 +11,7 @@ namespace Unity.UI.Builder
         VisualElement m_ReorderZoneAbove;
         VisualElement m_ReorderZoneBelow;
 
-        public override VisualElement contentContainer => m_Container;
+        public override VisualElement contentContainer => m_Container == null ? this : m_Container;
 
         public VisualElement reorderZoneAbove => m_ReorderZoneAbove;
         public VisualElement reorderZoneBelow => m_ReorderZoneBelow;
@@ -108,7 +108,7 @@ namespace Unity.UI.Builder
             {
                 value = value.Trim();
                 value = value.TrimStart('#');
-                if (!BuilderNameUtilities.AttributeRegex.IsMatch(value))
+                if (!BuilderNameUtilities.attributeRegex.IsMatch(value))
                 {
                     Builder.ShowWarning(string.Format(BuilderConstants.AttributeValidationSpacialCharacters, "Name"));
                     renameTextfield.schedule.Execute(() =>

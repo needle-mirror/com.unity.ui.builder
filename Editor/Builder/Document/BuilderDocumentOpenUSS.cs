@@ -23,15 +23,15 @@ namespace Unity.UI.Builder
         // Used during saving to reload USS asset from disk after AssetDatabase.Refresh().
         string m_NewPath;
 
-        public StyleSheet Sheet
+        public StyleSheet styleSheet
         {
             get => m_StyleSheet;
             set => m_StyleSheet = value;
         }
 
-        public string AssetPath => AssetDatabase.GetAssetPath(m_StyleSheet);
+        public string assetPath => AssetDatabase.GetAssetPath(m_StyleSheet);
 
-        public string OldPath => m_OldPath;
+        public string oldPath => m_OldPath;
 
         public void Set(StyleSheet styleSheet, string ussPath)
         {
@@ -71,7 +71,7 @@ namespace Unity.UI.Builder
 
         public void SaveToDisk(VisualTreeAsset visualTreeAsset)
         {
-            var newUSSPath = AssetPath;
+            var newUSSPath = assetPath;
 
             // There should not be a way to have an unsaved USS. The newUSSPath should always be non-empty.
 

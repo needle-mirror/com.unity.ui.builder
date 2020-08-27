@@ -169,7 +169,7 @@ namespace Unity.UI.Builder
                 return;
 
             var textElementPos =
-                s_EditedTextElement.parent.ChangeCoordinatesTo(s_Viewport.documentElement, new Vector2(s_EditedTextElement.layout.x, s_EditedTextElement.layout.y));
+                s_EditedTextElement.parent.ChangeCoordinatesTo(s_Viewport.documentRootElement, new Vector2(s_EditedTextElement.layout.x, s_EditedTextElement.layout.y));
 
             var textEditorContainer = s_Viewport.textEditor.parent;
 

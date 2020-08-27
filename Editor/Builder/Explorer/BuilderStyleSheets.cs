@@ -195,7 +195,7 @@ namespace Unity.UI.Builder
                     || newSelectorStr.StartsWith("_")))
                 return;
 
-            if (!BuilderNameUtilities.StyleSelectorRegex.IsMatch(newSelectorStr))
+            if (!BuilderNameUtilities.styleSelectorRegex.IsMatch(newSelectorStr))
             {
                 Builder.ShowWarning(BuilderConstants.StyleSelectorValidationSpacialCharacters);
                 m_NewSelectorTextField.schedule.Execute(() =>

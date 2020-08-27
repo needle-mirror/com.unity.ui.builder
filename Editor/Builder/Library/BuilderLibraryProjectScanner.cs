@@ -144,7 +144,7 @@ namespace Unity.UI.Builder
 
                 var newItem = new BuilderLibraryTreeItem(
                     known.uxmlName, "CustomCSharpElement", elementType, () => known.Create(asset, context));
-                newItem.HasPreview = true;
+                newItem.hasPreview = true;
 
                 if (string.IsNullOrEmpty(split[0]))
                 {
@@ -177,11 +177,11 @@ namespace Unity.UI.Builder
                 fullName += part;
                 if (categoryStack.Count > i)
                 {
-                    if (categoryStack[i].Name == part)
+                    if (categoryStack[i].name == part)
                     {
                         continue;
                     }
-                    else if (categoryStack[i].Name != part)
+                    else if (categoryStack[i].name != part)
                     {
                         categoryStack.RemoveRange(i, categoryStack.Count - i);
                     }
@@ -221,7 +221,6 @@ namespace Unity.UI.Builder
 
         public void ImportUxmlFromProject(BuilderLibraryTreeItem projectCategory, bool includePackages)
         {
-
             var assets = AssetDatabase.FindAllAssets(m_SearchFilter);
             var categoryStack = new List<BuilderLibraryTreeItem>();
             foreach (var asset in assets)
@@ -260,7 +259,7 @@ namespace Unity.UI.Builder
                     },
                     null, vta);
                 newItem.SetIcon((Texture2D) EditorGUIUtility.IconContent("UxmlScript Icon").image);
-                newItem.HasPreview = true;
+                newItem.hasPreview = true;
 
                 if (categoryStack.Count == 0)
                     projectCategory.AddChild(newItem);

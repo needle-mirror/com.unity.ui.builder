@@ -15,7 +15,7 @@ namespace Unity.UI.Builder
             readonly VisualElement m_Icon;
 
             public int Id => m_TreeItem.id;
-            public VisualElement Content { get; }
+            public VisualElement content { get; }
 
             public LibraryPlainViewItem(BuilderLibraryTreeItem libraryTreeItem)
             {
@@ -26,21 +26,21 @@ namespace Unity.UI.Builder
                 var styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.LibraryUIPath + "BuilderLibraryPlainViewItem.uss");
                 styleSheets.Add(styleSheet);
 
-                Content = ElementAt(0);
+                content = ElementAt(0);
                 if (m_TreeItem == null)
                 {
-                    Content.AddToClassList(k_PlainViewNoHoverVariantUssClassName);
-                    Content.Clear();
+                    content.AddToClassList(k_PlainViewNoHoverVariantUssClassName);
+                    content.Clear();
                     return;
                 }
 
                 this.Q<Label>().text = m_TreeItem.data;
                 m_Icon = this.Q<VisualElement>("icon");
-                SetIcon(m_TreeItem.LargeIcon);
+                SetIcon(m_TreeItem.largeIcon);
             }
 
-            public void SwitchToDarkSkinIcon() => SetIcon(m_TreeItem.DarkSkinLargeIcon);
-            public void SwitchToLightSkinIcon() => SetIcon(m_TreeItem.LightSkinLargeIcon);
+            public void SwitchToDarkSkinIcon() => SetIcon(m_TreeItem.darkSkinLargeIcon);
+            public void SwitchToLightSkinIcon() => SetIcon(m_TreeItem.lightSkinLargeIcon);
 
             void SetIcon(Texture2D icon)
             {
@@ -67,7 +67,7 @@ namespace Unity.UI.Builder
         [SerializeField]
         int m_SelectedItemId;
 
-        public override VisualElement PrimaryFocusable => m_ContentContainer;
+        public override VisualElement primaryFocusable => m_ContentContainer;
 
         public BuilderLibraryPlainView(IEnumerable<ITreeViewItem> items)
         {
@@ -85,11 +85,11 @@ namespace Unity.UI.Builder
         {
             if (m_SelectedItem != null)
             {
-                m_SelectedItem.Content.RemoveFromClassList(k_PlainViewSelectedVariantUssClassName);
+                m_SelectedItem.content.RemoveFromClassList(k_PlainViewSelectedVariantUssClassName);
                 if (!EditorGUIUtility.isProSkin)
                     m_SelectedItem.SwitchToLightSkinIcon();
 
-                m_SelectedItem.Content.AddToClassList(k_ViewSelectedWithNoFocusVariantUssClassName);
+                m_SelectedItem.content.AddToClassList(k_ViewSelectedWithNoFocusVariantUssClassName);
             }
         }
 
@@ -97,11 +97,11 @@ namespace Unity.UI.Builder
         {
             if (m_SelectedItem != null)
             {
-                m_SelectedItem.Content.RemoveFromClassList(k_ViewSelectedWithNoFocusVariantUssClassName);
+                m_SelectedItem.content.RemoveFromClassList(k_ViewSelectedWithNoFocusVariantUssClassName);
                 if (!EditorGUIUtility.isProSkin)
                     m_SelectedItem.SwitchToDarkSkinIcon();
 
-                m_SelectedItem.Content.AddToClassList(k_PlainViewSelectedVariantUssClassName);
+                m_SelectedItem.content.AddToClassList(k_PlainViewSelectedVariantUssClassName);
             }
         }
 
@@ -158,7 +158,7 @@ namespace Unity.UI.Builder
             return newItem;
         }
 
-        public override VisualElement contentContainer => m_ContentContainer;
+        public override VisualElement contentContainer => m_ContentContainer == null ? this : m_ContentContainer;
 
         void FillView(IEnumerable<ITreeViewItem> items, VisualElement itemsParent = null)
         {
@@ -166,12 +166,12 @@ namespace Unity.UI.Builder
             {
                 if (item is BuilderLibraryTreeItem libraryTreeItem)
                 {
-                    if (libraryTreeItem.IsHeader)
+                    if (libraryTreeItem.isHeader)
                     {
                         var categoryFoldout = new LibraryFoldout {text = libraryTreeItem.data};
-                        if (libraryTreeItem.IsEditorOnly)
+                        if (libraryTreeItem.isEditorOnly)
                         {
-                            categoryFoldout.Tag = BuilderConstants.EditorOnlyTag;
+                            categoryFoldout.tag = BuilderConstants.EditorOnlyTag;
                             categoryFoldout.Q(LibraryFoldout.TagLabelName).AddToClassList(BuilderConstants.TagPillClassName);
                         }
                         categoryFoldout.contentContainer.RegisterCallback<GeometryChangedEvent>(e => AdjustSpace(categoryFoldout));
@@ -228,8 +228,8 @@ namespace Unity.UI.Builder
             m_SelectedItemId = itemId;
             if (m_SelectedItem != null)
             {
-                m_SelectedItem.Content.RemoveFromClassList(k_PlainViewSelectedVariantUssClassName);
-                m_SelectedItem.Content.RemoveFromClassList(k_ViewSelectedWithNoFocusVariantUssClassName);
+                m_SelectedItem.content.RemoveFromClassList(k_PlainViewSelectedVariantUssClassName);
+                m_SelectedItem.content.RemoveFromClassList(k_ViewSelectedWithNoFocusVariantUssClassName);
                 if (!EditorGUIUtility.isProSkin)
                     m_SelectedItem.SwitchToLightSkinIcon();
             }
@@ -239,7 +239,7 @@ namespace Unity.UI.Builder
                 if (plainViewItem.Id.Equals(itemId))
                 {
                     m_SelectedItem = plainViewItem;
-                    m_SelectedItem.Content.AddToClassList(k_PlainViewSelectedVariantUssClassName);
+                    m_SelectedItem.content.AddToClassList(k_PlainViewSelectedVariantUssClassName);
                     if (!EditorGUIUtility.isProSkin)
                         m_SelectedItem.SwitchToDarkSkinIcon();
 

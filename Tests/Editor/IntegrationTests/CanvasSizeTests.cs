@@ -28,11 +28,11 @@ namespace Unity.UI.Builder.EditorTests
         [Test]
         public void CanvasHasMinimumSize()
         {
-            InspectorPane.Q<IntegerField>("canvas-width").value = 1;
-            Assert.That(ViewportPane.canvas.width, Is.EqualTo(BuilderConstants.CanvasMinWidth));
+            inspector.Q<IntegerField>("canvas-width").value = 1;
+            Assert.That(viewport.canvas.width, Is.EqualTo(BuilderConstants.CanvasMinWidth));
 
-            InspectorPane.Q<IntegerField>("canvas-height").value = 1;
-            Assert.That(ViewportPane.canvas.height, Is.EqualTo(BuilderConstants.CanvasMinHeight));
+            inspector.Q<IntegerField>("canvas-height").value = 1;
+            Assert.That(viewport.canvas.height, Is.EqualTo(BuilderConstants.CanvasMinHeight));
         }
 
         /// <summary>
@@ -42,13 +42,13 @@ namespace Unity.UI.Builder.EditorTests
         [Test]
         public void CanvasSizeRestoredOnDomainOrWindowReloadAndResetsOnDocInit()
         {
-            BuilderWindow.canvas.ResetSize();
+            builder.canvas.ResetSize();
             var newWidth = k_TestCanvasSizeValue;
 
-            InspectorPane.Q<IntegerField>("canvas-width").value = newWidth;
-            Assert.That(BuilderWindow.canvas.width, Is.EqualTo(newWidth));
+            inspector.Q<IntegerField>("canvas-width").value = newWidth;
+            Assert.That(builder.canvas.width, Is.EqualTo(newWidth));
 
-            BuilderWindow.Close();
+            builder.Close();
             m_NewBuilder = BuilderTestsHelper.MakeNewBuilderWindow();
             Assert.That(m_NewBuilder.canvas.width, Is.EqualTo(newWidth));
 
@@ -64,18 +64,18 @@ namespace Unity.UI.Builder.EditorTests
         {
             CreateTestUXMLFile();
             var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_TestUXMLFilePath);
-            var toolbar = ViewportPane.Q<BuilderToolbar>();
+            var toolbar = viewport.Q<BuilderToolbar>();
             toolbar.LoadDocument(asset);
             yield return UIETestHelpers.Pause();
-            BuilderWindow.canvas.ResetSize();
-            BuilderWindow.canvas.width = k_TestCanvasSizeValue;
-            Assert.That(BuilderWindow.canvas.width, Is.EqualTo(k_TestCanvasSizeValue));
+            builder.canvas.ResetSize();
+            builder.canvas.width = k_TestCanvasSizeValue;
+            Assert.That(builder.canvas.width, Is.EqualTo(k_TestCanvasSizeValue));
 
             ForceNewDocument();
-            Assert.That(BuilderWindow.canvas.width, Is.Not.EqualTo(k_TestCanvasSizeValue));
+            Assert.That(builder.canvas.width, Is.Not.EqualTo(k_TestCanvasSizeValue));
 
             toolbar.LoadDocument(asset);
-            Assert.That(BuilderWindow.canvas.width, Is.EqualTo(k_TestCanvasSizeValue));
+            Assert.That(builder.canvas.width, Is.EqualTo(k_TestCanvasSizeValue));
         }
 
         /// <summary>
@@ -84,37 +84,37 @@ namespace Unity.UI.Builder.EditorTests
         [UnityTest, Ignore("Unstable on 2020.2 & trunk, we need to revisit this.")]
         public IEnumerator CanBeResizedViaHandles()
         {
-            var rightHandle = BuilderWindow.viewport.Q(null, "unity-builder-canvas__side--right");
-            BuilderWindow.canvas.ResetSize();
-            var defaultWidth = BuilderWindow.canvas.width;
-            var defaultHeight = BuilderWindow.canvas.height;
+            var rightHandle = builder.viewport.Q(null, "unity-builder-canvas__side--right");
+            builder.canvas.ResetSize();
+            var defaultWidth = builder.canvas.width;
+            var defaultHeight = builder.canvas.height;
 
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 rightHandle.worldBound.center,
                 new Vector2(rightHandle.worldBound.center.x - 50, rightHandle.worldBound.center.y));
-            Assert.That(defaultWidth, Is.GreaterThan(BuilderWindow.canvas.width));
+            Assert.That(defaultWidth, Is.GreaterThan(builder.canvas.width));
 
-            BuilderWindow.canvas.ResetSize();
-            var leftHandle = BuilderWindow.viewport.Q(null, "unity-builder-canvas__side--left");
-            defaultWidth = BuilderWindow.canvas.width;
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
+            builder.canvas.ResetSize();
+            var leftHandle = builder.viewport.Q(null, "unity-builder-canvas__side--left");
+            defaultWidth = builder.canvas.width;
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 leftHandle.worldBound.center,
                 new Vector2(leftHandle.worldBound.center.x + 50, rightHandle.worldBound.center.y));
-            Assert.That(defaultWidth, Is.GreaterThan(BuilderWindow.canvas.width));
+            Assert.That(defaultWidth, Is.GreaterThan(builder.canvas.width));
 
-            BuilderWindow.canvas.ResetSize();
-            var bottomHandle = BuilderWindow.viewport.Q(null, "unity-builder-canvas__side--bottom");
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
+            builder.canvas.ResetSize();
+            var bottomHandle = builder.viewport.Q(null, "unity-builder-canvas__side--bottom");
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 bottomHandle.worldBound.center,
                 new Vector2(bottomHandle.worldBound.center.x, bottomHandle.worldBound.center.y - 50));
-            Assert.That(defaultHeight, Is.GreaterThan(BuilderWindow.canvas.height));
+            Assert.That(defaultHeight, Is.GreaterThan(builder.canvas.height));
 
-            BuilderWindow.canvas.ResetSize();
-            var topHandle = BuilderWindow.viewport.Q(null, "unity-builder-canvas__side--top");
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
+            builder.canvas.ResetSize();
+            var topHandle = builder.viewport.Q(null, "unity-builder-canvas__side--top");
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 topHandle.worldBound.center,
                 new Vector2(topHandle.worldBound.center.x, bottomHandle.worldBound.center.y + 50));
-            Assert.That(defaultHeight, Is.GreaterThan(BuilderWindow.canvas.height));
+            Assert.That(defaultHeight, Is.GreaterThan(builder.canvas.height));
         }
 
         /// <summary>
@@ -126,7 +126,7 @@ namespace Unity.UI.Builder.EditorTests
             AddElementCodeOnly<VisualElement>();
             var element = GetFirstDocumentElement();
 
-            var panel = BuilderWindow.rootVisualElement.panel as BaseVisualElementPanel;
+            var panel = builder.rootVisualElement.panel as BaseVisualElementPanel;
             var menu = panel.contextualMenuManager as BuilderTestContextualMenuManager;
 
             Assert.That(menu, Is.Not.Null);

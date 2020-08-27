@@ -20,7 +20,7 @@ namespace Unity.UI.Builder
 
         public new class UxmlTraits : BindableElement.UxmlTraits { }
 
-        public override VisualElement contentContainer => m_Container;
+        public override VisualElement contentContainer => m_Container == null ? this : m_Container;
 
         public event Action onShow; 
         public event Action onHide;

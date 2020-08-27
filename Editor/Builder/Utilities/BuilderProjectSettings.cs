@@ -6,23 +6,38 @@ namespace Unity.UI.Builder
     static class BuilderProjectSettings
     {
         const string k_EditorExtensionModeKey = "UIBuilder.EditorExtensionModeKey";
+        const string k_HideNotificationAboutMissingUITKPackage = "UIBuilder.HideNotificationAboutMissingUITKPackage";
 
-        public static bool EnableEditorExtensionModeByDefault
+        public static bool enableEditorExtensionModeByDefault
         {
-            get
-            {
-                var value = EditorUserSettings.GetConfigValue(k_EditorExtensionModeKey);
-                if (string.IsNullOrEmpty(value))
-                    return false;
+            get => GetBool(k_EditorExtensionModeKey);
+            set => SetBool(k_EditorExtensionModeKey, value);
+        }
 
-                return Convert.ToBoolean(value);
-            }
-            set => EditorUserSettings.SetConfigValue(k_EditorExtensionModeKey, value.ToString());
+        public static bool hideNotificationAboutMissingUITKPackage
+        {
+            get => GetBool(k_HideNotificationAboutMissingUITKPackage);
+            set => SetBool(k_HideNotificationAboutMissingUITKPackage, value);
+        }
+
+        static bool GetBool(string name)
+        {
+            var value = EditorUserSettings.GetConfigValue(k_EditorExtensionModeKey);
+            if (string.IsNullOrEmpty(value))
+                return false;
+
+            return Convert.ToBoolean(value);
+        }
+
+        static void SetBool(string name, bool value)
+        {
+            EditorUserSettings.SetConfigValue(k_EditorExtensionModeKey, value.ToString());
         }
 
         internal static void Reset()
         {
             EditorUserSettings.SetConfigValue(k_EditorExtensionModeKey, null);
+            EditorUserSettings.SetConfigValue(k_HideNotificationAboutMissingUITKPackage, null);
         }
     }
 }

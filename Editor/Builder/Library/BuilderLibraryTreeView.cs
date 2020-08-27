@@ -22,7 +22,7 @@ namespace Unity.UI.Builder
         readonly TreeView m_TreeView;
         readonly VisualTreeAsset m_TreeViewItemTemplate;
 
-        public override VisualElement PrimaryFocusable => m_TreeView.Q<ListView>();
+        public override VisualElement primaryFocusable => m_TreeView.Q<ListView>();
 
         public BuilderLibraryTreeView(IList<ITreeViewItem> items)
         {
@@ -58,23 +58,23 @@ namespace Unity.UI.Builder
                 action => { AddItemToTheDocument(libraryItem); },
                 action =>
                 {
-                    if (libraryItem.MakeVisualElementCallback == null)
+                    if (libraryItem.makeVisualElementCallback == null)
                         return DropdownMenuAction.Status.Disabled;
 
-                    if (libraryItem.SourceAsset == m_PaneWindow.document.visualTreeAsset)
+                    if (libraryItem.sourceAsset == m_PaneWindow.document.visualTreeAsset)
                         return DropdownMenuAction.Status.Disabled;
 
                     return DropdownMenuAction.Status.Normal;
                 });
 
-            if (libraryItem.SourceAsset != null)
+            if (libraryItem.sourceAsset != null)
             {
                 evt.menu.AppendAction(
                     "Open In UIBuilder",
-                    action => { m_PaneWindow.LoadDocument(libraryItem.SourceAsset); },
+                    action => { m_PaneWindow.LoadDocument(libraryItem.sourceAsset); },
                     action =>
                     {
-                        if (libraryItem.SourceAsset == m_PaneWindow.document.visualTreeAsset)
+                        if (libraryItem.sourceAsset == m_PaneWindow.document.visualTreeAsset)
                             return DropdownMenuAction.Status.Disabled;
 
                         return DropdownMenuAction.Status.Normal;
@@ -82,7 +82,7 @@ namespace Unity.UI.Builder
 
                 evt.menu.AppendAction(
                     "Open with IDE",
-                    action => {  AssetDatabase.OpenAsset(libraryItem.SourceAsset); },
+                    action => {  AssetDatabase.OpenAsset(libraryItem.sourceAsset); },
                     action => DropdownMenuAction.Status.Normal);
             }
         }
@@ -102,9 +102,9 @@ namespace Unity.UI.Builder
                     if (libraryTreeItem == null)
                         return;
 
-                    var libraryTreeItemIcon = libraryTreeItem.Icon;
+                    var libraryTreeItemIcon = libraryTreeItem.icon;
                     if (builderElementStyle == BuilderElementStyle.Highlighted)
-                        libraryTreeItemIcon = libraryTreeItem.DarkSkinIcon;
+                        libraryTreeItemIcon = libraryTreeItem.darkSkinIcon;
 
                     AssignTreeItemIcon(root, libraryTreeItemIcon);
                 });
@@ -123,11 +123,11 @@ namespace Unity.UI.Builder
             var button = evt.target as Button;
             var item = button.userData as BuilderLibraryTreeItem;
 
-            if (item?.SourceAsset == null)
+            if (item?.sourceAsset == null)
                 return;
 
             HidePreview();
-            m_PaneWindow.LoadDocument(item.SourceAsset);
+            m_PaneWindow.LoadDocument(item.sourceAsset);
         }
 
         void BindItem(VisualElement element, ITreeViewItem item)
@@ -141,20 +141,20 @@ namespace Unity.UI.Builder
             row.SetEnabled(true);
 
             var listOfOpenDocuments = m_PaneWindow.document.openUXMLFiles;
-            bool isCurrentDocumentOpen = listOfOpenDocuments.Any(doc => doc.visualTreeAsset == builderItem.SourceAsset);
+            bool isCurrentDocumentOpen = listOfOpenDocuments.Any(doc => doc.visualTreeAsset == builderItem.sourceAsset);
             row.EnableInClassList(BuilderConstants.LibraryCurrentlyOpenFileItemClassName, isCurrentDocumentOpen);
             element.SetEnabled(!isCurrentDocumentOpen);
 
             // Header
-            if (builderItem.IsHeader)
+            if (builderItem.isHeader)
                 row.AddToClassList(BuilderConstants.ExplorerHeaderRowClassName);
 
             var editorOnlyLabel = element.Q<Label>(k_TreeItemEditorOnlyLabelName);
             editorOnlyLabel.text = BuilderConstants.EditorOnlyTag;
-            editorOnlyLabel.style.display = builderItem.IsEditorOnly ? DisplayStyle.Flex : DisplayStyle.None;
+            editorOnlyLabel.style.display = builderItem.isEditorOnly ? DisplayStyle.Flex : DisplayStyle.None;
 
             // Set Icon
-            AssignTreeItemIcon(element, builderItem.Icon);
+            AssignTreeItemIcon(element, builderItem.icon);
 
             // Set label.
             var label = element.Q<Label>(k_TreeItemLabelName);
@@ -164,7 +164,7 @@ namespace Unity.UI.Builder
             // Set open button visibility.
             var openButton = element.Q<Button>(k_OpenButtonName);
             openButton.userData = item;
-            var enableTreeViewItemWithButton = builderItem.SourceAsset != null && builderItem.SourceAsset != m_PaneWindow.document.visualTreeAsset;
+            var enableTreeViewItemWithButton = builderItem.sourceAsset != null && builderItem.sourceAsset != m_PaneWindow.document.visualTreeAsset;
             element.EnableInClassList(k_TreeViewItemWithButtonClassName, enableTreeViewItemWithButton);
 
             LinkToTreeViewItem(element, builderItem);

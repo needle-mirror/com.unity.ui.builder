@@ -44,10 +44,10 @@ namespace Unity.UI.Builder
         static int s_ProjectUxmlPathsHash;
 
         public static event Action OnLibraryContentUpdated;
-        public static List<ITreeViewItem> StandardControlsTree { get; private set; }
-        public static List<ITreeViewItem> StandardControlsTreeNoEditor { get; private set; }
-        public static List<ITreeViewItem> ProjectContentTree { get; private set; }
-        public static List<ITreeViewItem> ProjectContentTreeNoPackages { get; private set; }
+        public static List<ITreeViewItem> standardControlsTree { get; private set; }
+        public static List<ITreeViewItem> standardControlsTreeNoEditor { get; private set; }
+        public static List<ITreeViewItem> projectContentTree { get; private set; }
+        public static List<ITreeViewItem> projectContentTreeNoPackages { get; private set; }
 
         static BuilderLibraryContent()
         {
@@ -61,21 +61,21 @@ namespace Unity.UI.Builder
 
         static void RegenerateLibraryContent()
         {
-            StandardControlsTree = GenerateControlsItemsTree();
-            StandardControlsTreeNoEditor = new List<ITreeViewItem>();
+            standardControlsTree = GenerateControlsItemsTree();
+            standardControlsTreeNoEditor = new List<ITreeViewItem>();
             var controlsItemsTree = GenerateControlsItemsTree();
             foreach (var item in controlsItemsTree)
             {
-                if (item is BuilderLibraryTreeItem builderLibraryTreeItem && builderLibraryTreeItem.IsEditorOnly)
+                if (item is BuilderLibraryTreeItem builderLibraryTreeItem && builderLibraryTreeItem.isEditorOnly)
                     continue;
 
-                StandardControlsTreeNoEditor.Add(item);
+                standardControlsTreeNoEditor.Add(item);
                 RemoveEditorOnlyControls(item);
             }
 
             GenerateProjectContentTrees();
-            UpdateControlsTypeCache(ProjectContentTree);
-            UpdateControlsTypeCache(StandardControlsTree);
+            UpdateControlsTypeCache(projectContentTree);
+            UpdateControlsTypeCache(standardControlsTree);
             s_ProjectUxmlPathsHash = s_ProjectAssetsScanner.GetAllProjectUxmlFilePathsHash();
 
             OnLibraryContentUpdated?.Invoke();
@@ -87,7 +87,7 @@ namespace Unity.UI.Builder
             (item.children as IList)?.Clear();
             foreach (var child in children)
             {
-                if (child is BuilderLibraryTreeItem builderLibraryTreeItem && !builderLibraryTreeItem.IsEditorOnly)
+                if (child is BuilderLibraryTreeItem builderLibraryTreeItem && !builderLibraryTreeItem.isEditorOnly)
                 {
                     item.AddChild(child);
                     if (child.hasChildren)
@@ -104,7 +104,7 @@ namespace Unity.UI.Builder
         public static Texture2D GetTypeLibraryIcon(Type type)
         {
             if (s_ControlsTypeCache.TryGetValue(type, out var builderLibraryTreeItem))
-                return builderLibraryTreeItem.Icon;
+                return builderLibraryTreeItem.icon;
 
             // Just in case to avoid infinity loop.
             if (type != typeof(VisualElement))
@@ -123,14 +123,14 @@ namespace Unity.UI.Builder
         public static Texture2D GetTypeDarkSkinLibraryIcon(Type type)
         {
             if (s_ControlsTypeCache.TryGetValue(type, out var builderLibraryTreeItem))
-                return builderLibraryTreeItem.DarkSkinIcon;
+                return builderLibraryTreeItem.darkSkinIcon;
 
             return null;
         }
 
         public static Texture2D GetUXMLAssetIcon(string uxmlAssetPath)
         {
-            return GetUXMLAssetIcon(ProjectContentTree, uxmlAssetPath);
+            return GetUXMLAssetIcon(projectContentTree, uxmlAssetPath);
         }
 
         static Texture2D GetUXMLAssetIcon(IEnumerable<ITreeViewItem> items, string uxmlAssetPath)
@@ -139,9 +139,9 @@ namespace Unity.UI.Builder
             {
                 if (item is BuilderLibraryTreeItem builderLibraryTreeItem)
                 {
-                    if (!string.IsNullOrEmpty(builderLibraryTreeItem.SourceAssetPath) && builderLibraryTreeItem.SourceAssetPath.Equals(uxmlAssetPath))
+                    if (!string.IsNullOrEmpty(builderLibraryTreeItem.sourceAssetPath) && builderLibraryTreeItem.sourceAssetPath.Equals(uxmlAssetPath))
                     {
-                        return builderLibraryTreeItem.Icon;
+                        return builderLibraryTreeItem.icon;
                     }
 
                     if (item.hasChildren)
@@ -158,30 +158,30 @@ namespace Unity.UI.Builder
 
         static void GenerateProjectContentTrees()
         {
-            ProjectContentTree = new List<ITreeViewItem>();
-            ProjectContentTreeNoPackages = new List<ITreeViewItem>();
+            projectContentTree = new List<ITreeViewItem>();
+            projectContentTreeNoPackages = new List<ITreeViewItem>();
 
-            var fromProjectCategory = new BuilderLibraryTreeItem(BuilderConstants.LibraryAssetsSectionHeaderName, null, null, null) { IsHeader = true };
+            var fromProjectCategory = new BuilderLibraryTreeItem(BuilderConstants.LibraryAssetsSectionHeaderName, null, null, null) { isHeader = true };
             s_ProjectAssetsScanner.ImportUxmlFromProject(fromProjectCategory, true);
-            ProjectContentTree.Add(fromProjectCategory);
+            projectContentTree.Add(fromProjectCategory);
 
-            var fromProjectCategoryNoPackages = new BuilderLibraryTreeItem(BuilderConstants.LibraryAssetsSectionHeaderName, null, null, null) { IsHeader = true };
+            var fromProjectCategoryNoPackages = new BuilderLibraryTreeItem(BuilderConstants.LibraryAssetsSectionHeaderName, null, null, null) { isHeader = true };
             s_ProjectAssetsScanner.ImportUxmlFromProject(fromProjectCategoryNoPackages, false);
-            ProjectContentTreeNoPackages.Add(fromProjectCategoryNoPackages);
+            projectContentTreeNoPackages.Add(fromProjectCategoryNoPackages);
 
-            var customControlsCategory = new BuilderLibraryTreeItem(BuilderConstants.LibraryCustomControlsSectionHeaderName, null, null, null) { IsHeader = true };
+            var customControlsCategory = new BuilderLibraryTreeItem(BuilderConstants.LibraryCustomControlsSectionHeaderName, null, null, null) { isHeader = true };
             s_ProjectAssetsScanner.ImportFactoriesFromSource(customControlsCategory);
             if (customControlsCategory.hasChildren)
             {
-                ProjectContentTree.Add(customControlsCategory);
-                ProjectContentTreeNoPackages.Add(customControlsCategory);
+                projectContentTree.Add(customControlsCategory);
+                projectContentTreeNoPackages.Add(customControlsCategory);
             }
         }
 
         static List<ITreeViewItem> GenerateControlsItemsTree()
         {
             var controlsTree = new List<ITreeViewItem>();
-            var containersItem = new BuilderLibraryTreeItem(BuilderConstants.LibraryContainersSectionHeaderName, null, null, null) { IsHeader = true };
+            var containersItem = new BuilderLibraryTreeItem(BuilderConstants.LibraryContainersSectionHeaderName, null, null, null) { isHeader = true };
             IList<ITreeViewItem> containersItemList = new List<ITreeViewItem>
             {
                 new BuilderLibraryTreeItem("VisualElement", "VisualElement", typeof(VisualElement), () =>
@@ -217,7 +217,7 @@ namespace Unity.UI.Builder
                 new BuilderLibraryTreeItem("Foldout", nameof(Foldout), typeof(Foldout), () => new Foldout { text = "Foldout" }),
                 new BuilderLibraryTreeItem("Slider", nameof(Slider), typeof(Slider), () => new Slider("Slider", 0, 100) { value = 42 }),
                 new BuilderLibraryTreeItem("Min-Max Slider", nameof(MinMaxSlider), typeof(MinMaxSlider), () => new MinMaxSlider("Min/Max Slider", 0, 20, -10, 40) { value = new Vector2(10, 12) }),
-            }) { IsHeader = true };
+            }) { isHeader = true };
 
             var numericFields = new BuilderLibraryTreeItem("Numeric Fields", null, null, null, null, new List<TreeViewItem<string>>
             {
@@ -238,7 +238,7 @@ namespace Unity.UI.Builder
                 new BuilderLibraryTreeItem("Rect (Int)", nameof(RectIntField), typeof(RectIntField), () => new RectIntField("RectInt")),
                 new BuilderLibraryTreeItem("Bounds (Int)", nameof(BoundsIntField), typeof(BoundsIntField), () => new BoundsIntField("BoundsInt")),
                 new BuilderLibraryTreeItem("Object Field", nameof(ObjectField), typeof(ObjectField), () => new ObjectField("Object Field") { value = new Texture2D(10, 10) { name = "new_texture" } }),
-            }) { IsEditorOnly = true, IsHeader = true };
+            }) { isEditorOnly = true, isHeader = true };
 
             var valueFields = new BuilderLibraryTreeItem("Value Fields", null, null, null, null, new List<TreeViewItem<string>>
             {
@@ -259,7 +259,7 @@ namespace Unity.UI.Builder
                         }
                     }
                 })
-            }) { IsEditorOnly = true, IsHeader = true };
+            }) { isEditorOnly = true, isHeader = true };
 
             var choiceFields = new BuilderLibraryTreeItem("Choice Fields", null, null, null, null, new List<TreeViewItem<string>>
             {
@@ -272,7 +272,7 @@ namespace Unity.UI.Builder
                 new BuilderLibraryTreeItem("Mask", nameof(MaskField), typeof(MaskField), () => new MaskField("Mask")),
                 new BuilderLibraryTreeItem("Layer", nameof(LayerField), typeof(LayerField), () => new LayerField("Layer")),
                 new BuilderLibraryTreeItem("LayerMask", nameof(LayerMaskField), typeof(LayerMaskField), () => new LayerMaskField("LayerMask"))
-            }) { IsEditorOnly = true, IsHeader = true };
+            }) { isEditorOnly = true, isHeader = true };
 
             var toolbar = new BuilderLibraryTreeItem("Toolbar", null, null, null, null, new List<TreeViewItem<string>>
             {
@@ -284,12 +284,12 @@ namespace Unity.UI.Builder
                 new BuilderLibraryTreeItem("Toolbar Breadcrumbs", "ToolbarElement", typeof(ToolbarBreadcrumbs), () => new ToolbarBreadcrumbs()),
                 new BuilderLibraryTreeItem("Toolbar Search Field", "ToolbarElement", typeof(ToolbarSearchField), () => new ToolbarSearchField()),
                 new BuilderLibraryTreeItem("Toolbar Popup Search Field", "ToolbarElement", typeof(ToolbarPopupSearchField), () => new ToolbarPopupSearchField()),
-            }) { IsEditorOnly = true, IsHeader = true };
+            }) { isEditorOnly = true, isHeader = true };
 
             var inspectors = new BuilderLibraryTreeItem("Inspectors", null, null, null, null, new List<TreeViewItem<string>>
             {
                 new BuilderLibraryTreeItem("PropertyField", nameof(PropertyField), typeof(PropertyField), () => new PropertyField())
-            }) { IsEditorOnly = true, IsHeader = true };
+            }) { isEditorOnly = true, isHeader = true };
 
             controlsTree.Add(controlsItem);
             controlsTree.Add(numericFields);
@@ -307,8 +307,8 @@ namespace Unity.UI.Builder
             {
                 if (item is BuilderLibraryTreeItem builderLibraryTreeItem)
                 {
-                    if (builderLibraryTreeItem.Type != null)
-                        s_ControlsTypeCache[builderLibraryTreeItem.Type] = builderLibraryTreeItem;
+                    if (builderLibraryTreeItem.type != null)
+                        s_ControlsTypeCache[builderLibraryTreeItem.type] = builderLibraryTreeItem;
 
                     if (item.hasChildren)
                         UpdateControlsTypeCache(item.children);

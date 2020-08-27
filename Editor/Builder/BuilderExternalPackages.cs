@@ -2,7 +2,7 @@ namespace Unity.UI.Builder
 {
     static class BuilderExternalPackages
     {
-        public static bool IsVectorGraphicsInstalled
+        public static bool isVectorGraphicsInstalled
         {
             get
             {

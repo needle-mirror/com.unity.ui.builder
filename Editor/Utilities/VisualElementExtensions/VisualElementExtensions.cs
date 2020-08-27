@@ -191,9 +191,22 @@ namespace Unity.UI.Builder
             return element.GetVisualElementAsset() != null || element.GetVisualTreeAsset() != null || BuilderSharedStyles.IsDocumentElement(element);
         }
 
+        public static bool IsPartOfActiveVisualTreeAsset(this VisualElement element, BuilderDocument builderDocument)
+        {
+            var belongsToActiveVisualTreeAsset = (VisualTreeAsset) element.GetProperty(BuilderConstants.ElementLinkedBelongingVisualTreeAssetVEPropertyName) == builderDocument?.visualTreeAsset;
+            var hasAssetLink = element.GetVisualElementAsset() != null && belongsToActiveVisualTreeAsset;
+            var hasVTALink = element.GetVisualTreeAsset() != null && !(element is TemplateContainer);
+            return hasAssetLink || hasVTALink || BuilderSharedStyles.IsDocumentElement(element);
+        }
+
         public static bool IsSelector(this VisualElement element)
         {
             return BuilderSharedStyles.IsSelectorElement(element);
+        }
+
+        public static bool IsParentSelector(this VisualElement element)
+        {
+            return BuilderSharedStyles.IsParentSelectorElement(element);
         }
 
         public static bool IsStyleSheet(this VisualElement element)

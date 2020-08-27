@@ -10,7 +10,7 @@ namespace Unity.UI.Builder
         bool m_EditorExtensionMode;
         readonly VisualElementAsset m_RootElementAsset;
 
-        public bool EditorExtensionMode
+        public bool editorExtensionMode
         {
             get => m_EditorExtensionMode;
             set
@@ -37,7 +37,7 @@ namespace Unity.UI.Builder
             if (m_RootElementAsset.HasAttribute(k_EditorExtensionModeAttributeName))
                 m_EditorExtensionMode = Convert.ToBoolean(m_RootElementAsset.GetAttributeValue(k_EditorExtensionModeAttributeName));
             else
-                EditorExtensionMode = BuilderProjectSettings.EnableEditorExtensionModeByDefault;
+                editorExtensionMode = BuilderProjectSettings.enableEditorExtensionModeByDefault;
         }
     }
 }

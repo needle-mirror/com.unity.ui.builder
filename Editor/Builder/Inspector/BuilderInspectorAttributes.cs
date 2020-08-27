@@ -86,12 +86,12 @@ namespace Unity.UI.Builder
                 if (attribute.name.Equals("name") || attribute.name.Equals("view-data-key"))
                     uiField.RegisterValueChangedCallback(e =>
                     {
-                        OnValidatedAttributeValueChange(e, BuilderNameUtilities.AttributeRegex, BuilderConstants.AttributeValidationSpacialCharacters);
+                        OnValidatedAttributeValueChange(e, BuilderNameUtilities.attributeRegex, BuilderConstants.AttributeValidationSpacialCharacters);
                     });
                 else if (attribute.name.Equals("binding-path"))
                     uiField.RegisterValueChangedCallback(e =>
                     {
-                        OnValidatedAttributeValueChange(e, BuilderNameUtilities.BindingPathAttributeRegex, BuilderConstants.BindingPathAttributeValidationSpacialCharacters);
+                        OnValidatedAttributeValueChange(e, BuilderNameUtilities.bindingPathAttributeRegex, BuilderConstants.BindingPathAttributeValidationSpacialCharacters);
                     });
                 else
                     uiField.RegisterValueChangedCallback(OnAttributeValueChange);

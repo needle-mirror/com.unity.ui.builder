@@ -38,5 +38,23 @@ namespace Unity.UI.Builder
 
             propertyInfo?.SetValue(obj, value);
         }
+
+        public static bool CallBoolMethodByReflection(this object obj, string methodName)
+        {
+            var methodInfo = obj.GetType().GetMethod(methodName, BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public);
+
+            if (methodInfo == null)
+                return false;
+
+            var result = methodInfo.Invoke(obj, new object[] { });
+            return (bool)result;
+        }
+
+        public static MethodInfo GetStaticMethodByReflection(Type type, string methodName)
+        {
+            var methodInfo = type.GetMethod(methodName, BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
+
+            return methodInfo;
+        }
     }
 }

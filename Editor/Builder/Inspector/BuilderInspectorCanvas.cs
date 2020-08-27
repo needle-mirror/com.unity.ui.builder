@@ -171,7 +171,7 @@ namespace Unity.UI.Builder
             m_EditorExtensionsModeToggle = root.Q<Toggle>(EditorExtensionsModeToggleName);
             m_EditorExtensionsModeToggle.RegisterValueChangedCallback(e =>
             {
-                m_Document.UXMLFileSettings.EditorExtensionMode = e.newValue;
+                m_Document.fileSettings.editorExtensionMode = e.newValue;
                 m_Inspector.selection.NotifyOfStylingChangePostStylingUpdate();
                 if (e.newValue)
                 {
@@ -222,7 +222,7 @@ namespace Unity.UI.Builder
             m_ImageScaleModeField.SetValueWithoutNotify(scaleModeStr);
 
             m_CameraField.SetValueWithoutNotify(FindCameraByName());
-            m_EditorExtensionsModeToggle?.SetValueWithoutNotify(m_Document.UXMLFileSettings.EditorExtensionMode);
+            m_EditorExtensionsModeToggle?.SetValueWithoutNotify(m_Document.fileSettings.editorExtensionMode);
 
             ApplyBackgroundOptions();
             RefreshMatchGameViewToggle();

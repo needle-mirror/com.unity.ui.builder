@@ -17,7 +17,7 @@ namespace Unity.UI.Builder
         BuilderInspector m_Inspector;
         BuilderSelection m_Selection;
 
-        Dictionary<string, List<VisualElement>> m_StyleFields;
+        internal Dictionary<string, List<VisualElement>> m_StyleFields;
         Dictionary<string, PropertyInfo> m_ComputedStylesPropertyInfos;
 
         List<string> s_StyleChangeList = new List<string>();
@@ -126,14 +126,14 @@ namespace Unity.UI.Builder
             // We don't care which element we get the value for here as we're only interested
             // in the type of Enum it might be (and for validation), but not it's actual value.
             var val = field.GetValue(fieldElement.computedStyle, null);
-            var valType = val.GetType();
+            var valType = val == null ? typeof(object) : val.GetType();
 
-            if (val is StyleFloat && fieldElement is FloatField)
+            if (IsComputedStyleFloat(val) && fieldElement is FloatField)
             {
                 var uiField = fieldElement as FloatField;
                 uiField.RegisterValueChangedCallback(e => OnFieldValueChange(e, styleName));
             }
-            else if (val is StyleFloat && fieldElement is IntegerField)
+            else if (IsComputedStyleFloat(val) && fieldElement is IntegerField)
             {
                 var uiField = fieldElement as IntegerField;
 
@@ -142,68 +142,67 @@ namespace Unity.UI.Builder
                 else
                     uiField.RegisterValueChangedCallback(e => OnFieldValueChangeIntToFloat(e, styleName));
             }
-            else if (val is StyleFloat && fieldElement is PercentSlider)
+            else if (IsComputedStyleFloat(val) && fieldElement is PercentSlider)
             {
                 var uiField = fieldElement as PercentSlider;
                 uiField.RegisterValueChangedCallback(e => OnFieldValueChange(e, styleName));
             }
-            else if (val is StyleFloat && fieldElement is NumericStyleField)
+            else if (IsComputedStyleFloat(val) && fieldElement is NumericStyleField)
             {
                 var uiField = fieldElement as NumericStyleField;
                 uiField.RegisterValueChangedCallback(e => OnNumericStyleFieldValueChange(e, styleName));
             }
-            else if (val is StyleFloat && fieldElement is DimensionStyleField)
+            else if (IsComputedStyleFloat(val) && fieldElement is DimensionStyleField)
             {
                 var uiField = fieldElement as DimensionStyleField;
                 uiField.RegisterValueChangedCallback(e => OnDimensionStyleFieldValueChange(e, styleName));
             }
-            else if (val is StyleInt && fieldElement is IntegerField)
+            else if (IsComputedStyleInt(val) && fieldElement is IntegerField)
             {
                 var uiField = fieldElement as IntegerField;
                 uiField.RegisterValueChangedCallback(e => OnFieldValueChange(e, styleName));
             }
-            else if (val is StyleInt && fieldElement is IntegerStyleField)
+            else if (IsComputedStyleInt(val) && fieldElement is IntegerStyleField)
             {
                 var uiField = fieldElement as IntegerStyleField;
                 uiField.RegisterValueChangedCallback(e => OnIntegerStyleFieldValueChange(e, styleName));
             }
-            else if (val is StyleLength && fieldElement is IntegerField)
+            else if (IsComputedStyleLength(val) && fieldElement is IntegerField)
             {
                 var uiField = fieldElement as IntegerField;
                 uiField.RegisterValueChangedCallback(e => OnFieldDimensionChange(e, styleName));
             }
-            else if (val is StyleLength && fieldElement is DimensionStyleField)
+            else if (IsComputedStyleLength(val) && fieldElement is DimensionStyleField)
             {
                 var uiField = fieldElement as DimensionStyleField;
                 uiField.RegisterValueChangedCallback(e => OnDimensionStyleFieldValueChange(e, styleName));
             }
-            else if (val is StyleColor && fieldElement is ColorField)
+            else if (IsComputedStyleColor(val) && fieldElement is ColorField)
             {
                 var uiField = fieldElement as ColorField;
                 uiField.RegisterValueChangedCallback(e => OnFieldValueChange(e, styleName));
             }
-            else if (val is StyleFont && fieldElement is ObjectField)
+            else if (IsComputedStyleFont(val) && fieldElement is ObjectField)
             {
                 var uiField = fieldElement as ObjectField;
                 uiField.objectType = typeof(Font);
                 uiField.RegisterValueChangedCallback(e => OnFieldValueChangeFont(e, styleName));
             }
-            else if (val is StyleBackground && fieldElement is ImageStyleField imageStyleField)
+            else if (IsComputedStyleBackground(val) && fieldElement is ImageStyleField imageStyleField)
             {
                 imageStyleField.RegisterValueChangedCallback(e => OnFieldValueChange(e, styleName));
-                if (BuilderExternalPackages.IsVectorGraphicsInstalled)
+                if (BuilderExternalPackages.isVectorGraphicsInstalled)
                     imageStyleField.TryEnableVectorGraphicTypeSupport();
             }
-            else if (val is StyleCursor && fieldElement is ObjectField)
+            else if (IsComputedStyleCursor(val) && fieldElement is ObjectField)
             {
                 var uiField = fieldElement as ObjectField;
                 uiField.objectType = typeof(Texture2D);
                 uiField.RegisterValueChangedCallback(e => OnFieldValueChange(e, styleName));
             }
-            else if (valType.IsGenericType && valType.GetGenericArguments()[0].IsEnum)
+            else if (IsComputedStyleEnum(val, valType))
             {
-                var propInfo = valType.GetProperty("value");
-                var enumValue = propInfo.GetValue(val, null) as Enum;
+                var enumValue = GetComputedStyleEnumValue(val, valType);
 
                 if (fieldElement is EnumField)
                 {
@@ -467,50 +466,42 @@ namespace Unity.UI.Builder
                 return;
 
             var val = field.GetValue(currentVisualElement.computedStyle, null);
-            var valType = val.GetType();
+            var valType = val == null ? typeof(object) : val.GetType();
             var cSharpStyleName = ConvertUssStyleNameToCSharpStyleName(styleName);
             var styleProperty = GetStyleProperty(currentRule, cSharpStyleName);
             bool useStyleProperty = styleProperty != null && !styleProperty.IsVariable();
 
-            if (val is StyleFloat && fieldElement is FloatField)
+            if (IsComputedStyleFloat(val) && fieldElement is FloatField)
             {
-                var style = (StyleFloat)val;
                 var uiField = fieldElement as FloatField;
-
-                var value = style.value;
+                var value = GetComputedStyleFloatValue(val);
                 if (useStyleProperty)
                     value = styleSheet.GetFloat(styleProperty.values[0]);
 
                 uiField.SetValueWithoutNotify(value);
             }
-            else if (val is StyleFloat && fieldElement is IntegerField)
+            else if (IsComputedStyleFloat(val) && fieldElement is IntegerField)
             {
-                var style = (StyleFloat)val;
                 var uiField = fieldElement as IntegerField;
-
-                var value = (int)style.value;
+                var value = (int)GetComputedStyleFloatValue(val);
                 if (useStyleProperty)
                     value = (int)styleSheet.GetFloat(styleProperty.values[0]);
 
                 uiField.SetValueWithoutNotify(value);
             }
-            else if (val is StyleFloat && fieldElement is PercentSlider)
+            else if (IsComputedStyleFloat(val) && fieldElement is PercentSlider)
             {
-                var style = (StyleFloat)val;
                 var uiField = fieldElement as PercentSlider;
-
-                var value = style.value;
+                var value = GetComputedStyleFloatValue(val);
                 if (useStyleProperty)
                     value = styleSheet.GetFloat(styleProperty.values[0]);
 
                 uiField.SetValueWithoutNotify(value);
             }
-            else if (val is StyleFloat && fieldElement is NumericStyleField)
+            else if (IsComputedStyleFloat(val) && fieldElement is NumericStyleField)
             {
-                var style = (StyleFloat)val;
                 var uiField = fieldElement as NumericStyleField;
-
-                var value = (int)style.value;
+                var value = (int)GetComputedStyleFloatValue(val);
                 if (useStyleProperty)
                 {
                     var styleValue = styleProperty.values[0];
@@ -531,29 +522,26 @@ namespace Unity.UI.Builder
                 }
                 else
                 {
-                    if (style.keyword != StyleKeyword.Undefined)
-                        uiField.keyword = StyleSheetUtilities.ConvertStyleKeyword(style.keyword);
+                    var keyword = GetComputedStyleKeyword(val);
+                    if (keyword != StyleKeyword.Undefined)
+                        uiField.keyword = StyleSheetUtilities.ConvertStyleKeyword(keyword);
                     else
                         uiField.SetValueWithoutNotify(value.ToString());
                 }
             }
-            else if (val is StyleInt && fieldElement is IntegerField)
+            else if (IsComputedStyleInt(val) && fieldElement is IntegerField)
             {
-                var style = (StyleInt)val;
                 var uiField = fieldElement as IntegerField;
-
-                var value = style.value;
+                var value = GetComputedStyleIntValue(val);
                 if (useStyleProperty)
                     value = styleSheet.GetInt(styleProperty.values[0]);
 
                 uiField.SetValueWithoutNotify(value);
             }
-            else if (val is StyleInt && fieldElement is IntegerStyleField)
+            else if (IsComputedStyleInt(val) && fieldElement is IntegerStyleField)
             {
-                var style = (StyleInt)val;
                 var uiField = fieldElement as IntegerStyleField;
-
-                var value = style.value;
+                var value = GetComputedStyleIntValue(val);
                 if (useStyleProperty)
                 {
                     var styleValue = styleProperty.values[0];
@@ -574,34 +562,27 @@ namespace Unity.UI.Builder
                 }
                 else
                 {
-                    if (style.keyword != StyleKeyword.Undefined)
-                        uiField.keyword = StyleSheetUtilities.ConvertStyleKeyword(style.keyword);
+                    var keyword = GetComputedStyleKeyword(val);
+                    if (keyword != StyleKeyword.Undefined)
+                        uiField.keyword = StyleSheetUtilities.ConvertStyleKeyword(keyword);
                     else
                         uiField.SetValueWithoutNotify(value.ToString());
                 }
             }
-            else if (val is StyleLength && fieldElement is IntegerField)
+            else if (IsComputedStyleLength(val) && fieldElement is IntegerField)
             {
-                var style = (StyleLength)val;
                 var uiField = fieldElement as IntegerField;
 
-                // If the styleProperty exists for this length but it's a keyword,
-                // just ignore it. IntegerField cannot represent keywords.
-                if (styleProperty != null && style.keyword != StyleKeyword.Undefined)
-                    styleProperty = null;
-
-                var value = (int)style.value.value;
+                var value = (int)GetComputedStyleLengthValue(val).value;
                 if (useStyleProperty)
                     value = (int)styleSheet.GetDimension(styleProperty.values[0]).value;
 
                 uiField.SetValueWithoutNotify(value);
             }
-            else if (val is StyleFloat && fieldElement is DimensionStyleField)
+            else if (IsComputedStyleFloat(val) && fieldElement is DimensionStyleField)
             {
-                var style = (StyleFloat)val;
                 var uiField = fieldElement as DimensionStyleField;
-
-                var value = (int)style.value;
+                var value = (int)GetComputedStyleFloatValue(val);
                 if (useStyleProperty)
                 {
                     var styleValue = styleProperty.values[0];
@@ -628,18 +609,17 @@ namespace Unity.UI.Builder
                 }
                 else
                 {
-                    if (style.keyword != StyleKeyword.Undefined)
-                        uiField.keyword = StyleSheetUtilities.ConvertStyleKeyword(style.keyword);
+                    var keyword = GetComputedStyleKeyword(val);
+                    if (keyword != StyleKeyword.Undefined)
+                        uiField.keyword = StyleSheetUtilities.ConvertStyleKeyword(keyword);
                     else
                         uiField.SetValueWithoutNotify(value.ToString());
                 }
             }
-            else if (val is StyleLength && fieldElement is DimensionStyleField)
+            else if (IsComputedStyleLength(val) && fieldElement is DimensionStyleField)
             {
-                var style = (StyleLength)val;
                 var uiField = fieldElement as DimensionStyleField;
-
-                var value = (int)style.value.value;
+                var value = GetComputedStyleLengthValue(val).value;
                 if (useStyleProperty)
                 {
                     var styleValue = styleProperty.values[0];
@@ -666,21 +646,21 @@ namespace Unity.UI.Builder
                 }
                 else
                 {
-                    if (style.keyword != StyleKeyword.Undefined)
-                        uiField.keyword = StyleSheetUtilities.ConvertStyleKeyword(style.keyword);
+                    var keyword = GetComputedStyleKeyword(val);
+                    if (keyword != StyleKeyword.Undefined)
+                        uiField.keyword = StyleSheetUtilities.ConvertStyleKeyword(keyword);
                     else
                     {
-                        uiField.unit = StyleSheetUtilities.ConvertToDimensionUnit(style.value.unit);
-                        uiField.length = style.value.value;
+                        var lengthUnit = GetComputedStyleLengthUnit(val);
+                        uiField.unit = StyleSheetUtilities.ConvertToDimensionUnit(lengthUnit);
+                        uiField.length = value;
                     }
                 }
             }
-            else if (val is StyleColor && fieldElement is ColorField)
+            else if (IsComputedStyleColor(val) && fieldElement is ColorField)
             {
-                var style = (StyleColor)val;
                 var uiField = fieldElement as ColorField;
-
-                var value = style.value;
+                var value = GetComputedStyleColorValue(val);
                 if (useStyleProperty)
                     value = styleSheet.GetColor(styleProperty.values[0]);
                 else
@@ -688,56 +668,55 @@ namespace Unity.UI.Builder
 
                 uiField.SetValueWithoutNotify(value);
             }
-            else if (val is StyleFont && fieldElement is ObjectField)
+            else if (IsComputedStyleFont(val) && fieldElement is ObjectField)
             {
-                var style = (StyleFont)val;
                 var uiField = fieldElement as ObjectField;
-
-                var value = style.value;
+                var value = GetComputedStyleFontValue(val);
                 if (useStyleProperty)
                     value = styleSheet.GetAsset(styleProperty.values[0]) as Font;
 
                 uiField.SetValueWithoutNotify(value);
             }
-            else if (val is StyleBackground && fieldElement is ImageStyleField imageStyleField)
+            else if (IsComputedStyleBackground(val) && fieldElement is ImageStyleField imageStyleField)
             {
-                var style = (StyleBackground)val;
-
-                var value = style.value;
+                var value = GetComputedStyleBackgroundValue(val);
                 if (useStyleProperty)
                 {
                     var asset = styleSheet.GetAsset(styleProperty.values[0]);
                     imageStyleField.SetValueWithoutNotify(asset);
-                    switch (asset) {
-                        case Texture2D texture2D:
-                            value.texture = texture2D;
-                            break;
-                        case VectorImage vectorImage:
-                            value.vectorImage = vectorImage;
-                            break;
-                    }
+                    imageStyleField.SetTypePopupValueWithoutNotify(asset.GetType());
                 }
                 else
                 {
-                    imageStyleField.SetValueWithoutNotify(null);
-                    imageStyleField.SetTypePopupValueWithoutNotify(typeof(Texture2D));
+                    if (value.texture != null)
+                    {
+                        imageStyleField.SetValueWithoutNotify(value.texture);
+                        imageStyleField.SetTypePopupValueWithoutNotify(typeof(Texture2D));
+                    }
+                    else if (value.vectorImage != null)
+                    {
+                        imageStyleField.SetValueWithoutNotify(value.vectorImage);
+                        imageStyleField.SetTypePopupValueWithoutNotify(typeof(VectorImage));
+                    }
+                    else
+                    {
+                        imageStyleField.SetValueWithoutNotify(null);
+                        imageStyleField.SetTypePopupValueWithoutNotify(typeof(Texture2D));
+                    }
                 }
             }
-            else if (val is StyleCursor && fieldElement is ObjectField)
+            else if (IsComputedStyleCursor(val) && fieldElement is ObjectField)
             {
-                var style = (StyleCursor)val;
                 var uiField = fieldElement as ObjectField;
-
-                var value = style.value;
+                var value = GetComputedStyleCursorValue(val);
                 if (useStyleProperty)
                     value.texture = styleSheet.GetAsset(styleProperty.values[0]) as Texture2D;
 
                 uiField.SetValueWithoutNotify(value.texture);
             }
-            else if (valType.IsGenericType && valType.GetGenericArguments()[0].IsEnum)
+            else if (IsComputedStyleEnum(val, valType))
             {
-                var propInfo = valType.GetProperty("value");
-                var enumValue = propInfo.GetValue(val, null) as Enum;
+                var enumValue = GetComputedStyleEnumValue(val, valType);
 
                 if (useStyleProperty)
                 {
@@ -855,61 +834,61 @@ namespace Unity.UI.Builder
                 return;
 
             var val = field.GetValue(currentVisualElement.computedStyle, null);
-            var valType = val.GetType();
+            var valType = val == null ? typeof(object) : val.GetType();
 
-            if (val is StyleFloat && fieldElement is FloatField floatField)
+            if (IsComputedStyleFloat(val) && fieldElement is FloatField floatField)
             {
                 DispatchChangeEvent(floatField);
             }
-            else if (val is StyleFloat && fieldElement is IntegerField integerField)
+            else if (IsComputedStyleFloat(val) && fieldElement is IntegerField integerField)
             {
                 DispatchChangeEvent(integerField);
             }
-            else if (val is StyleFloat && fieldElement is PercentSlider percentSlider)
+            else if (IsComputedStyleFloat(val) && fieldElement is PercentSlider percentSlider)
             {
                 DispatchChangeEvent(percentSlider);
             }
-            else if (val is StyleFloat && fieldElement is NumericStyleField numericStyleField)
+            else if (IsComputedStyleFloat(val) && fieldElement is NumericStyleField numericStyleField)
             {
                 DispatchChangeEvent(numericStyleField);
             }
-            else if (val is StyleInt && fieldElement is IntegerField intField)
+            else if (IsComputedStyleInt(val) && fieldElement is IntegerField intField)
             {
                 DispatchChangeEvent(intField);
             }
-            else if (val is StyleInt && fieldElement is IntegerStyleField integerStyleField)
+            else if (IsComputedStyleInt(val) && fieldElement is IntegerStyleField integerStyleField)
             {
                 DispatchChangeEvent(integerStyleField);
             }
-            else if (val is StyleLength && fieldElement is IntegerField intLengthField)
+            else if (IsComputedStyleLength(val) && fieldElement is IntegerField intLengthField)
             {
                 DispatchChangeEvent(intLengthField);
             }
-            else if (val is StyleFloat && fieldElement is DimensionStyleField dimensionFloatField)
+            else if (IsComputedStyleFloat(val) && fieldElement is DimensionStyleField dimensionFloatField)
             {
                 DispatchChangeEvent(dimensionFloatField);
             }
-            else if (val is StyleLength && fieldElement is DimensionStyleField dimensionLengthField)
+            else if (IsComputedStyleLength(val) && fieldElement is DimensionStyleField dimensionLengthField)
             {
                 DispatchChangeEvent(dimensionLengthField);
             }
-            else if (val is StyleColor && fieldElement is ColorField colorField)
+            else if (IsComputedStyleColor(val) && fieldElement is ColorField colorField)
             {
                 DispatchChangeEvent(colorField);
             }
-            else if (val is StyleFont && fieldElement is ObjectField objectFontField)
+            else if (IsComputedStyleFont(val) && fieldElement is ObjectField objectFontField)
             {
                 DispatchChangeEvent(objectFontField);
             }
-            else if (val is StyleBackground && fieldElement is ImageStyleField imageStyleField)
+            else if (IsComputedStyleBackground(val) && fieldElement is ImageStyleField imageStyleField)
             {
                 DispatchChangeEvent(imageStyleField);
             }
-            else if (val is StyleCursor && fieldElement is ObjectField objectCursorField)
+            else if (IsComputedStyleCursor(val) && fieldElement is ObjectField objectCursorField)
             {
                 DispatchChangeEvent(objectCursorField);
             }
-            else if (valType.IsGenericType && valType.GetGenericArguments()[0].IsEnum)
+            else if (IsComputedStyleEnum(val, valType))
             {
                 switch (fieldElement)
                 {
@@ -1766,6 +1745,167 @@ namespace Unity.UI.Builder
                 updateFlexColumnGlobalState?.Invoke(e.newValue);
 
             PostStyleFieldSteps(e.target as VisualElement, styleName, isNewValue);
+        }
+
+        // TODO: Transition Utilities (to be moved to new BuilderStyleUtilities.cs once the Intuitive Placement branch is merged)
+        //  https://github.cds.internal.unity3d.com/unity/com.unity.ui.builder/pull/164
+
+        // TODO: Use StyleDebug namespace to replace this reflection with built-in internal APIs
+        //  https://jira.unity3d.com/browse/UIT-1093
+
+        // Value Questions
+
+        static public StyleKeyword GetComputedStyleKeyword(object val)
+        {
+            if (val is Length length)
+            {
+                if (length.CallBoolMethodByReflection("IsNone"))
+                    return StyleKeyword.None;
+                else if (length.CallBoolMethodByReflection("IsAuto"))
+                    return StyleKeyword.Auto;
+
+                return StyleKeyword.Undefined;
+            }
+            else if (val is StyleLength styleLength)
+            {
+                return styleLength.keyword;
+            }
+
+            return StyleKeyword.Undefined;
+        }
+
+        static public LengthUnit GetComputedStyleLengthUnit(object val)
+        {
+            if (val is Length length)
+            {
+                return length.unit;
+            }
+            else if (val is StyleLength styleLength)
+            {
+                return styleLength.value.unit;
+            }
+
+            return LengthUnit.Pixel;
+        }
+
+        // Type Questions
+
+        static public bool IsComputedStyleFloat(object val)
+        {
+            return val is StyleFloat || val is float;
+        }
+
+        static public bool IsComputedStyleInt(object val)
+        {
+            return val is StyleInt || val is int;
+        }
+
+        static public bool IsComputedStyleLength(object val)
+        {
+            return val is StyleLength || val is Length;
+        }
+
+        static public bool IsComputedStyleColor(object val)
+        {
+            return val is StyleColor || val is Color;
+        }
+
+        static public bool IsComputedStyleFont(object val)
+        {
+            return val is StyleFont || val is Font;
+        }
+
+        static public bool IsComputedStyleBackground(object val)
+        {
+            return val is StyleBackground || val is Background;
+        }
+
+        static public bool IsComputedStyleCursor(object val)
+        {
+            return val is StyleCursor || val is UnityEngine.UIElements.Cursor;
+        }
+
+        static public bool IsComputedStyleEnum(object val, Type valType)
+        {
+            if (val is Enum)
+                return true;
+
+            return valType.IsGenericType && valType.GetGenericArguments()[0].IsEnum;
+        }
+
+        // Getters
+
+        static public float GetComputedStyleFloatValue(object val)
+        {
+            if (val is float)
+                return (float)val;
+
+            var style = (StyleFloat)val;
+            return style.value;
+        }
+
+        static public int GetComputedStyleIntValue(object val)
+        {
+            if (val is int)
+                return (int)val;
+
+            var style = (StyleInt)val;
+            return style.value;
+        }
+
+        static public Length GetComputedStyleLengthValue(object val)
+        {
+            if (val is Length)
+                return (Length)val;
+
+            var style = (StyleLength)val;
+            return style.value;
+        }
+
+        static public Color GetComputedStyleColorValue(object val)
+        {
+            if (val is Color)
+                return (Color)val;
+
+            var style = (StyleColor)val;
+            return style.value;
+        }
+
+        static public Font GetComputedStyleFontValue(object val)
+        {
+            if (val is Font)
+                return val as Font;
+
+            var style = (StyleFont)val;
+            return style.value;
+        }
+
+        static public Background GetComputedStyleBackgroundValue(object val)
+        {
+            if (val is Background)
+                return (Background)val;
+
+            var style = (StyleBackground)val;
+            return style.value;
+        }
+
+        static public UnityEngine.UIElements.Cursor GetComputedStyleCursorValue(object val)
+        {
+            if (val is UnityEngine.UIElements.Cursor)
+                return (UnityEngine.UIElements.Cursor)val;
+
+            var style = (StyleCursor)val;
+            return style.value;
+        }
+
+        static public Enum GetComputedStyleEnumValue(object val, Type valType)
+        {
+            if (val is Enum)
+                return val as Enum;
+
+            var propInfo = valType.GetProperty("value");
+            var enumValue = propInfo.GetValue(val, null) as Enum;
+            return enumValue;
         }
     }
 }

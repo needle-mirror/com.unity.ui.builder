@@ -27,10 +27,10 @@ namespace Unity.UI.Builder.EditorTests
         [UnityTest]
         public IEnumerator ClickOnCanvasHeaderDisplaysDocumentSettings()
         {
-            var documentSettings = InspectorPane.Q(BuilderInspectorCanvas.ContainerName);
+            var documentSettings = inspector.Q(BuilderInspectorCanvas.ContainerName);
             Assert.That(documentSettings, Style.Display(DisplayStyle.None));
 
-            yield return UIETestEvents.Mouse.SimulateClick(Canvas.header);
+            yield return UIETestEvents.Mouse.SimulateClick(canvas.header);
             Assert.That(documentSettings, Style.Display(DisplayStyle.Flex));
         }
 
@@ -40,14 +40,14 @@ namespace Unity.UI.Builder.EditorTests
         [UnityTest]
         public IEnumerator UnsavedAssetHeaderTitleText()
         {
-            Assert.True(Canvas.TitleLabel.text.Contains("<unsaved file>"));
+            Assert.True(canvas.titleLabel.text.Contains("<unsaved file>"));
 
             var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_TestUXMLFilePath);
-            var toolbar = ViewportPane.Q<BuilderToolbar>();
+            var toolbar = viewport.Q<BuilderToolbar>();
             toolbar.LoadDocument(asset);
 
             yield return UIETestHelpers.Pause();
-            Assert.True(Canvas.TitleLabel.text.Contains(k_TestUXMLFileName));
+            Assert.True(canvas.titleLabel.text.Contains(k_TestUXMLFileName));
         }
 
         /// <summary>
@@ -57,11 +57,11 @@ namespace Unity.UI.Builder.EditorTests
         public IEnumerator HeaderTooltipContainsUXMLAssetPath()
         {
             var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_TestUXMLFilePath);
-            var toolbar = ViewportPane.Q<BuilderToolbar>();
+            var toolbar = viewport.Q<BuilderToolbar>();
             toolbar.LoadDocument(asset);
 
             yield return UIETestHelpers.Pause();
-            Assert.That(Canvas.TitleLabel.tooltip, Is.EqualTo(k_TestUXMLFilePath));
+            Assert.That(canvas.titleLabel.tooltip, Is.EqualTo(k_TestUXMLFilePath));
         }
 
         /// <summary>
@@ -71,14 +71,14 @@ namespace Unity.UI.Builder.EditorTests
         public IEnumerator DocumentUnsavedChangesShouldAddIndicationToTheToolbar()
         {
             var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_TestUXMLFilePath);
-            var toolbar = ViewportPane.Q<BuilderToolbar>();
+            var toolbar = viewport.Q<BuilderToolbar>();
             toolbar.LoadDocument(asset);
 
             yield return UIETestHelpers.Pause();
-            Assert.That(Canvas.TitleLabel.text, Is.EqualTo(k_TestUXMLFileName));
+            Assert.That(canvas.titleLabel.text, Is.EqualTo(k_TestUXMLFileName));
 
             yield return AddVisualElement();
-            Assert.That(Canvas.TitleLabel.text, Is.EqualTo($"{k_TestUXMLFileName}*"));
+            Assert.That(canvas.titleLabel.text, Is.EqualTo($"{k_TestUXMLFileName}*"));
         }
     }
 }

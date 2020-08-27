@@ -12,61 +12,61 @@ namespace Unity.UI.Builder.EditorTests
         [TearDown]
         public void ModeTearDown()
         {
-            BuilderProjectSettings.EnableEditorExtensionModeByDefault = false;
+            BuilderProjectSettings.enableEditorExtensionModeByDefault = false;
         }
 
         [UnityTest]
         public IEnumerator DocumentSettingsEditorExtensionToggleValue()
         {
-            BuilderWindow.selection.Select(null, BuilderWindow.documentRootElement);
+            builder.selection.Select(null, builder.documentRootElement);
             yield return UIETestHelpers.Pause();
 
-            var documentSettings = InspectorPane.Q(BuilderInspectorCanvas.ContainerName);
+            var documentSettings = inspector.Q(BuilderInspectorCanvas.ContainerName);
             var extensionsModeToggle = documentSettings.Q<Toggle>(BuilderInspectorCanvas.EditorExtensionsModeToggleName);
 
             // Should be false by default
-            Assert.That(BuilderWindow.document.UXMLFileSettings.EditorExtensionMode, Is.EqualTo(false));
-            Assert.That(BuilderWindow.document.UXMLFileSettings.EditorExtensionMode, Is.EqualTo(extensionsModeToggle.value));
+            Assert.That(builder.document.fileSettings.editorExtensionMode, Is.EqualTo(false));
+            Assert.That(builder.document.fileSettings.editorExtensionMode, Is.EqualTo(extensionsModeToggle.value));
 
             extensionsModeToggle.value = true;
-            Assert.That(BuilderWindow.document.UXMLFileSettings.EditorExtensionMode, Is.EqualTo(extensionsModeToggle.value));
+            Assert.That(builder.document.fileSettings.editorExtensionMode, Is.EqualTo(extensionsModeToggle.value));
         }
 
         [UnityTest]
         public IEnumerator CanvasEditorExtensionsLabelAppearsWhenInEditorExtensionsMode()
         {
-            BuilderWindow.selection.Select(null, BuilderWindow.documentRootElement);
+            builder.selection.Select(null, builder.documentRootElement);
             yield return UIETestHelpers.Pause();
 
-            var documentSettings = InspectorPane.Q(BuilderInspectorCanvas.ContainerName);
+            var documentSettings = inspector.Q(BuilderInspectorCanvas.ContainerName);
             var extensionsModeToggle = documentSettings.Q<Toggle>(BuilderInspectorCanvas.EditorExtensionsModeToggleName);
 
             // Should be false by default
-            Assert.That(BuilderWindow.document.UXMLFileSettings.EditorExtensionMode, Is.EqualTo(false));
-            Assert.That(Canvas.EditorExtensionsLabel, Style.Display(DisplayStyle.None));
+            Assert.That(builder.document.fileSettings.editorExtensionMode, Is.EqualTo(false));
+            Assert.That(canvas.editorExtensionsLabel, Style.Display(DisplayStyle.None));
 
             extensionsModeToggle.value = true;
-            Assert.That(Canvas.EditorExtensionsLabel, Style.Display(DisplayStyle.Flex));
+            Assert.That(canvas.editorExtensionsLabel, Style.Display(DisplayStyle.Flex));
         }
 
         [UnityTest]
         public IEnumerator LibraryDoesNotContainsEditorOnlyControlsWhenInRuntimeMode()
         {
-            BuilderWindow.selection.Select(null, BuilderWindow.documentRootElement);
+            builder.selection.Select(null, builder.documentRootElement);
             yield return UIETestHelpers.Pause();
 
-            var documentSettings = InspectorPane.Q(BuilderInspectorCanvas.ContainerName);
+            var documentSettings = inspector.Q(BuilderInspectorCanvas.ContainerName);
             var extensionsModeToggle = documentSettings.Q<Toggle>(BuilderInspectorCanvas.EditorExtensionsModeToggleName);
 
             // Should be false by default
-            Assert.That(BuilderWindow.document.UXMLFileSettings.EditorExtensionMode, Is.EqualTo(false));
-            var controlsTreeView = LibraryPane.Q<TreeView>();
+            Assert.That(builder.document.fileSettings.editorExtensionMode, Is.EqualTo(false));
+            var controlsTreeView = library.Q<TreeView>();
 
             var hasEditorOnly = false;
             foreach (var item in controlsTreeView.items)
             {
                 var libraryTreeItem = (BuilderLibraryTreeItem)item;
-                if (libraryTreeItem.IsEditorOnly)
+                if (libraryTreeItem.isEditorOnly)
                 {
                     hasEditorOnly = true;
                     break;
@@ -77,11 +77,11 @@ namespace Unity.UI.Builder.EditorTests
             extensionsModeToggle.value = true;
             yield return UIETestHelpers.Pause();
 
-            controlsTreeView = LibraryPane.Q<TreeView>();
+            controlsTreeView = library.Q<TreeView>();
             foreach (var item in controlsTreeView.items)
             {
                 var libraryTreeItem = (BuilderLibraryTreeItem)item;
-                if (libraryTreeItem.IsEditorOnly)
+                if (libraryTreeItem.isEditorOnly)
                 {
                     hasEditorOnly = true;
                     break;
@@ -94,11 +94,11 @@ namespace Unity.UI.Builder.EditorTests
         [Test]
         public void NewDocumentEditorExtensionsModeValueMatchesWithSettingsDefaultValue()
         {
-            Assert.That(BuilderWindow.document.UXMLFileSettings.EditorExtensionMode, Is.EqualTo(false));
-            BuilderProjectSettings.EnableEditorExtensionModeByDefault = true;
+            Assert.That(builder.document.fileSettings.editorExtensionMode, Is.EqualTo(false));
+            BuilderProjectSettings.enableEditorExtensionModeByDefault = true;
 
             ForceNewDocument();
-            Assert.That(BuilderWindow.document.UXMLFileSettings.EditorExtensionMode, Is.EqualTo(true));
+            Assert.That(builder.document.fileSettings.editorExtensionMode, Is.EqualTo(true));
         }
     }
 }

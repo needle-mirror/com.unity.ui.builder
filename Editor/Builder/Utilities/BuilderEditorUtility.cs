@@ -8,7 +8,7 @@ namespace Unity.UI.Builder
     {
         static string s_FakeSystemCopyBuffer = string.Empty;
 
-        public static string SystemCopyBuffer
+        public static string systemCopyBuffer
         {
             get
             {

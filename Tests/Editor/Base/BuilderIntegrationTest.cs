@@ -38,39 +38,39 @@ namespace Unity.UI.Builder.EditorTests
         protected static readonly string k_TestUXMLFileContent
             = WebUtility.UrlDecode("%3Cui%3AUXML+xmlns%3Aui%3D%22UnityEngine.UIElements%22+xmlns%3Auie%3D%22UnityEditor.UIElements%22%3E%0D%0A++++%3Cui%3AVisualElement%3E%0D%0A++++++++%3Cui%3AVisualElement+%2F%3E%0D%0A++++%3C%2Fui%3AVisualElement%3E%0D%0A%3C%2Fui%3AUXML%3E%0D%0A");
 
-        protected Builder BuilderWindow { get; private set; }
-        protected BuilderSelection Selection { get; private set; }
-        protected BuilderLibrary LibraryPane { get; private set; }
-        protected BuilderHierarchy HierarchyPane { get; private set; }
-        protected BuilderStyleSheets StyleSheetsPane { get; private set; }
-        protected BuilderViewport ViewportPane { get; private set; }
-        protected BuilderInspector InspectorPane { get; private set; }
-        protected BuilderCanvas Canvas { get; private set; }
+        protected Builder builder { get; private set; }
+        protected BuilderSelection selection { get; private set; }
+        protected BuilderLibrary library { get; private set; }
+        protected BuilderHierarchy hierarchy { get; private set; }
+        protected BuilderStyleSheets styleSheetsPane { get; private set; }
+        protected BuilderViewport viewport { get; private set; }
+        protected BuilderInspector inspector { get; private set; }
+        protected BuilderCanvas canvas { get; private set; }
 
         [SetUp]
         public virtual void Setup()
         {
             if (EditorApplication.isPlaying)
-                BuilderWindow = EditorWindow.GetWindow<Builder>();
+                builder = EditorWindow.GetWindow<Builder>();
             else
-                BuilderWindow = BuilderTestsHelper.MakeNewBuilderWindow();
+                builder = BuilderTestsHelper.MakeNewBuilderWindow();
 
-            Selection = BuilderWindow.selection;
-            Canvas = BuilderWindow.rootVisualElement.Q<BuilderCanvas>();
-            LibraryPane = BuilderWindow.rootVisualElement.Q<BuilderLibrary>();
-            HierarchyPane = BuilderWindow.rootVisualElement.Q<BuilderHierarchy>();
-            StyleSheetsPane = BuilderWindow.rootVisualElement.Q<BuilderStyleSheets>();
-            ViewportPane = BuilderWindow.rootVisualElement.Q<BuilderViewport>();
-            InspectorPane = BuilderWindow.rootVisualElement.Q<BuilderInspector>();
+            selection = builder.selection;
+            canvas = builder.rootVisualElement.Q<BuilderCanvas>();
+            library = builder.rootVisualElement.Q<BuilderLibrary>();
+            hierarchy = builder.rootVisualElement.Q<BuilderHierarchy>();
+            styleSheetsPane = builder.rootVisualElement.Q<BuilderStyleSheets>();
+            viewport = builder.rootVisualElement.Q<BuilderViewport>();
+            inspector = builder.rootVisualElement.Q<BuilderInspector>();
 
             if (EditorApplication.isPlaying)
                 return;
 
             BuilderProjectSettings.Reset();
             ForceNewDocument();
-            var createSelectorField = StyleSheetsPane.Q<TextField>();
+            var createSelectorField = styleSheetsPane.Q<TextField>();
             createSelectorField.visualInput.Blur();
-            LibraryPane.SetViewMode(BuilderLibrary.LibraryViewMode.TreeView);
+            library.SetViewMode(BuilderLibrary.LibraryViewMode.TreeView);
         }
 
         [UnityTearDown]
@@ -80,21 +80,21 @@ namespace Unity.UI.Builder.EditorTests
             MouseCaptureController.ReleaseMouse();
 
             yield return null;
-            BuilderWindow?.Close();
+            builder?.Close();
             yield return null;
         }
 
         protected void ForceNewDocument()
         {
-            if (BuilderWindow == null)
+            if (builder == null)
                 return;
 
-            BuilderWindow.rootVisualElement.Q<BuilderToolbar>().NewDocument(false);
+            builder.rootVisualElement.Q<BuilderToolbar>().NewDocument(false);
         }
 
         protected IEnumerator CodeOnlyAddUSSToDocument(string path)
         {
-            var builderWindow = BuilderWindow;
+            var builderWindow = this.builder;
 
             // Need to have at least one element in the asset.
             if (builderWindow.document.visualTreeAsset.IsEmpty())
@@ -113,8 +113,8 @@ namespace Unity.UI.Builder.EditorTests
 
             yield return UIETestHelpers.Pause(1);
 
-            StyleSheetsPane.elementHierarchyView.ExpandAllChildren();
-            HierarchyPane.elementHierarchyView.ExpandAllChildren();
+            styleSheetsPane.elementHierarchyView.ExpandRootItems();
+            hierarchy.elementHierarchyView.ExpandRootItems();
         }
 
         protected void AddElementCodeOnly(string name = "")
@@ -124,21 +124,21 @@ namespace Unity.UI.Builder.EditorTests
 
         protected void AddElementCodeOnly<T>(string name = "") where T : VisualElement, new()
         {
-            var element = BuilderLibraryContent.GetLibraryItemForType(typeof(T)).MakeVisualElementCallback.Invoke();
+            var element = BuilderLibraryContent.GetLibraryItemForType(typeof(T)).makeVisualElementCallback.Invoke();
 
             if (!string.IsNullOrEmpty(name))
                 element.name = name;
 
-            BuilderWindow.documentRootElement.Add(element);
-            BuilderAssetUtilities.AddElementToAsset(BuilderWindow.document, element);
-            BuilderWindow.OnEnableAfterAllSerialization();
-            Selection.NotifyOfHierarchyChange();
-            HierarchyPane.elementHierarchyView.ExpandAllChildren();
+            builder.documentRootElement.Add(element);
+            BuilderAssetUtilities.AddElementToAsset(builder.document, element);
+            builder.OnEnableAfterAllSerialization();
+            selection.NotifyOfHierarchyChange();
+            hierarchy.elementHierarchyView.ExpandRootItems();
         }
 
         protected IEnumerator EnsureSelectorsCanBeAddedAndReloadBuilder()
         {
-            var builderWindow = BuilderWindow;
+            var builderWindow = this.builder;
 
             // Need to have at least one element in the asset.
             if (builderWindow.document.visualTreeAsset.IsEmpty())
@@ -162,8 +162,8 @@ namespace Unity.UI.Builder.EditorTests
 
             yield return UIETestHelpers.Pause(1);
 
-            StyleSheetsPane.elementHierarchyView.ExpandAllChildren();
-            HierarchyPane.elementHierarchyView.ExpandAllChildren();
+            styleSheetsPane.elementHierarchyView.ExpandRootItems();
+            hierarchy.elementHierarchyView.ExpandRootItems();
         }
 
         protected IEnumerator AddVisualElement()
@@ -178,7 +178,7 @@ namespace Unity.UI.Builder.EditorTests
 
         protected BuilderLibraryTreeItem FindLibraryItemWithData(string data)
         {
-            var libraryTreeView = LibraryPane.Q<TreeView>();
+            var libraryTreeView = library.Q<TreeView>();
             foreach (var item in libraryTreeView.items)
             {
                 if (item is BuilderLibraryTreeItem libraryTreeItem)
@@ -195,19 +195,19 @@ namespace Unity.UI.Builder.EditorTests
         {
             var builderLibraryTreeItem = FindLibraryItemWithData(elementLabel);
             Assert.IsNotNull(builderLibraryTreeItem);
-            var libraryTreeView = LibraryPane.Q<TreeView>();
+            var libraryTreeView = library.Q<TreeView>();
             yield return libraryTreeView.SelectAndScrollToItemWithId(builderLibraryTreeItem.id);
         }
 
         protected IEnumerator AddElement(string elementLabel)
         {
             yield return SelectLibraryTreeItemWithName(elementLabel);
-            var label = BuilderTestsHelper.GetLabelWithName(LibraryPane, elementLabel);
+            var label = BuilderTestsHelper.GetLabelWithName(library, elementLabel);
             Assert.IsNotNull(label);
 
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 label.worldBound.center,
-                HierarchyPane.worldBound.center);
+                hierarchy.worldBound.center);
 
             yield return UIETestHelpers.Pause(1);
         }
@@ -219,9 +219,9 @@ namespace Unity.UI.Builder.EditorTests
             // though they are part of the hierarchy and have a panel! The Inspector remains blank because
             // it needs elements to be layed out.
 
-            var builderWindow = BuilderWindow;
+            var builderWindow = this.builder;
 
-            var inputField = StyleSheetsPane.Q<TextField>(className: BuilderNewSelectorField.s_TextFieldUssClassName);
+            var inputField = styleSheetsPane.Q<TextField>(className: BuilderNewSelectorField.s_TextFieldUssClassName);
             inputField.visualInput.Focus();
 
             // Make
@@ -280,36 +280,77 @@ namespace Unity.UI.Builder.EditorTests
         {
             var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(filePath);
             Assert.That(asset, Is.Not.Null);
-            BuilderWindow.LoadDocument(asset);
+            builder.LoadDocument(asset);
             yield return UIETestHelpers.Pause();
-            HierarchyPane.elementHierarchyView.ExpandAllChildren();
-            StyleSheetsPane.elementHierarchyView.ExpandAllChildren();
+            hierarchy.elementHierarchyView.ExpandRootItems();
+            styleSheetsPane.elementHierarchyView.ExpandRootItems();
+        }
+
+        protected IEnumerator ReturnToParentDocumentThroughEntryItem(BuilderTestContextualMenuManager menu, string parentString, string parentName = null)
+        {
+            // Go back to root document through 'entry' item context menu
+            BuilderExplorerItem parentRoot;
+            if (parentName != null)
+                parentRoot = BuilderTestsHelper.GetExplorerItemWithName(hierarchy, parentName);
+            else
+                parentRoot = BuilderTestsHelper.GetHeaderItem(hierarchy);
+            Assert.NotNull(parentRoot);
+            yield return UIETestEvents.Mouse.SimulateClick(parentRoot, MouseButton.RightMouse);
+            Assert.That(menu.menuIsDisplayed, Is.True);
+            
+            var parentClick = menu.FindMenuAction(parentString);
+            Assert.That(parentClick, Is.Not.Null);
+            parentClick.Execute();
+            yield return UIETestHelpers.Pause(1);
+        }
+
+        // By default opens in isolation mode
+        protected IEnumerator OpenChildTemplateContainerAsSubDocument(BuilderTestContextualMenuManager menu, string nameOfChildSubDocument, bool inPlace = false)
+        {
+            hierarchy.elementHierarchyView.ExpandAllItems();
+            
+            // Open child
+            var childInHierarchy = BuilderTestsHelper.GetExplorerItemsWithName(hierarchy, nameOfChildSubDocument);
+            Assert.NotZero(childInHierarchy.Count);
+
+            // Simulate right click on child TemplateContainer 
+            yield return UIETestEvents.Mouse.SimulateClick(childInHierarchy[0], MouseButton.RightMouse);
+            Assert.That(menu.menuIsDisplayed, Is.True);
+        
+            DropdownMenuAction subdocumentClick;
+            if (inPlace)
+                subdocumentClick = menu.FindMenuAction(BuilderConstants.ExplorerHierarchyPaneOpenSubDocumentInPlace);
+            else
+                subdocumentClick = menu.FindMenuAction(BuilderConstants.ExplorerHierarchyPaneOpenSubDocument);
+
+            Assert.That(subdocumentClick, Is.Not.Null);
+            subdocumentClick.Execute();
         }
 
         internal BuilderExplorerItem GetStyleSelectorNodeWithName(string selectorName)
         {
-            return BuilderTestsHelper.GetExplorerItemWithName(StyleSheetsPane, selectorName);
+            return BuilderTestsHelper.GetExplorerItemWithName(styleSheetsPane, selectorName);
         }
 
         internal BuilderExplorerItem GetHierarchyExplorerItemByElementName(string name)
         {
-            return HierarchyPane.Query<BuilderExplorerItem>()
+            return hierarchy.Query<BuilderExplorerItem>()
                 .Where(item => BuilderTestsHelper.GetLinkedDocumentElement(item).name == name).ToList().First();
         }
 
         internal BuilderExplorerItem GetFirstExplorerVisualElementNode(string nodeName)
         {
-            return BuilderTestsHelper.GetExplorerItemWithName(HierarchyPane, nodeName);
+            return BuilderTestsHelper.GetExplorerItemWithName(hierarchy, nodeName);
         }
 
         internal VisualElement GetFirstDocumentElement()
         {
-            return ViewportPane.documentElement[0];
+            return viewport.documentRootElement[0];
         }
 
         internal BuilderExplorerItem GetFirstExplorerItem()
         {
-            var firstDocumentElement = ViewportPane.documentElement[0];
+            var firstDocumentElement = viewport.documentRootElement[0];
             return BuilderTestsHelper.GetLinkedExplorerItem(firstDocumentElement);
         }
     }

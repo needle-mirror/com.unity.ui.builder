@@ -35,7 +35,7 @@ namespace Unity.UI.Builder
 
             // We still need a primary element that is "being dragged" for visualization purporses.
             m_TargetElementToReparent = target.GetProperty(BuilderConstants.ExplorerItemElementLinkVEPropertyName) as VisualElement;
-            if (!m_TargetElementToReparent.IsSelector() && !m_TargetElementToReparent.IsStyleSheet())
+            if (!ExplorerCanStartDrag(m_TargetElementToReparent))
                 return false;
 
             // We use the primary target element for our pill info.
@@ -51,10 +51,8 @@ namespace Unity.UI.Builder
 
         protected override bool ExplorerCanStartDrag(VisualElement targetElement)
         {
-            if (!targetElement.IsSelector() && !targetElement.IsStyleSheet())
-                return false;
-
-            return true;
+            bool readyForDrag = (targetElement.IsSelector() || targetElement.IsStyleSheet()) && !targetElement.IsParentSelector();
+            return readyForDrag;
         }
 
         protected override string ExplorerGetDraggedPillText(VisualElement targetElement)
@@ -102,7 +100,7 @@ namespace Unity.UI.Builder
         void PerformActionForStyleSheet(VisualElement destination, DestinationPane pane, int index = -1)
         {
             if (destination == null)
-                destination = BuilderSharedStyles.GetSelectorContainerElement(paneWindow.rootVisualElement);
+                destination = BuilderSharedStyles.GetSelectorContainerElement(selection.documentRootElement);
 
             BuilderAssetUtilities.ReorderStyleSheetsInAsset(paneWindow.document, destination);
 
@@ -124,6 +122,10 @@ namespace Unity.UI.Builder
             if (!element.IsStyleSheet()) // Can only parent selectors under a StyleSheet.
                 return false;
 
+            // Check if USS is part of active document.
+            if (!string.IsNullOrEmpty(element.GetProperty(BuilderConstants.ExplorerItemLinkedUXMLFileName) as string))
+                return false;
+
             return true;
         }
 
@@ -140,10 +142,17 @@ namespace Unity.UI.Builder
                 if (newParent == toReparent)
                     return false;
 
+                if (element.IsParentSelector() || toReparent.IsParentSelector())
+                    return false;
+
                 if (element.IsSelector() && !toReparent.IsSelector())
                     return false;
 
                 if (element.IsStyleSheet() && toReparent.IsSelector())
+                    return false;
+
+                // Check if USS is part of active document.
+                if (element.IsStyleSheet() && toReparent.IsStyleSheet() && !string.IsNullOrEmpty(element.GetProperty(BuilderConstants.ExplorerItemLinkedUXMLFileName) as string))
                     return false;
             }
 
@@ -152,6 +161,9 @@ namespace Unity.UI.Builder
 
         protected override bool SupportsDragInEmptySpace()
         {
+            if (paneWindow.document.activeOpenUXMLFile.openUSSFiles.Count != BuilderSharedStyles.GetSelectorContainerElement(selection.documentRootElement).childCount)
+                return false;
+
             return true;
         }
 

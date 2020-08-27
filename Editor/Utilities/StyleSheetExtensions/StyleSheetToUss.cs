@@ -182,7 +182,7 @@ namespace Unity.UI.Builder
 
                 ToUssString(sheet, options, property, sb);
                 sb.Append(";");
-                sb.Append(BuilderConstants.NewlineCharFromEditorSettings);
+                sb.Append(BuilderConstants.newlineCharFromEditorSettings);
             }
         }
 
@@ -268,12 +268,12 @@ namespace Unity.UI.Builder
                 ToUssString(selector.previousRelationship, selector.parts, sb);
 
             sb.Append(" {");
-            sb.Append(BuilderConstants.NewlineCharFromEditorSettings);
+            sb.Append(BuilderConstants.newlineCharFromEditorSettings);
 
             ToUssString(sheet, options, complexSelector.rule, sb);
 
             sb.Append("}");
-            sb.Append(BuilderConstants.NewlineCharFromEditorSettings);
+            sb.Append(BuilderConstants.newlineCharFromEditorSettings);
         }
 
         public static string ToUssString(StyleSheet sheet, UssExportOptions options = null)
@@ -301,7 +301,7 @@ namespace Unity.UI.Builder
                     if (isFirst)
                         isFirst = false;
                     else
-                        sb.Append(BuilderConstants.NewlineCharFromEditorSettings);
+                        sb.Append(BuilderConstants.newlineCharFromEditorSettings);
 
                     ToUssString(sheet, options, complexSelector, sb);
                 }

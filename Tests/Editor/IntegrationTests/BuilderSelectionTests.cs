@@ -18,29 +18,29 @@ namespace Unity.UI.Builder.EditorTests
             switch (selectionType)
             {
                 case BuilderSelectionType.Element:
-                    element = BuilderWindow.documentRootElement.Q(Selection.isEmpty ? "multi-uss-label" : "multi-uss-button");
+                    element = builder.documentRootElement.Q(selection.isEmpty ? "multi-uss-label" : "multi-uss-button");
                     break;
                 case BuilderSelectionType.ElementInTemplateInstance:
-                    element = BuilderWindow.documentRootElement.Q<TemplateContainer>(Selection.isEmpty ? "no-uss-document1" : "no-uss-document2").Q<Label>("no-uss-label");
+                    element = builder.documentRootElement.Q<TemplateContainer>(selection.isEmpty ? "no-uss-document1" : "no-uss-document2").Q<Label>("no-uss-label");
                     break;
                 case BuilderSelectionType.StyleSelector:
-                    element = ViewportPane.styleSelectorElementContainer.Q(Selection.isEmpty ? "ColorsTestStyleSheet" : "LayoutTestStyleSheet").Children().First();
+                    element = viewport.styleSelectorElementContainer.Q(selection.isEmpty ? "ColorsTestStyleSheet" : "LayoutTestStyleSheet").Children().First();
                     break;
                 case BuilderSelectionType.StyleSheet:
-                    element = ViewportPane.styleSelectorElementContainer.Q(Selection.isEmpty ? "ColorsTestStyleSheet" : "LayoutTestStyleSheet");
+                    element = viewport.styleSelectorElementContainer.Q(selection.isEmpty ? "ColorsTestStyleSheet" : "LayoutTestStyleSheet");
                     break;
                 case BuilderSelectionType.VisualTreeAsset:
-                    element = BuilderWindow.documentRootElement;
+                    element = builder.documentRootElement;
                     break;
             }
 
             if (element == null)
                 return null;
 
-            if (Selection.isEmpty || selectionType == BuilderSelectionType.VisualTreeAsset)
-                Selection.Select(null, element);
+            if (selection.isEmpty || selectionType == BuilderSelectionType.VisualTreeAsset)
+                selection.Select(null, element);
             else
-                Selection.AddToSelection(null, element);
+                selection.AddToSelection(null, element);
             return element;
         }
 
@@ -52,31 +52,31 @@ namespace Unity.UI.Builder.EditorTests
         public void SelectAndUnselect(BuilderSelectionType selectionType)
         {
             var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_TestMultiUSSDocumentUXMLFilePath);
-            BuilderWindow.LoadDocument(asset);
+            builder.LoadDocument(asset);
 
-            Assert.AreEqual(BuilderSelectionType.Nothing, Selection.selectionType);
-            Assert.AreEqual(0, Selection.selection.Count());
+            Assert.AreEqual(BuilderSelectionType.Nothing, selection.selectionType);
+            Assert.AreEqual(0, selection.selection.Count());
 
             var selectedElement1 = SelectByType(selectionType);
             Assert.NotNull(selectedElement1);
-            Assert.AreEqual(selectionType, Selection.selectionType);
-            Assert.AreEqual(1, Selection.selection.Count());
-            Assert.AreEqual(selectedElement1, Selection.selection.ElementAt(0));
-            Assert.AreEqual(selectedElement1, InspectorPane.currentVisualElement);
+            Assert.AreEqual(selectionType, selection.selectionType);
+            Assert.AreEqual(1, selection.selection.Count());
+            Assert.AreEqual(selectedElement1, selection.selection.ElementAt(0));
+            Assert.AreEqual(selectedElement1, inspector.currentVisualElement);
 
             if (selectionType != BuilderSelectionType.VisualTreeAsset)
             {
                 var selectedElement2 = SelectByType(selectionType);
                 Assert.NotNull(selectedElement2);
-                Assert.AreEqual(selectionType, Selection.selectionType);
-                Assert.AreEqual(2, Selection.selection.Count());
-                Assert.AreEqual(selectedElement2, Selection.selection.ElementAt(1));
-                Assert.AreNotEqual(selectedElement2, InspectorPane.currentVisualElement); // Only first in selection is set as currentVisualElement.
+                Assert.AreEqual(selectionType, selection.selectionType);
+                Assert.AreEqual(2, selection.selection.Count());
+                Assert.AreEqual(selectedElement2, selection.selection.ElementAt(1));
+                Assert.AreNotEqual(selectedElement2, inspector.currentVisualElement); // Only first in selection is set as currentVisualElement.
             }
 
-            Selection.ClearSelection(null);
-            Assert.AreEqual(BuilderSelectionType.Nothing, Selection.selectionType);
-            Assert.AreEqual(0, Selection.selection.Count());
+            selection.ClearSelection(null);
+            Assert.AreEqual(BuilderSelectionType.Nothing, selection.selectionType);
+            Assert.AreEqual(0, selection.selection.Count());
         }
 
         [UnityTest]
@@ -85,45 +85,45 @@ namespace Unity.UI.Builder.EditorTests
             var selectionType = BuilderSelectionType.Element;
 
             var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_TestMultiUSSDocumentUXMLFilePath);
-            BuilderWindow.LoadDocument(asset);
+            builder.LoadDocument(asset);
 
-            Assert.AreEqual(BuilderSelectionType.Nothing, Selection.selectionType);
-            Assert.AreEqual(0, Selection.selection.Count());
+            Assert.AreEqual(BuilderSelectionType.Nothing, selection.selectionType);
+            Assert.AreEqual(0, selection.selection.Count());
 
             var selectedElement1 = SelectByType(selectionType);
             Assert.NotNull(selectedElement1);
-            Assert.AreEqual(selectionType, Selection.selectionType);
-            Assert.AreEqual(1, Selection.selection.Count());
-            Assert.AreEqual(selectedElement1, Selection.selection.ElementAt(0));
-            Assert.AreEqual(selectedElement1, InspectorPane.currentVisualElement);
+            Assert.AreEqual(selectionType, selection.selectionType);
+            Assert.AreEqual(1, selection.selection.Count());
+            Assert.AreEqual(selectedElement1, selection.selection.ElementAt(0));
+            Assert.AreEqual(selectedElement1, inspector.currentVisualElement);
 
             var selectedElement2 = SelectByType(selectionType);
             Assert.NotNull(selectedElement2);
-            Assert.AreEqual(selectionType, Selection.selectionType);
-            Assert.AreEqual(2, Selection.selection.Count());
-            Assert.AreEqual(selectedElement2, Selection.selection.ElementAt(1));
-            Assert.AreNotEqual(selectedElement2, InspectorPane.currentVisualElement); // Only first in selection is set as currentVisualElement.
+            Assert.AreEqual(selectionType, selection.selectionType);
+            Assert.AreEqual(2, selection.selection.Count());
+            Assert.AreEqual(selectedElement2, selection.selection.ElementAt(1));
+            Assert.AreNotEqual(selectedElement2, inspector.currentVisualElement); // Only first in selection is set as currentVisualElement.
 
             yield return null;
             Undo.PerformUndo();
             yield return null;
 
-            Assert.AreEqual(selectionType, Selection.selectionType);
-            Assert.AreEqual(1, Selection.selection.Count());
+            Assert.AreEqual(selectionType, selection.selectionType);
+            Assert.AreEqual(1, selection.selection.Count());
 
             yield return null;
             Undo.PerformUndo();
             yield return null;
 
-            Assert.AreEqual(BuilderSelectionType.Nothing, Selection.selectionType);
-            Assert.AreEqual(0, Selection.selection.Count());
+            Assert.AreEqual(BuilderSelectionType.Nothing, selection.selectionType);
+            Assert.AreEqual(0, selection.selection.Count());
 
             yield return null;
             Undo.PerformUndo();
             yield return null;
 
-            Assert.AreEqual(selectionType, Selection.selectionType);
-            Assert.AreEqual(1, Selection.selection.Count());
+            Assert.AreEqual(selectionType, selection.selectionType);
+            Assert.AreEqual(1, selection.selection.Count());
         }
 
         [UnityTest]
@@ -132,32 +132,32 @@ namespace Unity.UI.Builder.EditorTests
             var selectionType = BuilderSelectionType.Element;
 
             var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_TestMultiUSSDocumentUXMLFilePath);
-            BuilderWindow.LoadDocument(asset);
+            builder.LoadDocument(asset);
 
-            Assert.AreEqual(BuilderSelectionType.Nothing, Selection.selectionType);
-            Assert.AreEqual(0, Selection.selection.Count());
+            Assert.AreEqual(BuilderSelectionType.Nothing, selection.selectionType);
+            Assert.AreEqual(0, selection.selection.Count());
 
             var selectedElement1 = SelectByType(selectionType);
             Assert.NotNull(selectedElement1);
-            Assert.AreEqual(selectionType, Selection.selectionType);
-            Assert.AreEqual(1, Selection.selection.Count());
-            Assert.AreEqual(selectedElement1, Selection.selection.ElementAt(0));
-            Assert.AreEqual(selectedElement1, InspectorPane.currentVisualElement);
+            Assert.AreEqual(selectionType, selection.selectionType);
+            Assert.AreEqual(1, selection.selection.Count());
+            Assert.AreEqual(selectedElement1, selection.selection.ElementAt(0));
+            Assert.AreEqual(selectedElement1, inspector.currentVisualElement);
 
             var selectedElement2 = SelectByType(selectionType);
             Assert.NotNull(selectedElement2);
-            Assert.AreEqual(selectionType, Selection.selectionType);
-            Assert.AreEqual(2, Selection.selection.Count());
-            Assert.AreEqual(selectedElement2, Selection.selection.ElementAt(1));
-            Assert.AreNotEqual(selectedElement2, InspectorPane.currentVisualElement); // Only first in selection is set as currentVisualElement.
+            Assert.AreEqual(selectionType, selection.selectionType);
+            Assert.AreEqual(2, selection.selection.Count());
+            Assert.AreEqual(selectedElement2, selection.selection.ElementAt(1));
+            Assert.AreNotEqual(selectedElement2, inspector.currentVisualElement); // Only first in selection is set as currentVisualElement.
 
             yield return new EnterPlayMode();
 
-            Assert.AreEqual(2, Selection.selection.Count());
+            Assert.AreEqual(2, selection.selection.Count());
 
             yield return new ExitPlayMode();
 
-            Assert.AreEqual(2, Selection.selection.Count());
+            Assert.AreEqual(2, selection.selection.Count());
 
             yield return null;
         }

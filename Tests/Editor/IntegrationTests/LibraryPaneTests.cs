@@ -60,7 +60,7 @@ namespace Unity.UI.Builder.EditorTests
         protected override IEnumerator TearDown()
         {
             // Switch back to the controls mode
-            if (LibraryPane != null)
+            if (library != null)
                 yield return SwitchLibraryTab(BuilderLibrary.BuilderLibraryTab.Standard);
 
             yield return base.TearDown();
@@ -80,18 +80,18 @@ namespace Unity.UI.Builder.EditorTests
 
         ITreeViewItem GetTestAssetsUXMLFileNode(string nodeName = k_TestUXMLFileName)
         {
-            var libraryTreeView = LibraryPane.Q<TreeView>();
+            var libraryTreeView = library.Q<TreeView>();
             var projectNode = (BuilderLibraryTreeItem)libraryTreeView.items
-                .First(item => ((BuilderLibraryTreeItem)item).Name.Equals(BuilderConstants.LibraryAssetsSectionHeaderName));
+                .First(item => ((BuilderLibraryTreeItem)item).name.Equals(BuilderConstants.LibraryAssetsSectionHeaderName));
             libraryTreeView.ExpandItem(projectNode.id);
 
             var assetsNode = (BuilderLibraryTreeItem)projectNode.children?.FirstOrDefault();
-            if (assetsNode == null || !assetsNode.Name.Equals(BuilderConstants.LibraryAssetsSectionHeaderName))
+            if (assetsNode == null || !assetsNode.name.Equals("Assets"))
                 return null;
 
             libraryTreeView.ExpandItem(assetsNode.id);
             var testUXML = assetsNode.children
-                .FirstOrDefault(item => ((BuilderLibraryTreeItem)item).Name.Equals(nodeName));
+                .FirstOrDefault(item => ((BuilderLibraryTreeItem)item).name.Equals(nodeName));
             return testUXML;
         }
 
@@ -101,12 +101,12 @@ namespace Unity.UI.Builder.EditorTests
         [UnityTest]
         public IEnumerator CanDoubleClickToCreateNewElement()
         {
-            Assert.That(ViewportPane.documentElement.childCount, Is.EqualTo(0));
-            var label = BuilderTestsHelper.GetLabelWithName(LibraryPane, nameof(VisualElement));
+            Assert.That(viewport.documentRootElement.childCount, Is.EqualTo(0));
+            var label = BuilderTestsHelper.GetLabelWithName(library, nameof(VisualElement));
 
             Assert.That(label, Is.Not.Null);
             yield return UIETestEvents.Mouse.SimulateDoubleClick(label);
-            Assert.That(ViewportPane.documentElement.childCount, Is.EqualTo(1));
+            Assert.That(viewport.documentRootElement.childCount, Is.EqualTo(1));
         }
 
         /// <summary>
@@ -116,7 +116,7 @@ namespace Unity.UI.Builder.EditorTests
         public IEnumerator UxmlAssetsOpenButtonTest()
         {
             var testUXMLTreeViewItem = GetTestAssetsUXMLFileNode();
-            var libraryTreeView = LibraryPane.Q<TreeView>();
+            var libraryTreeView = library.Q<TreeView>();
             yield return libraryTreeView.SelectAndScrollToItemWithId(testUXMLTreeViewItem.id);
             yield return UIETestHelpers.Pause();
             var testUXMLLabel = libraryTreeView.Query<Label>(null, "unity-builder-library__tree-item-label")
@@ -148,19 +148,19 @@ namespace Unity.UI.Builder.EditorTests
         public IEnumerator DragOntoViewportElementToCreateNewInstanceAsChild()
         {
             AddElementCodeOnly();
-            var documentElement = ViewportPane.documentElement[0];
+            var documentElement = viewport.documentRootElement[0];
 
-            var veLabel = BuilderTestsHelper.GetLabelWithName(LibraryPane, nameof(VisualElement));
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
+            var veLabel = BuilderTestsHelper.GetLabelWithName(library, nameof(VisualElement));
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 veLabel.worldBound.center,
                 documentElement.worldBound.center);
 
-            var hierarchyItems = BuilderTestsHelper.GetExplorerItemsWithName(HierarchyPane, nameof(VisualElement));
+            var hierarchyItems = BuilderTestsHelper.GetExplorerItemsWithName(hierarchy, nameof(VisualElement));
             documentElement = BuilderTestsHelper.GetLinkedDocumentElement(hierarchyItems[0]);
             var documentElement1 = BuilderTestsHelper.GetLinkedDocumentElement(hierarchyItems[1]);
 
             Assert.That(documentElement1.parent, Is.EqualTo(documentElement));
-            Assert.That(BuilderWindow.rootVisualElement.focusController.focusedElement, Is.EqualTo(ViewportPane));
+            Assert.That(builder.rootVisualElement.focusController.focusedElement, Is.EqualTo(viewport));
         }
 
         /// <summary>
@@ -173,14 +173,14 @@ namespace Unity.UI.Builder.EditorTests
             yield return UIETestHelpers.Pause();
             var explorerItem = GetFirstExplorerItem();
 
-            var veLabel = BuilderTestsHelper.GetLabelWithName(LibraryPane, nameof(VisualElement));
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
+            var veLabel = BuilderTestsHelper.GetLabelWithName(library, nameof(VisualElement));
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 veLabel.worldBound.center,
                 explorerItem.worldBound.center);
 
-            HierarchyPane.elementHierarchyView.ExpandAllChildren();
+            hierarchy.elementHierarchyView.ExpandRootItems();
 
-            var hierarchyItems = BuilderTestsHelper.GetExplorerItemsWithName(HierarchyPane, nameof(VisualElement));
+            var hierarchyItems = BuilderTestsHelper.GetExplorerItemsWithName(hierarchy, nameof(VisualElement));
             var documentElement1 = BuilderTestsHelper.GetLinkedDocumentElement(hierarchyItems[0]);
             var documentElement2 = BuilderTestsHelper.GetLinkedDocumentElement(hierarchyItems[1]);
             Assert.That(documentElement2.parent, Is.EqualTo(documentElement1));
@@ -197,16 +197,16 @@ namespace Unity.UI.Builder.EditorTests
 
             var firstVisualElementItem = GetFirstExplorerItem();
             yield return SelectLibraryTreeItemWithName("Text Field");
-            var textFieldLibrary = BuilderTestsHelper.GetLabelWithName(LibraryPane, "Text Field");
+            var textFieldLibrary = BuilderTestsHelper.GetLabelWithName(library, "Text Field");
 
             var veBottomPosition = new Vector2(firstVisualElementItem.worldBound.center.x, firstVisualElementItem.worldBound.yMin);
-            yield return UIETestEvents.Mouse.SimulateMouseEvent(BuilderWindow, EventType.MouseDown, textFieldLibrary.worldBound.center);
-            yield return UIETestEvents.Mouse.SimulateMouseMove(BuilderWindow, textFieldLibrary.worldBound.center, firstVisualElementItem.worldBound.center);
-            yield return UIETestEvents.Mouse.SimulateMouseMove(BuilderWindow, firstVisualElementItem.worldBound.center, veBottomPosition);
-            yield return UIETestEvents.Mouse.SimulateMouseEvent(BuilderWindow, EventType.MouseUp, veBottomPosition);
+            yield return UIETestEvents.Mouse.SimulateMouseEvent(builder, EventType.MouseDown, textFieldLibrary.worldBound.center);
+            yield return UIETestEvents.Mouse.SimulateMouseMove(builder, textFieldLibrary.worldBound.center, firstVisualElementItem.worldBound.center);
+            yield return UIETestEvents.Mouse.SimulateMouseMove(builder, firstVisualElementItem.worldBound.center, veBottomPosition);
+            yield return UIETestEvents.Mouse.SimulateMouseEvent(builder, EventType.MouseUp, veBottomPosition);
 
-            Assert.That(ViewportPane.documentElement.childCount, Is.EqualTo(3));
-            Assert.That(ViewportPane.documentElement[0], Is.TypeOf<TextField>());
+            Assert.That(viewport.documentRootElement.childCount, Is.EqualTo(3));
+            Assert.That(viewport.documentRootElement[0], Is.TypeOf<TextField>());
         }
 
         /// <summary>
@@ -216,7 +216,7 @@ namespace Unity.UI.Builder.EditorTests
         public IEnumerator CreateTemplateInstancesFromUXML()
         {
             var testUXMLTreeViewItem = GetTestAssetsUXMLFileNode();
-            var libraryTreeView = LibraryPane.Q<TreeView>();
+            var libraryTreeView = library.Q<TreeView>();
             yield return libraryTreeView.SelectAndScrollToItemWithId(testUXMLTreeViewItem.id);
             yield return UIETestHelpers.Pause();
             var testUXMLLabel = libraryTreeView.Query<Label>(null, "unity-builder-library__tree-item-label")
@@ -224,12 +224,12 @@ namespace Unity.UI.Builder.EditorTests
             Assert.That(testUXMLLabel, Is.Not.Null);
 
             yield return UIETestEvents.Mouse.SimulateDoubleClick(testUXMLLabel);
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 testUXMLLabel.worldBound.center,
-                HierarchyPane.worldBound.center);
+                hierarchy.worldBound.center);
 
-            Assert.That(ViewportPane.documentElement.childCount, Is.EqualTo(2));
-            foreach (var child in ViewportPane.documentElement.Children())
+            Assert.That(viewport.documentRootElement.childCount, Is.EqualTo(2));
+            foreach (var child in viewport.documentRootElement.Children())
             {
                 Assert.That(child, Is.TypeOf<TemplateContainer>());
             }
@@ -248,8 +248,8 @@ namespace Unity.UI.Builder.EditorTests
             Assert.That(documentElement[0].classList, Contains.Item(BuilderConstants.SpecialVisualElementInitialMinSizeClassName));
 
             // Add child.
-            var veLabel = BuilderTestsHelper.GetLabelWithName(LibraryPane, nameof(VisualElement));
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
+            var veLabel = BuilderTestsHelper.GetLabelWithName(library, nameof(VisualElement));
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 veLabel.worldBound.center,
                 explorerItem.worldBound.center);
 
@@ -268,7 +268,7 @@ namespace Unity.UI.Builder.EditorTests
             Assert.That(documentElement.childCount, Is.EqualTo(1));
 
             // Change style.
-            var displayFoldout = InspectorPane.Query<PersistedFoldout>().Where(f => f.text.Equals("Display")).First();
+            var displayFoldout = inspector.Query<PersistedFoldout>().Where(f => f.text.Equals("Display")).First();
             displayFoldout.value = true;
 
             var percentSlider = displayFoldout.Query<PercentSlider>().Where(t => t.label.Equals("Opacity")).First();
@@ -283,11 +283,11 @@ namespace Unity.UI.Builder.EditorTests
         [UnityTest, Ignore("Let finalize our decision about what kind of items should have a preview")]
         public IEnumerator HoveringOverItemShowsFloatingPreviewBox()
         {
-            var veLabel = BuilderTestsHelper.GetLabelWithName(LibraryPane, nameof(VisualElement));
-            var preview = BuilderWindow.rootVisualElement.Q<BuilderTooltipPreview>("library-tooltip-preview");
+            var veLabel = BuilderTestsHelper.GetLabelWithName(library, nameof(VisualElement));
+            var preview = builder.rootVisualElement.Q<BuilderTooltipPreview>("library-tooltip-preview");
             Assert.That(preview.worldBound.size, Is.EqualTo(Vector2.zero));
 
-            yield return UIETestEvents.Mouse.SimulateMouseEvent(BuilderWindow, EventType.MouseMove, veLabel.worldBound.center);
+            yield return UIETestEvents.Mouse.SimulateMouseEvent(builder, EventType.MouseMove, veLabel.worldBound.center);
             yield return UIETestHelpers.Pause();
             Assert.That(preview.worldBound.size, Is.Not.EqualTo(Vector2.zero));
         }
@@ -335,7 +335,7 @@ namespace Unity.UI.Builder.EditorTests
 
         IEnumerator SwitchLibraryTab(BuilderLibrary.BuilderLibraryTab tabName)
         {
-            var controlsViewButton = LibraryPane.Q<Button>(tabName.ToString());
+            var controlsViewButton = library.Q<Button>(tabName.ToString());
             yield return UIETestEvents.Mouse.SimulateClick(controlsViewButton);
         }
 
@@ -365,13 +365,13 @@ namespace Unity.UI.Builder.EditorTests
         {
             yield return SwitchLibraryTab(BuilderLibrary.BuilderLibraryTab.Standard);
 
-            LibraryPane.SetViewMode(BuilderLibrary.LibraryViewMode.IconTile);
+            library.SetViewMode(BuilderLibrary.LibraryViewMode.IconTile);
             yield return UIETestHelpers.Pause();
-            Assert.That(LibraryPane.Q<BuilderLibraryPlainView>(), Is.Not.Null);
+            Assert.That(library.Q<BuilderLibraryPlainView>(), Is.Not.Null);
 
-            LibraryPane.SetViewMode(BuilderLibrary.LibraryViewMode.TreeView);
+            library.SetViewMode(BuilderLibrary.LibraryViewMode.TreeView);
             yield return UIETestHelpers.Pause();
-            Assert.That(LibraryPane.Q<BuilderLibraryTreeView>(), Is.Not.Null);
+            Assert.That(library.Q<BuilderLibraryTreeView>(), Is.Not.Null);
         }
     }
 }

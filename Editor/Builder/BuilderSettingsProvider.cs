@@ -15,10 +15,10 @@ namespace Unity.UI.Builder
             return new BuilderSettingsProvider();
         }
 
-        public static string Name => $"Project/{BuilderConstants.BuilderWindowTitle}";
+        public static string name => $"Project/{BuilderConstants.BuilderWindowTitle}";
         bool HasSearchInterestHandler(string searchContext) => true;
 
-        public BuilderSettingsProvider() : base(Name, SettingsScope.Project)
+        public BuilderSettingsProvider() : base(name, SettingsScope.Project)
         {
             hasSearchInterestHandler = HasSearchInterestHandler;
         }
@@ -32,10 +32,10 @@ namespace Unity.UI.Builder
             rootElement.styleSheets.Add(styleSheet);
 
             var editorExtensionsModeToggle = rootElement.Q<Toggle>(k_EditorExtensionsModeToggleName);
-            editorExtensionsModeToggle.SetValueWithoutNotify(BuilderProjectSettings.EnableEditorExtensionModeByDefault);
+            editorExtensionsModeToggle.SetValueWithoutNotify(BuilderProjectSettings.enableEditorExtensionModeByDefault);
             editorExtensionsModeToggle.RegisterValueChangedCallback(e =>
             {
-                BuilderProjectSettings.EnableEditorExtensionModeByDefault = e.newValue;
+                BuilderProjectSettings.enableEditorExtensionModeByDefault = e.newValue;
             });
 
             base.OnActivate(searchContext, rootElement);

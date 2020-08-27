@@ -44,21 +44,21 @@ namespace Unity.UI.Builder.EditorTests
         public IEnumerator ShowHideVariableInfoPopup()
         {
             var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_NewVariableUxmlFilePath);
-            BuilderWindow.LoadDocument(asset);
+            builder.LoadDocument(asset);
 
             yield return UIETestHelpers.Pause(1);
 
-            HierarchyPane.elementHierarchyView.ExpandAllChildren();
-            StyleSheetsPane.elementHierarchyView.ExpandAllChildren();
+            hierarchy.elementHierarchyView.ExpandRootItems();
+            styleSheetsPane.elementHierarchyView.ExpandRootItems();
 
             yield return UIETestHelpers.Pause(1);
 
             // Select test-selector-1
-            var selector = BuilderTestsHelper.GetExplorerItemWithName(StyleSheetsPane, k_Selector_1);
+            var selector = BuilderTestsHelper.GetExplorerItemWithName(styleSheetsPane, k_Selector_1);
 
             yield return UIETestEvents.Mouse.SimulateClick(selector);
 
-            var textFoldout = InspectorPane.Query<PersistedFoldout>().Where(f => f.text.Equals("Text")).First();
+            var textFoldout = inspector.Query<PersistedFoldout>().Where(f => f.text.Equals("Text")).First();
             textFoldout.value = true;
 
             var colorField = FindStyleField<ColorField>(textFoldout, "Color");
@@ -73,7 +73,7 @@ namespace Unity.UI.Builder.EditorTests
             Assert.AreEqual(handler.variableInfoTooltip.currentHandler, handler);
 
             // Click anywhere else to remove focus
-            selector = BuilderTestsHelper.GetExplorerItemWithName(StyleSheetsPane, k_Selector_1);
+            selector = BuilderTestsHelper.GetExplorerItemWithName(styleSheetsPane, k_Selector_1);
             yield return UIETestEvents.Mouse.SimulateClick(selector);
 
             Assert.IsFalse(colorField.ClassListContains(BuilderConstants.InspectorLocalStyleVariableEditingClassName));
@@ -85,21 +85,21 @@ namespace Unity.UI.Builder.EditorTests
         public IEnumerator ShowHideVariableField()
         {
             var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_NewVariableUxmlFilePath);
-            BuilderWindow.LoadDocument(asset);
+            builder.LoadDocument(asset);
 
             yield return UIETestHelpers.Pause(1);
 
-            HierarchyPane.elementHierarchyView.ExpandAllChildren();
-            StyleSheetsPane.elementHierarchyView.ExpandAllChildren();
+            hierarchy.elementHierarchyView.ExpandRootItems();
+            styleSheetsPane.elementHierarchyView.ExpandRootItems();
 
             yield return UIETestHelpers.Pause(1);
 
             // Select test-selector-1
-            var selector = BuilderTestsHelper.GetExplorerItemWithName(StyleSheetsPane, k_Selector_1);
+            var selector = BuilderTestsHelper.GetExplorerItemWithName(styleSheetsPane, k_Selector_1);
 
             yield return UIETestEvents.Mouse.SimulateClick(selector);
 
-            var textFoldout = InspectorPane.Query<PersistedFoldout>().Where(f => f.text.Equals("Text")).First();
+            var textFoldout = inspector.Query<PersistedFoldout>().Where(f => f.text.Equals("Text")).First();
             textFoldout.value = true;
 
             var colorField = FindStyleField<ColorField>(textFoldout, "Color");
@@ -120,7 +120,7 @@ namespace Unity.UI.Builder.EditorTests
             Assert.AreEqual(handler.variableField.resolvedStyle.display, DisplayStyle.Flex);
             Assert.IsTrue(HasFocus(inputField));
 
-            selector = BuilderTestsHelper.GetExplorerItemWithName(StyleSheetsPane, k_Selector_1);
+            selector = BuilderTestsHelper.GetExplorerItemWithName(styleSheetsPane, k_Selector_1);
 
             // Click anywhere else to remove focus
             yield return UIETestEvents.Mouse.SimulateClick(selector);
@@ -135,21 +135,21 @@ namespace Unity.UI.Builder.EditorTests
         public IEnumerator HasVariableIndicator()
         {
             var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_NewVariableUxmlFilePath);
-            BuilderWindow.LoadDocument(asset);
+            builder.LoadDocument(asset);
 
             yield return UIETestHelpers.Pause(1);
 
-            HierarchyPane.elementHierarchyView.ExpandAllChildren();
-            StyleSheetsPane.elementHierarchyView.ExpandAllChildren();
+            hierarchy.elementHierarchyView.ExpandRootItems();
+            styleSheetsPane.elementHierarchyView.ExpandRootItems();
 
             yield return UIETestHelpers.Pause(1);
 
             // Select test-selector-1
-            var selector = BuilderTestsHelper.GetExplorerItemWithName(StyleSheetsPane, k_Selector_1);
+            var selector = BuilderTestsHelper.GetExplorerItemWithName(styleSheetsPane, k_Selector_1);
 
             yield return UIETestEvents.Mouse.SimulateClick(selector);
 
-            var textFoldout = InspectorPane.Query<PersistedFoldout>().Where(f => f.text.Equals("Text")).First();
+            var textFoldout = inspector.Query<PersistedFoldout>().Where(f => f.text.Equals("Text")).First();
             textFoldout.value = true;
 
             var colorField = FindStyleField(textFoldout, "Color");
@@ -167,21 +167,21 @@ namespace Unity.UI.Builder.EditorTests
         public IEnumerator SetVariable()
         {
             var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_NewVariableUxmlFilePath);
-            BuilderWindow.LoadDocument(asset);
+            builder.LoadDocument(asset);
 
             yield return UIETestHelpers.Pause(1);
 
-            HierarchyPane.elementHierarchyView.ExpandAllChildren();
-            StyleSheetsPane.elementHierarchyView.ExpandAllChildren();
+            hierarchy.elementHierarchyView.ExpandRootItems();
+            styleSheetsPane.elementHierarchyView.ExpandRootItems();
 
             yield return UIETestHelpers.Pause(1);
 
             // Select test-selector-1
-            var selector = BuilderTestsHelper.GetExplorerItemWithName(StyleSheetsPane, k_Selector_1);
+            var selector = BuilderTestsHelper.GetExplorerItemWithName(styleSheetsPane, k_Selector_1);
 
             yield return UIETestEvents.Mouse.SimulateClick(selector);
 
-            var textFoldout = InspectorPane.Query<PersistedFoldout>().Where(f => f.text.Equals("Text")).First();
+            var textFoldout = base.inspector.Query<PersistedFoldout>().Where(f => f.text.Equals("Text")).First();
             textFoldout.value = true;
 
             // Show variable field for the Size field
@@ -196,7 +196,7 @@ namespace Unity.UI.Builder.EditorTests
 
             textField.value = k_LengthVarName;
 
-            selector = BuilderTestsHelper.GetExplorerItemWithName(StyleSheetsPane, k_Selector_1);
+            selector = BuilderTestsHelper.GetExplorerItemWithName(styleSheetsPane, k_Selector_1);
 
             // Click anywhere else to remove focus
             yield return UIETestEvents.Mouse.SimulateClick(selector);
@@ -218,21 +218,21 @@ namespace Unity.UI.Builder.EditorTests
         public IEnumerator UnsetVariable()
         {
             var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_NewVariableUxmlFilePath);
-            BuilderWindow.LoadDocument(asset);
+            builder.LoadDocument(asset);
 
             yield return UIETestHelpers.Pause(1);
 
-            HierarchyPane.elementHierarchyView.ExpandAllChildren();
-            StyleSheetsPane.elementHierarchyView.ExpandAllChildren();
+            hierarchy.elementHierarchyView.ExpandRootItems();
+            styleSheetsPane.elementHierarchyView.ExpandRootItems();
 
             yield return UIETestHelpers.Pause(1);
 
             // Select test-selector-1
-            var selector = BuilderTestsHelper.GetExplorerItemWithName(StyleSheetsPane, k_Selector_1);
+            var selector = BuilderTestsHelper.GetExplorerItemWithName(styleSheetsPane, k_Selector_1);
 
             yield return UIETestEvents.Mouse.SimulateClick(selector);
 
-            var textFoldout = InspectorPane.Query<PersistedFoldout>().Where(f => f.text.Equals("Text")).First();
+            var textFoldout = base.inspector.Query<PersistedFoldout>().Where(f => f.text.Equals("Text")).First();
             textFoldout.value = true;
 
             // Show variable field for the Color field
@@ -247,7 +247,7 @@ namespace Unity.UI.Builder.EditorTests
 
             textField.value = "";
 
-            selector = BuilderTestsHelper.GetExplorerItemWithName(StyleSheetsPane, k_Selector_1);
+            selector = BuilderTestsHelper.GetExplorerItemWithName(styleSheetsPane, k_Selector_1);
 
             // Click anywhere else to remove focus
             yield return UIETestEvents.Mouse.SimulateClick(selector);

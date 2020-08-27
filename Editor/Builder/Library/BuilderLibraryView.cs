@@ -13,7 +13,7 @@ namespace Unity.UI.Builder
 
         protected BuilderPaneWindow m_PaneWindow;
 
-        public abstract VisualElement PrimaryFocusable { get; }
+        public abstract VisualElement primaryFocusable { get; }
 
         public virtual void SetupView(BuilderLibraryDragger dragger, BuilderTooltipPreview tooltipPreview,
             BuilderPaneContent builderPaneContent, BuilderPaneWindow builderPaneWindow,
@@ -56,22 +56,22 @@ namespace Unity.UI.Builder
             // If this is the uxml file entry of the currently open file, don't allow
             // the user to instantiate it (infinite recursion) or re-open it.
             var listOfOpenDocuments = m_PaneWindow.document.openUXMLFiles;
-            bool isCurrentDocumentOpen = listOfOpenDocuments.Any(doc => doc.uxmlFileName == item.Name);
+            bool isCurrentDocumentOpen = listOfOpenDocuments.Any(doc => doc.uxmlFileName == item.name);
 
             if (isCurrentDocumentOpen)
                 return;
 
-            var newElement = item.MakeVisualElementCallback?.Invoke();
+            var newElement = item.makeVisualElementCallback?.Invoke();
             if (newElement == null)
                 return;
 
             m_DocumentElement.Add(newElement);
 
-            if (item.MakeElementAssetCallback == null)
+            if (item.makeElementAssetCallback == null)
                 BuilderAssetUtilities.AddElementToAsset(m_PaneWindow.document, newElement);
             else
                 BuilderAssetUtilities.AddElementToAsset(
-                    m_PaneWindow.document, newElement, item.MakeElementAssetCallback);
+                    m_PaneWindow.document, newElement, item.makeElementAssetCallback);
 
             // TODO: ListView bug. Does not refresh selection pseudo states after a
             // call to Refresh().
@@ -87,10 +87,10 @@ namespace Unity.UI.Builder
             var box = evt.target as VisualElement;
             var libraryTreeItem = box.GetProperty(BuilderConstants.LibraryItemLinkedManipulatorVEPropertyName) as BuilderLibraryTreeItem;
 
-            if (!libraryTreeItem.HasPreview)
+            if (!libraryTreeItem.hasPreview)
                 return;
 
-            var sample = libraryTreeItem.MakeVisualElementCallback?.Invoke();
+            var sample = libraryTreeItem.makeVisualElementCallback?.Invoke();
             if (sample == null)
                 return;
 

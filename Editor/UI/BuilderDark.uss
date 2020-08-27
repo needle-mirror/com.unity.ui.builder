@@ -53,6 +53,29 @@
 }
 
 /*****************************************************************************/
+/* Notifications */
+/*****************************************************************************/
+
+.unity-builder-notification-entry {
+    border-color: rgb(31, 31, 31);
+    background-color: rgba(61, 61, 61, 0.685);
+}
+
+.unity-builder-notification-entry__details-button {
+    color: rgb(129, 129, 219);
+    border-bottom-color: rgb(129, 129, 219);
+}
+
+.unity-builder-notification-entry__details-button:hover {
+    color: white;
+    border-bottom-color: white;
+}
+
+.unity-builder-notification-entry__dismiss-button:hover {
+    color: white;
+}
+
+/*****************************************************************************/
 /* Viewport                                                                  */
 /*****************************************************************************/
 
@@ -293,4 +316,8 @@
 
 .unity-builder-code-label--element-pseudo-state {
     color: rgb(48, 168, 0);
+}
+
+.unity-builder-code-label--element-attached-stylesheet {
+    color: rgb(143, 100, 200);
 }

@@ -37,6 +37,9 @@ namespace Unity.UI.Builder
         [SerializeField]
         int m_OpenSubDocumentParentIndex = -1;
 
+        [SerializeField]
+        int m_OpenSubDocumentParentSourceTemplateAssetIndex = -1;
+        
         //
         // Unserialized Data
         //
@@ -44,12 +47,37 @@ namespace Unity.UI.Builder
         bool m_HasUnsavedChanges;
         bool m_DocumentBeingSavedExplicitly;
         BuilderUXMLFileSettings m_FileSettings;
+        BuilderDocument m_Document;
+        VisualElement m_CurrentDocumentRootElement;
 
         //
         // Getters
         //
 
-        public BuilderUXMLFileSettings FileSettings => m_FileSettings ?? (m_FileSettings = new BuilderUXMLFileSettings(visualTreeAsset));
+        public BuilderUXMLFileSettings fileSettings => m_FileSettings ?? (m_FileSettings = new BuilderUXMLFileSettings(visualTreeAsset));
+
+        List<BuilderDocumentOpenUXML> openUXMLFiles
+        {
+            get
+            {
+                // Find or create document.
+                if (m_Document == null)
+                {
+                    var allDocuments = Resources.FindObjectsOfTypeAll(typeof(BuilderDocument));
+                    if (allDocuments.Length > 1)
+                        Debug.LogError("UIBuilder: More than one BuilderDocument was somehow created!");
+                    if (allDocuments.Length == 0)
+                        m_Document = BuilderDocument.CreateInstance();
+                    else
+                        m_Document = allDocuments[0] as BuilderDocument;
+                }
+
+                if (m_Document == null)
+                    return null;
+                
+                return m_Document.openUXMLFiles;
+            }
+        }
 
         public StyleSheet activeStyleSheet
         {
@@ -100,7 +128,7 @@ namespace Unity.UI.Builder
             {
                 var paths = new List<string>();
                 for (int i = 0; i < m_OpenUSSFiles.Count; ++i)
-                    paths.Add(m_OpenUSSFiles[i].AssetPath);
+                    paths.Add(m_OpenUSSFiles[i].assetPath);
                 return paths;
             }
         }
@@ -118,10 +146,14 @@ namespace Unity.UI.Builder
 
         public StyleSheet firstStyleSheet
         {
-            get { return m_OpenUSSFiles.Count > 0 ? m_OpenUSSFiles[0].Sheet : null; }
+            get { return m_OpenUSSFiles.Count > 0 ? m_OpenUSSFiles[0].styleSheet : null; }
         }
 
         public List<BuilderDocumentOpenUSS> openUSSFiles => m_OpenUSSFiles;
+        
+        public bool isChildSubDocument => openSubDocumentParentIndex > -1;
+        
+        public BuilderDocumentOpenUXML openSubDocumentParent => isChildSubDocument ? openUXMLFiles[openSubDocumentParentIndex] : null;
 
         //
         // Getter/Setters
@@ -174,6 +206,15 @@ namespace Unity.UI.Builder
             }
         }
 
+        public int openSubDocumentParentSourceTemplateAssetIndex
+        {
+            get { return m_OpenSubDocumentParentSourceTemplateAssetIndex; }
+            set
+            {
+                m_OpenSubDocumentParentSourceTemplateAssetIndex = value;
+            }
+        }
+
         //
         // Initialize / Construct / Enable / Clear
         //
@@ -206,21 +247,24 @@ namespace Unity.UI.Builder
         // Styles
         //
 
-        public void RefreshStyle(VisualElement documentElement)
+        public void RefreshStyle(VisualElement documentRootElement)
         {
+            if (m_CurrentDocumentRootElement == null)
+                m_CurrentDocumentRootElement = documentRootElement;
+
             foreach (var openUSS in m_OpenUSSFiles)
             {
-                var sheet = openUSS.Sheet;
+                var sheet = openUSS.styleSheet;
                 if (sheet == null)
                     continue;
 
-                if (!documentElement.styleSheets.Contains(sheet))
+                if (!m_CurrentDocumentRootElement.styleSheets.Contains(sheet))
                 {
-                    documentElement.styleSheets.Clear();
+                    m_CurrentDocumentRootElement.styleSheets.Clear();
 
                     foreach (var innerOpenUSS in m_OpenUSSFiles)
-                        if (innerOpenUSS.Sheet != null)
-                            documentElement.styleSheets.Add(innerOpenUSS.Sheet);
+                        if (innerOpenUSS.styleSheet != null)
+                            m_CurrentDocumentRootElement.styleSheets.Add(innerOpenUSS.styleSheet);
 
                     break;
                 }
@@ -230,13 +274,13 @@ namespace Unity.UI.Builder
             UnityEngine.UIElements.StyleSheets.StyleSheetCache.ClearCaches();
             foreach (var openUSS in m_OpenUSSFiles)
                 openUSS.FixRuleReferences();
-            documentElement.IncrementVersion((VersionChangeType)(-1));
+            m_CurrentDocumentRootElement.IncrementVersion((VersionChangeType)(-1));
         }
 
         public void MarkStyleSheetsDirty()
         {
             foreach (var openUSS in m_OpenUSSFiles)
-                EditorUtility.SetDirty(openUSS.Sheet);
+                EditorUtility.SetDirty(openUSS.styleSheet);
         }
 
         public void AddStyleSheetToDocument(StyleSheet styleSheet, string ussPath)
@@ -268,7 +312,7 @@ namespace Unity.UI.Builder
 
             for (int i = 0; i < m_OpenUSSFiles.Count; ++i)
             {
-                var localUssPath = m_OpenUSSFiles[i].AssetPath;
+                var localUssPath = m_OpenUSSFiles[i].assetPath;
 
                 if (!string.IsNullOrEmpty(newUssPath) && i == newUssIndex)
                     localUssPath = newUssPath;
@@ -276,7 +320,7 @@ namespace Unity.UI.Builder
                 if (string.IsNullOrEmpty(localUssPath))
                     continue;
 
-                rootAsset.AddStyleSheet(m_OpenUSSFiles[i].Sheet);
+                rootAsset.AddStyleSheet(m_OpenUSSFiles[i].styleSheet);
                 rootAsset.AddStyleSheetPath(localUssPath);
             }
         }
@@ -302,7 +346,7 @@ namespace Unity.UI.Builder
 
         void AddStyleSheetToRootIfNeeded(VisualElement element)
         {
-            var rootElement = BuilderSharedStyles.GetDocumentRootLevelElement(element);
+            var rootElement = BuilderSharedStyles.GetDocumentRootLevelElement(element, m_CurrentDocumentRootElement);
             if (rootElement == null)
                 return;
 
@@ -367,14 +411,12 @@ namespace Unity.UI.Builder
             foreach (var openUSSFile in m_OpenUSSFiles)
                 openUSSFile.SaveToDisk(visualTreeAsset);
 
-            { // Save UXML file.
-                // Need to save a backup before the AssetDatabase.Refresh().
-                if (m_VisualTreeAssetBackup == null)
-                    m_VisualTreeAssetBackup = m_VisualTreeAsset.DeepCopy();
-                else
-                    m_VisualTreeAsset.DeepOverwrite(m_VisualTreeAssetBackup);
-                WriteUXMLToFile(newUxmlPath);
-            }
+            // Save UXML files
+            // Saving all open UXML files to ensure references correct upon changes in child documents.
+            foreach (var openUXMLFile in openUXMLFiles)
+                openUXMLFile.PreSaveSyncBackup();
+
+            WriteUXMLToFile(newUxmlPath);
 
             // Once we wrote all the files to disk, we refresh the DB and reload
             // the files from the AssetDatabase.
@@ -391,10 +433,11 @@ namespace Unity.UI.Builder
             // Check if any USS assets have changed reload them.
             foreach (var openUSSFile in m_OpenUSSFiles)
                 needsFullRefresh |= openUSSFile.PostSaveToDiskChecksAndFixes();
-            { // Check if the UXML asset has changed and reload it.
-                m_VisualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(newUxmlPath);
-                needsFullRefresh |= m_VisualTreeAsset != m_VisualTreeAssetBackup;
-            }
+
+            // Check if any UXML assets have changed and reload them.
+            // Saving all open UXML files to ensure references correct upon changes in child subdocuments.
+            foreach (var openUXMLFile in openUXMLFiles)
+                needsFullRefresh |= openUXMLFile.PostSaveToDiskChecksAndFixes(this == openUXMLFile ? newUxmlPath : null, needsFullRefresh);
 
             if (needsFullRefresh)
             {
@@ -406,16 +449,9 @@ namespace Unity.UI.Builder
                     m_Settings.SaveSettingsToDisk();
                 }
 
-                { // Fix up UXML asset.
-                    // To get all the selection markers into the new assets.
-                    m_VisualTreeAssetBackup.DeepOverwrite(m_VisualTreeAsset);
-
-                    // Reset asset name.
-                    m_VisualTreeAsset.name = Path.GetFileNameWithoutExtension(newUxmlPath);
-
-                    m_VisualTreeAsset.ConvertAllAssetReferencesToPaths();
-                    m_OpenendVisualTreeAssetOldPath = newUxmlPath;
-                }
+                // Reset asset name.
+                m_VisualTreeAsset.name = Path.GetFileNameWithoutExtension(newUxmlPath);
+                m_OpenendVisualTreeAssetOldPath = newUxmlPath;
 
                 if (documentRootElement != null)
                     ReloadDocumentToCanvas(documentRootElement);
@@ -474,8 +510,7 @@ namespace Unity.UI.Builder
         {
             Clear();
 
-            // Re-run initializations and setup, even though there's nothing to clone.
-            ReloadDocumentToCanvas(documentRootElement);
+            ClearCanvasDocumentRootElement(documentRootElement);
 
             hasUnsavedChanges = false;
         }
@@ -573,7 +608,7 @@ namespace Unity.UI.Builder
             bool found = false;
             foreach (var openUSSFile in m_OpenUSSFiles)
             {
-                if (m_ActiveStyleSheet != openUSSFile.Sheet)
+                if (m_ActiveStyleSheet != openUSSFile.styleSheet)
                     continue;
 
                 found = true;
@@ -583,7 +618,11 @@ namespace Unity.UI.Builder
                 m_ActiveStyleSheet = firstStyleSheet;
         }
 
-        public void OnAfterBuilderDeserialize(VisualElement documentElement)
+        //
+        // Serialization
+        //
+
+        public void OnAfterBuilderDeserialize(VisualElement documentRootElement)
         {
             // Refresh StyleSheets.
             var styleSheetsUsed = m_VisualTreeAsset.GetAllReferencedStyleSheets();
@@ -595,7 +634,7 @@ namespace Unity.UI.Builder
 
             for (int i = 0; i < styleSheetsUsed.Count; ++i)
             {
-                if (m_OpenUSSFiles[i].Sheet == styleSheetsUsed[i])
+                if (m_OpenUSSFiles[i].styleSheet == styleSheetsUsed[i])
                     continue;
 
                 m_OpenUSSFiles[i].Set(styleSheetsUsed[i], null);
@@ -612,7 +651,7 @@ namespace Unity.UI.Builder
             foreach (var openUSSFile in m_OpenUSSFiles)
                 openUSSFile.FixRuleReferences();
 
-            ReloadDocumentToCanvas(documentElement);
+            ReloadDocumentToCanvas(documentRootElement);
         }
 
         public void OnAfterDeserialize()
@@ -676,24 +715,89 @@ namespace Unity.UI.Builder
             File.WriteAllText(uxmlPath, uxmlText);
         }
 
+        VisualElement ReloadChildToCanvas(BuilderDocumentOpenUXML childOpenUXML, VisualElement rootElement)
+        {
+            var childRootElement = rootElement;
+            if (childOpenUXML.openSubDocumentParentSourceTemplateAssetIndex > -1)
+            {
+                var parentOpenUXML = openUXMLFiles[childOpenUXML.openSubDocumentParentIndex];
+                rootElement = ReloadChildToCanvas(parentOpenUXML, rootElement);
+
+                var targetTemplateAsset = parentOpenUXML.visualTreeAsset.templateAssets[childOpenUXML.openSubDocumentParentSourceTemplateAssetIndex];
+                var templateContainerQuery = rootElement.Query<TemplateContainer>().Where(container =>
+                    container.GetProperty(BuilderConstants.ElementLinkedVisualElementAssetVEPropertyName) as TemplateAsset == targetTemplateAsset);
+                var foundTemplateContainer = templateContainerQuery.ToList().First();
+                childRootElement = foundTemplateContainer;
+            }
+
+            ReloadDocumentHierarchyToCanvas(childOpenUXML.visualTreeAsset, childRootElement);
+            childOpenUXML.ReloadStyleSheetsToCanvas(childRootElement);
+            return childRootElement;
+        }
+
+        void ClearCanvasDocumentRootElement(VisualElement documentRootElement)
+        {
+            if (documentRootElement == null)
+                return;
+
+            documentRootElement.Clear();
+            BuilderSharedStyles.ClearContainer(documentRootElement);
+
+            documentRootElement.SetProperty(
+                BuilderConstants.ElementLinkedVisualTreeAssetVEPropertyName, visualTreeAsset);
+        }
+
         void ReloadDocumentToCanvas(VisualElement documentRootElement)
         {
             if (documentRootElement == null)
                 return;
 
+            ClearCanvasDocumentRootElement(documentRootElement);
+
+            if (visualTreeAsset == null)
+                return;
+
+            var childRootElement = ReloadChildToCanvas(this, documentRootElement);
+            ReloadStyleSheetElements(documentRootElement);
+
+            // Lighten opacity of all sibling documents throughout hierarchy
+            var currentRoot = childRootElement;
+            while (currentRoot != documentRootElement)
+            {
+                var currentParent = currentRoot.parent;
+                foreach (var sibling in currentParent.Children())
+                {
+                    if (sibling == currentRoot)
+                        continue;
+                    sibling.style.opacity = BuilderConstants.OpacityFadeOutFactor;
+                }
+                currentRoot = currentParent;
+            }
+        }
+
+        void ReloadDocumentHierarchyToCanvas(VisualTreeAsset vta, VisualElement parentElement)
+        {
+            if (parentElement == null)
+                return;
+
+            parentElement.Clear();
             // Load the asset.
-            documentRootElement.Clear();
             try
             {
-                visualTreeAsset.LinkedCloneTree(documentRootElement);
+                vta.LinkedCloneTree(parentElement);
             }
             catch (Exception e)
             {
                 Debug.LogError("Invalid UXML or USS: " + e.ToString());
                 Clear();
             }
-            documentRootElement.SetProperty(
-                BuilderConstants.ElementLinkedVisualTreeAssetVEPropertyName, visualTreeAsset);
+            parentElement.SetProperty(
+                BuilderConstants.ElementLinkedVisualTreeAssetVEPropertyName, vta);
+        }
+
+        void ReloadStyleSheetsToCanvas(VisualElement documentRootElement)
+        {
+            m_CurrentDocumentRootElement = documentRootElement;
 
             // TODO: For now, don't allow stylesheets in root elements.
             foreach (var rootElement in documentRootElement.Children())
@@ -701,9 +805,48 @@ namespace Unity.UI.Builder
 
             // Refresh styles.
             RefreshStyle(documentRootElement);
+        }
 
+        void ReloadStyleSheetElements(VisualElement documentRootElement) {
             // Add shared styles.
+
+            BuilderSharedStyles.ClearContainer(documentRootElement);
             BuilderSharedStyles.AddSelectorElementsFromStyleSheet(documentRootElement, m_OpenUSSFiles);
+
+            var parentIndex = openSubDocumentParentIndex;
+            while (parentIndex > -1)
+            {
+                var parentUXML = openUXMLFiles[parentIndex];
+                var parentUSSFiles = parentUXML.openUSSFiles;
+                BuilderSharedStyles.AddSelectorElementsFromStyleSheet(documentRootElement, parentUSSFiles, m_OpenUSSFiles.Count, true, parentUXML.uxmlFileName);
+
+                parentIndex = parentUXML.openSubDocumentParentIndex;
+            }
+        }
+
+        void PreSaveSyncBackup()
+        {
+            // Save UXML file.
+            if (m_VisualTreeAssetBackup == null)
+                m_VisualTreeAssetBackup = m_VisualTreeAsset.DeepCopy();
+            else
+                m_VisualTreeAsset.DeepOverwrite(m_VisualTreeAssetBackup);
+        }
+
+        bool PostSaveToDiskChecksAndFixes(string newUxmlPath, bool needsFullRefresh)
+        {
+            // Check if the UXML asset has changed and reload it.
+            m_VisualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
+                string.IsNullOrEmpty(newUxmlPath) ? uxmlPath : newUxmlPath);
+
+            needsFullRefresh |= m_VisualTreeAsset != m_VisualTreeAssetBackup;
+            if (needsFullRefresh)
+            {
+                // To get all the selection markers into the new assets.
+                m_VisualTreeAssetBackup.DeepOverwrite(m_VisualTreeAsset);
+                m_VisualTreeAsset.ConvertAllAssetReferencesToPaths();
+            }
+            return needsFullRefresh;
         }
     }
 }

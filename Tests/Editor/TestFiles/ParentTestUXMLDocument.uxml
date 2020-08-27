@@ -1,6 +1,9 @@
-﻿<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
-    <ui:Template name="SampleSection" path="Packages/com.unity.ui.builder/Editor/UI/SampleDocument/BuilderSampleCanvasSection.uxml" />
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
     <ui:Template name="ChildTestUXMLDocument" path="Packages/com.unity.ui.builder/Tests/Editor/TestFiles/ChildTestUXMLDocument.uxml" />
-    <ui:Instance template="ChildTestUXMLDocument" name="ChildTestUXMLDocument" />
+    <ui:Instance template="ChildTestUXMLDocument" name="ChildTestUXMLDocument">
+        <Style src="ColorsTestStyleSheet.uss" />
+    </ui:Instance>
+    <ui:VisualElement name="TestElement">
+        <Style src="ColorsTestStyleSheet.uss" />
+    </ui:VisualElement>
 </ui:UXML>
-

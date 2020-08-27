@@ -85,6 +85,6 @@ namespace Unity.UI.Builder
             m_EllipsisMenu.menu.AppendAction(actionName, action, actionStatusCallback, userData);
         }
 
-        public override VisualElement contentContainer => m_Container;
+        public override VisualElement contentContainer => m_Container == null ? this : m_Container;
     }
 }

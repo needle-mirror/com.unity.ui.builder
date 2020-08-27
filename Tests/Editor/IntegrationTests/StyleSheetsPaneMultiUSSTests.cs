@@ -48,7 +48,7 @@ namespace Unity.UI.Builder.EditorTests
         {
             AddElementCodeOnly("TestElement");
 
-            var createSelectorField = StyleSheetsPane.Q<TextField>();
+            var createSelectorField = styleSheetsPane.Q<TextField>();
             createSelectorField.visualInput.Blur();
             Assert.That(createSelectorField.text, Is.EqualTo(BuilderConstants.ExplorerInExplorerNewClassSelectorInfoMessage));
 
@@ -63,13 +63,13 @@ namespace Unity.UI.Builder.EditorTests
                 return k_TestUSSFilePath;
             };
 
-            yield return UIETestEvents.KeyBoard.SimulateTyping(BuilderWindow, ".new-selector");
-            yield return UIETestEvents.KeyBoard.SimulateKeyDown(BuilderWindow, KeyCode.Return);
+            yield return UIETestEvents.KeyBoard.SimulateTyping(builder, ".new-selector");
+            yield return UIETestEvents.KeyBoard.SimulateKeyDown(builder, KeyCode.Return);
             Assert.That(hasSaveDialogBeenOpened, Is.True);
 
             yield return UIETestHelpers.Pause(1);
 
-            var unityButtonSelectors = BuilderTestsHelper.GetExplorerItemsWithName(StyleSheetsPane, ".new-selector");
+            var unityButtonSelectors = BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, ".new-selector");
             Assert.That(unityButtonSelectors.Count, Is.EqualTo(1));
         }
 
@@ -81,12 +81,12 @@ namespace Unity.UI.Builder.EditorTests
         {
             AddElementCodeOnly("TestElement");
 
-            var panel = BuilderWindow.rootVisualElement.panel as BaseVisualElementPanel;
+            var panel = builder.rootVisualElement.panel as BaseVisualElementPanel;
             var menu = panel.contextualMenuManager as BuilderTestContextualMenuManager;
             Assert.That(menu, Is.Not.Null);
             Assert.That(menu.menuIsDisplayed, Is.False);
 
-            yield return UIETestEvents.Mouse.SimulateClick(StyleSheetsPane, MouseButton.RightMouse);
+            yield return UIETestEvents.Mouse.SimulateClick(styleSheetsPane, MouseButton.RightMouse);
             Assert.That(menu.menuIsDisplayed, Is.True);
 
             var newUSS = menu.FindMenuAction(BuilderConstants.ExplorerStyleSheetsPaneCreateNewUSSMenu);
@@ -107,7 +107,7 @@ namespace Unity.UI.Builder.EditorTests
         {
             AddElementCodeOnly("TestElement");
 
-            var addMenu = StyleSheetsPane.Q<ToolbarMenu>("add-uss-menu");
+            var addMenu = styleSheetsPane.Q<ToolbarMenu>("add-uss-menu");
             var addMenuItems = addMenu.menu.MenuItems();
             Assert.AreEqual(addMenuItems.Count, 2);
             var actionMenuItem = addMenuItems[0] as DropdownMenuAction;
@@ -125,7 +125,7 @@ namespace Unity.UI.Builder.EditorTests
 
             yield return UIETestHelpers.Pause(1);
 
-            var newUSSExplorerItems = BuilderTestsHelper.GetExplorerItemsWithName(StyleSheetsPane, k_TestUSSFileName);
+            var newUSSExplorerItems = BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, k_TestUSSFileName);
             Assert.That(newUSSExplorerItems.Count, Is.EqualTo(1));
         }
 
@@ -134,7 +134,7 @@ namespace Unity.UI.Builder.EditorTests
         {
             AddElementCodeOnly("TestElement");
 
-            var addMenu = StyleSheetsPane.Q<ToolbarMenu>("add-uss-menu");
+            var addMenu = styleSheetsPane.Q<ToolbarMenu>("add-uss-menu");
             var addMenuItems = addMenu.menu.MenuItems();
             Assert.AreEqual(addMenuItems.Count, 2);
             var actionMenuItem = addMenuItems[1] as DropdownMenuAction;
@@ -152,7 +152,7 @@ namespace Unity.UI.Builder.EditorTests
 
             yield return UIETestHelpers.Pause(1);
 
-            var newUSSExplorerItems = BuilderTestsHelper.GetExplorerItemsWithName(StyleSheetsPane, k_ColorsTestUSSFileName);
+            var newUSSExplorerItems = BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, k_ColorsTestUSSFileName);
             Assert.That(newUSSExplorerItems.Count, Is.EqualTo(1));
         }
 
@@ -164,12 +164,12 @@ namespace Unity.UI.Builder.EditorTests
         {
             AddElementCodeOnly("TestElement");
 
-            var panel = BuilderWindow.rootVisualElement.panel as BaseVisualElementPanel;
+            var panel = builder.rootVisualElement.panel as BaseVisualElementPanel;
             var menu = panel.contextualMenuManager as BuilderTestContextualMenuManager;
             Assert.That(menu, Is.Not.Null);
             Assert.That(menu.menuIsDisplayed, Is.False);
 
-            yield return UIETestEvents.Mouse.SimulateClick(StyleSheetsPane, MouseButton.RightMouse);
+            yield return UIETestEvents.Mouse.SimulateClick(styleSheetsPane, MouseButton.RightMouse);
             Assert.That(menu.menuIsDisplayed, Is.True);
 
             var newUSS = menu.FindMenuAction(BuilderConstants.ExplorerStyleSheetsPaneCreateNewUSSMenu);
@@ -187,7 +187,7 @@ namespace Unity.UI.Builder.EditorTests
 
             yield return UIETestHelpers.Pause(1);
 
-            var newUSSExplorerItems = BuilderTestsHelper.GetExplorerItemsWithName(StyleSheetsPane, k_TestUSSFileName);
+            var newUSSExplorerItems = BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, k_TestUSSFileName);
             Assert.That(newUSSExplorerItems.Count, Is.EqualTo(1));
         }
 
@@ -199,12 +199,12 @@ namespace Unity.UI.Builder.EditorTests
         {
             AddElementCodeOnly("TestElement");
 
-            var panel = BuilderWindow.rootVisualElement.panel as BaseVisualElementPanel;
+            var panel = builder.rootVisualElement.panel as BaseVisualElementPanel;
             var menu = panel.contextualMenuManager as BuilderTestContextualMenuManager;
             Assert.That(menu, Is.Not.Null);
             Assert.That(menu.menuIsDisplayed, Is.False);
 
-            yield return UIETestEvents.Mouse.SimulateClick(StyleSheetsPane, MouseButton.RightMouse);
+            yield return UIETestEvents.Mouse.SimulateClick(styleSheetsPane, MouseButton.RightMouse);
             Assert.That(menu.menuIsDisplayed, Is.True);
             var existingUSS = menu.FindMenuAction(BuilderConstants.ExplorerStyleSheetsPaneAddExistingUSSMenu);
             Assert.That(existingUSS, Is.Not.Null);
@@ -221,7 +221,7 @@ namespace Unity.UI.Builder.EditorTests
 
             yield return UIETestHelpers.Pause(1);
 
-            var newUSSExplorerItems = BuilderTestsHelper.GetExplorerItemsWithName(StyleSheetsPane, k_ColorsTestUSSFileName);
+            var newUSSExplorerItems = BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, k_ColorsTestUSSFileName);
             Assert.That(newUSSExplorerItems.Count, Is.EqualTo(1));
         }
 
@@ -234,12 +234,12 @@ namespace Unity.UI.Builder.EditorTests
         {
             yield return CodeOnlyAddUSSToDocument(k_ColorsTestUSSPath);
 
-            var panel = BuilderWindow.rootVisualElement.panel as BaseVisualElementPanel;
+            var panel = builder.rootVisualElement.panel as BaseVisualElementPanel;
             var menu = panel.contextualMenuManager as BuilderTestContextualMenuManager;
             Assert.That(menu, Is.Not.Null);
             Assert.That(menu.menuIsDisplayed, Is.False);
 
-            var newUSSExplorerItems = BuilderTestsHelper.GetExplorerItemsWithName(StyleSheetsPane, k_ColorsTestUSSFileName);
+            var newUSSExplorerItems = BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, k_ColorsTestUSSFileName);
             Assert.That(newUSSExplorerItems.Count, Is.EqualTo(1));
 
             yield return UIETestEvents.Mouse.SimulateClick(newUSSExplorerItems[0], MouseButton.RightMouse);
@@ -255,7 +255,7 @@ namespace Unity.UI.Builder.EditorTests
 
             yield return UIETestHelpers.Pause(1);
 
-            newUSSExplorerItems = BuilderTestsHelper.GetExplorerItemsWithName(StyleSheetsPane, k_ColorsTestUSSFileName);
+            newUSSExplorerItems = BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, k_ColorsTestUSSFileName);
             Assert.That(newUSSExplorerItems.Count, Is.EqualTo(0));
         }
 
@@ -266,26 +266,26 @@ namespace Unity.UI.Builder.EditorTests
         public IEnumerator SetAsActiveUSSChangesActiveUSS()
         {
             // Active StyleSheet is null when no USS are added.
-            Assert.That(BuilderWindow.document.firstStyleSheet, Is.Null);
-            Assert.That(BuilderWindow.document.activeStyleSheet, Is.Null);
+            Assert.That(builder.document.firstStyleSheet, Is.Null);
+            Assert.That(builder.document.activeStyleSheet, Is.Null);
 
             yield return CodeOnlyAddUSSToDocument(k_ColorsTestUSSPath);
             yield return CodeOnlyAddUSSToDocument(k_LayoutTestUSSPath);
 
-            var panel = BuilderWindow.rootVisualElement.panel as BaseVisualElementPanel;
+            var panel = builder.rootVisualElement.panel as BaseVisualElementPanel;
             var menu = panel.contextualMenuManager as BuilderTestContextualMenuManager;
             Assert.That(menu, Is.Not.Null);
             Assert.That(menu.menuIsDisplayed, Is.False);
 
             // First StyleSheet should be active by default.
-            var colorsExplorerItem = BuilderTestsHelper.GetExplorerItemWithName(StyleSheetsPane, k_ColorsTestUSSFileName);
+            var colorsExplorerItem = BuilderTestsHelper.GetExplorerItemWithName(styleSheetsPane, k_ColorsTestUSSFileName);
             Assert.That(colorsExplorerItem, Is.Not.Null);
             var colorStyleSheet = GetStyleSheetFromExplorerItem(colorsExplorerItem, k_ColorsTestUSSPath);
-            Assert.That(BuilderWindow.document.firstStyleSheet, Is.EqualTo(colorStyleSheet));
-            Assert.That(BuilderWindow.document.activeStyleSheet, Is.EqualTo(colorStyleSheet));
+            Assert.That(builder.document.firstStyleSheet, Is.EqualTo(colorStyleSheet));
+            Assert.That(builder.document.activeStyleSheet, Is.EqualTo(colorStyleSheet));
 
             // Activate second StyleSheet.
-            var layoutExplorerItem = BuilderTestsHelper.GetExplorerItemWithName(StyleSheetsPane, k_LayoutTestUSSFileName);
+            var layoutExplorerItem = BuilderTestsHelper.GetExplorerItemWithName(styleSheetsPane, k_LayoutTestUSSFileName);
             Assert.That(layoutExplorerItem, Is.Not.Null);
             var layoutStyleSheet = GetStyleSheetFromExplorerItem(layoutExplorerItem, k_LayoutTestUSSPath);
             yield return UIETestEvents.Mouse.SimulateClick(layoutExplorerItem, MouseButton.RightMouse);
@@ -293,21 +293,21 @@ namespace Unity.UI.Builder.EditorTests
             var activateUSSMenuEntry = menu.FindMenuAction(BuilderConstants.ExplorerStyleSheetsPaneSetActiveUSS);
             Assert.That(activateUSSMenuEntry, Is.Not.Null);
             activateUSSMenuEntry.Execute();
-            Assert.That(BuilderWindow.document.firstStyleSheet, Is.EqualTo(colorStyleSheet));
-            Assert.That(BuilderWindow.document.activeStyleSheet, Is.EqualTo(layoutStyleSheet));
+            Assert.That(builder.document.firstStyleSheet, Is.EqualTo(colorStyleSheet));
+            Assert.That(builder.document.activeStyleSheet, Is.EqualTo(layoutStyleSheet));
 
             // Check sub-title.
-            Assert.AreEqual(layoutStyleSheet.name + BuilderConstants.UssExtension, StyleSheetsPane.pane.subTitle);
+            Assert.AreEqual(layoutStyleSheet.name + BuilderConstants.UssExtension, styleSheetsPane.pane.subTitle);
 
             // Re-activate first StyleSheet.
-            colorsExplorerItem = BuilderTestsHelper.GetExplorerItemWithName(StyleSheetsPane, k_ColorsTestUSSFileName);
+            colorsExplorerItem = BuilderTestsHelper.GetExplorerItemWithName(styleSheetsPane, k_ColorsTestUSSFileName);
             Assert.That(colorsExplorerItem, Is.Not.Null);
             yield return UIETestEvents.Mouse.SimulateClick(colorsExplorerItem, MouseButton.RightMouse);
             Assert.That(menu.menuIsDisplayed, Is.True);
             activateUSSMenuEntry = menu.FindMenuAction(BuilderConstants.ExplorerStyleSheetsPaneSetActiveUSS);
             Assert.That(activateUSSMenuEntry, Is.Not.Null);
             activateUSSMenuEntry.Execute();
-            Assert.That(BuilderWindow.document.activeStyleSheet, Is.EqualTo(colorStyleSheet));
+            Assert.That(builder.document.activeStyleSheet, Is.EqualTo(colorStyleSheet));
         }
 
         /// <summary>
@@ -320,20 +320,20 @@ namespace Unity.UI.Builder.EditorTests
             yield return CodeOnlyAddUSSToDocument(k_LayoutTestUSSPath);
 
             // Copy Selector.
-            var unityButtonSelectors = BuilderTestsHelper.GetExplorerItemsWithName(StyleSheetsPane, ".unity-button");
+            var unityButtonSelectors = BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, ".unity-button");
             yield return UIETestEvents.Mouse.SimulateClick(unityButtonSelectors[0]);
-            yield return UIETestEvents.ExecuteCommand(BuilderWindow, UIETestEvents.Command.Copy);
+            yield return UIETestEvents.ExecuteCommand(builder, UIETestEvents.Command.Copy);
 
             // Activate the second StyleSheet.
-            var layoutExplorerItem = BuilderTestsHelper.GetExplorerItemWithName(StyleSheetsPane, k_LayoutTestUSSFileName);
+            var layoutExplorerItem = BuilderTestsHelper.GetExplorerItemWithName(styleSheetsPane, k_LayoutTestUSSFileName);
             Assert.That(layoutExplorerItem, Is.Not.Null);
             var layoutStyleSheet = GetStyleSheetFromExplorerItem(layoutExplorerItem, k_LayoutTestUSSPath);
             var previousNumberOfSelectors = layoutStyleSheet.complexSelectors.Length;
-            BuilderStyleSheetsUtilities.SetActiveUSS(Selection, StyleSheetsPane.paneWindow, layoutStyleSheet);
-            Assert.That(BuilderWindow.document.activeStyleSheet, Is.EqualTo(layoutStyleSheet));
+            BuilderStyleSheetsUtilities.SetActiveUSS(selection, styleSheetsPane.paneWindow, layoutStyleSheet);
+            Assert.That(builder.document.activeStyleSheet, Is.EqualTo(layoutStyleSheet));
 
             // Paste Selector.
-            yield return UIETestEvents.ExecuteCommand(BuilderWindow, UIETestEvents.Command.Paste);
+            yield return UIETestEvents.ExecuteCommand(builder, UIETestEvents.Command.Paste);
             Assert.That(layoutStyleSheet.complexSelectors.Length, Is.EqualTo(previousNumberOfSelectors + 2)); // 2 for the extra fake rule added to the stylesheet for the pasted selector. see BuilderSharedStyles.CreateNewSelectorElement
         }
 
@@ -349,27 +349,27 @@ namespace Unity.UI.Builder.EditorTests
             yield return CodeOnlyAddUSSToDocument(k_ColorsTestUSSPath);
             yield return CodeOnlyAddUSSToDocument(k_LayoutTestUSSPath);
 
-            var colorsUSS = BuilderWindow.document.activeOpenUXMLFile.openUSSFiles[0].Sheet;
+            var colorsUSS = builder.document.activeOpenUXMLFile.openUSSFiles[0].styleSheet;
 
             Assert.AreEqual(".unity-button", StyleSheetToUss.ToUssSelector(colorsUSS.complexSelectors[0]));
             Assert.AreEqual(".unity-label", StyleSheetToUss.ToUssSelector(colorsUSS.complexSelectors[1]));
             Assert.AreEqual("#builder-test", StyleSheetToUss.ToUssSelector(colorsUSS.complexSelectors[2]));
 
-            var unityButtonSelectorItem = BuilderTestsHelper.GetExplorerItemsWithName(StyleSheetsPane, ".unity-button")[0];
+            var unityButtonSelectorItem = BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, ".unity-button")[0];
             yield return UIETestEvents.Mouse.SimulateClick(unityButtonSelectorItem);
 
 #if UNITY_2020_1_OR_NEWER
-            var unityLabelSelectorItem = BuilderTestsHelper.GetExplorerItemsWithName(StyleSheetsPane, ".unity-label")[0];
+            var unityLabelSelectorItem = BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, ".unity-label")[0];
             yield return UIETestEvents.Mouse.SimulateClick(unityLabelSelectorItem, MouseButton.LeftMouse, EventModifiers.Shift);
 #endif
 
-            Assert.AreEqual(selectionCount, Selection.selectionCount);
+            Assert.AreEqual(selectionCount, selection.selectionCount);
 
-            var builderTestSelectorItem = BuilderTestsHelper.GetExplorerItemsWithName(StyleSheetsPane, "#builder-test")[0];
+            var builderTestSelectorItem = BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, "#builder-test")[0];
             var reorderZoneBelow = builderTestSelectorItem.Q("reorder-zone-below");
             Assert.NotNull(reorderZoneBelow);
 
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 unityButtonSelectorItem.worldBound.center,
                 reorderZoneBelow.worldBound.center);
 
@@ -383,7 +383,7 @@ namespace Unity.UI.Builder.EditorTests
             Assert.AreEqual(".unity-button", StyleSheetToUss.ToUssSelector(colorsUSS.complexSelectors[2]));
 #endif
 
-            Assert.AreEqual(selectionCount, Selection.selectionCount);
+            Assert.AreEqual(selectionCount, selection.selectionCount);
         }
 
         [UnityTest]
@@ -398,32 +398,32 @@ namespace Unity.UI.Builder.EditorTests
             yield return CodeOnlyAddUSSToDocument(k_ColorsTestUSSPath);
             yield return CodeOnlyAddUSSToDocument(k_LayoutTestUSSPath);
 
-            var colorsUSS = BuilderWindow.document.activeOpenUXMLFile.openUSSFiles[0].Sheet;
-            var layoutUSS = BuilderWindow.document.activeOpenUXMLFile.openUSSFiles[1].Sheet;
+            var colorsUSS = builder.document.activeOpenUXMLFile.openUSSFiles[0].styleSheet;
+            var layoutUSS = builder.document.activeOpenUXMLFile.openUSSFiles[1].styleSheet;
 
             Assert.AreEqual(".unity-button", StyleSheetToUss.ToUssSelector(colorsUSS.complexSelectors[0]));
             Assert.AreEqual(".unity-label", StyleSheetToUss.ToUssSelector(colorsUSS.complexSelectors[1]));
             Assert.AreEqual("#builder-test", StyleSheetToUss.ToUssSelector(colorsUSS.complexSelectors[2]));
 
-            var unityButtonSelectorItem = BuilderTestsHelper.GetExplorerItemsWithName(StyleSheetsPane, ".unity-button")[0];
+            var unityButtonSelectorItem = BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, ".unity-button")[0];
             yield return UIETestEvents.Mouse.SimulateClick(unityButtonSelectorItem);
 
 #if UNITY_2020_1_OR_NEWER
-            var unityLabelSelectorItem = BuilderTestsHelper.GetExplorerItemsWithName(StyleSheetsPane, ".unity-label")[0];
+            var unityLabelSelectorItem = BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, ".unity-label")[0];
             yield return UIETestEvents.Mouse.SimulateClick(unityLabelSelectorItem, MouseButton.LeftMouse, EventModifiers.Shift);
 #endif
 
-            Assert.AreEqual(selectionCount, Selection.selectionCount);
+            Assert.AreEqual(selectionCount, selection.selectionCount);
 
-            var builderTestSelectorItem = BuilderTestsHelper.GetExplorerItemsWithName(StyleSheetsPane, "#builder-test")[1];
+            var builderTestSelectorItem = BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, "#builder-test")[1];
             var reorderZoneAbove = builderTestSelectorItem.Q("reorder-zone-above");
             Assert.NotNull(reorderZoneAbove);
 
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 unityButtonSelectorItem.worldBound.center,
                 reorderZoneAbove.worldBound.center);
 
-            Assert.AreEqual(selectionCount, Selection.selectionCount);
+            Assert.AreEqual(selectionCount, selection.selectionCount);
 
 #if UNITY_2020_1_OR_NEWER
             Assert.AreEqual(1, colorsUSS.complexSelectors.Length);

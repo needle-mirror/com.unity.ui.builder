@@ -35,7 +35,7 @@ namespace Unity.UI.Builder.EditorTests
             var guid = AssetDatabase.AssetPathToGUID(k_NewUxmlFilePath);
             if (!string.IsNullOrEmpty(guid))
             {
-                var folderPath = BuilderConstants.BuilderDocumentDiskSettingsJsonFolderAbsolutePath;
+                var folderPath = BuilderConstants.builderDocumentDiskSettingsJsonFolderAbsolutePath;
                 var fileName = guid + ".json";
                 var path = folderPath + "/" + fileName;
                 File.Delete(path);
@@ -48,31 +48,31 @@ namespace Unity.UI.Builder.EditorTests
 
         void CheckNoUSSDocument()
         {
-            var document = BuilderWindow.document;
+            var document = builder.document;
 
             Assert.Null(document.firstStyleSheet);
             Assert.AreEqual(document.openUSSFiles.Count, 0);
 
             Assert.False(document.visualTreeAsset.IsEmpty());
-            Assert.That(BuilderWindow.documentRootElement.childCount, Is.EqualTo(k_NoUSSElementCount));
+            Assert.That(builder.documentRootElement.childCount, Is.EqualTo(k_NoUSSElementCount));
 
-            var labelInDocument = BuilderWindow.documentRootElement.Children().First();
+            var labelInDocument = builder.documentRootElement.Children().First();
             Assert.That(labelInDocument.GetType(), Is.EqualTo(typeof(Label)));
         }
 
         IEnumerator CheckMultiUSSDocument()
         {
-            var document = BuilderWindow.document;
+            var document = builder.document;
 
             Assert.NotNull(document.firstStyleSheet);
             Assert.AreEqual(document.openUSSFiles.Count, 2);
 
             Assert.False(document.visualTreeAsset.IsEmpty());
-            Assert.That(BuilderWindow.documentRootElement.childCount, Is.EqualTo(k_MultiUSSElementCount));
+            Assert.That(builder.documentRootElement.childCount, Is.EqualTo(k_MultiUSSElementCount));
 
             yield return UIETestHelpers.Pause(1);
 
-            var labelInDocument = BuilderWindow.documentRootElement.Children().First();
+            var labelInDocument = builder.documentRootElement.Children().First();
             Assert.That(labelInDocument.GetType(), Is.EqualTo(typeof(Label)));
             Assert.AreEqual(labelInDocument.resolvedStyle.width, 60);
             Assert.AreEqual(labelInDocument.resolvedStyle.backgroundColor, Color.green);
@@ -80,11 +80,11 @@ namespace Unity.UI.Builder.EditorTests
 
         void UndoRedoCheckWithTextField()
         {
-            Assert.That(BuilderWindow.documentRootElement.childCount, Is.EqualTo(k_MultiUSSElementCount + 1));
+            Assert.That(builder.documentRootElement.childCount, Is.EqualTo(k_MultiUSSElementCount + 1));
             Undo.PerformUndo();
-            Assert.That(BuilderWindow.documentRootElement.childCount, Is.EqualTo(k_MultiUSSElementCount));
+            Assert.That(builder.documentRootElement.childCount, Is.EqualTo(k_MultiUSSElementCount));
             Undo.PerformRedo();
-            Assert.That(BuilderWindow.documentRootElement.childCount, Is.EqualTo(k_MultiUSSElementCount + 1));
+            Assert.That(builder.documentRootElement.childCount, Is.EqualTo(k_MultiUSSElementCount + 1));
         }
 
         [UnityTest]
@@ -94,19 +94,19 @@ namespace Unity.UI.Builder.EditorTests
 
             AddElementCodeOnly<Label>(labelName);
 
-            Assert.That(BuilderWindow.documentRootElement.childCount, Is.EqualTo(1));
-            var labelInDocument = BuilderWindow.documentRootElement.Children().First();
+            Assert.That(builder.documentRootElement.childCount, Is.EqualTo(1));
+            var labelInDocument = builder.documentRootElement.Children().First();
             Assert.That(labelInDocument.GetType(), Is.EqualTo(typeof(Label)));
             Assert.AreEqual(labelInDocument.name, labelName);
 
-            BuilderWindow.document.SaveUnsavedChanges(k_NewUxmlFilePath);
+            builder.document.SaveUnsavedChanges(k_NewUxmlFilePath);
 
-            var document = BuilderWindow.document;
+            var document = builder.document;
             Assert.AreEqual(document.uxmlPath, k_NewUxmlFilePath);
             Assert.AreEqual(document.uxmlOldPath, k_NewUxmlFilePath);
 
-            Assert.That(BuilderWindow.documentRootElement.childCount, Is.EqualTo(1));
-            labelInDocument = BuilderWindow.documentRootElement.Children().First();
+            Assert.That(builder.documentRootElement.childCount, Is.EqualTo(1));
+            labelInDocument = builder.documentRootElement.Children().First();
             Assert.That(labelInDocument.GetType(), Is.EqualTo(typeof(Label)));
             Assert.AreEqual(labelInDocument.name, labelName);
 
@@ -117,13 +117,13 @@ namespace Unity.UI.Builder.EditorTests
         public IEnumerator SaveAsWithNoUSS()
         {
             var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_TestNoUSSDocumentUXMLFilePath);
-            BuilderWindow.LoadDocument(asset);
+            builder.LoadDocument(asset);
 
             yield return UIETestHelpers.Pause(1);
 
-            BuilderWindow.document.SaveUnsavedChanges(k_NewUxmlFilePath, true);
+            builder.document.SaveUnsavedChanges(k_NewUxmlFilePath, true);
 
-            var document = BuilderWindow.document;
+            var document = builder.document;
             Assert.AreEqual(document.uxmlPath, k_NewUxmlFilePath);
             Assert.AreEqual(document.uxmlOldPath, k_NewUxmlFilePath);
 
@@ -136,11 +136,11 @@ namespace Unity.UI.Builder.EditorTests
         public IEnumerator SaveAsWithMoreThanOneUSS()
         {
             var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_TestMultiUSSDocumentUXMLFilePath);
-            BuilderWindow.LoadDocument(asset);
+            builder.LoadDocument(asset);
 
-            BuilderWindow.document.SaveUnsavedChanges(k_NewUxmlFilePath, true);
+            builder.document.SaveUnsavedChanges(k_NewUxmlFilePath, true);
 
-            var document = BuilderWindow.document;
+            var document = builder.document;
             Assert.AreEqual(document.uxmlPath, k_NewUxmlFilePath);
             Assert.AreEqual(document.uxmlOldPath, k_NewUxmlFilePath);
 
@@ -153,7 +153,7 @@ namespace Unity.UI.Builder.EditorTests
         public void LoadExistingDocumentWithNoUSS()
         {
             var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_TestNoUSSDocumentUXMLFilePath);
-            BuilderWindow.LoadDocument(asset);
+            builder.LoadDocument(asset);
 
             CheckNoUSSDocument();
         }
@@ -162,7 +162,7 @@ namespace Unity.UI.Builder.EditorTests
         public IEnumerator LoadExistingDocumentWithMoreThanOneUSS()
         {
             var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_TestMultiUSSDocumentUXMLFilePath);
-            BuilderWindow.LoadDocument(asset);
+            builder.LoadDocument(asset);
 
             yield return CheckMultiUSSDocument();
         }
@@ -172,10 +172,10 @@ namespace Unity.UI.Builder.EditorTests
         {
             var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_TestMultiUSSDocumentUXMLFilePath);
             var assetCount = asset.visualElementAssets.Count;
-            BuilderWindow.LoadDocument(asset);
-            Assert.AreEqual(BuilderWindow.document.visualTreeAsset, asset);
+            builder.LoadDocument(asset);
+            Assert.AreEqual(builder.document.visualTreeAsset, asset);
 
-            Assert.That(BuilderWindow.documentRootElement.childCount, Is.EqualTo(k_MultiUSSElementCount));
+            Assert.That(builder.documentRootElement.childCount, Is.EqualTo(k_MultiUSSElementCount));
 
             AddElementCodeOnly<TextField>();
             // Test restoration of backup.
@@ -193,18 +193,15 @@ namespace Unity.UI.Builder.EditorTests
 
             CreateTestUXMLFile();
 
-            var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_TestUXMLFilePath);
-            var assetCount = asset.visualElementAssets.Count;
-            BuilderWindow.LoadDocument(asset);
-            Assert.AreEqual(BuilderWindow.document.visualTreeAsset, asset);
-
+            yield return LoadTestUXMLDocument(k_TestUXMLFilePath);
+            var assetCount = builder.document.visualTreeAsset.visualElementAssets.Count;
             yield return AddTextFieldElement();
-            Assert.AreEqual(asset.visualElementAssets.Count, assetCount + 1);
+            Assert.AreEqual(assetCount + 1, builder.document.visualTreeAsset.visualElementAssets.Count);
 
             // Save
-            BuilderWindow.document.SaveUnsavedChanges(k_TestUXMLFilePath, false);
+            builder.document.SaveUnsavedChanges(k_TestUXMLFilePath, false);
 
-            var vtaCopy = BuilderWindow.document.visualTreeAsset.DeepCopy();
+            var vtaCopy = builder.document.visualTreeAsset.DeepCopy();
             var newElement = new VisualElementAsset(typeof(Label).ToString());
             newElement.AddProperty("name", testLabelName);
             vtaCopy.AddElement(vtaCopy.GetRootUXMLElement(), newElement);
@@ -215,7 +212,7 @@ namespace Unity.UI.Builder.EditorTests
             yield return UIETestHelpers.Pause(1);
 
             // Make sure the UI Builder reloaded.
-            var label = BuilderWindow.documentRootElement.Q<Label>(testLabelName);
+            var label = builder.documentRootElement.Q<Label>(testLabelName);
             Assert.NotNull(label);
         }
 
@@ -229,16 +226,16 @@ namespace Unity.UI.Builder.EditorTests
 
             var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_TestUXMLFilePath);
             var assetCount = asset.visualElementAssets.Count;
-            BuilderWindow.LoadDocument(asset);
-            Assert.AreEqual(BuilderWindow.document.visualTreeAsset, asset);
+            builder.LoadDocument(asset);
+            Assert.AreEqual(builder.document.visualTreeAsset, asset);
 
             yield return CodeOnlyAddUSSToDocument(k_TestUSSFilePath);
-            Assert.NotNull(BuilderWindow.document.activeStyleSheet);
+            Assert.NotNull(builder.document.activeStyleSheet);
 
             // Save
-            BuilderWindow.document.SaveUnsavedChanges(k_TestUXMLFilePath, false);
+            builder.document.SaveUnsavedChanges(k_TestUXMLFilePath, false);
 
-            var styleSheetCopy = BuilderWindow.document.activeStyleSheet.DeepCopy();
+            var styleSheetCopy = builder.document.activeStyleSheet.DeepCopy();
             styleSheetCopy.AddSelector(testSelector);
             var styleSheetCopyUSS = styleSheetCopy.GenerateUSS();
             File.WriteAllText(k_TestUSSFilePath, styleSheetCopyUSS);
@@ -247,7 +244,7 @@ namespace Unity.UI.Builder.EditorTests
             yield return UIETestHelpers.Pause(1);
 
             // Make sure the UI Builder reloaded.
-            var activeStyleSheet = BuilderWindow.document.activeStyleSheet;
+            var activeStyleSheet = builder.document.activeStyleSheet;
             var complexSelector = activeStyleSheet.complexSelectors.First();
             Assert.NotNull(complexSelector);
             Assert.AreEqual(StyleSheetToUss.ToUssSelector(complexSelector), testSelector);
@@ -257,7 +254,7 @@ namespace Unity.UI.Builder.EditorTests
         public void UndoRedoCreationOfTextFieldInMultiUSSDocument()
         {
             var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_TestMultiUSSDocumentUXMLFilePath);
-            BuilderWindow.LoadDocument(asset);
+            builder.LoadDocument(asset);
             AddElementCodeOnly<TextField>();
 
             UndoRedoCheckWithTextField();
@@ -267,9 +264,9 @@ namespace Unity.UI.Builder.EditorTests
         public IEnumerator UndoRedoBeforeAndAfterGoingIntoPlaymode()
         {
             var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_TestMultiUSSDocumentUXMLFilePath);
-            BuilderWindow.LoadDocument(asset);
+            builder.LoadDocument(asset);
 
-            Assert.That(BuilderWindow.documentRootElement.childCount, Is.EqualTo(k_MultiUSSElementCount));
+            Assert.That(builder.documentRootElement.childCount, Is.EqualTo(k_MultiUSSElementCount));
 
             AddElementCodeOnly<TextField>();
 
@@ -295,9 +292,9 @@ namespace Unity.UI.Builder.EditorTests
             var component = newObject.AddComponent<Tests.UIBuilderUXMLReferenceForTests>();
             component.visualTreeAssetRef = asset;
 
-            BuilderWindow.LoadDocument(asset);
+            builder.LoadDocument(asset);
 
-            Assert.That(BuilderWindow.documentRootElement.childCount, Is.EqualTo(k_MultiUSSElementCount));
+            Assert.That(builder.documentRootElement.childCount, Is.EqualTo(k_MultiUSSElementCount));
 
             AddElementCodeOnly<TextField>();
 
@@ -317,19 +314,19 @@ namespace Unity.UI.Builder.EditorTests
         [UnityTest]
         public IEnumerator SettingsCopiedFromUnsavedDocument()
         {
-            var documentHierarchyHeader = HierarchyPane.Q<BuilderExplorerItem>();
+            var documentHierarchyHeader = hierarchy.Q<BuilderExplorerItem>();
             yield return UIETestEvents.Mouse.SimulateClick(documentHierarchyHeader);
 
-            var colorButton = InspectorPane.Q<Button>("Color");
+            var colorButton = inspector.Q<Button>("Color");
             yield return UIETestEvents.Mouse.SimulateClick(colorButton);
 
-            var colorField = InspectorPane.Q<ColorField>("background-color-field");
+            var colorField = inspector.Q<ColorField>("background-color-field");
             colorField.value = Color.green;
             yield return UIETestHelpers.Pause(1);
 
-            BuilderWindow.document.SaveUnsavedChanges(k_NewUxmlFilePath);
-            Assert.That(BuilderWindow.document.settings.CanvasBackgroundMode, Is.EqualTo(BuilderCanvasBackgroundMode.Color));
-            Assert.That(BuilderWindow.document.settings.CanvasBackgroundColor, Is.EqualTo(Color.green));
+            builder.document.SaveUnsavedChanges(k_NewUxmlFilePath);
+            Assert.That(builder.document.settings.CanvasBackgroundMode, Is.EqualTo(BuilderCanvasBackgroundMode.Color));
+            Assert.That(builder.document.settings.CanvasBackgroundColor, Is.EqualTo(Color.green));
         }
     }
 }

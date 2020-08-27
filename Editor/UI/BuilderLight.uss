@@ -63,6 +63,29 @@
 }
 
 /*****************************************************************************/
+/* Notifications */
+/*****************************************************************************/
+
+.unity-builder-notification-entry {
+    border-color: rgb(80, 80, 80);
+    background-color: rgba(129, 129, 129, 0.685);
+}
+
+.unity-builder-notification-entry__details-button {
+    color: rgb(54, 54, 201);
+    border-bottom-color: rgb(54, 54, 201);
+}
+
+.unity-builder-notification-entry__details-button:hover {
+    color: white;
+    border-bottom-color: white;
+}
+
+.unity-builder-notification-entry__dismiss-button:hover {
+    color: white;
+}
+
+/*****************************************************************************/
 /* Viewport                                                                  */
 /*****************************************************************************/
 
@@ -319,4 +342,12 @@
 
 .unity-list-view:focus > .unity-list-view__item--selected .unity-builder-code-label--element-pseudo-state {
     color: rgb(60, 212, 0);
+}
+
+.unity-builder-code-label--element-attached-stylesheet {
+    color: rgb(143, 100, 200);
+}
+
+.unity-list-view:focus > .unity-list-view__item--selected .unity-builder-code-label--element-attached-stylesheet {
+    color: rgb(143, 100, 200);
 }

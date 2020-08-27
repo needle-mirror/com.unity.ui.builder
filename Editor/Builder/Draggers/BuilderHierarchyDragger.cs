@@ -21,7 +21,7 @@ namespace Unity.UI.Builder
 
         protected override bool ExplorerCanStartDrag(VisualElement targetElement)
         {
-            if (!targetElement.IsPartOfCurrentDocument())
+            if (!targetElement.IsPartOfActiveVisualTreeAsset(paneWindow.document))
                 return false;
 
             return true;
@@ -81,6 +81,9 @@ namespace Unity.UI.Builder
             if (element.GetVisualElementAsset() == null)
                 return false;
 
+            if (!element.IsPartOfActiveVisualTreeAsset(paneWindow.document))
+                return false;
+
             var newParent = element;
             foreach (var elementToReparent in m_ElementsToReparent)
                 if (newParent == elementToReparent.element || newParent.HasAncestor(elementToReparent.element))
@@ -98,6 +101,9 @@ namespace Unity.UI.Builder
                 return false;
 
             if (element.GetVisualElementAsset() == null)
+                return false;
+
+            if (!element.IsPartOfActiveVisualTreeAsset(paneWindow.document))
                 return false;
 
             return true;

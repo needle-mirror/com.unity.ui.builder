@@ -33,7 +33,7 @@ namespace Unity.UI.Builder.EditorTests
             };
 
             foreach (var handle in handles)
-                Assert.That(BuilderWindow.viewport.Q(handle, "unity-builder-resizer"), Style.Display(DisplayStyle.Flex));
+                Assert.That(builder.viewport.Q(handle, "unity-builder-resizer"), Style.Display(DisplayStyle.Flex));
         }
 
         /// <summary>
@@ -55,7 +55,7 @@ namespace Unity.UI.Builder.EditorTests
             };
 
             foreach (var item in anchorHandleClasses)
-                Assert.That(BuilderWindow.viewport.Q(null, item), Style.Display(DisplayStyle.Flex));
+                Assert.That(builder.viewport.Q(null, item), Style.Display(DisplayStyle.Flex));
         }
 
         /// <summary>
@@ -69,19 +69,19 @@ namespace Unity.UI.Builder.EditorTests
             yield return UIETestEvents.Mouse.SimulateClick(element);
 
             // It is important to change its Position through inspector
-            InspectorPane.Query<PersistedFoldout>().Where(f => f.text.Equals("Position")).First()
+            inspector.Query<PersistedFoldout>().Where(f => f.text.Equals("Position")).First()
                 .Q<EnumField>().value = Position.Absolute;
 
             yield return UIETestHelpers.Pause();
 
             // Moving an element a bit to trigger activation of Top and Left anchors
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 element.worldBound.center, new Vector2(element.worldBound.center.x + k_OffsetValue,
                     element.worldBound.center.y + k_OffsetValue));
 
-            var bottomAnchor = BuilderWindow.viewport.Q(null, "unity-builder-anchorer--bottom");
+            var bottomAnchor = builder.viewport.Q(null, "unity-builder-anchorer--bottom");
             yield return UIETestEvents.Mouse.SimulateClick(bottomAnchor);
-            var rightAnchor = BuilderWindow.viewport.Q(null, "unity-builder-anchorer--right");
+            var rightAnchor = builder.viewport.Q(null, "unity-builder-anchorer--right");
             yield return UIETestEvents.Mouse.SimulateClick(rightAnchor);
 
             var topStyleOld = element.resolvedStyle.top;
@@ -91,7 +91,7 @@ namespace Unity.UI.Builder.EditorTests
 
             var oldPos = element.worldBound.center;
 
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 element.worldBound.center, new Vector2(element.worldBound.center.x + k_OffsetValue,
                     element.worldBound.center.y + k_OffsetValue));
 
@@ -120,9 +120,9 @@ namespace Unity.UI.Builder.EditorTests
             yield return UIETestHelpers.Pause();
 
             // Left anchor is set
-            var handle = BuilderWindow.viewport.Q(null, "unity-builder-resizer__side--right");
+            var handle = builder.viewport.Q(null, "unity-builder-resizer__side--right");
 
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 handle.worldBound.center, new Vector2(handle.worldBound.center.x + k_OffsetValue,
                     handle.worldBound.center.y));
 
@@ -130,15 +130,15 @@ namespace Unity.UI.Builder.EditorTests
 
             // Left and Right anchors are set
             var oldRightValue = element.resolvedStyle.right;
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 handle.worldBound.center, new Vector2(handle.worldBound.center.x + k_OffsetValue,
                     handle.worldBound.center.y));
 
             Assert.That(element.style.right.value.value, Is.LessThan(oldRightValue));
 
             // Top anchor is set
-            handle = BuilderWindow.viewport.Q(null, "unity-builder-resizer__side--bottom");
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
+            handle = builder.viewport.Q(null, "unity-builder-resizer__side--bottom");
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 handle.worldBound.center, new Vector2(handle.worldBound.center.x,
                     handle.worldBound.center.y + k_OffsetValue));
 
@@ -147,7 +147,7 @@ namespace Unity.UI.Builder.EditorTests
             // Top and Bottom anchors are set
             var oldBottomValue = element.resolvedStyle.bottom;
 
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 handle.worldBound.center, new Vector2(handle.worldBound.center.x,
                     handle.worldBound.center.y + k_OffsetValue));
 
@@ -169,23 +169,23 @@ namespace Unity.UI.Builder.EditorTests
             element.style.position = Position.Absolute;
             yield return UIETestHelpers.Pause();
 
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 element.worldBound.center, new Vector2(element.worldBound.center.x + k_OffsetValue,
                     element.worldBound.center.y + k_OffsetValue));
 
-            var rightHandle = BuilderWindow.viewport.Q("right-handle", "unity-builder-resizer");
+            var rightHandle = builder.viewport.Q("right-handle", "unity-builder-resizer");
             Assert.That(rightHandle.pseudoStates, Is.Not.EqualTo(PseudoStates.Hover));
-            InspectorPane.Q<TemplateContainer>("size-section").Query<DimensionStyleField>()
+            inspector.Q<TemplateContainer>("size-section").Query<DimensionStyleField>()
                 .Where(t => t.label.Equals("Width")).First().value = k_ElementLength;
 
             yield return UIETestHelpers.Pause();
             Assert.That(rightHandle.pseudoStates, Is.EqualTo(PseudoStates.Hover));
 
-            var bottomHandle = BuilderWindow.viewport.Q("bottom-handle", "unity-builder-resizer");
+            var bottomHandle = builder.viewport.Q("bottom-handle", "unity-builder-resizer");
 
             Assert.That(bottomHandle.pseudoStates, Is.Not.EqualTo(PseudoStates.Hover));
 
-            InspectorPane.Q<TemplateContainer>("size-section").Query<DimensionStyleField>()
+            inspector.Q<TemplateContainer>("size-section").Query<DimensionStyleField>()
                 .Where(t => t.label.Equals("Height")).First().value = k_ElementLength;
 
             yield return UIETestHelpers.Pause();
@@ -204,9 +204,9 @@ namespace Unity.UI.Builder.EditorTests
             var oldColor = linkedElement.parent.parent.resolvedStyle.backgroundColor;
 
             // SimulateMove doesn't want to move without SimulateClick or additional move event... weird
-            yield return UIETestEvents.Mouse.SimulateClick(ViewportPane.canvas);
+            yield return UIETestEvents.Mouse.SimulateClick(viewport.canvas);
 
-            yield return UIETestEvents.Mouse.SimulateMouseEvent(BuilderWindow, EventType.MouseMove,
+            yield return UIETestEvents.Mouse.SimulateMouseEvent(builder, EventType.MouseMove,
                 element.worldBound.center);
 
             Assert.That(linkedElement.parent.parent.resolvedStyle.backgroundColor, Is.Not.EqualTo(oldColor));
@@ -224,15 +224,15 @@ namespace Unity.UI.Builder.EditorTests
             yield return UIETestHelpers.Pause();
 
             AddElementCodeOnly<Button>();
-            var element = ViewportPane.canvas.Q<Button>();
+            var element = viewport.canvas.Q<Button>();
 
             element.AddToClassList(k_TestStyleName);
-            var selectorBackground = StyleSheetsPane.Q(null, "unity-scroll-view__content-container").Children().ToList()[1];
+            var selectorBackground = styleSheetsPane.Q(null, "unity-scroll-view__content-container").Children().ToList()[1];
             var oldColor = selectorBackground.resolvedStyle.backgroundColor;
-            yield return UIETestEvents.Mouse.SimulateClick(InspectorPane);
+            yield return UIETestEvents.Mouse.SimulateClick(inspector);
 
-            yield return UIETestEvents.Mouse.SimulateMouseMove(BuilderWindow,
-                InspectorPane.worldBound.center, element.worldBound.center);
+            yield return UIETestEvents.Mouse.SimulateMouseMove(builder,
+                inspector.worldBound.center, element.worldBound.center);
 
             Assert.That(selectorBackground.resolvedStyle.backgroundColor, Is.Not.EqualTo(oldColor));
         }

@@ -13,6 +13,7 @@ namespace Unity.UI.Builder
         public const string BuilderPackageName = "com.unity.ui.builder";
 #if UNITY_2020_1_OR_NEWER
         public const string BuilderMenuEntry = "Window/UI Toolkit/UI Builder";
+        public const string UIToolkitPackageName = "com.unity.ui";
 #else
         public const string BuilderMenuEntry = "Window/UI/UI Builder";
 #endif
@@ -34,6 +35,7 @@ namespace Unity.UI.Builder
         public static readonly Vector2 ViewportInitialContentOffset = new Vector2(20.0f, 20.0f);
         public static readonly int DoubleClickDelay = 50;
         public static readonly int CanvasGameViewSyncInterval = 100;
+        public static readonly float OpacityFadeOutFactor = 0.5f;
 
         // Paths
         public const string UIBuilderPackageRootPath = "Packages/" + BuilderPackageName;
@@ -58,8 +60,10 @@ namespace Unity.UI.Builder
         public static readonly string ElementTypeClassName = "unity-builder-code-label--element-type";
         public static readonly string ElementNameClassName = "unity-builder-code-label--element-name";
         public static readonly string ElementClassNameClassName = "unity-builder-code-label--element-class-name";
+        public static readonly string ElementAttachedStyleSheetClassName = "unity-builder-code-label--element-attached-stylesheet";
         public static readonly string ElementPseudoStateClassName = "unity-builder-code-label--element-pseudo-state";
         public static readonly string TagPillClassName = "unity-builder-tag-pill";
+        public static readonly string StyleSelectorBelongsParent = "unity-selector-parent-subdocument";
 
         // Random Symbols
         public static readonly string SingleSpace = " ";
@@ -69,6 +73,8 @@ namespace Unity.UI.Builder
         public const string WindowsNewlineChar = "\r\n";
         public const string UnixNewlineChar = "\n";
         public const string NewlineChar = UnixNewlineChar;
+        public const string OpenBracket = "(";
+        public const string CloseBracket = ")";
 
         //
         // Elements
@@ -86,6 +92,7 @@ namespace Unity.UI.Builder
         public static readonly string ElementLinkedVisualTreeAssetVEPropertyName = "__unity-ui-builder-linked-visual-tree-asset";
         public static readonly string ElementLinkedVisualElementAssetVEPropertyName = "__unity-ui-builder-linked-visual-element-asset";
         public static readonly string ElementLinkedInstancedVisualTreeAssetVEPropertyName = "__unity-ui-builder-instanced-visual-tree-asset";
+        public static readonly string ElementLinkedBelongingVisualTreeAssetVEPropertyName = "__unity-ui-builder-belonging-visual-tree-asset";
         public static readonly string ElementLinkedExplorerItemVEPropertyName = "__unity-ui-builder-linked-explorer-item-element";
         public static readonly string ElementLinkedDocumentVisualElementVEPropertyName = "__unity-ui-builder-linked-document-visual-element";
         public static readonly string ElementLinkedVariableHandlerVEPropertyName = "__unity-ui-builder-linked-variable-handler";
@@ -144,6 +151,7 @@ namespace Unity.UI.Builder
         public static readonly string ExplorerItemElementLinkVEPropertyName = "__unity-ui-builder-explorer-item-link";
         public static readonly string ExplorerItemFillItemCallbackVEPropertyName = "__unity-ui-builder-explorer-item-override-template";
         public static readonly string ExplorerStyleClassPillClassNameVEPropertyName = "__unity-ui-builder-explorer-style-class-pill-name";
+        public static readonly string ExplorerItemLinkedUXMLFileName = "__unity-ui-builder-linked-uxml-file-name";
 
         // Explorer Names
         public static readonly string ExplorerItemRenameTextfieldName = "unity-builder-explorer__rename-textfield";
@@ -164,6 +172,7 @@ namespace Unity.UI.Builder
         public static readonly string ExplorerItemIconClassName = "unity-builder-explorer-tree-item-icon";
         public static readonly string ExplorerStyleSheetsPaneClassName = "unity-builder-stylesheets-pane";
         public static readonly string ExplorerActiveStyleSheetClassName = "unity-builder-stylesheets-pane--active-stylesheet";
+        public static readonly string ExplorerItemBelongsToOpenDocument = "unity-builder-explorer-excluded";
 
         // StyleSheets Pane Menu
         public static readonly string ExplorerStyleSheetsPanePlusMenuNoElementsMessage = "Need at least one element in UXML to add StyleSheets.";
@@ -176,6 +185,7 @@ namespace Unity.UI.Builder
 
         // Hierarchy Pane Menu
         public static readonly string ExplorerHierarchyPaneOpenSubDocument = "Open as Sub-Document";
+        public static readonly string ExplorerHierarchyPaneOpenSubDocumentInPlace = "Open as Sub-Document In-Place";
         public static readonly string ExplorerHierarchyReturnToParentDocument = "Return to Parent Document";
         public static readonly string ExplorerHierarchyOpenInBuilder = "Open in UI Builder";
 
@@ -203,8 +213,8 @@ namespace Unity.UI.Builder
         // Library Content
         public const string LibraryContainersSectionHeaderName = "Containers";
         public const string LibraryControlsSectionHeaderName = "Controls";
-        public const string LibraryAssetsSectionHeaderName = "Assets";
-        public const string LibraryCustomControlsSectionHeaderName = "Custom Controls";
+        public const string LibraryAssetsSectionHeaderName = "UI Documents (UXML)";
+        public const string LibraryCustomControlsSectionHeaderName = "Custom Controls (C#)";
         public const string EditorOnlyTag = "Editor Only";
 
         //
@@ -312,7 +322,7 @@ namespace Unity.UI.Builder
         public static readonly string ClassNameValidationSpacialCharacters = "Class name can only contain letters, numbers, underscores, and dashes.";
         public static readonly string AttributeValidationSpacialCharacters = "{0} attribute can only contain letters, numbers, underscores, and dashes.";
         public static readonly string BindingPathAttributeValidationSpacialCharacters = "{0} attribute can only contain letters, numbers, underscores, dots and dashes.";
-        public static readonly string StyleSelectorValidationSpacialCharacters = "Style Selector can only contain letters, numbers, underscores, dots, spaces and dashes.";
+        public static readonly string StyleSelectorValidationSpacialCharacters = "Style Selector can only contain *_-.#>, letters, and numbers.";
         public static readonly string TypeAttributeInvalidTypeMessage = "{0} attribute is an invalid type. Make sure to include assembly name.";
         public static readonly string TypeAttributeMustDeriveFromMessage = "{0} attribute type must derive from {1}";
         public static readonly string BuiltInAssetPathsNotSupportedMessage = "Built-in resource paths are not supported in USS.";
@@ -320,6 +330,9 @@ namespace Unity.UI.Builder
 
         // Settings
         public const string BuilderEditorExtensionModeToggleLabel = "Enable Editor Extension by default";
+
+        // Notifications
+        public const string NoUIToolkitPackageInstalledNotification = "Your Project is not configured to support UI Toolkit runtime UI. To enable runtime support, install the UI Toolkit package.";
 
         //
         // UXML/USS
@@ -387,7 +400,7 @@ namespace Unity.UI.Builder
         // Complex Getters
         //
 
-        public static string NewlineCharFromEditorSettings
+        public static string newlineCharFromEditorSettings
         {
             get
             {
@@ -414,7 +427,7 @@ namespace Unity.UI.Builder
             }
         }
 
-        public static string BuilderDocumentDiskJsonFolderAbsolutePath
+        public static string builderDocumentDiskJsonFolderAbsolutePath
         {
             get
             {
@@ -424,16 +437,16 @@ namespace Unity.UI.Builder
             }
         }
 
-        public static string BuilderDocumentDiskJsonFileAbsolutePath
+        public static string builderDocumentDiskJsonFileAbsolutePath
         {
             get
             {
-                var path = BuilderDocumentDiskJsonFolderAbsolutePath + "/" + BuilderDocumentDiskJsonFileName;
+                var path = builderDocumentDiskJsonFolderAbsolutePath + "/" + BuilderDocumentDiskJsonFileName;
                 return path;
             }
         }
 
-        public static string BuilderDocumentDiskSettingsJsonFolderAbsolutePath
+        public static string builderDocumentDiskSettingsJsonFolderAbsolutePath
         {
             get
             {

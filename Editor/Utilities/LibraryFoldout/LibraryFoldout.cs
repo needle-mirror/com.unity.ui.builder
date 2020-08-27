@@ -26,7 +26,7 @@ namespace Unity.UI.Builder
 
         // Should be defined after Toggle text.
         // Known Issue: If label text will be defined before Toggle text, it could be placed before Toggle default label.
-        public string Tag
+        public string tag
         {
             get => m_Tag?.text;
             set

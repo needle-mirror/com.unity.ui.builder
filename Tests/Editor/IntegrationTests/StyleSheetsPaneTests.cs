@@ -37,43 +37,43 @@ namespace Unity.UI.Builder.EditorTests
 
             yield return AddSelector(TestSelectorName);
 
-            var explorerItems = BuilderTestsHelper.GetExplorerItemsWithName(StyleSheetsPane, TestSelectorName);
+            var explorerItems = BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, TestSelectorName);
             Assert.That(explorerItems.Count, Is.EqualTo(1));
 
             yield return UIETestEvents.Mouse.SimulateClick(explorerItems[0]);
 
             // Duplicate
-            yield return UIETestEvents.ExecuteCommand(BuilderWindow, UIETestEvents.Command.Duplicate);
+            yield return UIETestEvents.ExecuteCommand(builder, UIETestEvents.Command.Duplicate);
 
-            explorerItems = BuilderTestsHelper.GetExplorerItemsWithName(StyleSheetsPane, TestSelectorName);
+            explorerItems = BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, TestSelectorName);
             Assert.That(explorerItems.Count, Is.EqualTo(2));
 
             // Copy
-            yield return UIETestEvents.ExecuteCommand(BuilderWindow, UIETestEvents.Command.Copy);
-            yield return UIETestEvents.ExecuteCommand(BuilderWindow, UIETestEvents.Command.Paste);
+            yield return UIETestEvents.ExecuteCommand(builder, UIETestEvents.Command.Copy);
+            yield return UIETestEvents.ExecuteCommand(builder, UIETestEvents.Command.Paste);
 
-            explorerItems = BuilderTestsHelper.GetExplorerItemsWithName(StyleSheetsPane, TestSelectorName);
+            explorerItems = BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, TestSelectorName);
             Assert.That(explorerItems.Count, Is.EqualTo(3));
 
-            var styleSheetElement = BuilderWindow.documentRootElement.parent.Q(k_TestEmptyUSSFileNameNoExt);
+            var styleSheetElement = builder.documentRootElement.parent.Q(k_TestEmptyUSSFileNameNoExt);
             Assert.That(styleSheetElement, Is.Not.Null);
             Assert.That(styleSheetElement.childCount, Is.EqualTo(3));
             Assert.That(
                 styleSheetElement.GetProperty(BuilderConstants.ElementLinkedStyleSheetVEPropertyName) as StyleSheet,
-                Is.EqualTo(BuilderWindow.document.firstStyleSheet));
+                Is.EqualTo(builder.document.firstStyleSheet));
 
             var selectedSelectorElement = styleSheetElement[2];
             var selectedSelector = selectedSelectorElement.GetProperty(BuilderConstants.ElementLinkedStyleSelectorVEPropertyName) as StyleComplexSelector;
             Assert.That(selectedSelector, Is.Not.Null);
-            Assert.That(Selection.selection.Any(), Is.True);
-            Assert.That(Selection.selection.First(), Is.EqualTo(selectedSelectorElement));
-            Assert.That(selectedSelectorElement.GetClosestStyleSheet(), Is.EqualTo(BuilderWindow.document.firstStyleSheet));
+            Assert.That(selection.selection.Any(), Is.True);
+            Assert.That(selection.selection.First(), Is.EqualTo(selectedSelectorElement));
+            Assert.That(selectedSelectorElement.GetClosestStyleSheet(), Is.EqualTo(builder.document.firstStyleSheet));
 
             // Delete
-            yield return UIETestEvents.KeyBoard.SimulateKeyDown(BuilderWindow, KeyCode.Delete);
+            yield return UIETestEvents.KeyBoard.SimulateKeyDown(builder, KeyCode.Delete);
 
             yield return UIETestHelpers.Pause(1);
-            explorerItems = BuilderTestsHelper.GetExplorerItemsWithName(StyleSheetsPane, TestSelectorName);
+            explorerItems = BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, TestSelectorName);
             Assert.That(explorerItems.Count, Is.EqualTo(2));
         }
 
@@ -87,10 +87,10 @@ namespace Unity.UI.Builder.EditorTests
 
             yield return AddSelector(TestSelectorName);
 
-            var explorerItems = BuilderTestsHelper.GetExplorerItemsWithName(StyleSheetsPane, TestSelectorName);
+            var explorerItems = BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, TestSelectorName);
             Assert.That(explorerItems.Count, Is.EqualTo(1));
 
-            var panel = BuilderWindow.rootVisualElement.panel as BaseVisualElementPanel;
+            var panel = builder.rootVisualElement.panel as BaseVisualElementPanel;
             var menu = panel.contextualMenuManager as BuilderTestContextualMenuManager;
             Assert.That(menu, Is.Not.Null);
             Assert.That(menu.menuIsDisplayed, Is.False);
@@ -105,7 +105,7 @@ namespace Unity.UI.Builder.EditorTests
 
             yield return UIETestHelpers.Pause(1);
 
-            var newUSSExplorerItems = BuilderTestsHelper.GetExplorerItemsWithName(StyleSheetsPane, TestSelectorName);
+            var newUSSExplorerItems = BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, TestSelectorName);
             Assert.That(newUSSExplorerItems.Count, Is.EqualTo(0));
         }
 
@@ -120,7 +120,7 @@ namespace Unity.UI.Builder.EditorTests
         {
             yield return EnsureSelectorsCanBeAddedAndReloadBuilder();
 
-            var createSelectorField = StyleSheetsPane.Q<TextField>();
+            var createSelectorField = styleSheetsPane.Q<TextField>();
             createSelectorField.visualInput.Blur();
             Assert.That(createSelectorField.text, Is.EqualTo(BuilderConstants.ExplorerInExplorerNewClassSelectorInfoMessage));
 
@@ -128,11 +128,11 @@ namespace Unity.UI.Builder.EditorTests
             Assert.That(createSelectorField.text, Is.EqualTo("."));
             Assert.That(createSelectorField.cursorIndex, Is.EqualTo(1));
 
-            yield return UIETestEvents.KeyBoard.SimulateTyping(BuilderWindow, TestSelectorName);
-            yield return UIETestEvents.KeyBoard.SimulateKeyDown(BuilderWindow, KeyCode.Return);
+            yield return UIETestEvents.KeyBoard.SimulateTyping(builder, TestSelectorName);
+            yield return UIETestEvents.KeyBoard.SimulateKeyDown(builder, KeyCode.Return);
             createSelectorField.visualInput.Blur();
 
-            var newSelector = BuilderTestsHelper.GetExplorerItemsWithName(StyleSheetsPane, TestSelectorName);
+            var newSelector = BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, TestSelectorName);
             Assert.That(newSelector, Is.Not.Null);
         }
 
@@ -144,22 +144,22 @@ namespace Unity.UI.Builder.EditorTests
         {
             yield return EnsureSelectorsCanBeAddedAndReloadBuilder();
 
-            var createSelectorField = StyleSheetsPane.Q<TextField>();
+            var createSelectorField = styleSheetsPane.Q<TextField>();
             createSelectorField.visualInput.Focus();
-            yield return UIETestEvents.KeyBoard.SimulateTyping(BuilderWindow, "invalid%%selector@$name");
-            yield return UIETestEvents.KeyBoard.SimulateKeyDown(BuilderWindow, KeyCode.Return);
+            yield return UIETestEvents.KeyBoard.SimulateTyping(builder, "invalid%%selector@$name");
+            yield return UIETestEvents.KeyBoard.SimulateKeyDown(builder, KeyCode.Return);
 
             yield return UIETestHelpers.Pause(2);
             Assert.That(createSelectorField.text, Is.EqualTo(".invalid%%selector@$name"));
 
             // 1 because title is BuilderExplorerItem as well. So 1 means empty in this context
-            Assert.That(StyleSheetsPane.Query<BuilderExplorerItem>().ToList().Count, Is.EqualTo(1));
+            Assert.That(styleSheetsPane.Query<BuilderExplorerItem>().ToList().Count, Is.EqualTo(1));
 
             // Test that we haven't lost field focus and can type valid name.
-            yield return UIETestEvents.KeyBoard.SimulateTyping(BuilderWindow, TestSelectorName);
-            yield return UIETestEvents.KeyBoard.SimulateKeyDown(BuilderWindow, KeyCode.Return);
+            yield return UIETestEvents.KeyBoard.SimulateTyping(builder, TestSelectorName);
+            yield return UIETestEvents.KeyBoard.SimulateKeyDown(builder, KeyCode.Return);
 
-            var explorerItems = BuilderTestsHelper.GetExplorerItemsWithName(StyleSheetsPane, TestSelectorName);
+            var explorerItems = BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, TestSelectorName);
             Assert.That(explorerItems.Count, Is.EqualTo(1));
         }
 
@@ -172,9 +172,9 @@ namespace Unity.UI.Builder.EditorTests
             yield return EnsureSelectorsCanBeAddedAndReloadBuilder();
 
             yield return AddSelector(TestSelectorName);
-            var stylesTreeView = StyleSheetsPane.Q<TreeView>();
+            var stylesTreeView = styleSheetsPane.Q<TreeView>();
 
-            Selection.ClearSelection(null);
+            selection.ClearSelection(null);
             Assert.That(stylesTreeView.GetSelectedItem(), Is.Null);
 
             // Select by clicking on the row
@@ -183,7 +183,7 @@ namespace Unity.UI.Builder.EditorTests
             Assert.That(stylesTreeView.GetSelectedItem(), Is.Not.Null);
 
             // Deselect
-            yield return UIETestEvents.Mouse.SimulateClick(StyleSheetsPane);
+            yield return UIETestEvents.Mouse.SimulateClick(styleSheetsPane);
             Assert.That(stylesTreeView.GetSelectedItem(), Is.Null);
 
             // Select by clicking on the style class pill
@@ -210,7 +210,7 @@ namespace Unity.UI.Builder.EditorTests
             var documentElement = GetFirstDocumentElement();
 
             yield return UIETestHelpers.Pause(1);
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 createdSelector.Q<Label>().worldBound.center,
                 documentElement.worldBound.center);
 
@@ -219,7 +219,7 @@ namespace Unity.UI.Builder.EditorTests
 
             var secondClassNameLabel = BuilderTestsHelper.GetLabelWithName(createdSelector, TestSelectorName2);
             yield return UIETestHelpers.Pause(100);
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 secondClassNameLabel.worldBound.center,
                 documentElement.worldBound.center);
 
@@ -244,7 +244,7 @@ namespace Unity.UI.Builder.EditorTests
             var hierarchyCreatedItem = GetFirstExplorerVisualElementNode(nameof(VisualElement));
 
             yield return UIETestHelpers.Pause(1);
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 createdSelector.Q<Label>().worldBound.center,
                 hierarchyCreatedItem.worldBound.center);
 
@@ -273,7 +273,7 @@ namespace Unity.UI.Builder.EditorTests
             var documentElement = GetFirstDocumentElement();
 
             yield return UIETestHelpers.Pause(1);
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 createdSelector.Q<Label>().worldBound.center,
                 documentElement.worldBound.center);
 
@@ -296,13 +296,13 @@ namespace Unity.UI.Builder.EditorTests
             var createdSelector = GetStyleSelectorNodeWithName(TestSelectorName);
 
             yield return UIETestHelpers.Pause(1);
-            var hierarchyTreeView = HierarchyPane.Q<TreeView>();
+            var hierarchyTreeView = hierarchy.Q<TreeView>();
             hierarchyTreeView.ExpandItem(hierarchyTreeView.items.ToList()[1].id);
 
-            var textFieldLabel = BuilderTestsHelper.GetExplorerItemWithName(HierarchyPane, nameof(Label)).Q<Label>();
+            var textFieldLabel = BuilderTestsHelper.GetExplorerItemWithName(hierarchy, nameof(Label)).Q<Label>();
 
             yield return UIETestHelpers.Pause(1);
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 createdSelector.Q<Label>().worldBound.center,
                   textFieldLabel.worldBound.center);
 
@@ -316,11 +316,11 @@ namespace Unity.UI.Builder.EditorTests
         [Test]
         public void SelectorCheatsheetTooltip()
         {
-            var builderTooltipPreview = BuilderWindow.rootVisualElement.Q<BuilderTooltipPreview>("stylesheets-pane-tooltip-preview");
+            var builderTooltipPreview = builder.rootVisualElement.Q<BuilderTooltipPreview>("stylesheets-pane-tooltip-preview");
             var builderTooltipPreviewEnabler =
                 builderTooltipPreview.Q<VisualElement>(BuilderTooltipPreview.s_EnabledElementName);
 
-            var createSelectorField = StyleSheetsPane.Q<TextField>(className: BuilderNewSelectorField.s_TextFieldUssClassName);
+            var createSelectorField = styleSheetsPane.Q<TextField>(className: BuilderNewSelectorField.s_TextFieldUssClassName);
 
             // Everything StyleSheet is disabled now if there are no elements to contain the <Style> tag.
             Assert.That(createSelectorField.enabledInHierarchy, Is.False);
@@ -348,11 +348,11 @@ namespace Unity.UI.Builder.EditorTests
 
             // Create and new selector and select
             yield return AddSelector(TestSelectorName);
-            var selector = BuilderTestsHelper.GetExplorerItemWithName(StyleSheetsPane, TestSelectorName);
+            var selector = BuilderTestsHelper.GetExplorerItemWithName(styleSheetsPane, TestSelectorName);
             yield return UIETestEvents.Mouse.SimulateClick(selector);
 
             // Set style
-            var displayFoldout = InspectorPane.Query<PersistedFoldout>().Where(f => f.text.Equals("Display")).First();
+            var displayFoldout = inspector.Query<PersistedFoldout>().Where(f => f.text.Equals("Display")).First();
             displayFoldout.value = true;
 
             var displayStrip = displayFoldout.Query<ToggleButtonStrip>().Where(t => t.label.Equals("Display")).First();
@@ -363,31 +363,31 @@ namespace Unity.UI.Builder.EditorTests
             yield return UIETestEvents.Mouse.SimulateClick(selector);
 
             var newlineFixedExpectedUSS = m_ExpectedSelectorString;
-            if (BuilderConstants.NewlineChar != BuilderConstants.NewlineCharFromEditorSettings)
+            if (BuilderConstants.NewlineChar != BuilderConstants.newlineCharFromEditorSettings)
                 newlineFixedExpectedUSS = newlineFixedExpectedUSS.Replace(
                     BuilderConstants.NewlineChar,
-                    BuilderConstants.NewlineCharFromEditorSettings);
+                    BuilderConstants.newlineCharFromEditorSettings);
 
             // Copy to USS
-            yield return UIETestEvents.ExecuteCommand(BuilderWindow, UIETestEvents.Command.Copy);
-            Assert.That(BuilderEditorUtility.SystemCopyBuffer, Is.EqualTo(newlineFixedExpectedUSS));
+            yield return UIETestEvents.ExecuteCommand(builder, UIETestEvents.Command.Copy);
+            Assert.That(BuilderEditorUtility.systemCopyBuffer, Is.EqualTo(newlineFixedExpectedUSS));
 
             // Paste from USS
             ForceNewDocument();
             yield return EnsureSelectorsCanBeAddedAndReloadBuilder();
-            BuilderEditorUtility.SystemCopyBuffer = string.Empty;
-            yield return UIETestEvents.Mouse.SimulateClick(StyleSheetsPane);
-            yield return UIETestEvents.ExecuteCommand(BuilderWindow, UIETestEvents.Command.Paste);
-            var explorerItems = BuilderTestsHelper.GetExplorerItemsWithName(StyleSheetsPane, TestSelectorName);
+            BuilderEditorUtility.systemCopyBuffer = string.Empty;
+            yield return UIETestEvents.Mouse.SimulateClick(styleSheetsPane);
+            yield return UIETestEvents.ExecuteCommand(builder, UIETestEvents.Command.Paste);
+            var explorerItems = BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, TestSelectorName);
             Assert.That(explorerItems.Count, Is.EqualTo(0));
 
-            BuilderEditorUtility.SystemCopyBuffer = newlineFixedExpectedUSS;
-            yield return UIETestEvents.ExecuteCommand(BuilderWindow, UIETestEvents.Command.Paste);
-            explorerItems = BuilderTestsHelper.GetExplorerItemsWithName(StyleSheetsPane, TestSelectorName);
+            BuilderEditorUtility.systemCopyBuffer = newlineFixedExpectedUSS;
+            yield return UIETestEvents.ExecuteCommand(builder, UIETestEvents.Command.Paste);
+            explorerItems = BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, TestSelectorName);
             Assert.That(explorerItems.Count, Is.EqualTo(1));
 
             // Foldout out state should be persisted, so we assume it is open already.
-            displayFoldout = InspectorPane.Query<PersistedFoldout>().Where(f => f.text.Equals("Display")).First();
+            displayFoldout = inspector.Query<PersistedFoldout>().Where(f => f.text.Equals("Display")).First();
             displayStrip = displayFoldout.Query<ToggleButtonStrip>().Where(t => t.label.Equals("Display")).First();
             Assert.True(displayStrip.Q<Button>("none").pseudoStates.HasFlag(PseudoStates.Checked));
 
@@ -403,12 +403,12 @@ namespace Unity.UI.Builder.EditorTests
         {
             yield return EnsureSelectorsCanBeAddedAndReloadBuilder();
 
-            var styleSheetsTreeView = StyleSheetsPane.Q<TreeView>();
+            var styleSheetsTreeView = styleSheetsPane.Q<TreeView>();
             Assert.That(styleSheetsTreeView.GetSelectedItem(), Is.Null);
 
             // Create and new selector and select
             yield return AddSelector(TestSelectorName);
-            var selector = BuilderTestsHelper.GetExplorerItemWithName(StyleSheetsPane, TestSelectorName);
+            var selector = BuilderTestsHelper.GetExplorerItemWithName(styleSheetsPane, TestSelectorName);
             yield return UIETestEvents.Mouse.SimulateClick(selector);
 
             Assert.That(styleSheetsTreeView.GetSelectedItem(), Is.Not.Null);
@@ -417,6 +417,53 @@ namespace Unity.UI.Builder.EditorTests
             var documentElement = GetFirstDocumentElement();
             yield return UIETestEvents.Mouse.SimulateClick(documentElement);
             Assert.That(styleSheetsTreeView.GetSelectedItem(), Is.Null);
+        }
+
+        [UnityTest]
+        public IEnumerator ParentUSSFilesAppearWithinSubdocument()
+        {
+            var panel = builder.rootVisualElement.panel as BaseVisualElementPanel;
+            var menu = panel.contextualMenuManager as BuilderTestContextualMenuManager;
+            Assert.That(menu, Is.Not.Null);
+            Assert.That(menu.menuIsDisplayed, Is.False);
+
+            // Load Test UXML File
+            yield return LoadTestUXMLDocument(k_ParentTestUXMLPath);
+
+            // Open child as subdocument
+            string nameOfChildSubDocument = "#ChildTestUXMLDocument";
+            var childInHierarchy = BuilderTestsHelper.GetExplorerItemsWithName(hierarchy, nameOfChildSubDocument);
+
+            // Simulate right click on child TemplateContainer
+            yield return UIETestEvents.Mouse.SimulateClick(childInHierarchy[0], MouseButton.RightMouse);
+            Assert.That(menu.menuIsDisplayed, Is.True);
+
+            var subdocumentClick = menu.FindMenuAction(BuilderConstants.ExplorerHierarchyPaneOpenSubDocument);
+            Assert.That(subdocumentClick, Is.Not.Null);
+
+            subdocumentClick.Execute();
+            yield return UIETestHelpers.Pause(1);
+            
+            styleSheetsPane.elementHierarchyView.ExpandRootItems();
+            var selectorFromActive = BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, "#builder-test")[0]; // this one belongs to current
+
+            yield return UIETestEvents.Mouse.SimulateClick(selectorFromActive);
+            
+            var arbitraryStyleRow = inspector.Q<PersistedFoldout>("inspector-style-section-foldout-display").Q<BuilderStyleRow>();
+            var isActive = arbitraryStyleRow.enabledInHierarchy == true;
+            
+            Assert.AreEqual(true, isActive);
+
+            var selectorFromParent = BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, ".unity-label")[1]; // this one belongs to parent
+            
+            Assert.AreNotEqual(selectorFromActive, selectorFromParent);
+
+            yield return UIETestEvents.Mouse.SimulateClick(selectorFromParent);
+
+            arbitraryStyleRow = inspector.Q<PersistedFoldout>("inspector-style-section-foldout-display").Q<BuilderStyleRow>();
+            isActive = arbitraryStyleRow.enabledInHierarchy == true;
+            
+            Assert.AreEqual(false, isActive);
         }
     }
 }

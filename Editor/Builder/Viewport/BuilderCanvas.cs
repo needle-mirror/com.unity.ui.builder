@@ -33,10 +33,10 @@ namespace Unity.UI.Builder
         public new class UxmlFactory : UxmlFactory<BuilderCanvas, UxmlTraits> { }
 
         public VisualElement header => m_Header;
-        public override VisualElement contentContainer => m_Container;
+        public override VisualElement contentContainer => m_Container == null ? this : m_Container;
 
-        public Label TitleLabel { get; }
-        public Label EditorExtensionsLabel { get; }
+        public Label titleLabel { get; }
+        public Label editorExtensionsLabel { get; }
         public VisualElement defaultBackgroundElement => m_DefaultBackgroundElement;
         public VisualElement customBackgroundElement => m_CustomBackgroundElement;
         public VisualElement checkerboardBackgroundElement => m_CheckerboardBackgroundElement;
@@ -241,8 +241,8 @@ namespace Unity.UI.Builder
 
             m_Container = this.Q("content-container");
             m_Header = this.Q("header-container");
-            TitleLabel = this.Q<Label>("title");
-            EditorExtensionsLabel = this.Q<Label>("tag");
+            titleLabel = this.Q<Label>("title");
+            editorExtensionsLabel = this.Q<Label>("tag");
 
             m_HandleElements = new Dictionary<string, VisualElement>();
 

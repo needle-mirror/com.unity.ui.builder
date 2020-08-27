@@ -48,6 +48,7 @@
 1. Selecting an element or a the main document (VisualTreeAsset) should deselect any selected tree items in the StyleSheets pane. `Tested`
 1. Right-clicking on a StyleSheet and selecting "Set as Active USS" will set the current *active* StyleSheet to this StyleSheet, updating the highlight (bold) of the *active* StyleSheet. `Tested`
 1. When pasting a selector in the StyleSheets pane, it will be added to the *active* StyleSheet. `Tested`
+1. Opening a Sub-Document will display the parent USS files (as read-only) after the sub-document's own USS files in the StyleSheets pane.
 
 ## Hierarchy
 
@@ -61,6 +62,7 @@
 1. Elements are displayed using their #name in blue. If they have no name, they are displayed using their C# type in white. `Tested`
 1. You can always show the C# type of an element, even if it has a #name, by enabling the **Type** option from the `...` options menu in the top right of the Hierarchy pane.
 1. You can show currently added style classes of an element by enabling the **Class List** option from the `...` options menu in the top right of the Hierarchy pane.
+1. You can show currently added StyleSheets on an element by enabling the **Attached StyleSheets** option from the `...` options menu in the top right of the Hierarchy pane.
 1. Elements are displayed grayed out if they are children of a template instance or C# type. `Tested`
 1. Selecting an element inside a template instance or C# type displays the Inspector in read-only (disabled) mode.
 1. Dragging an element onto a template instance or C# type element in the Viewport re-parents it to the parent instance or C# element. `Tested`
@@ -80,18 +82,22 @@
 1. Clicking on an element that is part of a multi-selection should re-select just that element.
 1. Sub-Documents:
     1. Can open a UXML instance as a sub-document via the right-click menu on a `TemplateContainer`.
+    1. Choosing "Open as Sub-Document" will open the UXML instance in isolation but with the quick ability to return to the parent document.
+    1. Choosing "Open as Sub-Document In-Place" will keep the parent document open while allowing changes to be made to the child UXML instance in the context of the parent.
+        1. Elements not part of the sub-document open (part of one of its parent documents) will appear grayed out in the Hierarchy and in the Canvas.
     1. Can return to parent document by right-clicking on the sub-document's .uxml root item in the Hierarchy and selecting **Return to Parent Document**.
+    1. These options are also available in the Viewport right-click menu.
 
 ## Library
 
 1. Can switch between **Standard** and **Project** tab using tabs in the Library header. `Tested`
 1. **Standard** tab shows built-in elements. `Tested`
 1. **Standard** tab mode can be switched to the tree view representation using **Tree View** option from the `...` options menu in the top right of the Library pane. `Tested`
-1. **Project** tab contains UXML assets (`.uxml`) in the project `Asset/` folder under the **Assets** header. If there are no assets to display, the **Assets** header will be presented with no items.
+1. **Project** tab contains UXML assets (`.uxml`) in the project `Asset/` folder under the **UI Documents (UXML)** header.
 1. In the **Project** tab, the UXML item context menu contains an action to **Add** template to the current document as an instance, **Open in UI Builder**, and **Open with IDE**.
-1. You can view UXML assets (`.uxml`) within the `Packages/` folder under the **Assets** heading using the **Show Package Files** option from the `...` options menu in the top right of the Library pane.
+1. You can view UXML assets (`.uxml`) within the `Packages/` folder under the **UI Documents (UXML)** heading using the **Show Package Files** option from the `...` options menu in the top right of the Library pane.
 1. Can enable/disable Editor Extension Authoring via the `...` options menu in the top right of the Library pane.
-1. **Project** tab contains available project-defined custom controls with `UxmlFactory` defined under the **Custom Controls** heading. If there are no custom controls available, this heading will not be displayed. `Tested`
+1. **Project** tab contains available project-defined custom controls with `UxmlFactory` defined under the **Custom Controls (C#)** heading. If there are no custom controls available, this heading will not be displayed. `Tested`
 1. **Standard** tab items that are only supported for Editor Extensions have an "Editor Only" tag beside them (in **Tree View** mode only).
 1. Hovering over items in the Library **Project** view tab shows a preview of that element in a floating preview box. The preview uses the current Theme selected for the Canvas.
 1. Can double click to create a new element instance at the root. `Tested`
@@ -177,11 +183,14 @@
 ### Viewport Surface
 
 1. Can pan by holding down middle mouse button in the Viewport and moving the mouse.
-1. Can pan by holding down Ctrl + Alt + LeftClick and moving the mouse.
+1. Can pan by holding down Ctrl + Alt + LeftClick (Command + Option + LeftClick on macOS) and moving the mouse.
 1. Can zoom in and out with the mouse wheel.
 1. Can zoom in and out by holding down Alt + RightClick and moving the mouse right and left.
 1. Zoom and pan are remembered per-document.
 1. Zoom and pan are restored after Domain Reload or Window reload. They are reset when opening/creating a new document.
+1. A notification will be displayed if no `com.unity.ui` is found. This can be dismissed via the `x`.
+    1. Notifications don't come back after they are dismissed even after domain reload or Editor restarts.
+    1. Can re-display all pending active notifications via the Toolbar `...` menu, clicking on "Show Notifications".
 
 ## Previews
 

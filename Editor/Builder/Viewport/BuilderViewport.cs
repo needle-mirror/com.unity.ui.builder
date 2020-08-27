@@ -21,7 +21,7 @@ namespace Unity.UI.Builder
         BuilderCanvas m_Canvas;
         VisualElement m_SharedStylesAndDocumentElement;
         VisualElement m_StyleSelectorElementContainer;
-        VisualElement m_DocumentElement;
+        VisualElement m_DocumentRootElement;
         VisualElement m_EditorLayer;
         TextField m_TextEditor;
         VisualElement m_EditedElement;
@@ -36,6 +36,7 @@ namespace Unity.UI.Builder
         BuilderPanner m_BuilderPanner;
         BuilderAnchorer m_BuilderAnchorer;
         CheckerboardBackground m_CheckerboardBackground;
+        BuilderNotifications m_Notifications;
 
         BuilderSelection m_Selection;
         BuilderElementContextMenu m_ContextMenuManipulator;
@@ -47,6 +48,7 @@ namespace Unity.UI.Builder
         public VisualElement viewportWrapper => m_ViewportWrapper;
         public BuilderCanvas canvas => m_Canvas;
         public BuilderSelection selection => m_Selection;
+        public BuilderNotifications notifications => m_Notifications;
 
         string m_SubTitle;
         public string subTitle
@@ -79,7 +81,7 @@ namespace Unity.UI.Builder
                 if (m_PaneWindow.document)
                     m_PaneWindow.document.viewportZoomScale = value;
                 m_Canvas.zoomScale = value;
-                m_PaneWindow.document.RefreshStyle(m_DocumentElement);
+                m_PaneWindow.document.RefreshStyle(m_DocumentRootElement);
             }
         }
 
@@ -115,7 +117,7 @@ namespace Unity.UI.Builder
 
         public VisualElement sharedStylesAndDocumentElement => m_SharedStylesAndDocumentElement;
         public VisualElement styleSelectorElementContainer => m_StyleSelectorElementContainer;
-        public VisualElement documentElement => m_DocumentElement;
+        public VisualElement documentRootElement => m_DocumentRootElement;
         public VisualElement pickOverlay => m_PickOverlay;
         public VisualElement highlightOverlay => m_HighlightOverlay;
         public VisualElement editorLayer => m_EditorLayer;
@@ -144,8 +146,8 @@ namespace Unity.UI.Builder
             m_SharedStylesAndDocumentElement = this.Q("shared-styles-and-document");
             m_SharedStylesAndDocumentElement.pseudoStates |= PseudoStates.Root; // To apply variables of the active theme that are defined in the :root selector
             m_StyleSelectorElementContainer = this.Q(BuilderConstants.StyleSelectorElementContainerName);
-            m_DocumentElement = this.Q("document");
-            m_Canvas.documentElement = m_DocumentElement;
+            m_DocumentRootElement = this.Q("document");
+            m_Canvas.documentElement = m_DocumentRootElement;
             m_EditorLayer = this.Q("__unity-editor-layer");
             m_EditorLayer.AddToClassList(BuilderConstants.HiddenStyleClassName);
             m_TextEditor = this.Q<TextField>("__unity-text-editor");
@@ -159,6 +161,8 @@ namespace Unity.UI.Builder
             m_BuilderAnchorer = this.Q<BuilderAnchorer>("anchorer");
             m_BuilderZoomer = new BuilderZoomer(this);
             m_BuilderPanner = new BuilderPanner(this);
+
+            m_Notifications = this.Q<BuilderNotifications>("notifications");
 
             m_BuilderMover.parentTracker = m_BuilderParentTracker;
 
@@ -239,7 +243,7 @@ namespace Unity.UI.Builder
 
         void OnCanvasHeaderClick(EventBase obj)
         {
-            m_Selection.Select(null, documentElement);
+            m_Selection.Select(null, documentRootElement);
         }
 
         void OnGeometryChanged(GeometryChangedEvent evt)
@@ -272,12 +276,12 @@ namespace Unity.UI.Builder
 
         VisualElement PickElement(Vector2 mousePosition)
         {
-            var pickedElement = Panel.PickAllWithoutValidatingLayout(m_DocumentElement, mousePosition);
+            var pickedElement = Panel.PickAllWithoutValidatingLayout(m_DocumentRootElement, mousePosition);
 
             if (pickedElement == null)
                 return null;
 
-            if (pickedElement == m_DocumentElement)
+            if (pickedElement == m_DocumentRootElement)
                 return null;
 
             // Don't allow selection of elements inside template instances.
@@ -366,7 +370,7 @@ namespace Unity.UI.Builder
                 {
                     foreach (var selectorStr in matchingSelectors)
                     {
-                        var selectorElement = BuilderSharedStyles.FindSelectorElement(m_DocumentElement, selectorStr);
+                        var selectorElement = BuilderSharedStyles.FindSelectorElement(m_DocumentRootElement, selectorStr);
                         if (selectorElement == null)
                             continue;
 
@@ -431,10 +435,9 @@ namespace Unity.UI.Builder
                 return;
             }
 
-            m_BuilderResizer.Activate(m_Selection, m_PaneWindow.document.visualTreeAsset, selectedElement);
-            m_BuilderMover.Activate(m_Selection, m_PaneWindow.document.visualTreeAsset, selectedElement);
-            m_BuilderAnchorer.Activate(m_Selection, m_PaneWindow.document.visualTreeAsset, selectedElement);
-
+            m_BuilderResizer.Activate(m_PaneWindow, m_Selection, m_PaneWindow.document.visualTreeAsset, selectedElement);
+            m_BuilderMover.Activate(m_PaneWindow, m_Selection, m_PaneWindow.document.visualTreeAsset, selectedElement);
+            m_BuilderAnchorer.Activate(m_PaneWindow, m_Selection, m_PaneWindow.document.visualTreeAsset, selectedElement);
 
             m_Canvas.SetHighlighted(false);
             switch (m_Selection.selectionType)
@@ -479,11 +482,11 @@ namespace Unity.UI.Builder
         {
 
 #if UNITY_2020_1_OR_NEWER
-            m_Canvas.EditorExtensionsLabel.style.display = paneWindow.document.UXMLFileSettings.EditorExtensionMode
+            m_Canvas.editorExtensionsLabel.style.display = paneWindow.document.fileSettings.editorExtensionMode
                 ? DisplayStyle.Flex
                 : DisplayStyle.None;
 #else
-            m_Canvas.EditorExtensionsLabel.style.display = DisplayStyle.None;
+            m_Canvas.editorExtensionsLabel.style.display = DisplayStyle.None;
 #endif
 
             if (m_Selection.isEmpty || styles == null)

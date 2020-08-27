@@ -17,6 +17,7 @@ namespace Unity.UI.Builder
             var selectedStyleSheet = documentElement?.GetStyleSheet();
             int selectedStyleSheetIndex = selectedStyleSheet == null ? -1 : (int)documentElement.GetProperty(BuilderConstants.ElementLinkedStyleSheetIndexVEPropertyName);
             var isStyleSheet = documentElement != null && BuilderSharedStyles.IsStyleSheetElement(documentElement);
+            var styleSheetBelongsToParent = !string.IsNullOrEmpty(documentElement?.GetProperty(BuilderConstants.ExplorerItemLinkedUXMLFileName) as string);
             if (isStyleSheet)
                 evt.StopImmediatePropagation();
 
@@ -54,7 +55,7 @@ namespace Unity.UI.Builder
                 {
                     BuilderStyleSheetsUtilities.RemoveUSSFromAsset(paneWindow, selectedStyleSheetIndex);
                 },
-                isStyleSheet
+                isStyleSheet && !styleSheetBelongsToParent
                     ? DropdownMenuAction.Status.Normal
                     : DropdownMenuAction.Status.Disabled);
 
@@ -67,7 +68,7 @@ namespace Unity.UI.Builder
                     selection.Select(null, documentElement);
                     BuilderStyleSheetsUtilities.SetActiveUSS(selection, paneWindow, selectedStyleSheet);
                 },
-                isStyleSheet
+                isStyleSheet && !styleSheetBelongsToParent
                     ? DropdownMenuAction.Status.Normal
                     : DropdownMenuAction.Status.Disabled);
         }

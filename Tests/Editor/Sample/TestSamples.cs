@@ -61,14 +61,14 @@ namespace Unity.UI.Builder.EditorTests
         {
             // A new Builder window created when the test started.
             // The created window will be destroyed during the teardown stage.
-            Assert.That(BuilderWindow, Is.Not.Null);
+            Assert.That(builder, Is.Not.Null);
 
             // Fast access to the main builder panes.
-            Assert.That(StyleSheetsPane, Is.Not.Null);
-            Assert.That(HierarchyPane, Is.Not.Null);
-            Assert.That(LibraryPane, Is.Not.Null);
-            Assert.That(ViewportPane, Is.Not.Null);
-            Assert.That(InspectorPane, Is.Not.Null);
+            Assert.That(styleSheetsPane, Is.Not.Null);
+            Assert.That(hierarchy, Is.Not.Null);
+            Assert.That(library, Is.Not.Null);
+            Assert.That(viewport, Is.Not.Null);
+            Assert.That(inspector, Is.Not.Null);
 
             // Use the following methods to add standard controls to the document.
             AddElementCodeOnly();
@@ -76,7 +76,7 @@ namespace Unity.UI.Builder.EditorTests
             AddElementCodeOnly<Button>();
 
             // Get created element.
-            var createdButton = ViewportPane.documentElement.Q<Button>();
+            var createdButton = viewport.documentRootElement.Q<Button>();
 
             // Get linked hierarchy item.
             var buttonHierarchyNode = BuilderTestsHelper.GetLinkedExplorerItem(createdButton);
@@ -92,21 +92,21 @@ namespace Unity.UI.Builder.EditorTests
             var mySelectorNode = GetStyleSelectorNodeWithName(".my-selector");
 
             // Drag and drop sample. Drag selector onto created button.
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 mySelectorNode.Q<Label>().worldBound.center,
                 buttonHierarchyNode.worldBound.center);
 
             // Selected created TextField node and inline change style.
             // Avoid using ListView / TreeView / VisualElement API to select / focus an item.
             // Simulate how a user would do it with UIETestEvents API.
-            var textFieldHierarchyNode =  BuilderTestsHelper.GetLinkedExplorerItem(ViewportPane.documentElement.Q<TextField>());
+            var textFieldHierarchyNode =  BuilderTestsHelper.GetLinkedExplorerItem(viewport.documentRootElement.Q<TextField>());
             yield return UIETestEvents.Mouse.SimulateClick(textFieldHierarchyNode);
 
             // Make sure you unfold style properties group before accessing the properties.
             // Keep in mind the amount of time that will be spent by your test. Try to keep it as low as possible.
             // In the code sample below, instead of simulating user interaction, we will just set controls values directly.
             // However, there are no strict rules when you should skip user interaction simulation, use your judgment.
-            var displayFoldout = InspectorPane.Query<PersistedFoldout>().Where(f => f.text.Equals("Display")).First();
+            var displayFoldout = inspector.Query<PersistedFoldout>().Where(f => f.text.Equals("Display")).First();
             displayFoldout.value = true;
 
             var percentSlider = displayFoldout.Query<PercentSlider>().Where(t => t.label.Equals("Opacity")).First();

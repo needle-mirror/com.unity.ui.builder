@@ -13,17 +13,17 @@ namespace Unity.UI.Builder
             public override void Init(VisualElement ve, IUxmlAttributes bag, CreationContext cc)
             {
                 base.Init(ve, bag, cc);
-                ((HelpBox)ve).Text = m_Text.GetValueFromBag(bag, cc);
+                ((HelpBox)ve).text = m_Text.GetValueFromBag(bag, cc);
             }
         }
 
-        public string Text { get; set; }
+        public string text { get; set; }
 
         public HelpBox()
         {
             Add(new IMGUIContainer(() =>
             {
-                EditorGUILayout.HelpBox(Text, MessageType.Info, true);
+                EditorGUILayout.HelpBox(text, MessageType.Info, true);
             }));
         }
     }

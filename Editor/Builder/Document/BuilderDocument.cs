@@ -60,6 +60,9 @@ namespace Unity.UI.Builder
                     m_ActiveOpenUXMLFileIndex = 0;
                 }
 
+                if (m_ActiveOpenUXMLFileIndex < 0)
+                    m_ActiveOpenUXMLFileIndex = 0;
+
                 return m_OpenUXMLFiles[m_ActiveOpenUXMLFileIndex];
             }
         }
@@ -304,10 +307,14 @@ namespace Unity.UI.Builder
         // Sub Document
         //
 
-        public void AddSubDocument()
+        public void AddSubDocument(TemplateAsset vea = null)
         {
             var newUXMLFile = new BuilderDocumentOpenUXML();
+            var templateAssetIndex = activeOpenUXMLFile.visualTreeAsset.templateAssets.IndexOf(vea);
+
+            newUXMLFile.openSubDocumentParentSourceTemplateAssetIndex = templateAssetIndex;
             newUXMLFile.openSubDocumentParentIndex = m_ActiveOpenUXMLFileIndex;
+            
             m_OpenUXMLFiles.Add(newUXMLFile);
             int newIndex = m_OpenUXMLFiles.Count - 1;
             m_ActiveOpenUXMLFileIndex = newIndex;
@@ -323,22 +330,23 @@ namespace Unity.UI.Builder
             }
         }
 
-        public void GoToSubdocument(VisualElement documentRootElement, BuilderPaneWindow paneWindow, BuilderDocumentOpenUXML targetDocument)
+        public void GoToSubdocument(VisualElement documentRootElement, BuilderPaneWindow paneWindow, BuilderDocumentOpenUXML targetDocument, bool skipUnsavedChangesCheck = false)
         {
             if (targetDocument == activeOpenUXMLFile)
                 return;
 
-            if (!CheckForUnsavedChanges())
+            if (!skipUnsavedChangesCheck && !CheckForUnsavedChanges())
                 return;
+
             NewDocument(documentRootElement);
             GoToSubdocument(targetDocument);
             paneWindow.OnEnableAfterAllSerialization();
         }
 
-        public void GoToRootDocument(VisualElement documentRootElement, BuilderPaneWindow paneWindow) 
+        public void GoToRootDocument(VisualElement documentRootElement, BuilderPaneWindow paneWindow, bool skipUnsavedChangesCheck = false)
         {
             var parentDoc = paneWindow.document.openUXMLFiles[0];
-            GoToSubdocument(documentRootElement, paneWindow, parentDoc);
+            GoToSubdocument(documentRootElement, paneWindow, parentDoc, skipUnsavedChangesCheck);
         }
 
         //
@@ -372,8 +380,8 @@ namespace Unity.UI.Builder
         // Serialization
         //
 
-        public void OnAfterBuilderDeserialize(VisualElement documentElement)
-            => activeOpenUXMLFile.OnAfterBuilderDeserialize(documentElement);
+        public void OnAfterBuilderDeserialize(VisualElement documentRootElement)
+            => activeOpenUXMLFile.OnAfterBuilderDeserialize(documentRootElement);
 
         public void OnBeforeSerialize()
         {
@@ -385,7 +393,7 @@ namespace Unity.UI.Builder
 
         void LoadFromDisk()
         {
-            var path = BuilderConstants.BuilderDocumentDiskJsonFileAbsolutePath;
+            var path = BuilderConstants.builderDocumentDiskJsonFileAbsolutePath;
 
             if (!File.Exists(path))
                 return;
@@ -402,15 +410,15 @@ namespace Unity.UI.Builder
         {
             var json = EditorJsonUtility.ToJson(this, true);
 
-            var folderPath = BuilderConstants.BuilderDocumentDiskJsonFolderAbsolutePath;
+            var folderPath = BuilderConstants.builderDocumentDiskJsonFolderAbsolutePath;
             if (!Directory.Exists(folderPath))
                 Directory.CreateDirectory(folderPath);
 
-            File.WriteAllText(BuilderConstants.BuilderDocumentDiskJsonFileAbsolutePath, json);
+            File.WriteAllText(BuilderConstants.builderDocumentDiskJsonFileAbsolutePath, json);
         }
 
         public void SaveSettingsToDisk() => activeOpenUXMLFile.settings.SaveSettingsToDisk();
 
-        public BuilderUXMLFileSettings UXMLFileSettings => activeOpenUXMLFile.FileSettings;
+        public BuilderUXMLFileSettings fileSettings => activeOpenUXMLFile.fileSettings;
     }
 }

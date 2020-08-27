@@ -1,6 +1,10 @@
 # UI Builder
 
-The **UI Builder** lets you visually create and edit UI assets (UXML and USS) for use with the **UI Toolkit** (formally UIElements). Once the package is installed, the UI Builder window can be opened via the **Window > UI > UI Builder** menu, or double-clicking on a `.uxml` asset in the Project Browser.
+The **UI Builder** lets you visually create and edit UI assets such as UI documents (`.uxml` files), and stylesheets (`.uss` files), that you use with Unity's **UI Toolkit** (formerly UIElements). After you install the UI Builder package, you can open the UI Builder window from the menu (**Window > UI Toolkit > UI Builder**), or from the Project window (double-click a `.uxml` asset).
+
+> Note: In Unity 2019.x, you can find the UI Builder in the **Window > UI > UI Builder** menu..
+
+> Note: UI Builder is the visual authoring tool for UI Toolkit. It does not include runtime support. To enable runtime support in Unity 2020.1 and later, install the UI Toolkit package. For details, see this post on the Unity Forum: https://forum.unity.com/threads/ui-toolkit-1-0-preview-available.927822/.
 
 ## Overview
 

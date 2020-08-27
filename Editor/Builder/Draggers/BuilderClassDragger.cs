@@ -66,6 +66,9 @@ namespace Unity.UI.Builder
             if (element.GetVisualElementAsset() == null)
                 return false;
 
+            if (!element.IsPartOfActiveVisualTreeAsset(paneWindow.document))
+                return false;
+
             return true;
         }
     }

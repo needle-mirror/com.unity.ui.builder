@@ -55,7 +55,7 @@ namespace Unity.UI.Builder
             if (string.IsNullOrEmpty(guid))
                 return false;
 
-            var folderPath = BuilderConstants.BuilderDocumentDiskSettingsJsonFolderAbsolutePath;
+            var folderPath = BuilderConstants.builderDocumentDiskSettingsJsonFolderAbsolutePath;
             var fileName = guid + ".json";
             var path = folderPath + "/" + fileName;
 
@@ -75,7 +75,7 @@ namespace Unity.UI.Builder
 
             var json = EditorJsonUtility.ToJson(this, true);
 
-            var folderPath = BuilderConstants.BuilderDocumentDiskSettingsJsonFolderAbsolutePath;
+            var folderPath = BuilderConstants.builderDocumentDiskSettingsJsonFolderAbsolutePath;
             if (!Directory.Exists(folderPath))
                 Directory.CreateDirectory(folderPath);
 

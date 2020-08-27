@@ -33,5 +33,6 @@
                 </uib:BuilderCanvas>
              </VisualElement>
         </VisualElement>
+        <uib:BuilderNotifications name="notifications" class="unity-builder-notifications-container" />
     </VisualElement>
 </UXML>

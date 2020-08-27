@@ -141,7 +141,7 @@ namespace Unity.UI.Builder
             foreach (var Doc in allHierarchyDocuments)
             {
                 string docName = BreadcrumbFileName(Doc);
-                Action onBreadCrumbClick = () => document.GoToSubdocument(m_Viewport.documentElement, m_PaneWindow, Doc);
+                Action onBreadCrumbClick = () => document.GoToSubdocument(m_Viewport.documentRootElement, m_PaneWindow, Doc);
                 bool clickedOnSameDocument = document.activeOpenUXMLFile == Doc;
                 m_Breadcrumbs.PushItem(docName, clickedOnSameDocument ? null : onBreadCrumbClick);
             }
@@ -216,11 +216,11 @@ namespace Unity.UI.Builder
                 return false;
 
             if (unloadAllSubdocuments)
-                document.GoToRootDocument(m_Viewport.documentElement, m_PaneWindow);
+                document.GoToRootDocument(m_Viewport.documentRootElement, m_PaneWindow, true);
 
             m_Selection.ClearSelection(null);
 
-            document.NewDocument(m_Viewport.documentElement);
+            document.NewDocument(m_Viewport.documentRootElement);
 
             m_Viewport.ResetView();
             m_Inspector?.canvasInspector.Refresh();
@@ -240,10 +240,11 @@ namespace Unity.UI.Builder
             if (!document.CheckForUnsavedChanges())
                 return;
 
-            var testAsset = BuilderConstants.UIBuilderPackagePath +
+            var testAsset =
+                BuilderConstants.UIBuilderPackagePath +
                 "/SampleDocument/BuilderSampleCanvas.uxml";
             var originalAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(testAsset);
-            LoadDocumentInternal(originalAsset);
+            LoadDocument(originalAsset);
         }
 
         void NewTestVariablesDocument()
@@ -251,10 +252,11 @@ namespace Unity.UI.Builder
             if (!document.CheckForUnsavedChanges())
                 return;
 
-            var testAsset = BuilderConstants.UIBuilderPackagePath +
-                            "/SampleDocument/BuilderVariableSampleCanvas.uxml";
+            var testAsset =
+                BuilderConstants.UIBuilderPackagePath +
+                "/SampleDocument/BuilderVariableSampleCanvas.uxml";
             var originalAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(testAsset);
-            LoadDocumentInternal(originalAsset);
+            LoadDocument(originalAsset);
         }
 
         internal void SaveDocument(bool isSaveAs)
@@ -294,23 +296,13 @@ namespace Unity.UI.Builder
             SetToolbarBreadCrumbs();
         }
 
-        void LoadDocument(ChangeEvent<Object> evt)
-        {
-            var visualTreeAsset = evt.newValue as VisualTreeAsset;
-
-            if (!document.CheckForUnsavedChanges())
-                return;
-
-            LoadDocumentInternal(visualTreeAsset);
-        }
-
         public bool LoadDocument(VisualTreeAsset visualTreeAsset, bool unloadAllSubdocuments = true, bool assetModifiedExternally = false)
         {
             if (!document.CheckForUnsavedChanges(assetModifiedExternally))
                 return false;
             
             if (unloadAllSubdocuments)
-                document.GoToRootDocument(m_Viewport.documentElement, m_PaneWindow);
+                document.GoToRootDocument(m_Viewport.documentRootElement, m_PaneWindow);
 
             LoadDocumentInternal(visualTreeAsset);
 
@@ -321,7 +313,7 @@ namespace Unity.UI.Builder
         {
             m_Selection.ClearSelection(null);
 
-            document.LoadDocument(visualTreeAsset, m_Viewport.documentElement);
+            document.LoadDocument(visualTreeAsset, m_Viewport.documentRootElement);
 
             m_Viewport.SetViewFromDocumentSetting();
             m_Inspector?.canvasInspector.Refresh();
@@ -463,7 +455,7 @@ namespace Unity.UI.Builder
             ApplyCanvasTheme(m_TooltipPreview, theme);
             ApplyCanvasBackground(m_TooltipPreview, theme);
 
-            document.ChangeDocumentTheme(m_Viewport.documentElement, theme);
+            document.ChangeDocumentTheme(m_Viewport.documentRootElement, theme);
             m_Inspector?.selection.NotifyOfStylingChange(null, null, BuilderStylingChangeType.RefreshOnly);
         }
 
@@ -578,8 +570,8 @@ namespace Unity.UI.Builder
             else if (document.hasUnsavedChanges)
                 newFileName = newFileName + BuilderConstants.ToolbarUnsavedFileSuffix;
 
-            m_Viewport.canvas.TitleLabel.text = newFileName;
-            m_Viewport.canvas.TitleLabel.tooltip = document.uxmlPath;
+            m_Viewport.canvas.titleLabel.text = newFileName;
+            m_Viewport.canvas.titleLabel.tooltip = document.uxmlPath;
         }
 
         void SetupSettingsMenu()
@@ -589,11 +581,17 @@ namespace Unity.UI.Builder
             if (builder == null)
                 return;
 
-            m_SettingsMenu.menu.AppendAction("Show UXML \u2215 USS Previews"
-                , a => builder.codePreviewVisible = !builder.codePreviewVisible
-                , a => builder.codePreviewVisible ? DropdownMenuAction.Status.Checked : DropdownMenuAction.Status.Normal);
+            m_SettingsMenu.menu.AppendAction(
+                "Show UXML \u2215 USS Previews",
+                a => builder.codePreviewVisible = !builder.codePreviewVisible,
+                a => builder.codePreviewVisible ? DropdownMenuAction.Status.Checked : DropdownMenuAction.Status.Normal);
 
 #if UNITY_2020_1_OR_NEWER
+            m_SettingsMenu.menu.AppendAction(
+                "Show Notifications",
+                a => m_Viewport.notifications.ResetNotifications(),
+                a => m_Viewport.notifications.hasPendingNotifications ? DropdownMenuAction.Status.Normal : DropdownMenuAction.Status.Disabled);
+
             AddBuilderProjectSettingsMenu();
 #endif
         }
@@ -609,7 +607,7 @@ namespace Unity.UI.Builder
         {
             var projectSettingsWindow = EditorWindow.GetWindow<ProjectSettingsWindow>();
             projectSettingsWindow.Show();
-            projectSettingsWindow.SelectProviderByName(BuilderSettingsProvider.Name);
+            projectSettingsWindow.SelectProviderByName(BuilderSettingsProvider.name);
         }
 
         public void SelectionChanged() {}

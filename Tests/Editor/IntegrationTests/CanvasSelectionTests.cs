@@ -18,11 +18,11 @@ namespace Unity.UI.Builder.EditorTests
             AddElementCodeOnly<Button>();
             var element = GetFirstDocumentElement();
 
-            yield return UIETestEvents.Mouse.SimulateClick(StyleSheetsPane);
-            Assert.That(ViewportPane.documentElement.FindSelectedElements().Count, Is.Zero);
+            yield return UIETestEvents.Mouse.SimulateClick(styleSheetsPane);
+            Assert.That(viewport.documentRootElement.FindSelectedElements().Count, Is.Zero);
 
             yield return UIETestEvents.Mouse.SimulateClick(element);
-            Assert.That(ViewportPane.documentElement.FindSelectedElements()[0], Is.EqualTo(element));
+            Assert.That(viewport.documentRootElement.FindSelectedElements()[0], Is.EqualTo(element));
         }
 
         /// <summary>
@@ -33,14 +33,14 @@ namespace Unity.UI.Builder.EditorTests
         {
             AddElementCodeOnly<Button>();
             var element = GetFirstDocumentElement();
-            var selector = ViewportPane.Q("selection-indicator");
+            var selector = viewport.Q("selection-indicator");
 
-            BuilderWindow.selection.ClearSelection(null);
+            builder.selection.ClearSelection(null);
             yield return UIETestHelpers.Pause();
             Assert.That(selector, Style.Display(DisplayStyle.None));
             Assert.IsFalse(selector.worldBound.Overlaps(element.worldBound));
 
-            BuilderWindow.selection.AddToSelection(null, element);
+            builder.selection.AddToSelection(null, element);
             yield return UIETestHelpers.Pause();
             Assert.That(selector, Style.Display(DisplayStyle.Flex));
             Assert.IsTrue(selector.worldBound.Overlaps(element.worldBound));
@@ -57,20 +57,20 @@ namespace Unity.UI.Builder.EditorTests
 
             AddElementCodeOnly<Button>(buttonOneName);
             AddElementCodeOnly<Button>(buttonTwoName);
-            var selector = ViewportPane.Q("selection-indicator");
-            var header = ViewportPane.Q("selection-indicator").Q("header");
+            var selector = viewport.Q("selection-indicator");
+            var header = viewport.Q("selection-indicator").Q("header");
 
-            BuilderWindow.selection.ClearSelection(null);
+            builder.selection.ClearSelection(null);
             yield return UIETestHelpers.Pause();
             Assert.That(selector.resolvedStyle.display, Is.EqualTo(DisplayStyle.None));
             Assert.That(header.layout.size.magnitude, Is.Zero);
 
-            BuilderWindow.selection.AddToSelection(null, ViewportPane.Q(buttonOneName));
+            builder.selection.AddToSelection(null, viewport.Q(buttonOneName));
             yield return UIETestHelpers.Pause();
             Assert.That(selector.resolvedStyle.display, Is.EqualTo(DisplayStyle.Flex));
             Assert.That(header.layout.size.magnitude, Is.Not.Zero);
 
-            BuilderWindow.selection.AddToSelection(null, ViewportPane.Q(buttonTwoName));
+            builder.selection.AddToSelection(null, viewport.Q(buttonTwoName));
             yield return UIETestHelpers.Pause();
             Assert.That(selector.resolvedStyle.display, Is.EqualTo(DisplayStyle.None));
             Assert.That(header.layout.size.magnitude, Is.Zero);
@@ -84,19 +84,19 @@ namespace Unity.UI.Builder.EditorTests
         {
             AddElementCodeOnly<Button>();
             var element = GetFirstDocumentElement();
-            BuilderWindow.selection.Select(null, element);
+            builder.selection.Select(null, element);
             yield return UIETestHelpers.Pause();
 
-            var header = ViewportPane.Q("selection-indicator").Q<Label>("header-label");
+            var header = viewport.Q("selection-indicator").Q<Label>("header-label");
             Assert.That(header.text, Is.EqualTo(element.typeName));
 
             ForceNewDocument();
             AddElementCodeOnly<Button>("MyButton");
             element = GetFirstDocumentElement();
-            BuilderWindow.selection.Select(null, element);
+            builder.selection.Select(null, element);
             yield return UIETestHelpers.Pause();
 
-            header = ViewportPane.Q("selection-indicator").Q<Label>("header-label");
+            header = viewport.Q("selection-indicator").Q<Label>("header-label");
             Assert.That(header.text, Is.EqualTo("#" + element.name));
         }
 
@@ -109,18 +109,18 @@ namespace Unity.UI.Builder.EditorTests
             //Template Instance
             yield return LoadTestUXMLDocument(k_ParentTestUXMLPath);
 
-            var element = ViewportPane.Q<TemplateContainer>().Children().First();
+            var element = viewport.Q<TemplateContainer>().Children().First();
             yield return UIETestEvents.Mouse.SimulateClick(element);
 
-            Assert.That(ViewportPane.FindSelectedElements()[0].typeName,
-                Is.EqualTo(ViewportPane.Q<TemplateContainer>().typeName));
+            Assert.That(viewport.FindSelectedElements()[0].typeName,
+                Is.EqualTo(viewport.Q<TemplateContainer>().typeName));
 
             //C# type
             ForceNewDocument();
             AddElementCodeOnly<TextField>();
-            var textInput = ViewportPane.Q("unity-text-input");
+            var textInput = viewport.Q("unity-text-input");
             yield return UIETestEvents.Mouse.SimulateClick(textInput);
-            Assert.That(ViewportPane.FindSelectedElements()[0].typeName, Is.EqualTo("TextField"));
+            Assert.That(viewport.FindSelectedElements()[0].typeName, Is.EqualTo("TextField"));
         }
     }
 }

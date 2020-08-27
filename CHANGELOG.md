@@ -4,6 +4,31 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-preview.4] - 2020-08-27
+
+- Sub-Documents:
+    - Opening a sub-document will now display the parent USS files (as read-only) after the sub-document's own USS files in the StyleSheets pane.
+    - Can now also open a sub-document directly from the Viewport right-click menu.
+    - Can now open sub-documents "in-place" by right-clicking on a TemplateContainer (UXML Instance), either in the Hierarchy or the Viewport.
+    - Opening sub-documents "in-place" allows editing of child UXML instances in the context of their parent UXML document.
+    - Opening sub-documents "in-place" will show all elements not part of the sub-document (belonging to a parent document) faded in the Hierarchy and Canvas.
+- Other:
+    - Added dismissible notification in the Viewport for when no UI Toolkit package (`com.unity.ui`) is installed in the current project.
+    - Added option to see attached StyleSheets on each element in the Hierarchy via the Hierarchy's **...** menu.
+    - Added support for live-reloading of UI in the Game view, assuming the version of the UI Toolkit package (`com.unity.ui`) with live-reloading support is installed.
+    - Renamed Library/Project tab's "Assets" section to "UI Documents (UXML)" for clarity. This is different than the actual "Assets" folder entry in this tree view.
+    - Renamed Library/Project tab's "Custom Controls" section to "Custom Controls (C#)" for clarity.
+- Fixes:
+    - Fixed dragging of unselected USS Selector in StyleSheets pane not working, requiring the user to select it first before dragging.
+    - Fixed Viewport panning hot keys on macOS to match the same keys used for the Scene view: command+option.
+    - Fixed exceptions related to `element.Add(child)` now requiring `contentContainer` to not be null in newer versions of Unity 2020.2.
+    - Fixed compilation errors when using newer versions of `com.unity.ui` package due to changes to `computedStyles` API.
+    - Fixed possible corruption of parent document UXML (all Template src attributes removed) when saving child sub-document.
+    - Fixed not being able to create the `*` selector from the StyleSheets pane "Add New Selector..." field.
+    - Fixed double-clicking on class pills in the StyleSheet section of the Inspector to create a new selector not working when no StyleSheets have been added to document.
+    - Fixed extracting inline styles to new selector that contain keywords such as Auto creating invalid USS (properties with missing values).
+    - Fixed Library/Project tab's "Assets" section's expanded state conflicting with the actual "Assets" folder item's expanded tree state.
+
 ## [1.0.0-preview.3] - 2020-07-17
 
 - Fixed errors when instantiating a UXML template via drag-and-drop.

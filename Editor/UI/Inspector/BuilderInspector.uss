@@ -146,8 +146,12 @@
 /* BuilderDoubleFieldRow                                                     */
 /*****************************************************************************/
 
-.unity-builder-double-field-row .unity-builder-style-row__content-container {
+.unity-builder-double-field-row > .unity-builder-style-row__content-container {
     flex-direction: row;
+}
+
+.unity-builder-double-field > .unity-label {
+    min-width: 60px;
 }
 
 .unity-builder-double-field {

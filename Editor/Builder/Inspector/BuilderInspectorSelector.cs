@@ -47,18 +47,18 @@ namespace Unity.UI.Builder
         public void Refresh()
         {
             // Bind the style selector controls.
-            if (m_Selection.selectionType == BuilderSelectionType.StyleSelector)
+            if (m_Selection.selectionType == BuilderSelectionType.StyleSelector || m_Selection.selectionType == BuilderSelectionType.ParentStyleSelector)
                 m_StyleSelectorNameField.SetValueWithoutNotify(BuilderSharedStyles.GetSelectorString(currentVisualElement));
         }
 
         public void Enable()
         {
-            // Do nothing.
+            m_StyleSelectorNameField.SetEnabled(true);
         }
 
         public void Disable()
         {
-            // Do nothing.
+            m_StyleSelectorNameField.SetEnabled(false);
         }
     }
 }

@@ -14,7 +14,11 @@ namespace Unity.UI.Builder
             m_Viewport = viewport;
             m_Viewport.Q("viewport").AddManipulator(this);
             activators.Add(new ManipulatorActivationFilter { button = MouseButton.MiddleMouse });
+#if UNITY_EDITOR_OSX
+            activators.Add(new ManipulatorActivationFilter { button = MouseButton.LeftMouse, modifiers = EventModifiers.Alt | EventModifiers.Command });
+#else
             activators.Add(new ManipulatorActivationFilter { button = MouseButton.LeftMouse, modifiers = EventModifiers.Alt | EventModifiers.Control });
+#endif
         }
 
         protected override void RegisterCallbacksOnTarget()

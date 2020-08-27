@@ -266,6 +266,7 @@ namespace Unity.UI.Builder
 
         void EnableFields()
         {
+            m_SelectorSection.Enable();
             m_AttributesSection.Enable();
             m_InheritedStyleSection.Enable();
             m_LocalStylesSection.Enable();
@@ -273,6 +274,7 @@ namespace Unity.UI.Builder
 
         void DisableFields()
         {
+            m_SelectorSection.Disable();
             m_AttributesSection.Disable();
             m_InheritedStyleSection.Disable();
             m_LocalStylesSection.Disable();
@@ -413,12 +415,14 @@ namespace Unity.UI.Builder
                 case BuilderSelectionType.StyleSheet:
                     EnableSections(Section.StyleSheet);
                     return;
+                case BuilderSelectionType.ParentStyleSelector:
                 case BuilderSelectionType.StyleSelector:
                     EnableSections(
                         Section.StyleSelector |
                         Section.LocalStyles);
                     break;
                 case BuilderSelectionType.ElementInTemplateInstance:
+                case BuilderSelectionType.ElementInParentDocument:
                 case BuilderSelectionType.Element:
                     EnableSections(
                         Section.ElementAttributes |
@@ -430,7 +434,10 @@ namespace Unity.UI.Builder
                     m_CanvasSection.Refresh();
                     return;
             }
-            if (m_Selection.selectionType == BuilderSelectionType.ElementInTemplateInstance)
+            bool selectionInTemplateInstance = m_Selection.selectionType == BuilderSelectionType.ElementInTemplateInstance;
+            bool selectionInParentSelector = m_Selection.selectionType == BuilderSelectionType.ParentStyleSelector;
+            bool selectionInParentDocument = m_Selection.selectionType == BuilderSelectionType.ElementInParentDocument;
+            if (selectionInTemplateInstance || selectionInParentSelector || selectionInParentDocument)
                 DisableFields();
 
             // Bind the style selector controls.

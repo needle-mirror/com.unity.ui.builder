@@ -16,7 +16,7 @@ namespace Unity.UI.Builder.EditorTests
         [UnityTest]
         public IEnumerator CreatingNewDocumentClearsSelectionAndExplorer()
         {
-            var toolbar = ViewportPane.Q<BuilderToolbar>();
+            var toolbar = viewport.Q<BuilderToolbar>();
 
             // Make sure File menu exists
             var menuItem = toolbar.Query<ToolbarMenu>().Where(menu => menu.Q<TextElement>().text == "File").First();
@@ -27,10 +27,10 @@ namespace Unity.UI.Builder.EditorTests
             yield return AddSelector(StyleSheetsPaneTests.TestSelectorName);
 
             ForceNewDocument();
-            Assert.That( ViewportPane.documentElement.childCount, Is.EqualTo(0));
-            Assert.That(BuilderTestsHelper.GetExplorerItems(StyleSheetsPane).Count, Is.EqualTo(0));
-            Assert.That(BuilderTestsHelper.GetExplorerItems(HierarchyPane).Count, Is.EqualTo(0));
-            Assert.True( BuilderWindow.selection.isEmpty);
+            Assert.That( viewport.documentRootElement.childCount, Is.EqualTo(0));
+            Assert.That(BuilderTestsHelper.GetExplorerItems(styleSheetsPane).Count, Is.EqualTo(0));
+            Assert.That(BuilderTestsHelper.GetExplorerItems(hierarchy).Count, Is.EqualTo(0));
+            Assert.True( builder.selection.isEmpty);
         }
 
         /// <summary>
@@ -39,23 +39,23 @@ namespace Unity.UI.Builder.EditorTests
         [UnityTest]
         public IEnumerator ZoomWithMouseScrollAndRightClick()
         {
-            var toolbar = ViewportPane.Q<BuilderToolbar>();
+            var toolbar = viewport.Q<BuilderToolbar>();
             var zoomMenuItem = toolbar.Query<ToolbarMenu>().Where(menu => menu.Q<TextElement>().text == "100%").First();
             Assert.That(zoomMenuItem, Is.Not.Null);
 
             // Zoom With Scroll Wheel
-            yield return UIETestEvents.Mouse.SimulateClick(ViewportPane);
-            yield return UIETestEvents.Mouse.SimulateScroll(ViewportPane, Vector2.one * 100, ViewportPane.worldBound.center);
+            yield return UIETestEvents.Mouse.SimulateClick(viewport);
+            yield return UIETestEvents.Mouse.SimulateScroll(viewport, Vector2.one * 100, viewport.worldBound.center);
 
-            yield return UIETestEvents.Mouse.SimulateMouseEvent(BuilderWindow,
+            yield return UIETestEvents.Mouse.SimulateMouseEvent(builder,
                 EventType.MouseDown,
-                ViewportPane.worldBound.center,
+                viewport.worldBound.center,
                 MouseButton.RightMouse,
                 EventModifiers.Alt);
 
-            yield return UIETestEvents.Mouse.SimulateMouseMove(BuilderWindow,
-                ViewportPane.worldBound.center,
-                ViewportPane.worldBound.center + Vector2.one * 20,
+            yield return UIETestEvents.Mouse.SimulateMouseMove(builder,
+                viewport.worldBound.center,
+                viewport.worldBound.center + Vector2.one * 20,
                 MouseButton.RightMouse,
                 EventModifiers.Alt);
 
@@ -69,26 +69,26 @@ namespace Unity.UI.Builder.EditorTests
         [UnityTest]
         public IEnumerator CanResetViewAndFitCanvas()
         {
-            var toolbar = ViewportPane.Q<BuilderToolbar>();
+            var toolbar = base.viewport.Q<BuilderToolbar>();
             var fitCanvasButton = toolbar.Q<ToolbarButton>(BuilderToolbar.FitCanvasButtonName);
             Assert.That(fitCanvasButton, Is.Not.Null);
 
-            var canvas = ViewportPane.Q<BuilderCanvas>();
-            var viewport = ViewportPane.Q<VisualElement>("viewport");
+            var canvas = base.viewport.Q<BuilderCanvas>();
+            var viewport = base.viewport.Q<VisualElement>("viewport");
 
             // A new document, when opened, is centered by default, thus we need to offset it before
             // clicking on the FitCanvas button
-            yield return UIETestEvents.Mouse.SimulateMouseEvent(BuilderWindow,
+            yield return UIETestEvents.Mouse.SimulateMouseEvent(builder,
                 EventType.MouseDown,
                 canvas.worldBound.center,
                 MouseButton.MiddleMouse);
 
-            yield return UIETestEvents.Mouse.SimulateMouseMove(BuilderWindow,
-                ViewportPane.worldBound.center,
+            yield return UIETestEvents.Mouse.SimulateMouseMove(builder,
+                base.viewport.worldBound.center,
                 canvas.worldBound.center + Vector2.one * 100,
                 MouseButton.MiddleMouse);
 
-            yield return UIETestEvents.Mouse.SimulateMouseEvent(BuilderWindow,
+            yield return UIETestEvents.Mouse.SimulateMouseEvent(builder,
                 EventType.MouseUp,
                 canvas.worldBound.center,
                 MouseButton.MiddleMouse);
@@ -107,7 +107,7 @@ namespace Unity.UI.Builder.EditorTests
         [UnityTest]
         public IEnumerator PreviewModeBehaviour()
         {
-            var toolbar = ViewportPane.Q<BuilderToolbar>();
+            var toolbar = viewport.Q<BuilderToolbar>();
             var previewToggle = toolbar.Q<ToolbarToggle>(BuilderToolbar.PreviewToggleName);
             Assert.That(previewToggle, Is.Not.Null);
 
@@ -117,19 +117,19 @@ namespace Unity.UI.Builder.EditorTests
             yield return UIETestEvents.Mouse.SimulateClick(fitCanvasButton);
 
             AddElementCodeOnly<Button>();
-            yield return UIETestEvents.Mouse.SimulateClick(ViewportPane);
-            Assert.True(BuilderWindow.selection.isEmpty);
+            yield return UIETestEvents.Mouse.SimulateClick(viewport);
+            Assert.True(builder.selection.isEmpty);
 
             var button = (Button) GetFirstDocumentElement();
             yield return UIETestEvents.Mouse.SimulateClick(button);
             Assert.True(button.pseudoStates == 0);
-            Assert.That(BuilderWindow.selection.selection.First(), Is.EqualTo(button));
+            Assert.That(builder.selection.selection.First(), Is.EqualTo(button));
 
-            yield return UIETestEvents.Mouse.SimulateClick(ViewportPane);
-            Assert.True(BuilderWindow.selection.isEmpty);
+            yield return UIETestEvents.Mouse.SimulateClick(viewport);
+            Assert.True(builder.selection.isEmpty);
             yield return UIETestEvents.Mouse.SimulateClick(previewToggle);
             yield return UIETestEvents.Mouse.SimulateClick(button);
-            Assert.True(BuilderWindow.selection.isEmpty);
+            Assert.True(builder.selection.isEmpty);
             Assert.True(button.pseudoStates.HasFlag(PseudoStates.Hover));
         }
 

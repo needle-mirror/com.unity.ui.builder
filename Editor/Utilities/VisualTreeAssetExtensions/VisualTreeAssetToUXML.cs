@@ -153,7 +153,7 @@ namespace Unity.UI.Builder
                         Debug.LogError("UI Builder: VisualTreeAsset.m_Usings field has not been found! Update the reflection code!");
                     }
                     stringBuilder.Append(" />");
-                    stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
+                    stringBuilder.Append(BuilderConstants.newlineCharFromEditorSettings);
                 }
             }
         }
@@ -209,7 +209,7 @@ namespace Unity.UI.Builder
             if (!newLineAdded)
             {
                 stringBuilder.Append(">");
-                stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
+                stringBuilder.Append(BuilderConstants.newlineCharFromEditorSettings);
                 newLineAdded = true;
             }
 
@@ -220,7 +220,7 @@ namespace Unity.UI.Builder
                 AppendElementAttribute("src", path, stringBuilder);
             }
             stringBuilder.Append(" />");
-            stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
+            stringBuilder.Append(BuilderConstants.newlineCharFromEditorSettings);
 
             hasChildTags = true;
         }
@@ -322,7 +322,7 @@ namespace Unity.UI.Builder
                 if (!hasChildTags)
                 {
                     stringBuilder.Append(">");
-                    stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
+                    stringBuilder.Append(BuilderConstants.newlineCharFromEditorSettings);
                 }
 
                 var overridesMap = new Dictionary<string, List<TemplateAsset.AttributeOverride>>();
@@ -346,7 +346,7 @@ namespace Unity.UI.Builder
                         AppendElementAttribute(attributeOverride.m_AttributeName, attributeOverride.m_Value, stringBuilder);
 
                     stringBuilder.Append(" />");
-                    stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
+                    stringBuilder.Append(BuilderConstants.newlineCharFromEditorSettings);
                 }
 
                 hasChildTags = true;
@@ -359,7 +359,7 @@ namespace Unity.UI.Builder
                 if (!hasChildTags)
                 {
                     stringBuilder.Append(">");
-                    stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
+                    stringBuilder.Append(BuilderConstants.newlineCharFromEditorSettings);
                 }
 
                 children.Sort(VisualTreeAssetUtilities.CompareForOrder);
@@ -378,12 +378,12 @@ namespace Unity.UI.Builder
                 stringBuilder.Append("</");
                 AppendElementTypeName(root, stringBuilder);
                 stringBuilder.Append(">");
-                stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
+                stringBuilder.Append(BuilderConstants.newlineCharFromEditorSettings);
             }
             else
             {
                 stringBuilder.Append(" />");
-                stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
+                stringBuilder.Append(BuilderConstants.newlineCharFromEditorSettings);
             }
         }
 
@@ -393,7 +393,7 @@ namespace Unity.UI.Builder
 
             stringBuilder.Append(BuilderConstants.UxmlHeader);
             stringBuilder.Append(">");
-            stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
+            stringBuilder.Append(BuilderConstants.newlineCharFromEditorSettings);
 
             var idToChildren = VisualTreeAssetUtilities.GenerateIdToChildren(vta);
 
@@ -408,7 +408,7 @@ namespace Unity.UI.Builder
             }
 
             stringBuilder.Append(BuilderConstants.UxmlFooter);
-            stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
+            stringBuilder.Append(BuilderConstants.newlineCharFromEditorSettings);
 
             return stringBuilder.ToString();
         }
@@ -459,9 +459,9 @@ namespace Unity.UI.Builder
             {
                 stringBuilder.Append(BuilderConstants.UxmlHeader);
                 stringBuilder.Append(">");
-                stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
+                stringBuilder.Append(BuilderConstants.newlineCharFromEditorSettings);
                 stringBuilder.Append(BuilderConstants.UxmlFooter);
-                stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
+                stringBuilder.Append(BuilderConstants.newlineCharFromEditorSettings);
                 return stringBuilder.ToString();
             }
 
@@ -472,7 +472,7 @@ namespace Unity.UI.Builder
             AppendHeaderAttributes(vta, stringBuilder, writingToFile);
 #endif
             stringBuilder.Append(">");
-            stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
+            stringBuilder.Append(BuilderConstants.newlineCharFromEditorSettings);
 
             // Templates
             AppendTemplateRegistrations(vta, vtaPath, stringBuilder);
@@ -480,7 +480,7 @@ namespace Unity.UI.Builder
             GenerateUXMLFromRootElements(vta, idToChildren, stringBuilder, vtaPath, writingToFile);
 
             stringBuilder.Append(BuilderConstants.UxmlFooter);
-            stringBuilder.Append(BuilderConstants.NewlineCharFromEditorSettings);
+            stringBuilder.Append(BuilderConstants.newlineCharFromEditorSettings);
 
             return stringBuilder.ToString();
         }

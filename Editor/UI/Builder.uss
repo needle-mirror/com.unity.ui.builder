@@ -217,6 +217,56 @@ BuilderExplorerItem {
 }
 
 /*****************************************************************************/
+/* Notifications */
+/*****************************************************************************/
+
+.unity-builder-notifications-container {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+}
+
+.unity-builder-notification-entry {
+    flex-direction: row;
+    align-items: center;
+    padding: 2px;
+    margin: 2px;
+    border-width: 1px;
+    border-radius: 4px;
+}
+
+.unity-builder-notification-entry__icon {
+    width: 16px;
+    height: 16px;
+    margin: 2px;
+}
+
+.unity-builder-notification-entry__message-container {
+    flex-grow: 1;
+}
+
+.unity-builder-notification-entry__message {
+    overflow: hidden;
+}
+
+.unity-builder-notification-entry__details-button {
+    background-color: initial;
+    border-color: initial;
+    border-bottom-width: 1px;
+    border-radius: initial;
+    margin: 0;
+    padding: 0;
+    height: 12px;
+}
+
+.unity-builder-notification-entry__dismiss-button {
+    background-color: initial;
+    border-color: initial;
+    margin: 0;
+}
+
+/*****************************************************************************/
 /* Viewport                                                                  */
 /*****************************************************************************/
 

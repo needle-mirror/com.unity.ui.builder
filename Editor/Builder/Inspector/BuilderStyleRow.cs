@@ -24,7 +24,7 @@ namespace Unity.UI.Builder
             m_Container = this.Q("content-container");
         }
 
-        public override VisualElement contentContainer => m_Container;
+        public override VisualElement contentContainer => m_Container == null ? this : m_Container;
 
         public static void ReAssignTooltipToChild(VisualElement field)
         {

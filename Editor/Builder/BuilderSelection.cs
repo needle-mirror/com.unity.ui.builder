@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -13,8 +14,10 @@ namespace Unity.UI.Builder
         Element,
         StyleSheet,
         StyleSelector,
+        ParentStyleSelector,
         ElementInTemplateInstance,
-        VisualTreeAsset
+        VisualTreeAsset,
+        ElementInParentDocument
     }
 
     [Flags]
@@ -54,7 +57,7 @@ namespace Unity.UI.Builder
 
         VisualElement m_Root;
         BuilderPaneWindow m_PaneWindow;
-        VisualElement m_DocumentElement;
+        VisualElement m_DocumentRootElement;
         VisualElement m_DummyElementForStyleChangeNotifications;
 
         public BuilderSelectionType selectionType
@@ -68,16 +71,18 @@ namespace Unity.UI.Builder
 
                 if (BuilderSharedStyles.IsDocumentElement(selectedElement))
                     return BuilderSelectionType.VisualTreeAsset;
+                if (BuilderSharedStyles.IsParentSelectorElement(selectedElement))
+                    return BuilderSelectionType.ParentStyleSelector;
                 if (BuilderSharedStyles.IsSelectorElement(selectedElement))
                     return BuilderSelectionType.StyleSelector;
                 if (BuilderSharedStyles.IsStyleSheetElement(selectedElement))
                     return BuilderSelectionType.StyleSheet;
-                if (selectedElement.GetVisualElementAsset() != null)
+                if (selectedElement.GetVisualElementAsset() == null)
+                    return BuilderSelectionType.ElementInTemplateInstance;
+                if (selectedElement.IsPartOfActiveVisualTreeAsset(m_PaneWindow.document))
                     return BuilderSelectionType.Element;
-
-                // If we got here, it means we selected element inside
-                // a child Template Instance in the main doc.
-                return BuilderSelectionType.ElementInTemplateInstance;
+                
+                return BuilderSelectionType.ElementInParentDocument;
             }
         }
 
@@ -87,13 +92,15 @@ namespace Unity.UI.Builder
 
         public IEnumerable<VisualElement> selection => m_Selection;
 
-        public VisualElement documentElement
+        public VisualElement documentRootElement
         {
-            get { return m_DocumentElement; }
-            set { m_DocumentElement = value; }
+            get { return m_DocumentRootElement; }
+            set { m_DocumentRootElement = value; }
         }
 
         public bool isEmpty { get { return m_Selection.Count == 0; } }
+        
+        MethodInfo m_LiveReloadTriggerMethod;
 
         public BuilderSelection(VisualElement root, BuilderPaneWindow paneWindow)
         {
@@ -111,6 +118,8 @@ namespace Unity.UI.Builder
             m_DummyElementForStyleChangeNotifications.style.width = 1;
             m_DummyElementForStyleChangeNotifications.RegisterCallback<GeometryChangedEvent>(AfterPanelUpdaterChange);
             m_Root.Add(m_DummyElementForStyleChangeNotifications);
+
+            m_LiveReloadTriggerMethod = ReflectionExtensions.GetStaticMethodByReflection(typeof(UIElementsUtility), "InMemoryAssetsHaveBeenChanged");
         }
 
         public void AssignNotifiers(IEnumerable<IBuilderSelectionNotifier> notifiers)
@@ -243,12 +252,13 @@ namespace Unity.UI.Builder
 #endif
             }
 
-            if (m_DocumentElement != null)
-                m_PaneWindow.document.RefreshStyle(m_DocumentElement);
+            if (m_DocumentRootElement != null)
+                m_PaneWindow.document.RefreshStyle(m_DocumentRootElement);
 
             // This is so anyone interested can refresh their use of this UXML with
             // the latest (unsaved to disk) changes.
             EditorUtility.SetDirty(m_PaneWindow.document.visualTreeAsset);
+            m_LiveReloadTriggerMethod?.Invoke(null, null);
 
             foreach (var notifier in m_Notifiers)
                 if (notifier != source)
@@ -260,8 +270,8 @@ namespace Unity.UI.Builder
             if (m_Notifiers == null || m_Notifiers.Count == 0)
                 return;
 
-            if (m_DocumentElement != null)
-                m_PaneWindow.document.RefreshStyle(m_DocumentElement);
+            if (m_DocumentRootElement != null)
+                m_PaneWindow.document.RefreshStyle(m_DocumentRootElement);
 
             m_CurrentNotifier = source;
             m_CurrentStyleList = styles;
@@ -274,8 +284,8 @@ namespace Unity.UI.Builder
             if (m_Notifiers == null || m_Notifiers.Count == 0)
                 return;
 
-            if (m_DocumentElement != null)
-                m_PaneWindow.document.RefreshStyle(m_DocumentElement);
+            if (m_DocumentRootElement != null)
+                m_PaneWindow.document.RefreshStyle(m_DocumentRootElement);
 
             foreach (var notifier in m_Notifiers)
                 if (notifier != source)
@@ -288,6 +298,7 @@ namespace Unity.UI.Builder
             // the latest (unsaved to disk) changes.
             //RetainedMode.FlagStyleSheetChange(); // Works but TOO SLOW.
             m_PaneWindow.document.MarkStyleSheetsDirty();
+            m_LiveReloadTriggerMethod?.Invoke(null, null);
 
             foreach (var notifier in m_Notifiers)
                 if (notifier != m_CurrentNotifier)

@@ -22,15 +22,15 @@ namespace Unity.UI.Builder.EditorTests
         {
             const string testElementName = "test_element_name";
             AddElementCodeOnly<TextField>(testElementName);
-            Selection.ClearSelection(null);
+            selection.ClearSelection(null);
 
             yield return UIETestHelpers.Pause();
             var hierarchyCreatedItem = GetHierarchyExplorerItemByElementName(testElementName);
             Assert.That(hierarchyCreatedItem, Is.Not.Null);
 
-            var hierarchyTreeView = HierarchyPane.Q<TreeView>();
+            var hierarchyTreeView = hierarchy.Q<TreeView>();
             Assert.That(hierarchyTreeView.GetSelectedItem(), Is.Null);
-            Assert.That(Selection.isEmpty, Is.True);
+            Assert.That(selection.isEmpty, Is.True);
 
             yield return UIETestEvents.Mouse.SimulateClick(hierarchyCreatedItem);
             var documentElement = GetFirstDocumentElement();
@@ -38,7 +38,7 @@ namespace Unity.UI.Builder.EditorTests
 
             var selectedItem = (TreeViewItem<VisualElement>) hierarchyTreeView.GetSelectedItem();
             Assert.That(documentElement, Is.EqualTo(selectedItem.data));
-            Assert.That(Selection.selection.First(), Is.EqualTo(documentElement));
+            Assert.That(selection.selection.First(), Is.EqualTo(documentElement));
         }
 
         /// <summary>
@@ -51,20 +51,20 @@ namespace Unity.UI.Builder.EditorTests
             AddElementCodeOnly();
             yield return UIETestHelpers.Pause();
 
-            var documentElement1 = ViewportPane.documentElement[0];
-            var documentElement2 = ViewportPane.documentElement[1];
+            var documentElement1 = viewport.documentRootElement[0];
+            var documentElement2 = viewport.documentRootElement[1];
 
-            var hierarchyItems = BuilderTestsHelper.GetExplorerItemsWithName(HierarchyPane, nameof(VisualElement));
+            var hierarchyItems = BuilderTestsHelper.GetExplorerItemsWithName(hierarchy, nameof(VisualElement));
             var hierarchyItem1 = hierarchyItems[0];
             var hierarchyItem2 = hierarchyItems[1];
 
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 hierarchyItem1.worldBound.center,
                 hierarchyItem2.worldBound.center);
 
             yield return null;
-            Assert.That(ViewportPane.documentElement.childCount, Is.EqualTo(1));
-            Assert.That(documentElement2.parent, Is.EqualTo(ViewportPane.documentElement));
+            Assert.That(viewport.documentRootElement.childCount, Is.EqualTo(1));
+            Assert.That(documentElement2.parent, Is.EqualTo(viewport.documentRootElement));
             Assert.That(documentElement1.parent, Is.EqualTo(documentElement2));
         }
 
@@ -77,19 +77,19 @@ namespace Unity.UI.Builder.EditorTests
             AddElementCodeOnly();
             AddElementCodeOnly();
 
-            var documentElement1 = ViewportPane.documentElement[0];
-            var documentElement2 = ViewportPane.documentElement[1];
+            var documentElement1 = viewport.documentRootElement[0];
+            var documentElement2 = viewport.documentRootElement[1];
 
-            var hierarchyItems = BuilderTestsHelper.GetExplorerItemsWithName(HierarchyPane, nameof(VisualElement));
+            var hierarchyItems = BuilderTestsHelper.GetExplorerItemsWithName(hierarchy, nameof(VisualElement));
             var hierarchyItem1 = hierarchyItems[0];
 
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 hierarchyItem1.worldBound.center,
                 documentElement2.worldBound.center);
 
             yield return UIETestHelpers.Pause();
-            Assert.That(ViewportPane.documentElement.childCount, Is.EqualTo(1));
-            Assert.That(documentElement2.parent, Is.EqualTo(ViewportPane.documentElement));
+            Assert.That(viewport.documentRootElement.childCount, Is.EqualTo(1));
+            Assert.That(documentElement2.parent, Is.EqualTo(viewport.documentRootElement));
             Assert.That(documentElement1.parent, Is.EqualTo(documentElement2));
         }
 
@@ -104,19 +104,19 @@ namespace Unity.UI.Builder.EditorTests
             AddElementCodeOnly<TextField>();
             yield return UIETestHelpers.Pause();
 
-            var textFieldCanvas = ViewportPane.documentElement[2];
-            var firstVisualElementHierarchy = BuilderTestsHelper.GetExplorerItemWithName(HierarchyPane, nameof(VisualElement));
-            var textFieldHierarchy = BuilderTestsHelper.GetExplorerItemWithName(HierarchyPane, nameof(TextField));
+            var textFieldCanvas = viewport.documentRootElement[2];
+            var firstVisualElementHierarchy = BuilderTestsHelper.GetExplorerItemWithName(hierarchy, nameof(VisualElement));
+            var textFieldHierarchy = BuilderTestsHelper.GetExplorerItemWithName(hierarchy, nameof(TextField));
 
-            Assert.That(ViewportPane.documentElement.IndexOf(textFieldCanvas), Is.EqualTo(2));
+            Assert.That(viewport.documentRootElement.IndexOf(textFieldCanvas), Is.EqualTo(2));
 
-            yield return UIETestEvents.Mouse.SimulateMouseEvent(BuilderWindow, EventType.MouseDown, textFieldHierarchy.worldBound.center);
+            yield return UIETestEvents.Mouse.SimulateMouseEvent(builder, EventType.MouseDown, textFieldHierarchy.worldBound.center);
             var textFieldCenter = textFieldHierarchy.worldBound.center;
             var veBottomPosition =  new Vector2(textFieldCenter.x, firstVisualElementHierarchy.worldBound.yMax);
-            yield return UIETestEvents.Mouse.SimulateMouseMove(BuilderWindow, textFieldCenter, veBottomPosition);
+            yield return UIETestEvents.Mouse.SimulateMouseMove(builder, textFieldCenter, veBottomPosition);
 
-            Assert.That(ViewportPane.documentElement.IndexOf(textFieldCanvas), Is.EqualTo(1));
-            yield return UIETestEvents.Mouse.SimulateMouseEvent(BuilderWindow, EventType.MouseUp, veBottomPosition);
+            Assert.That(viewport.documentRootElement.IndexOf(textFieldCanvas), Is.EqualTo(1));
+            yield return UIETestEvents.Mouse.SimulateMouseEvent(builder, EventType.MouseUp, veBottomPosition);
         }
 
         /// <summary>
@@ -141,7 +141,7 @@ namespace Unity.UI.Builder.EditorTests
         {
             const string testItemName = "test_name";
             AddElementCodeOnly();
-            var hierarchyItem = BuilderTestsHelper.GetExplorerItemWithName(HierarchyPane, nameof(VisualElement));
+            var hierarchyItem = BuilderTestsHelper.GetExplorerItemWithName(hierarchy, nameof(VisualElement));
             var documentElement = BuilderTestsHelper.GetLinkedDocumentElement(hierarchyItem);
             var nameLabel = hierarchyItem.Q<Label>(className: BuilderConstants.ExplorerItemLabelClassName);
 
@@ -149,19 +149,19 @@ namespace Unity.UI.Builder.EditorTests
             Assert.That(nameLabel.classList, Contains.Item(BuilderConstants.ElementTypeClassName));
 
             yield return UIETestEvents.Mouse.SimulateDoubleClick(hierarchyItem);
-            yield return UIETestEvents.KeyBoard.SimulateTyping(BuilderWindow, testItemName);
-            yield return UIETestEvents.KeyBoard.SimulateKeyDown(BuilderWindow, KeyCode.Return);
+            yield return UIETestEvents.KeyBoard.SimulateTyping(builder, testItemName);
+            yield return UIETestEvents.KeyBoard.SimulateKeyDown(builder, KeyCode.Return);
 
             Assert.That(documentElement.name, Is.EqualTo(testItemName));
 
-            hierarchyItem = BuilderTestsHelper.GetExplorerItemWithName(HierarchyPane, BuilderConstants.UssSelectorNameSymbol + testItemName);
+            hierarchyItem = BuilderTestsHelper.GetExplorerItemWithName(hierarchy, BuilderConstants.UssSelectorNameSymbol + testItemName);
             nameLabel =  hierarchyItem.Q<Label>(className: BuilderConstants.ExplorerItemLabelClassName);
             Assert.That(nameLabel.classList, Contains.Item(BuilderConstants.ElementNameClassName));
 
             hierarchyItem = GetFirstExplorerItem();
             yield return UIETestEvents.Mouse.SimulateDoubleClick(hierarchyItem);
-            yield return UIETestEvents.KeyBoard.SimulateTyping(BuilderWindow, "invalid&name");
-            yield return UIETestEvents.KeyBoard.SimulateKeyDown(BuilderWindow, KeyCode.Return);
+            yield return UIETestEvents.KeyBoard.SimulateTyping(builder, "invalid&name");
+            yield return UIETestEvents.KeyBoard.SimulateKeyDown(builder, KeyCode.Return);
             Assert.That(documentElement.name, Is.EqualTo(testItemName));
         }
 
@@ -173,7 +173,7 @@ namespace Unity.UI.Builder.EditorTests
         {
             const string testItemName = "test_name";
             AddElementCodeOnly();
-            var hierarchyItem = BuilderTestsHelper.GetExplorerItemWithName(HierarchyPane, nameof(VisualElement));
+            var hierarchyItem = BuilderTestsHelper.GetExplorerItemWithName(hierarchy, nameof(VisualElement));
             var documentElement = BuilderTestsHelper.GetLinkedDocumentElement(hierarchyItem);
             var nameLabel = hierarchyItem.Q<Label>(className: BuilderConstants.ExplorerItemLabelClassName);
 
@@ -181,12 +181,12 @@ namespace Unity.UI.Builder.EditorTests
             Assert.That(nameLabel.classList, Contains.Item(BuilderConstants.ElementTypeClassName));
 
             yield return UIETestEvents.Mouse.SimulateDoubleClick(hierarchyItem);
-            yield return UIETestEvents.KeyBoard.SimulateTyping(BuilderWindow, testItemName);
-            yield return UIETestEvents.Mouse.SimulateClick(ViewportPane);
+            yield return UIETestEvents.KeyBoard.SimulateTyping(builder, testItemName);
+            yield return UIETestEvents.Mouse.SimulateClick(viewport);
 
             Assert.That(documentElement.name, Is.EqualTo(testItemName));
 
-            hierarchyItem = BuilderTestsHelper.GetExplorerItemWithName(HierarchyPane, BuilderConstants.UssSelectorNameSymbol + testItemName);
+            hierarchyItem = BuilderTestsHelper.GetExplorerItemWithName(hierarchy, BuilderConstants.UssSelectorNameSymbol + testItemName);
             nameLabel =  hierarchyItem.Q<Label>(className: BuilderConstants.ExplorerItemLabelClassName);
             Assert.That(nameLabel.classList, Contains.Item(BuilderConstants.ElementNameClassName));
         }
@@ -199,16 +199,16 @@ namespace Unity.UI.Builder.EditorTests
         {
             const string testItemName = "test_name";
             AddElementCodeOnly();
-            var hierarchyItem = BuilderTestsHelper.GetExplorerItemWithName(HierarchyPane, nameof(VisualElement));
+            var hierarchyItem = BuilderTestsHelper.GetExplorerItemWithName(hierarchy, nameof(VisualElement));
             var documentElement = BuilderTestsHelper.GetLinkedDocumentElement(hierarchyItem);
             Assert.That(string.IsNullOrEmpty(documentElement.name));
 
             yield return UIETestEvents.Mouse.SimulateDoubleClick(hierarchyItem);
-            yield return UIETestEvents.KeyBoard.SimulateTyping(BuilderWindow, testItemName);
-            yield return UIETestEvents.KeyBoard.SimulateKeyDown(BuilderWindow, KeyCode.Escape);
+            yield return UIETestEvents.KeyBoard.SimulateTyping(builder, testItemName);
+            yield return UIETestEvents.KeyBoard.SimulateKeyDown(builder, KeyCode.Escape);
 
             // Test that not only the name has not changed to the new value entered...
-            hierarchyItem = BuilderTestsHelper.GetExplorerItemWithName(HierarchyPane, nameof(VisualElement));
+            hierarchyItem = BuilderTestsHelper.GetExplorerItemWithName(hierarchy, nameof(VisualElement));
             documentElement = BuilderTestsHelper.GetLinkedDocumentElement(hierarchyItem);
             Assert.AreNotEqual(documentElement.name, testItemName);
             // But is also equal to its original name
@@ -222,7 +222,7 @@ namespace Unity.UI.Builder.EditorTests
         public IEnumerator CSharpTypeTemplateChildrenMustBeGrayedOutAndNotEditable()
         {
             AddElementCodeOnly<TextField>();
-            var hierarchyItem = BuilderTestsHelper.GetExplorerItemWithName(HierarchyPane, nameof(TextField));
+            var hierarchyItem = BuilderTestsHelper.GetExplorerItemWithName(hierarchy, nameof(TextField));
             yield return UIETestHelpers.ExpandTreeViewItem(hierarchyItem);
 
             var textFieldDocumentElement = GetFirstDocumentElement();
@@ -235,12 +235,12 @@ namespace Unity.UI.Builder.EditorTests
             }
 
             yield return UIETestEvents.Mouse.SimulateClick(lastChild);
-            InspectorPane.Query<ToggleButtonStrip>().ForEach(toggleButtonStrip =>
+            inspector.Query<ToggleButtonStrip>().ForEach(toggleButtonStrip =>
             {
                 Assert.That(toggleButtonStrip.enabledInHierarchy, Is.False);
             });
 
-            InspectorPane.Query<PercentSlider>().ForEach(percentSlider =>
+            inspector.Query<PercentSlider>().ForEach(percentSlider =>
             {
                 Assert.That(percentSlider.enabledInHierarchy, Is.False);
             });
@@ -257,17 +257,17 @@ namespace Unity.UI.Builder.EditorTests
             yield return AddSelector(StyleSheetsPaneTests.TestSelectorName);
 
             // Deselect
-            yield return UIETestEvents.Mouse.SimulateClick(HierarchyPane);
-            var hierarchyTreeView = HierarchyPane.Q<TreeView>();
+            yield return UIETestEvents.Mouse.SimulateClick(hierarchy);
+            var hierarchyTreeView = hierarchy.Q<TreeView>();
             Assert.That(hierarchyTreeView.GetSelectedItem(), Is.Null);
 
             // Select hierarchy item
-            var hierarchyItem = BuilderTestsHelper.GetExplorerItemWithName(HierarchyPane, nameof(VisualElement));
+            var hierarchyItem = BuilderTestsHelper.GetExplorerItemWithName(hierarchy, nameof(VisualElement));
             yield return UIETestEvents.Mouse.SimulateClick(hierarchyItem);
             Assert.That(hierarchyTreeView.GetSelectedItem(), Is.Not.Null);
 
             // Select test selector
-            var selector = BuilderTestsHelper.GetExplorerItemWithName(StyleSheetsPane, StyleSheetsPaneTests.TestSelectorName);
+            var selector = BuilderTestsHelper.GetExplorerItemWithName(styleSheetsPane, StyleSheetsPaneTests.TestSelectorName);
             yield return UIETestEvents.Mouse.SimulateClick(selector);
             Assert.That(hierarchyTreeView.GetSelectedItem(), Is.Null);
 
@@ -276,7 +276,7 @@ namespace Unity.UI.Builder.EditorTests
             Assert.That(hierarchyTreeView.GetSelectedItem(), Is.Not.Null);
 
             // Select Uss file name header
-            var header = BuilderTestsHelper.GetHeaderItem(StyleSheetsPane);
+            var header = BuilderTestsHelper.GetHeaderItem(styleSheetsPane);
             yield return UIETestEvents.Mouse.SimulateClick(header);
             Assert.That(hierarchyTreeView.GetSelectedItem(), Is.Null);
         }
@@ -294,41 +294,41 @@ namespace Unity.UI.Builder.EditorTests
             AddElementCodeOnly();
             yield return  UIETestHelpers.Pause();
 
-            var hierarchyItems = BuilderTestsHelper.GetExplorerItemsWithName(HierarchyPane, nameof(VisualElement));
+            var hierarchyItems = BuilderTestsHelper.GetExplorerItemsWithName(hierarchy, nameof(VisualElement));
             var hierarchyItem1 = hierarchyItems[0];
             var hierarchyItem2 = hierarchyItems[1];
 
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 hierarchyItem1.worldBound.center,
                 hierarchyItem2.worldBound.center);
 
             var complexItem =  GetFirstExplorerItem();
 
             var newlineFixedExpectedUXML = m_ExpectedUXMLString;
-            if (BuilderConstants.NewlineChar != BuilderConstants.NewlineCharFromEditorSettings)
+            if (BuilderConstants.NewlineChar != BuilderConstants.newlineCharFromEditorSettings)
                 newlineFixedExpectedUXML = newlineFixedExpectedUXML.Replace(
                     BuilderConstants.NewlineChar,
-                    BuilderConstants.NewlineCharFromEditorSettings);
+                    BuilderConstants.newlineCharFromEditorSettings);
 
             // Copy to UXML
             yield return UIETestEvents.Mouse.SimulateClick(complexItem);
-            yield return UIETestEvents.ExecuteCommand(BuilderWindow, UIETestEvents.Command.Copy);
-            Assert.That(BuilderEditorUtility.SystemCopyBuffer, Is.EqualTo(newlineFixedExpectedUXML));
+            yield return UIETestEvents.ExecuteCommand(builder, UIETestEvents.Command.Copy);
+            Assert.That(BuilderEditorUtility.systemCopyBuffer, Is.EqualTo(newlineFixedExpectedUXML));
 
             ForceNewDocument();
-            BuilderEditorUtility.SystemCopyBuffer = string.Empty;
-            yield return UIETestEvents.Mouse.SimulateClick(HierarchyPane);
-            yield return UIETestEvents.ExecuteCommand(BuilderWindow, UIETestEvents.Command.Paste);
-            var explorerItems = BuilderTestsHelper.GetExplorerItems(HierarchyPane);
+            BuilderEditorUtility.systemCopyBuffer = string.Empty;
+            yield return UIETestEvents.Mouse.SimulateClick(hierarchy);
+            yield return UIETestEvents.ExecuteCommand(builder, UIETestEvents.Command.Paste);
+            var explorerItems = BuilderTestsHelper.GetExplorerItems(hierarchy);
             Assert.That(explorerItems, Is.Empty);
 
-            BuilderEditorUtility.SystemCopyBuffer = newlineFixedExpectedUXML;
-            yield return UIETestEvents.ExecuteCommand(BuilderWindow, UIETestEvents.Command.Paste);
+            BuilderEditorUtility.systemCopyBuffer = newlineFixedExpectedUXML;
+            yield return UIETestEvents.ExecuteCommand(builder, UIETestEvents.Command.Paste);
             // var newItem = BuilderTestsHelper.GetExplorerItemWithName(HierarchyPane, nameof(VisualElement));
-            var hierarchyTreeView = HierarchyPane.Q<TreeView>();
+            var hierarchyTreeView = hierarchy.Q<TreeView>();
             hierarchyTreeView.ExpandItem(hierarchyTreeView.items.ToList()[1].id);
 
-            explorerItems = BuilderTestsHelper.GetExplorerItems(HierarchyPane);
+            explorerItems = BuilderTestsHelper.GetExplorerItems(hierarchy);
             Assert.That(explorerItems.Count, Is.EqualTo(2));
             Assert.That(BuilderTestsHelper.GetLinkedDocumentElement(explorerItems[1]).parent, Is.EqualTo(BuilderTestsHelper.GetLinkedDocumentElement(explorerItems[0])));
         }
@@ -344,11 +344,11 @@ namespace Unity.UI.Builder.EditorTests
             AddElementCodeOnly();
             yield return UIETestHelpers.Pause();
 
-            var textFieldItem = BuilderTestsHelper.GetExplorerItemWithName(HierarchyPane, nameof(TextField));
-            var visualElementItem = BuilderTestsHelper.GetExplorerItemWithName(HierarchyPane, nameof(VisualElement));
+            var textFieldItem = BuilderTestsHelper.GetExplorerItemWithName(hierarchy, nameof(TextField));
+            var visualElementItem = BuilderTestsHelper.GetExplorerItemWithName(hierarchy, nameof(VisualElement));
             var visualElementDocItem = BuilderTestsHelper.GetLinkedDocumentElement(visualElementItem);
 
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 visualElementItem.worldBound.center,
                 textFieldItem.worldBound.center);
             Assert.That(visualElementDocItem.parent, Is.InstanceOf<TextField>());
@@ -358,12 +358,12 @@ namespace Unity.UI.Builder.EditorTests
             AddElementCodeOnly();
             yield return UIETestHelpers.Pause();
 
-            textFieldItem = BuilderTestsHelper.GetExplorerItemWithName(HierarchyPane, nameof(TextField));
-            visualElementItem = BuilderTestsHelper.GetExplorerItemWithName(HierarchyPane, nameof(VisualElement));
+            textFieldItem = BuilderTestsHelper.GetExplorerItemWithName(hierarchy, nameof(TextField));
+            visualElementItem = BuilderTestsHelper.GetExplorerItemWithName(hierarchy, nameof(VisualElement));
             visualElementDocItem = BuilderTestsHelper.GetLinkedDocumentElement(visualElementItem);
             var textFieldDocItem = BuilderTestsHelper.GetLinkedDocumentElement(textFieldItem);
 
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 visualElementItem.worldBound.center,
                 textFieldDocItem.worldBound.center);
             Assert.That(visualElementDocItem.parent, Is.InstanceOf<TextField>());
@@ -378,22 +378,22 @@ namespace Unity.UI.Builder.EditorTests
             AddElementCodeOnly<TextField>();
             AddElementCodeOnly();
 
-            var hierarchyItem = BuilderTestsHelper.GetExplorerItemWithName(HierarchyPane, nameof(TextField));
+            var hierarchyItem = BuilderTestsHelper.GetExplorerItemWithName(hierarchy, nameof(TextField));
             yield return UIETestHelpers.ExpandTreeViewItem(hierarchyItem);
 
             yield return UIETestHelpers.Pause();
-            var textField = ViewportPane.documentElement[0];
+            var textField = viewport.documentRootElement[0];
             var textFieldLabel = textField.Q<Label>();
-            var visualElement = ViewportPane.documentElement[1];
+            var visualElement = viewport.documentRootElement[1];
             var textFieldLabelExplorer  = BuilderTestsHelper.GetLinkedExplorerItem(textFieldLabel);
             var visualElementExplorer  = BuilderTestsHelper.GetLinkedExplorerItem(visualElement);
 
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 visualElementExplorer.worldBound.center,
                 textFieldLabelExplorer.worldBound.center);
-            Assert.That(visualElement.parent, Is.EqualTo(ViewportPane.documentElement));
+            Assert.That(visualElement.parent, Is.EqualTo(viewport.documentRootElement));
 
-            yield return UIETestEvents.Mouse.SimulateDragAndDrop(BuilderWindow,
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 textFieldLabelExplorer.worldBound.center,
                 visualElementExplorer.worldBound.center);
             Assert.That(textFieldLabel.parent, Is.EqualTo(textField));
@@ -417,47 +417,47 @@ namespace Unity.UI.Builder.EditorTests
         {
             yield return AddVisualElement();
 
-            var explorerItems = BuilderTestsHelper.GetExplorerItems(HierarchyPane);
+            var explorerItems = BuilderTestsHelper.GetExplorerItems(hierarchy);
             Assert.That(explorerItems.Count, Is.EqualTo(1));
             yield return UIETestEvents.Mouse.SimulateClick(explorerItems[0]);
 
             // Rename
             const string renameString = "renameString";
-            yield return UIETestEvents.ExecuteCommand(BuilderWindow, UIETestEvents.Command.Rename);
-            yield return UIETestEvents.KeyBoard.SimulateTyping(BuilderWindow, renameString);
-            yield return UIETestEvents.Mouse.SimulateClick(ViewportPane);
+            yield return UIETestEvents.ExecuteCommand(builder, UIETestEvents.Command.Rename);
+            yield return UIETestEvents.KeyBoard.SimulateTyping(builder, renameString);
+            yield return UIETestEvents.Mouse.SimulateClick(viewport);
 
-            explorerItems = BuilderTestsHelper.GetExplorerItems(HierarchyPane);
+            explorerItems = BuilderTestsHelper.GetExplorerItems(hierarchy);
             var explorerItemLabel = explorerItems[0].Q<Label>();
             Assert.That(explorerItemLabel.text, Is.EqualTo("#" + renameString));
 
             yield return UIETestEvents.Mouse.SimulateClick(explorerItems[0]);
 
             // Duplicate
-            yield return UIETestEvents.ExecuteCommand(BuilderWindow, UIETestEvents.Command.Duplicate);
-            explorerItems = BuilderTestsHelper.GetExplorerItems(HierarchyPane);
+            yield return UIETestEvents.ExecuteCommand(builder, UIETestEvents.Command.Duplicate);
+            explorerItems = BuilderTestsHelper.GetExplorerItems(hierarchy);
             Assert.That(explorerItems.Count, Is.EqualTo(2));
 
             // Copy/Paste
-            yield return UIETestEvents.ExecuteCommand(BuilderWindow, UIETestEvents.Command.Copy);
-            yield return UIETestEvents.ExecuteCommand(BuilderWindow, UIETestEvents.Command.Paste);
+            yield return UIETestEvents.ExecuteCommand(builder, UIETestEvents.Command.Copy);
+            yield return UIETestEvents.ExecuteCommand(builder, UIETestEvents.Command.Paste);
 
-            explorerItems = BuilderTestsHelper.GetExplorerItems(HierarchyPane);
+            explorerItems = BuilderTestsHelper.GetExplorerItems(hierarchy);
             Assert.That(explorerItems.Count, Is.EqualTo(3));
 
             // Delete
-            yield return UIETestEvents.KeyBoard.SimulateKeyDown(BuilderWindow, KeyCode.Delete);
+            yield return UIETestEvents.KeyBoard.SimulateKeyDown(builder, KeyCode.Delete);
 
-            explorerItems = BuilderTestsHelper.GetExplorerItems(HierarchyPane);
+            explorerItems = BuilderTestsHelper.GetExplorerItems(hierarchy);
             Assert.That(explorerItems.Count, Is.EqualTo(2));
 
             // Pasted as children of the parent of the currently selected element.
 
             AddElementCodeOnly<TextField>();
-            var textField = ViewportPane.documentElement.Q<TextField>();
+            var textField = viewport.documentRootElement.Q<TextField>();
             Assert.That(textField.childCount, Is.EqualTo(2));
 
-            yield return UIETestEvents.ExecuteCommand(BuilderWindow, UIETestEvents.Command.Paste);
+            yield return UIETestEvents.ExecuteCommand(builder, UIETestEvents.Command.Paste);
             Assert.That(textField.childCount, Is.EqualTo(2));
         }
 
@@ -468,7 +468,7 @@ namespace Unity.UI.Builder.EditorTests
         [UnityTest]
         public IEnumerator SubDocumentFunctionalityViaRightClickMenu()
         {
-            var panel = BuilderWindow.rootVisualElement.panel as BaseVisualElementPanel;
+            var panel = builder.rootVisualElement.panel as BaseVisualElementPanel;
             var menu = panel.contextualMenuManager as BuilderTestContextualMenuManager;
             Assert.That(menu, Is.Not.Null);
             Assert.That(menu.menuIsDisplayed, Is.False);
@@ -477,7 +477,7 @@ namespace Unity.UI.Builder.EditorTests
             yield return LoadTestUXMLDocument(k_ParentTestUXMLPath);
 
             // Check that Breadcrumbs toolbar is NOT present
-            var toolbar = ViewportPane.Q<BuilderToolbar>();
+            var toolbar = viewport.Q<BuilderToolbar>();
             var breadcrumbsToolbar = toolbar.Q<Toolbar>(BuilderToolbar.BreadcrumbsToolbarName);
             var breadcrumbs = toolbar.Q<ToolbarBreadcrumbs>(BuilderToolbar.BreadcrumbsName);
 
@@ -487,7 +487,7 @@ namespace Unity.UI.Builder.EditorTests
 
             // Check that child is instantiated
             string nameOfChildSubDocument = "#ChildTestUXMLDocument";
-            var childInHierarchy = BuilderTestsHelper.GetExplorerItemsWithName(HierarchyPane, nameOfChildSubDocument);
+            var childInHierarchy = BuilderTestsHelper.GetExplorerItemsWithName(hierarchy, nameOfChildSubDocument);
             Assert.AreEqual(1, childInHierarchy.Count);
             Assert.NotNull(childInHierarchy[0]);
 
@@ -502,7 +502,7 @@ namespace Unity.UI.Builder.EditorTests
             yield return UIETestHelpers.Pause(1);
 
             // Get parent document
-            var parentRoot = BuilderTestsHelper.GetHeaderItem(HierarchyPane);
+            var parentRoot = BuilderTestsHelper.GetHeaderItem(hierarchy);
             Assert.NotNull(parentRoot);
 
             // Breadcrumbs is displaying
@@ -513,12 +513,14 @@ namespace Unity.UI.Builder.EditorTests
             yield return UIETestEvents.Mouse.SimulateClick(parentRoot, MouseButton.RightMouse);
             Assert.That(menu.menuIsDisplayed, Is.True);
 
-            var parentClick = menu.FindMenuAction(BuilderConstants.ExplorerHierarchyReturnToParentDocument);
+            var parentTestDocumentName = "ParentTestUXMLDocument";
+            var parentTestFullString = BuilderConstants.ExplorerHierarchyReturnToParentDocument + BuilderConstants.SingleSpace + BuilderConstants.OpenBracket + parentTestDocumentName + BuilderConstants.CloseBracket;
+            var parentClick = menu.FindMenuAction(parentTestFullString);
             Assert.That(parentClick, Is.Not.Null);
             parentClick.Execute();
 
             yield return UIETestHelpers.Pause(1);
-            Assert.AreEqual(1, BuilderWindow.documentRootElement.childCount);
+            Assert.AreEqual(2, builder.documentRootElement.childCount); // test element now in test file
 
             Assert.AreEqual(0, breadcrumbs.childCount);
             Assert.AreEqual(breadcrumbsToolbar.style.display, (StyleEnum<DisplayStyle>)DisplayStyle.None);
@@ -527,21 +529,17 @@ namespace Unity.UI.Builder.EditorTests
         [UnityTest]
         public IEnumerator UnloadSubDocumentsOnFileOpen()
         {
-            var panel = BuilderWindow.rootVisualElement.panel as BaseVisualElementPanel;
+            var panel = builder.rootVisualElement.panel as BaseVisualElementPanel;
             var menu = panel.contextualMenuManager as BuilderTestContextualMenuManager;
             Assert.That(menu, Is.Not.Null);
             Assert.That(menu.menuIsDisplayed, Is.False);
 
             // Load Test UXML File
-            var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_ParentTestUXMLPath);
-            Assert.That(asset, Is.Not.Null);
-            BuilderWindow.LoadDocument(asset);
-            HierarchyPane.elementHierarchyView.ExpandAllChildren();
-            yield return UIETestHelpers.Pause(1);
+            yield return LoadTestUXMLDocument(k_ParentTestUXMLPath);
 
             // Open child
             string nameOfChildSubDocument = "#ChildTestUXMLDocument";
-            var childInHierarchy = BuilderTestsHelper.GetExplorerItemsWithName(HierarchyPane, nameOfChildSubDocument);
+            var childInHierarchy = BuilderTestsHelper.GetExplorerItemsWithName(hierarchy, nameOfChildSubDocument);
 
             // Simulate right click on child TemplateContainer
             yield return UIETestEvents.Mouse.SimulateClick(childInHierarchy[0], MouseButton.RightMouse);
@@ -554,10 +552,55 @@ namespace Unity.UI.Builder.EditorTests
             yield return UIETestHelpers.Pause(1);
 
             // Main part: opening NewDocument makes it the only document
-            Assert.AreEqual(2, BuilderWindow.document.openUXMLFiles.Count);
-            BuilderWindow.rootVisualElement.Q<BuilderToolbar>().NewDocument();
-            Assert.AreEqual(1, BuilderWindow.document.openUXMLFiles.Count);
+            Assert.AreEqual(2, builder.document.openUXMLFiles.Count);
+            builder.rootVisualElement.Q<BuilderToolbar>().NewDocument();
+            Assert.AreEqual(1, builder.document.openUXMLFiles.Count);
+        }
 
+        [UnityTest]
+        public IEnumerator OpenChildrenInPlace()
+        {
+            // Define all relevant file names
+            var nameOfChildSubDocument = "#ChildTestUXMLDocument";
+            var nameofGrandChildSubDocument = "#GrandChildTestUXMLDocument";
+            var parentTestDocumentName = "ParentTestUXMLDocument";
+            var parentTestFullString = BuilderConstants.ExplorerHierarchyReturnToParentDocument + BuilderConstants.SingleSpace + BuilderConstants.OpenBracket + parentTestDocumentName + BuilderConstants.CloseBracket;
+            var childTestDocumentName = "ChildTestUXMLDocument";
+            var childTestFullString = BuilderConstants.ExplorerHierarchyReturnToParentDocument + BuilderConstants.SingleSpace + BuilderConstants.OpenBracket + childTestDocumentName + BuilderConstants.CloseBracket;
+            
+            var panel = builder.rootVisualElement.panel as BaseVisualElementPanel;
+            var menu = panel.contextualMenuManager as BuilderTestContextualMenuManager;
+            Assert.That(menu, Is.Not.Null);
+            Assert.That(menu.menuIsDisplayed, Is.False);
+
+            // Load Test UXML File
+            yield return LoadTestUXMLDocument(k_ParentTestUXMLPath);
+            hierarchy.elementHierarchyView.ExpandAllItems();
+            Assert.AreEqual(1, builder.document.openUXMLFiles.Count);
+            
+            // Open child in isolation
+            yield return OpenChildTemplateContainerAsSubDocument(menu, nameOfChildSubDocument);
+            
+            yield return UIETestHelpers.Pause(1);
+            Assert.AreEqual(2, builder.document.openUXMLFiles.Count);
+
+            // Open grand-child in-place
+            yield return OpenChildTemplateContainerAsSubDocument(menu, nameofGrandChildSubDocument, true);
+            Assert.AreEqual(3, builder.document.openUXMLFiles.Count);
+
+            // Go back to root document through right click menu
+            yield return ReturnToParentDocumentThroughEntryItem(menu, childTestFullString, nameofGrandChildSubDocument);
+            Assert.AreEqual(2, builder.document.openUXMLFiles.Count);
+            yield return ReturnToParentDocumentThroughEntryItem(menu, parentTestFullString);
+            Assert.AreEqual(1, builder.document.openUXMLFiles.Count);
+
+            // Open child in-place
+            yield return OpenChildTemplateContainerAsSubDocument(menu, nameOfChildSubDocument, true);
+            Assert.AreEqual(2, builder.document.openUXMLFiles.Count);
+
+            // Open child in-isolation
+            yield return OpenChildTemplateContainerAsSubDocument(menu, nameofGrandChildSubDocument);
+            Assert.AreEqual(3, builder.document.openUXMLFiles.Count);
         }
     }
 }

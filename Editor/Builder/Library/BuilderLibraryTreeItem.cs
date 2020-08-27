@@ -8,21 +8,21 @@ namespace Unity.UI.Builder
 {
     class BuilderLibraryTreeItem : TreeViewItem<string>
     {
-        public string Name => data;
-        public Type Type { get; }
-        public bool IsHeader { get; set; }
-        public bool HasPreview { get; set; }
-        public VisualTreeAsset SourceAsset { get; }
-        public string SourceAssetPath { get; }
-        public Func<VisualElement> MakeVisualElementCallback { get; }
-        public Func<VisualTreeAsset, VisualElementAsset, VisualElement, VisualElementAsset> MakeElementAssetCallback { get; }
-        public Texture2D Icon { get; private set; }
-        public Texture2D LargeIcon { get; private set; }
-        public bool IsEditorOnly { get; set; }
-        public Texture2D DarkSkinIcon { get; private set; }
-        public Texture2D LightSkinIcon { get; private set; }
-        public Texture2D DarkSkinLargeIcon { get; private set; }
-        public Texture2D LightSkinLargeIcon { get; private set; }
+        public string name => data;
+        public Type type { get; }
+        public bool isHeader { get; set; }
+        public bool hasPreview { get; set; }
+        public VisualTreeAsset sourceAsset { get; }
+        public string sourceAssetPath { get; }
+        public Func<VisualElement> makeVisualElementCallback { get; }
+        public Func<VisualTreeAsset, VisualElementAsset, VisualElement, VisualElementAsset> makeElementAssetCallback { get; }
+        public Texture2D icon { get; private set; }
+        public Texture2D largeIcon { get; private set; }
+        public bool isEditorOnly { get; set; }
+        public Texture2D darkSkinIcon { get; private set; }
+        public Texture2D lightSkinIcon { get; private set; }
+        public Texture2D darkSkinLargeIcon { get; private set; }
+        public Texture2D lightSkinLargeIcon { get; private set; }
 
         public BuilderLibraryTreeItem(
             string name, string iconName, Type type, Func<VisualElement> makeVisualElementCallback,
@@ -30,17 +30,17 @@ namespace Unity.UI.Builder
             List<TreeViewItem<string>> children = null, VisualTreeAsset asset = null, int id = default)
             : base(GetItemId(name, type, asset, id) , name, children)
         {
-            MakeVisualElementCallback = makeVisualElementCallback;
-            MakeElementAssetCallback = makeElementAssetCallback;
-            SourceAsset = asset;
-            if (SourceAsset != null)
-                SourceAssetPath = AssetDatabase.GetAssetPath(SourceAsset);
+            this.makeVisualElementCallback = makeVisualElementCallback;
+            this.makeElementAssetCallback = makeElementAssetCallback;
+            sourceAsset = asset;
+            if (sourceAsset != null)
+                sourceAssetPath = AssetDatabase.GetAssetPath(sourceAsset);
 
-            Type = type;
+            this.type = type;
             if (!string.IsNullOrEmpty(iconName))
             {
                 AssignIcon(iconName);
-                if (Icon == null)
+                if (icon == null)
                     AssignIcon("VisualElement");
             }
         }
@@ -61,21 +61,21 @@ namespace Unity.UI.Builder
             var darkSkinResourceBasePath = $"{BuilderConstants.IconsResourcesPath}/Dark/Library/";
             var lightSkinResourceBasePath = $"{BuilderConstants.IconsResourcesPath}/Light/Library/";
 
-            DarkSkinLargeIcon = LoadLargeIcon(darkSkinResourceBasePath, iconName);
-            LightSkinLargeIcon = LoadLargeIcon(lightSkinResourceBasePath, iconName);
+            darkSkinLargeIcon = LoadLargeIcon(darkSkinResourceBasePath, iconName);
+            lightSkinLargeIcon = LoadLargeIcon(lightSkinResourceBasePath, iconName);
 
-            DarkSkinIcon = LoadIcon(darkSkinResourceBasePath, iconName);
-            LightSkinIcon = LoadIcon(lightSkinResourceBasePath, iconName);
+            darkSkinIcon = LoadIcon(darkSkinResourceBasePath, iconName);
+            lightSkinIcon = LoadIcon(lightSkinResourceBasePath, iconName);
 
             if (EditorGUIUtility.isProSkin)
             {
-                Icon = DarkSkinIcon;
-                LargeIcon = DarkSkinLargeIcon;
+                icon = darkSkinIcon;
+                largeIcon = darkSkinLargeIcon;
             }
             else
             {
-                Icon = LightSkinIcon;
-                LargeIcon = LightSkinLargeIcon;
+                icon = lightSkinIcon;
+                largeIcon = lightSkinLargeIcon;
             }
         }
 
@@ -95,10 +95,10 @@ namespace Unity.UI.Builder
 
         public void SetIcon(Texture2D icon)
         {
-            Icon = icon;
-            LargeIcon = icon;
-            DarkSkinIcon = icon;
-            LightSkinIcon = icon;
+            this.icon = icon;
+            largeIcon = icon;
+            darkSkinIcon = icon;
+            lightSkinIcon = icon;
         }
     }
 }

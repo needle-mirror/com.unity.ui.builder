@@ -17,6 +17,7 @@ namespace Unity.UI.Builder
         {
             TypeName = 1 << 0,
             ClassList = 1 << 1,
+            StyleSheets = 1 << 2,
 
             All = ~0
         }
@@ -64,7 +65,7 @@ namespace Unity.UI.Builder
             m_Viewport = viewport;
             m_DocumentElementRoot = documentElementRoot;
             m_IncludeDocumentElementRoot = includeDocumentElementRoot;
-            m_DocumentElement = viewport.documentElement;
+            m_DocumentElement = viewport.documentRootElement;
             AddToClassList(s_UssClassName);
 
             m_ClassDragger = classDragger;
@@ -207,7 +208,7 @@ namespace Unity.UI.Builder
 
         public virtual void StylingChanged(List<string> styles, BuilderStylingChangeType changeType)
         {
-            if (m_ShouldRebuildHierarchyOnStyleChange)
+            if (m_ShouldRebuildHierarchyOnStyleChange && changeType == BuilderStylingChangeType.Default)
                 UpdateHierarchyAndSelection(m_Selection.hasUnsavedChanges);
             m_ShouldRebuildHierarchyOnStyleChange = !m_Selection.hasUnsavedChanges;
         }

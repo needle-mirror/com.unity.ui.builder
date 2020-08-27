@@ -160,9 +160,12 @@ namespace Unity.UI.Builder
 
             if (BuilderSharedStyles.IsStyleSheetElement(documentElement))
             {
+                var owningUxmlPath = documentElement.GetProperty(BuilderConstants.ExplorerItemLinkedUXMLFileName) as string;
+                var isPartOfParentDocument = !string.IsNullOrEmpty(owningUxmlPath);
+
                 var styleSheetAsset = documentElement.GetStyleSheet();
                 var styleSheetFileName = AssetDatabase.GetAssetPath(styleSheetAsset);
-                var styleSheetAssetName = BuilderAssetUtilities.GetStyleSheetAssetName(styleSheetAsset, hasUnsavedChanges);
+                var styleSheetAssetName = BuilderAssetUtilities.GetStyleSheetAssetName(styleSheetAsset, hasUnsavedChanges && !isPartOfParentDocument);
                 var ssLabel = new Label(styleSheetAssetName);
                 ssLabel.AddToClassList(BuilderConstants.ExplorerItemLabelClassName);
                 ssLabel.AddToClassList("unity-debugger-tree-item-type");
@@ -178,8 +181,23 @@ namespace Unity.UI.Builder
                 // Allow reparenting.
                 explorerItem.SetProperty(BuilderConstants.ExplorerItemElementLinkVEPropertyName, documentElement);
 
-                if (styleSheetAsset == m_PaneWindow.document.activeStyleSheet)
+                var assetIsActiveStyleSheet = styleSheetAsset == m_PaneWindow.document.activeStyleSheet;
+                if (assetIsActiveStyleSheet)
                     row.AddToClassList(BuilderConstants.ExplorerActiveStyleSheetClassName);
+
+                if (isPartOfParentDocument)
+                    row.AddToClassList(BuilderConstants.ExplorerItemHiddenClassName);
+
+                // Show name of UXML file that USS file 'belongs' to.
+                if (!string.IsNullOrEmpty(owningUxmlPath))
+                {
+                    var pathStr = Path.GetFileName(owningUxmlPath);
+                    var label = new Label(BuilderConstants.TripleSpace + pathStr);
+                    label.AddToClassList(BuilderConstants.ExplorerItemLabelClassName);
+                    label.AddToClassList(BuilderConstants.ElementTypeClassName);
+                    label.AddToClassList("unity-builder-explorer-tree-item-template-path"); // Just make it look a bit shaded.
+                    labelCont.Add(label);
+                }
 
                 return;
             }
@@ -244,6 +262,10 @@ namespace Unity.UI.Builder
                 // Allow reparenting.
                 explorerItem.SetProperty(BuilderConstants.ExplorerItemElementLinkVEPropertyName, documentElement);
 
+                // Check if selector element is inside current open StyleSheets
+                if (documentElement.IsParentSelector())
+                    row.AddToClassList(BuilderConstants.ExplorerItemHiddenClassName);
+
                 return;
             }
 
@@ -255,11 +277,18 @@ namespace Unity.UI.Builder
                 ssLabel.AddToClassList("unity-debugger-tree-item-type");
                 row.AddToClassList(BuilderConstants.ExplorerHeaderRowClassName);
                 labelCont.Add(ssLabel);
+                
+                // Allow reparenting.
+                explorerItem.SetProperty(BuilderConstants.ExplorerItemElementLinkVEPropertyName, documentElement);
+                
+                // Register right-click events for context menu actions.
+                m_ContextMenuManipulator.RegisterCallbacksOnTarget(explorerItem);
+                
                 return;
             }
 
             // Check if element is inside current document.
-            if (!documentElement.IsPartOfCurrentDocument())
+            if (!documentElement.IsPartOfActiveVisualTreeAsset(m_PaneWindow.document))
                 row.AddToClassList(BuilderConstants.ExplorerItemHiddenClassName);
 
             // Register drag-and-drop events for reparenting.
@@ -306,6 +335,49 @@ namespace Unity.UI.Builder
                     classLabel.AddToClassList(BuilderConstants.ElementClassNameClassName);
                     classLabel.AddToClassList("unity-debugger-tree-item-classlist-label");
                     classLabelCont.Add(classLabel);
+                }
+            }
+
+            // Add stylesheets.
+            if (elementInfoVisibilityState.HasFlag(BuilderExplorer.BuilderElementInfoVisibilityState.StyleSheets))
+            {
+                var vea = documentElement.GetVisualElementAsset();
+                if (vea != null)
+                {
+                    foreach (var ussPath in vea.GetStyleSheetPaths())
+                    {
+                        if (string.IsNullOrEmpty(ussPath))
+                            continue;
+
+                        var classLabelCont = new VisualElement();
+                        classLabelCont.AddToClassList(BuilderConstants.ExplorerItemLabelContClassName);
+                        explorerItem.Add(classLabelCont);
+
+                        var classLabel = new Label(Path.GetFileName(ussPath));
+                        classLabel.AddToClassList(BuilderConstants.ExplorerItemLabelClassName);
+                        classLabel.AddToClassList(BuilderConstants.ElementAttachedStyleSheetClassName);
+                        classLabel.AddToClassList("unity-debugger-tree-item-classlist-label");
+                        classLabelCont.Add(classLabel);
+                    }
+                }
+                else
+                {
+                    for (int i = 0; i < documentElement.styleSheets.count; ++i)
+                    {
+                        var attachedStyleSheet = documentElement.styleSheets[i];
+                        if (attachedStyleSheet == null)
+                            continue;
+
+                        var classLabelCont = new VisualElement();
+                        classLabelCont.AddToClassList(BuilderConstants.ExplorerItemLabelContClassName);
+                        explorerItem.Add(classLabelCont);
+
+                        var classLabel = new Label(attachedStyleSheet.name + BuilderConstants.UssExtension);
+                        classLabel.AddToClassList(BuilderConstants.ExplorerItemLabelClassName);
+                        classLabel.AddToClassList(BuilderConstants.ElementAttachedStyleSheetClassName);
+                        classLabel.AddToClassList("unity-debugger-tree-item-classlist-label");
+                        classLabelCont.Add(classLabel);
+                    }
                 }
             }
 
@@ -411,11 +483,19 @@ namespace Unity.UI.Builder
             hierarchyHasChanged = false;
         }
 
-        public void ExpandAllChildren()
+        public void ExpandRootItems()
+        {
+            // Auto-expand root items on load.
+            if (m_TreeRootItems != null)
+                foreach (var item in m_TreeView.rootItems)
+                    m_TreeView.ExpandItem(item.id);
+        }
+        
+        public void ExpandAllItems()
         {
             // Auto-expand all items on load.
             if (m_TreeRootItems != null)
-                foreach (var item in m_TreeView.rootItems)
+                foreach (var item in TreeView.GetAllItems(m_TreeView.rootItems))
                     m_TreeView.ExpandItem(item.id);
         }
 

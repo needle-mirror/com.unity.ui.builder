@@ -13,14 +13,14 @@ namespace Unity.UI.Builder
             return element.name == "document" && element.ClassListContains("unity-builder-viewport__document");
         }
 
-        public static VisualElement GetDocumentRootLevelElement(VisualElement element)
+        public static VisualElement GetDocumentRootLevelElement(VisualElement element, VisualElement documentRootElement)
         {
             if (element == null)
                 return null;
 
             while (element.parent != null)
             {
-                if (IsDocumentElement(element.parent))
+                if (element.parent == documentRootElement || IsDocumentElement(element.parent))
                     return element;
 
                 element = element.parent;
@@ -42,6 +42,11 @@ namespace Unity.UI.Builder
         internal static bool IsSelectorElement(VisualElement element)
         {
             return element.GetProperty(BuilderConstants.ElementLinkedStyleSelectorVEPropertyName) != null;
+        }
+
+        internal static bool IsParentSelectorElement(VisualElement element)
+        {
+            return element.ClassListContains(BuilderConstants.StyleSelectorBelongsParent);
         }
 
         public static bool IsSharedStyleSpecialElement(VisualElement element)
@@ -118,21 +123,32 @@ namespace Unity.UI.Builder
             return sharedStylesContainer;
         }
 
-        internal static void AddSelectorElementsFromStyleSheet(VisualElement documentElement, List<BuilderDocumentOpenUSS> openUssFiles)
+        internal static void ClearContainer(VisualElement documentElement)
         {
             var selectorContainerElement = GetSelectorContainerElement(documentElement);
-            selectorContainerElement.Clear();
+            selectorContainerElement?.Clear();
+        }
 
-            for (int i = 0; i < openUssFiles.Count; ++i)
+        internal static void AddSelectorElementsFromStyleSheet(
+            VisualElement documentElement,
+            List<BuilderDocumentOpenUSS> USSFiles,
+            int startInd = 0,
+            bool belongsToParent = false,
+            string associatedUXMLFileName = null)
+        {
+            for (int i = 0; i < USSFiles.Count; ++i)
             {
-                var styleSheet = openUssFiles[i].Sheet;
+                var selectorContainerElement = GetSelectorContainerElement(documentElement);
+                var styleSheet = USSFiles[i].styleSheet;
 
                 var styleSheetElement = new VisualElement();
                 styleSheetElement.name = styleSheet.name;
                 styleSheetElement.SetProperty(BuilderConstants.ElementLinkedStyleSheetVEPropertyName, styleSheet);
-                styleSheetElement.SetProperty(BuilderConstants.ElementLinkedStyleSheetIndexVEPropertyName, i);
+                if (belongsToParent)
+                    styleSheetElement.SetProperty(BuilderConstants.ExplorerItemLinkedUXMLFileName, associatedUXMLFileName);
+                styleSheetElement.SetProperty(BuilderConstants.ElementLinkedStyleSheetIndexVEPropertyName, i + startInd);
                 styleSheetElement.styleSheets.Add(styleSheet);
-                selectorContainerElement.Add(styleSheetElement);
+                selectorContainerElement?.Add(styleSheetElement);
 
                 foreach (var complexSelector in styleSheet.complexSelectors)
                 {
@@ -142,6 +158,8 @@ namespace Unity.UI.Builder
                         continue;
 
                     var ssVE = CreateNewSelectorElement(styleSheet, complexSelector);
+                    if (belongsToParent)
+                        ssVE.AddToClassList(BuilderConstants.StyleSelectorBelongsParent);
                     styleSheetElement.Add(ssVE);
                 }
             }

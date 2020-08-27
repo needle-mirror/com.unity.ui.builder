@@ -79,8 +79,8 @@ namespace Unity.UI.Builder
             var openUXMLFile = document.activeOpenUXMLFile;
             openUXMLFile.openUSSFiles.Sort((left, right) =>
             {
-                var leftOrder = reorderedUSSList.IndexOf(left.Sheet);
-                var rightOrder = reorderedUSSList.IndexOf(right.Sheet);
+                var leftOrder = reorderedUSSList.IndexOf(left.styleSheet);
+                var rightOrder = reorderedUSSList.IndexOf(right.styleSheet);
                 return leftOrder.CompareTo(rightOrder);
             });
         }
@@ -93,7 +93,14 @@ namespace Unity.UI.Builder
 
             var veParent = ve.parent;
             VisualElementAsset veaParent = null;
-            if (veParent != null)
+
+            /* If the current parent element is linked to a VisualTreeAsset, it could mean
+             that our parent is the TemplateContainer belonging to our parent document and the
+             current open document is a sub-document opened in-place. In such a case, we don't
+             want to use our parent's VisualElementAsset, as that belongs to our parent document.
+             So instead, we just use no parent, indicating that we are adding this new element
+             to the root of our document.*/
+            if (veParent != null && veParent.GetVisualTreeAsset() != document.visualTreeAsset)
                 veaParent = veParent.GetVisualElementAsset();
 
 #if UNITY_2020_1_OR_NEWER
@@ -118,7 +125,16 @@ namespace Unity.UI.Builder
                 document.visualTreeAsset, BuilderConstants.CreateUIElementUndoMessage);
 
             var veParent = ve.parent;
-            var veaParent = veParent == null ? null : veParent.GetVisualElementAsset();
+            VisualElementAsset veaParent = null;
+
+            /* If the current parent element is linked to a VisualTreeAsset, it could mean
+             that our parent is the TemplateContainer belonging to our parent document and the
+             current open document is a sub-document opened in-place. In such a case, we don't
+             want to use our parent's VisualElementAsset, as that belongs to our parent document.
+             So instead, we just use no parent, indicating that we are adding this new element
+             to the root of our document.*/ 
+            if (veParent != null && veParent.GetVisualTreeAsset() != document.visualTreeAsset)
+                veaParent = veParent.GetVisualElementAsset();
 
 #if UNITY_2020_1_OR_NEWER
             if (veaParent == null)
@@ -127,6 +143,7 @@ namespace Unity.UI.Builder
 
             var vea = makeVisualElementAsset(document.visualTreeAsset, veaParent, ve);
             ve.SetProperty(BuilderConstants.ElementLinkedVisualElementAssetVEPropertyName, vea);
+            ve.SetProperty(BuilderConstants.ElementLinkedBelongingVisualTreeAssetVEPropertyName, document.visualTreeAsset);
 
             if (index >= 0)
                 document.visualTreeAsset.ReparentElement(vea, veaParent, index);

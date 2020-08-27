@@ -24,6 +24,7 @@ namespace Unity.UI.Builder
             Bottom
         }
 
+        BuilderPaneWindow m_PaneWindow;
         protected BuilderSelection m_Selection;
         protected VisualTreeAsset m_VisualTreeAsset;
 
@@ -34,13 +35,14 @@ namespace Unity.UI.Builder
             m_AbsoluteOnlyHandleElements = new List<VisualElement>();
         }
 
-        public virtual void Activate(BuilderSelection selection, VisualTreeAsset visualTreeAsset, VisualElement target)
+        public virtual void Activate(BuilderPaneWindow paneWindow, BuilderSelection selection, VisualTreeAsset visualTreeAsset, VisualElement target)
         {
             base.Activate(target);
 
             if (target == null)
                 return;
 
+            m_PaneWindow = paneWindow;
             m_Selection = selection;
             m_VisualTreeAsset = visualTreeAsset;
         }
@@ -52,7 +54,8 @@ namespace Unity.UI.Builder
 
             if (m_Target.resolvedStyle.display == DisplayStyle.None ||
                 BuilderSharedStyles.IsDocumentElement(m_Target) ||
-                m_Target.GetVisualElementAsset() == null)
+                m_Target.GetVisualElementAsset() == null ||
+                !m_Target.IsPartOfActiveVisualTreeAsset(m_PaneWindow?.document))
             {
                 this.RemoveFromClassList(s_ActiveClassName);
                 return;
@@ -112,6 +115,16 @@ namespace Unity.UI.Builder
             return 0;
         }
 
+        bool IsComputedStyleNoneOrAuto(Length length)
+        {
+            return length.CallBoolMethodByReflection("IsNone") || length.CallBoolMethodByReflection("IsAuto");
+        }
+
+        bool IsComputedStyleNoneOrAuto(StyleLength styleLength)
+        {
+            return styleLength == StyleKeyword.None || styleLength == StyleKeyword.Auto;
+        }
+
         protected bool IsNoneOrAuto(TrackedStyle trackedStyle)
         {
             if (m_Target == null)
@@ -119,12 +132,12 @@ namespace Unity.UI.Builder
 
             switch (trackedStyle)
             {
-                case TrackedStyle.Width: return m_Target.computedStyle.width == StyleKeyword.None || m_Target.computedStyle.width == StyleKeyword.Auto;
-                case TrackedStyle.Height: return m_Target.computedStyle.height == StyleKeyword.None || m_Target.computedStyle.height == StyleKeyword.Auto;
-                case TrackedStyle.Left: return m_Target.computedStyle.left == StyleKeyword.None || m_Target.computedStyle.left == StyleKeyword.Auto;
-                case TrackedStyle.Top: return m_Target.computedStyle.top == StyleKeyword.None || m_Target.computedStyle.top == StyleKeyword.Auto;
-                case TrackedStyle.Right: return m_Target.computedStyle.right == StyleKeyword.None || m_Target.computedStyle.right == StyleKeyword.Auto;
-                case TrackedStyle.Bottom: return m_Target.computedStyle.bottom == StyleKeyword.None || m_Target.computedStyle.bottom == StyleKeyword.Auto;
+                case TrackedStyle.Width: return IsComputedStyleNoneOrAuto(m_Target.computedStyle.width);
+                case TrackedStyle.Height: return IsComputedStyleNoneOrAuto(m_Target.computedStyle.height);
+                case TrackedStyle.Left: return IsComputedStyleNoneOrAuto(m_Target.computedStyle.left);
+                case TrackedStyle.Top: return IsComputedStyleNoneOrAuto(m_Target.computedStyle.top);
+                case TrackedStyle.Right: return IsComputedStyleNoneOrAuto(m_Target.computedStyle.right);
+                case TrackedStyle.Bottom: return IsComputedStyleNoneOrAuto(m_Target.computedStyle.bottom);
             }
 
             return false;

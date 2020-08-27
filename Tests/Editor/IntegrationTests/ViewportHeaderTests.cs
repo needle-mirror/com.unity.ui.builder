@@ -13,7 +13,7 @@ namespace Unity.UI.Builder.EditorTests
         {
             var packageInfo = PackageInfo.FindForAssetPath("Packages/" + BuilderConstants.BuilderPackageName);
             var builderPackageVersion = packageInfo.version;
-            Assert.True(ViewportPane.subTitle.Contains(builderPackageVersion));
+            Assert.True(viewport.subTitle.Contains(builderPackageVersion));
         }
     }
 }
