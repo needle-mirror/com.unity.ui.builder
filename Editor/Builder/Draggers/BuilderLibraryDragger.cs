@@ -162,6 +162,12 @@ namespace Unity.UI.Builder
 
         protected override bool SupportsDragBetweenElements(VisualElement element)
         {
+            if (element == null)
+                return false;
+
+            if (element.GetVisualTreeAsset() != null)
+                return false;
+
             return true;
         }
 

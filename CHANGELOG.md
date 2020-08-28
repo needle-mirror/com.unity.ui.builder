@@ -4,6 +4,12 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-preview.5] - 2020-08-28
+
+- Fixed potential Unity Editor freeze needing restart while dragging an element to re-parent in the Hierarchy.
+- Fixed changes made to document before using "Save As" to create a new document still (wrongly) appearing in the original document.
+- Fixed incorrect ability to drag a new element from the Library just above the root UXML item in the Hierarchy, leading to a corrupt UI Builder state.
+
 ## [1.0.0-preview.4] - 2020-08-27
 
 - Sub-Documents:

@@ -826,7 +826,6 @@ namespace Unity.UI.Builder
 
         void PreSaveSyncBackup()
         {
-            // Save UXML file.
             if (m_VisualTreeAssetBackup == null)
                 m_VisualTreeAssetBackup = m_VisualTreeAsset.DeepCopy();
             else
@@ -835,11 +834,26 @@ namespace Unity.UI.Builder
 
         bool PostSaveToDiskChecksAndFixes(string newUxmlPath, bool needsFullRefresh)
         {
-            // Check if the UXML asset has changed and reload it.
-            m_VisualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
-                string.IsNullOrEmpty(newUxmlPath) ? uxmlPath : newUxmlPath);
+            var oldVTAReference = m_VisualTreeAsset;
+            var oldUxmlPath = uxmlPath;
+            var hasNewUxmlPath = !string.IsNullOrEmpty(newUxmlPath) && newUxmlPath != oldUxmlPath;
+            var localUxmlPath = !string.IsNullOrEmpty(newUxmlPath) ? newUxmlPath : oldUxmlPath;
 
-            needsFullRefresh |= m_VisualTreeAsset != m_VisualTreeAssetBackup;
+            m_VisualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(localUxmlPath);
+            var newIsDifferentFromOld = m_VisualTreeAsset != oldVTAReference;
+
+            // If we have a new uxmlPath, it means we're saving as and we need to reset the
+            // original document to stock.
+            if (hasNewUxmlPath && newIsDifferentFromOld && !string.IsNullOrEmpty(oldUxmlPath))
+            {
+                m_DocumentBeingSavedExplicitly = true;
+                AssetDatabase.ImportAsset(oldUxmlPath, ImportAssetOptions.ForceUpdate);
+                m_DocumentBeingSavedExplicitly = false;
+            }
+
+            needsFullRefresh |= newIsDifferentFromOld;
+
+            // Check if the UXML asset has changed and reload it.
             if (needsFullRefresh)
             {
                 // To get all the selection markers into the new assets.

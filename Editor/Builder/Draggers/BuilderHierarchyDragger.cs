@@ -106,6 +106,11 @@ namespace Unity.UI.Builder
             if (!element.IsPartOfActiveVisualTreeAsset(paneWindow.document))
                 return false;
 
+            var newParent = element;
+            foreach (var elementToReparent in m_ElementsToReparent)
+                if (newParent == elementToReparent.element || newParent.HasAncestor(elementToReparent.element))
+                    return false;
+
             return true;
         }
 

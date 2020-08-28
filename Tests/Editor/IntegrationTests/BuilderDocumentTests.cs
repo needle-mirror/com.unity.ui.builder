@@ -203,6 +203,7 @@ namespace Unity.UI.Builder.EditorTests
 
             var vtaCopy = builder.document.visualTreeAsset.DeepCopy();
             var newElement = new VisualElementAsset(typeof(Label).ToString());
+            VisualTreeAssetUtilities.InitializeElement(newElement);
             newElement.AddProperty("name", testLabelName);
             vtaCopy.AddElement(vtaCopy.GetRootUXMLElement(), newElement);
             var vtaCopyUXML = vtaCopy.GenerateUXML(k_TestUXMLFilePath, true);
