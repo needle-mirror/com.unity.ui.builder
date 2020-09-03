@@ -33,6 +33,18 @@ namespace Unity.UI.Builder
 
         public static void FixRuleReferences(this StyleSheet styleSheet)
         {
+            // This is very important. When moving selectors around via drag/drop in
+            // the StyleSheets pane, the nextInTable references can become corrupt.
+            // Most corruption is corrected in the StyleSheet.SetupReferences() call
+            // made below. However, the ends of each chain are not set in
+            // SetupReferences() because it assumes always starting with a clean
+            // StyleSheets. Therefore, you can have these end selectors point to an
+            // existing selector and style resolution entering a infinite loop.
+            //
+            // Case 1274584
+            foreach (var selector in styleSheet.complexSelectors)
+                selector.nextInTable = null;
+
             // Force call to StyleSheet.SetupReferences().
             styleSheet.rules = styleSheet.rules;
         }
