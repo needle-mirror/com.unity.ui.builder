@@ -4,6 +4,14 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-preview.7] - 2020-09-18
+
+- **Unity 2019.3 is no longer supported. Please use 2019.4 LTS.**
+
+- Fixed null ref exception when going into playmode while having StyleSheets open in the UI Builder.
+- Fixed exception when selecting built-in image asset using the Asset Picker window on the Background Image style field.
+- Fixed dragging inside the Hierarchy being unstable if the Canvas was zoomed/panned behind the Hierarchy pane.
+
 ## [1.0.0-preview.6] - 2020-09-03
 
 - Fixed potential crash when dragging selectors between StyleSheets.

@@ -344,14 +344,11 @@ namespace Unity.UI.Builder
             m_LastRowHoverElement?.RemoveFromClassList(s_TreeItemHoverHoverClassName);
             m_LastRowHoverElement?.RemoveFromClassList(s_TreeItemHoverWithDragBetweenElementsSupportClassName);
 
-            var validHover = TryToPickInCanvas(mousePosition);
-            if (validHover)
-            {
-                PerformDrag(target, m_LastHoverElement);
-                return;
-            }
-
-            validHover = TryToPickInHierarchy(mousePosition);
+            // Note: It's important for the Hierarchy pane to be checked first because
+            // this check does not account for which element is on top of which other element
+            // so if the Viewport is panned such that the Canvas is behind the Hierarchy,
+            // the TryToPickIn..() call will return true for the Canvas.
+            var validHover = TryToPickInHierarchy(mousePosition);
             if (validHover)
             {
                 VisualElement pickedElement;
@@ -359,6 +356,13 @@ namespace Unity.UI.Builder
                 GetPickedElementFromHoverElement(out pickedElement, out index);
 
                 PerformDrag(target, pickedElement, index);
+                return;
+            }
+
+            validHover = TryToPickInCanvas(mousePosition);
+            if (validHover)
+            {
+                PerformDrag(target, m_LastHoverElement);
                 return;
             }
 

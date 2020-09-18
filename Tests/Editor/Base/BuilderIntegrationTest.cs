@@ -44,6 +44,7 @@ namespace Unity.UI.Builder.EditorTests
         protected BuilderHierarchy hierarchy { get; private set; }
         protected BuilderStyleSheets styleSheetsPane { get; private set; }
         protected BuilderViewport viewport { get; private set; }
+        protected BuilderToolbar toolbar { get; private set; }
         protected BuilderInspector inspector { get; private set; }
         protected BuilderCanvas canvas { get; private set; }
 
@@ -61,6 +62,7 @@ namespace Unity.UI.Builder.EditorTests
             hierarchy = builder.rootVisualElement.Q<BuilderHierarchy>();
             styleSheetsPane = builder.rootVisualElement.Q<BuilderStyleSheets>();
             viewport = builder.rootVisualElement.Q<BuilderViewport>();
+            toolbar = viewport.Q<BuilderToolbar>();
             inspector = builder.rootVisualElement.Q<BuilderInspector>();
 
             if (EditorApplication.isPlaying)

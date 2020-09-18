@@ -1642,8 +1642,8 @@ namespace Unity.UI.Builder
             {
                 Builder.ShowWarning(BuilderConstants.BuiltInAssetPathsNotSupportedMessage);
 
-                // Revert the change
-                ((ObjectField)target).SetValueWithoutNotify(previousValue);
+                // Revert the change.
+                ((BaseField<object>)target).SetValueWithoutNotify(previousValue);
                 return;
             }
 

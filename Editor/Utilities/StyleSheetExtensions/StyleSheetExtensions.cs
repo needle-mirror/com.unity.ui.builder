@@ -42,8 +42,9 @@ namespace Unity.UI.Builder
             // existing selector and style resolution entering a infinite loop.
             //
             // Case 1274584
-            foreach (var selector in styleSheet.complexSelectors)
-                selector.nextInTable = null;
+            if (styleSheet.complexSelectors != null)
+                foreach (var selector in styleSheet.complexSelectors)
+                    selector.nextInTable = null;
 
             // Force call to StyleSheet.SetupReferences().
             styleSheet.rules = styleSheet.rules;

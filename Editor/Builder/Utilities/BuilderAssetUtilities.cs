@@ -47,7 +47,10 @@ namespace Unity.UI.Builder
             var styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(ussPath);
             if (styleSheet == null)
             {
-                BuilderDialogsUtility.DisplayDialog("Invalid Asset Type", $"Asset at path {ussPath} is not a StyleSheet.");
+                if (ussPath.StartsWith("Packages/"))
+                    BuilderDialogsUtility.DisplayDialog("Invalid Asset Type", $"Asset at path {ussPath} is not a StyleSheet.\nNote, for assets inside Packages folder, the folder name for the package needs to match the actual official package name (ie. com.example instead of Example).");
+                else
+                    BuilderDialogsUtility.DisplayDialog("Invalid Asset Type", $"Asset at path {ussPath} is not a StyleSheet.");
                 return;
             }
 

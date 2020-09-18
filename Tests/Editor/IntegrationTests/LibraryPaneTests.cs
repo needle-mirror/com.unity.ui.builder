@@ -195,6 +195,10 @@ namespace Unity.UI.Builder.EditorTests
             AddElementCodeOnly();
             AddElementCodeOnly();
 
+            // Set 500% zoom so we also test that element gets dragged into Hierarchy and not the Canvas (behind the Hierarchy).
+            viewport.zoomScale = 5f;
+            viewport.contentOffset = new Vector2(-400, 0);
+
             var firstVisualElementItem = GetFirstExplorerItem();
             yield return SelectLibraryTreeItemWithName("Text Field");
             var textFieldLibrary = BuilderTestsHelper.GetLabelWithName(library, "Text Field");
