@@ -428,11 +428,25 @@ namespace Unity.UI.Builder
                 return;
 
 #if UNITY_2020_1_OR_NEWER
-            //vta.AssignClassListFromAssetToElement(rootAssets[0], target);
-            //vta.AssignStyleSheetFromAssetToElement(rootAssets[0], target);
+            var uxmlRootAsset = rootAssets[0];
+
+            bool tempHasChildTags = false;
+            var styleSheetPaths = uxmlRootAsset.GetStyleSheetPaths();
+            if (styleSheetPaths != null && styleSheetPaths.Count > 0)
+            {
+                bool newLineAdded = true;
+
+                foreach (var path in styleSheetPaths)
+                {
+                    ProcessStyleSheetPath(
+                        vtaPath,
+                        path, stringBuilder, 0,
+                        ref newLineAdded, ref tempHasChildTags);
+                }
+            }
 
             // Get the first-level elements. These will be instantiated and added to target.
-            idToChildren.TryGetValue(rootAssets[0].id, out rootAssets);
+            idToChildren.TryGetValue(uxmlRootAsset.id, out rootAssets);
             if (rootAssets == null || rootAssets.Count == 0)
                 return;
 #endif

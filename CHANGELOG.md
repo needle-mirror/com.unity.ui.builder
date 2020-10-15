@@ -4,6 +4,25 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-preview.9] - 2020-10-15
+
+- (2020.1+) UI Builder will now add all "document level" StyleSheets as root `<Style>` tags in the UXML document, instead of adding them as `<Style>` tags under each root VisualElement.
+- (2020.1+) It is now possible to have no elements in the document but still attach a StyleSheet to the document (was not before). Deleting the last element in the document will no longer remove all document StyleSheets as well.
+- Added project setting to disable viewport zooming via mouse/trackpad to alleviate accidental zooming on Mac.
+- (2020.1+) Fixed styles being removed from root elements if those elements were adding their own local StyleSheet as part of their constructor or custom logic - such as Toolbar elements.
+- Fixed inline styles not working in built Player after saving asset in Builder.
+- Fixed being able to drag elements from Library to inside a black box C# element, like ListView, causing other problems.
+- Fixed Tab Index attribute field label in the Attributes Inspector.
+- Fixed Font Style field not appearing bold when overridden.
+- Fixed no right-click menu appearing on Font property in styles Inspector.
+- Fixed custom Canvas background image being partly under the Canvas header.
+- Fixed lack of contrast in disabled class pills in Inspector.
+- Fixed blue row highlight in Hierarchy for selected element not staying blue unless mouse was on top.
+- Fixed selected Hierarchy item not having text color inverted in Light theme.
+- Fixed being able to open read-only assets inside installed packages, leading to errors on save or dirtying the package cache.
+- Fixed the grid background of the Canvas (when using Runtime Theme) not working when using the UI Toolkit package.
+- Fixed errors around text mesh generation due to previews of really large UXML/USS documents.
+
 ## [1.0.0-preview.7] - 2020-09-18
 
 - **Unity 2019.3 is no longer supported. Please use 2019.4 LTS.**

@@ -148,7 +148,35 @@ namespace Unity.UI.Builder
             pane.subTitle = BuilderAssetUtilities.GetAssetName(targetAsset, previewAssetExtension, hasUnsavedChanges);
             m_OpenTargetAssetSourceButton.style.display = isTargetAssetAvailableOnDisk ? DisplayStyle.Flex : DisplayStyle.None;
         }
-        
+
+        internal static string GetClampedText(string text, out bool truncated)
+        {
+            var clippedCharIndex = 0;
+            var printableCharCount = 0;
+
+            truncated = false;
+
+            foreach (var c in text)
+            {
+                if (!char.IsControl(c))
+                    printableCharCount++;
+
+                if (printableCharCount > BuilderConstants.MaxTextPrintableCharCount)
+                {
+                    truncated = true;
+                    break;
+                }
+                clippedCharIndex++;
+            }
+
+            if (truncated)
+            {
+                return text.Substring(0, clippedCharIndex);
+            }
+
+            return text;
+        }
+
         protected void SetText(string text)
         {
             if (string.IsNullOrEmpty(text))
@@ -158,7 +186,8 @@ namespace Unity.UI.Builder
                 return;
             }
 
-            var lineCount = text.Count(x => x == '\n') + 1;
+            var clampedText = GetClampedText(text, out var truncated);
+            var lineCount = clampedText.Count(x => x == '\n') + 1;
             string lineNumbersText = "";
             for (int i = 1; i <= lineCount; ++i)
             {
@@ -170,7 +199,9 @@ namespace Unity.UI.Builder
 
             m_LineNumbers.text = lineNumbersText;
 
-            m_Code.value = text;
+            if (truncated)
+                 clampedText += BuilderConstants.EllipsisText + $"\n{BuilderConstants.EllipsisText}\n({BuilderConstants.CodePreviewTruncatedTextMessage})";
+            m_Code.value = clampedText;
         }
     }
 }

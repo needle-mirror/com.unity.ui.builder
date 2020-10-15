@@ -29,12 +29,16 @@ namespace Unity.UI.Builder
                 {
                     BuilderStyleSheetsUtilities.CreateNewUSSAsset(paneWindow);
                 },
+#if UNITY_2019_4
                 // Cannot add USS to an empty UXML because there's no root element to
                 // containe the <Style> tag. This will problem will go away once
                 // we support the root <Style> tag but...one problem at a time.
                 !document.visualTreeAsset.IsEmpty()
                     ? DropdownMenuAction.Status.Normal
                     : DropdownMenuAction.Status.Disabled);
+#else
+                DropdownMenuAction.Status.Normal);
+#endif
 
             evt.menu.AppendAction(
                 BuilderConstants.ExplorerStyleSheetsPaneAddExistingUSSMenu,
@@ -42,12 +46,16 @@ namespace Unity.UI.Builder
                 {
                     BuilderStyleSheetsUtilities.AddExistingUSSToAsset(paneWindow);
                 },
+#if UNITY_2019_4
                 // Cannot add USS to an empty UXML because there's no root element to
                 // containe the <Style> tag. This will problem will go away once
                 // we support the root <Style> tag but...one problem at a time.
                 !document.visualTreeAsset.IsEmpty()
                     ? DropdownMenuAction.Status.Normal
                     : DropdownMenuAction.Status.Disabled);
+#else
+                DropdownMenuAction.Status.Normal);
+#endif
 
             evt.menu.AppendAction(
                 BuilderConstants.ExplorerStyleSheetsPaneRemoveUSSMenu,

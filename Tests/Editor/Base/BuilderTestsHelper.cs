@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using NUnit.Framework;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -17,10 +18,11 @@ namespace Unity.UI.Builder.EditorTests
             {
                 if (Builder.ActiveWindow.document.hasUnsavedChanges)
                 {
-                    if(!s_BuilderDocumentNotificationShown)
+                    if (!s_BuilderDocumentNotificationShown)
                         EditorUtility.DisplayDialog("Failed", "Save Builder Document before running the tests.", "Ok");
 
                     s_BuilderDocumentNotificationShown = true;
+                    Assert.Fail("Save Builder Document before running the tests.");
                     return null;
                 }
             }

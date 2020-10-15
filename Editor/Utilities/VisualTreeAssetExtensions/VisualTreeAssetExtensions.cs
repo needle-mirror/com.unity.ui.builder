@@ -46,11 +46,25 @@ namespace Unity.UI.Builder
 
         public static void DeepOverwrite(this VisualTreeAsset vta, VisualTreeAsset other)
         {
+            // It's important to keep the same physical inlineSheet
+            // object in memory in the "other" asset and just overwrite
+            // its contents. The default "FromJsonOverwrite" below will
+            // actually replace the inlineSheet on other with vta's inlineSheet.
+            // So, to fix this, we save the reference to the original
+            // inlineSheet and restore it afterwards. case 1263454
+            var originalInlineSheet = other.inlineSheet;
+
             var json = JsonUtility.ToJson(vta);
             JsonUtility.FromJsonOverwrite(json, other);
 
+            other.inlineSheet = originalInlineSheet;
             if (vta.inlineSheet != null)
-                other.inlineSheet = vta.inlineSheet.DeepCopy();
+            {
+                if (other.inlineSheet != null)
+                    vta.inlineSheet.DeepOverwrite(other.inlineSheet);
+                else
+                    other.inlineSheet = vta.inlineSheet.DeepCopy();
+            }
 
             other.name = vta.name;
         }
@@ -95,21 +109,15 @@ namespace Unity.UI.Builder
 #endif
         }
 
+#if UNITY_2019_4
         public static bool WillBeEmptyIfRemovingOne(this VisualTreeAsset vta, VisualElementAsset veaToRemove)
         {
             if (veaToRemove is TemplateAsset)
-#if UNITY_2020_1_OR_NEWER
-                return vta.templateAssets.Count <= 1 && vta.visualElementAssets.Count <= 1; // Because of the <UXML> tag, there's always one.
-#else
                 return vta.templateAssets.Count <= 1 && vta.visualElementAssets.Count <= 0;
-#endif
 
-#if UNITY_2020_1_OR_NEWER
-            return vta.templateAssets.Count == 0 && vta.visualElementAssets.Count <= 2; // Because of the <UXML> tag, there's always one.
-#else
             return vta.templateAssets.Count == 0 && vta.visualElementAssets.Count <= 1;
-#endif
         }
+#endif
 
         public static VisualElementAsset GetRootUXMLElement(this VisualTreeAsset vta)
         {
@@ -319,10 +327,12 @@ namespace Unity.UI.Builder
             var sheets = new HashSet<StyleSheet>();
 
             foreach (var vea in vta.visualElementAssets)
-                GetAllReferencedStyleSheets(vea, sheets);
+                if (vta.IsRootElement(vea) || vta.IsRootUXMLElement(vea))
+                    GetAllReferencedStyleSheets(vea, sheets);
 
             foreach (var vea in vta.templateAssets)
-                GetAllReferencedStyleSheets(vea, sheets);
+                if (vta.IsRootElement(vea))
+                    GetAllReferencedStyleSheets(vea, sheets);
 
             return sheets.ToList();
         }
@@ -619,5 +629,28 @@ namespace Unity.UI.Builder
 
             ScriptableObject.DestroyImmediate(vta);
         }
+
+#if UNITY_2020_1_OR_NEWER
+        public static void AssignClassListFromAssetToElement(this VisualTreeAsset vta, VisualElementAsset asset, VisualElement element)
+        {
+            if (asset.classes != null)
+            {
+                for (int i = 0; i < asset.classes.Length; i++)
+                    element.AddToClassList(asset.classes[i]);
+            }
+        }
+
+        public static void AssignStyleSheetFromAssetToElement(this VisualTreeAsset vta, VisualElementAsset asset, VisualElement element)
+        {
+            if (asset.hasStylesheetPaths)
+                for (int i = 0; i < asset.stylesheetPaths.Count; i++)
+                    element.AddStyleSheetPath(asset.stylesheetPaths[i]);
+
+            if (asset.hasStylesheets)
+                for (int i = 0; i < asset.stylesheets.Count; ++i)
+                    if (asset.stylesheets[i] != null)
+                        element.styleSheets.Add(asset.stylesheets[i]);
+        }
+#endif
     }
 }

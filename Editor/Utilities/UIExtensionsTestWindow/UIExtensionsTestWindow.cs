@@ -153,7 +153,7 @@ namespace Unity.UI.Builder
 
                 var overriddenSection = m_VisualTreeAsset.FindElementByName("overridden-section");
                 if (overriddenSection != null)
-                    overriddenSection.RemoveStyleSheet(s_CanvasInstanceUSSPath);
+                    overriddenSection.RemoveStyleSheetPath(s_CanvasInstanceUSSPath);
 
                 // Add UXML string.
                 var uxmlString = m_VisualTreeAsset.GenerateUXML(null);

@@ -4,5 +4,5 @@
         <Label name="message" text="Message." class="unity-builder-notification-entry__message" />
     </VisualElement>
     <Button name="details" text="Details" class="unity-builder-notification-entry__details-button" />
-    <Button name="dismiss" text="X" class="unity-builder-notification-entry__dismiss-button" />
+    <Button name="dismiss" class="unity-builder-notification-entry__dismiss-button" />
 </UXML>

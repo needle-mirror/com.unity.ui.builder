@@ -186,6 +186,42 @@ namespace Unity.UI.Builder.EditorTests
             Assert.That(documentElement2.parent, Is.EqualTo(documentElement1));
         }
 
+        [UnityTest]
+        public IEnumerator DragOntoHierarchyElementToCreateAsChildFailsForListView()
+        {
+            AddElementCodeOnly<ListView>("test-list-view");
+
+            yield return UIETestHelpers.Pause();
+
+            var listView = viewport.documentRootElement.Q<ListView>();
+            Assert.NotNull(listView);
+
+            var explorerItem = GetFirstExplorerItem();
+            var listViewChildCount = listView.hierarchy.childCount;
+            var veLabel = BuilderTestsHelper.GetLabelWithName(library, nameof(VisualElement));
+
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
+                veLabel.worldBound.center,
+                explorerItem.worldBound.center);
+            Assert.AreEqual(listViewChildCount, listView.hierarchy.childCount);
+
+            var contentContainer = listView.Q("unity-content-container");
+            Assert.NotNull(contentContainer);
+            Assert.NotNull(contentContainer.GetFirstAncestorOfType<ListView>());
+            Assert.NotNull(contentContainer.GetFirstAncestorOfType<BuilderCanvas>());
+            selection.Select(null, contentContainer);
+            selection.NotifyOfHierarchyChange();
+            yield return UIETestHelpers.Pause();
+            var contentContainerMenuItem = GetHierarchyExplorerItemByElementName("unity-content-container");
+            Assert.NotNull(contentContainerMenuItem);
+
+            var containerChildCount = contentContainer.hierarchy.childCount;
+            yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
+                veLabel.worldBound.center,
+                contentContainerMenuItem.worldBound.center);
+            Assert.AreEqual(containerChildCount, contentContainer.hierarchy.childCount);
+        }
+
         /// <summary>
         /// Can click and drag onto a Hierarchy element to create new instance as a child, or between elements to create as a sibling.
         /// </summary>

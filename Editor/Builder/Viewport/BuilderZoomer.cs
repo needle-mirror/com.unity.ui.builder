@@ -105,10 +105,13 @@ namespace Unity.UI.Builder
 
         void Zoom(float delta, Vector2 zoomCenter)
         {
+            if (BuilderProjectSettings.disableMouseWheelZooming)
+                return;
+
             var oldScale = m_Viewport.zoomScale;
 
             m_Viewport.zoomScale = CalculateNewZoom(m_Viewport.zoomScale, delta, zoomScaleValues);
-            m_Viewport.contentOffset = zoomCenter + (m_Viewport.zoomScale / oldScale) * (m_Viewport.contentOffset - zoomCenter);            
+            m_Viewport.contentOffset = zoomCenter + (m_Viewport.zoomScale / oldScale) * (m_Viewport.contentOffset - zoomCenter);
         }
     }
 }

@@ -1,15 +1,18 @@
 <UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:uib="Unity.UI.Builder">
-    <VisualElement name="checkerboard-background-container" class="unity-builder-viewport__canvas-layer unity-builder-viewport__checkerboard-background-container" >
-        <uib:CheckerboardBackground name="checkerboard-background-element" class="unity-builder-viewport__checkerboard-background" />
-    </VisualElement>
-    <VisualElement name="default-background-element" class="unity-builder-viewport__canvas-layer" />
-    <VisualElement name="custom-background-element" class="unity-builder-viewport__canvas-layer" />
-
     <VisualElement name="header-container" class="unity-builder-canvas__header">
         <Label name="title" class="unity-builder-pane__sub-title unity-builder-canvas__title" />
         <Label name="tag" text="Editor Mode" class="unity-builder-pane__sub-title unity-builder-canvas__title unity-builder-tag-pill" />
     </VisualElement>
-    <VisualElement name="content-container" class="unity-builder-canvas__container" />
+
+    <VisualElement name="content-container-wrapper" class="unity-builder-canvas__container-wrapper">
+        <VisualElement name="checkerboard-background-container" class="unity-builder-viewport__canvas-layer unity-builder-viewport__checkerboard-background-container" >
+            <uib:CheckerboardBackground name="checkerboard-background-element" class="unity-builder-viewport__checkerboard-background" />
+        </VisualElement>
+        <VisualElement name="default-background-element" class="unity-builder-viewport__canvas-layer" />
+        <VisualElement name="custom-background-element" class="unity-builder-viewport__canvas-layer" />
+
+        <VisualElement name="content-container" class="unity-builder-canvas__container" />
+    </VisualElement>
 
     <VisualElement name="left-handle" class="unity-builder-canvas__handle unity-builder-canvas__side unity-builder-canvas__side--vertical unity-builder-canvas__side--left">
         <VisualElement class="unity-builder-canvas__side__inner" picking-mode="ignore" />

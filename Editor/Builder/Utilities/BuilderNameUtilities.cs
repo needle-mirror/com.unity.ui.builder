@@ -76,7 +76,7 @@ namespace Unity.UI.Builder
                 return str;
 
             var strShortened = str.Substring(0, maxLength);
-            strShortened += "...";
+            strShortened += BuilderConstants.EllipsisText;
             return strShortened;
         }
 

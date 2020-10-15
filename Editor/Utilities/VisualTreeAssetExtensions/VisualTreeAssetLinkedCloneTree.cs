@@ -157,11 +157,13 @@ namespace Unity.UI.Builder
                 return;
 
 #if UNITY_2020_1_OR_NEWER
-            //vta.AssignClassListFromAssetToElement(rootAssets[0], target);
-            //vta.AssignStyleSheetFromAssetToElement(rootAssets[0], target);
+            var uxmlRootAsset = rootAssets[0];
+
+            vta.AssignClassListFromAssetToElement(uxmlRootAsset, target);
+            vta.AssignStyleSheetFromAssetToElement(uxmlRootAsset, target);
 
             // Get the first-level elements. These will be instantiated and added to target.
-            idToChildren.TryGetValue(rootAssets[0].id, out rootAssets);
+            idToChildren.TryGetValue(uxmlRootAsset.id, out rootAssets);
             if (rootAssets == null || rootAssets.Count == 0)
                 return;
 #endif

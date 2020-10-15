@@ -410,6 +410,7 @@ namespace Unity.UI.Builder
             if (vea == null)
                 return false;
 
+#if UNITY_2019_4
             // Before 2020.1, the only way to attach a StyleSheet to a UXML document was via a <Style>
             // tag as a child of an element tag. This meant that if there were no elements in the document,
             // there cannot be any StyleSheets attached to it. Therefore, we need to warn the user when
@@ -435,6 +436,7 @@ namespace Unity.UI.Builder
                 m_PaneWindow.OnEnableAfterAllSerialization();
             }
             else
+#endif
             {
                 BuilderAssetUtilities.DeleteElementFromAsset(m_PaneWindow.document, element);
 

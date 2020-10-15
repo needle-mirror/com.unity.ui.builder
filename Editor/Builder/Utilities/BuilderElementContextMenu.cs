@@ -124,7 +124,14 @@ namespace Unity.UI.Builder
         {
             var documentElement = target.GetProperty(BuilderConstants.ElementLinkedDocumentVisualElementVEPropertyName) as VisualElement;
 
-            var isValidTarget = documentElement != null && (documentElement.IsPartOfCurrentDocument() || documentElement.GetStyleComplexSelector() != null);
+            var linkedOpenVTA = documentElement?.GetProperty(BuilderConstants.ElementLinkedVisualTreeAssetVEPropertyName) as VisualTreeAsset;
+
+            var isValidTarget = documentElement != null && !linkedOpenVTA &&
+                                (documentElement.IsPartOfActiveVisualTreeAsset(paneWindow.document) ||
+                                 documentElement.GetStyleComplexSelector() != null);
+            var isValidCopyTarget = documentElement != null && !linkedOpenVTA &&
+                                    (documentElement.IsPartOfCurrentDocument() ||
+                                     documentElement.GetStyleComplexSelector() != null);
             evt.StopImmediatePropagation();
 
             evt.menu.AppendAction(
@@ -132,10 +139,10 @@ namespace Unity.UI.Builder
                 a =>
                 {
                     ReselectIfNecessary(documentElement);
-                    if (documentElement.IsPartOfCurrentDocument() || documentElement.GetStyleComplexSelector() != null)
+                    if (isValidCopyTarget)
                         m_PaneWindow.commandHandler.CopySelection();
                 },
-                isValidTarget
+                isValidCopyTarget
                     ? DropdownMenuAction.Status.Normal
                     : DropdownMenuAction.Status.Disabled);
 
@@ -156,14 +163,14 @@ namespace Unity.UI.Builder
                 a =>
                 {
                     m_Selection.Select(null, documentElement);
-                    var explorerItemElement = documentElement.GetProperty(BuilderConstants.ElementLinkedExplorerItemVEPropertyName) as BuilderExplorerItem;
+                    var explorerItemElement = documentElement?.GetProperty(BuilderConstants.ElementLinkedExplorerItemVEPropertyName) as BuilderExplorerItem;
                     if (explorerItemElement == null)
                         return;
 
                     explorerItemElement.ActivateRenameElementMode();
 
                 },
-                documentElement != null && documentElement.IsPartOfCurrentDocument()
+                isValidTarget
                     ? DropdownMenuAction.Status.Normal
                     : DropdownMenuAction.Status.Disabled);
 
@@ -192,7 +199,6 @@ namespace Unity.UI.Builder
                     : DropdownMenuAction.Status.Disabled);
 
             var linkedInstancedVTA = documentElement?.GetProperty(BuilderConstants.ElementLinkedInstancedVisualTreeAssetVEPropertyName) as VisualTreeAsset;
-            var linkedOpenVTA = documentElement?.GetProperty(BuilderConstants.ElementLinkedVisualTreeAssetVEPropertyName) as VisualTreeAsset;
             var linkedVEA = documentElement?.GetProperty(BuilderConstants.ElementLinkedVisualElementAssetVEPropertyName) as TemplateAsset;
             var activeOpenUXML = document.activeOpenUXMLFile;
 
@@ -204,9 +210,9 @@ namespace Unity.UI.Builder
             var showReturnToParentAction = isLinkedOpenVTAActiveVTA && activeOpenUXML.isChildSubDocument;
             var showOpenInIsolationAction = isLinkedVEADirectChild;
             var showOpenInPlaceAction = showOpenInIsolationAction;
-            var showSibilngOpenActions = !isLinkedOpenVTAActiveVTA && isLinkedInstancedVTAActiveVTA;
+            var showSiblingOpenActions = !isLinkedOpenVTAActiveVTA && isLinkedInstancedVTAActiveVTA;
 
-            if (showOpenInBuilder || showReturnToParentAction || showOpenInIsolationAction || showOpenInPlaceAction || showSibilngOpenActions)
+            if (showOpenInBuilder || showReturnToParentAction || showOpenInIsolationAction || showOpenInPlaceAction || showSiblingOpenActions)
                 evt.menu.AppendSeparator();
 
             if (showOpenInBuilder)
@@ -238,7 +244,7 @@ namespace Unity.UI.Builder
                     action => BuilderHierarchyUtilities.OpenAsSubDocument(paneWindow, linkedInstancedVTA, linkedVEA));
             }
 
-            if (showSibilngOpenActions)
+            if (showSiblingOpenActions)
             {
                 evt.menu.AppendAction(
                     BuilderConstants.ExplorerHierarchyPaneOpenSubDocument,

@@ -160,12 +160,38 @@ namespace Unity.UI.Builder
             return false;
         }
 
+        protected override bool IsPickedElementValid(VisualElement element)
+        {
+            if (element == null)
+                return true;
+
+            if (element == viewport.documentRootElement)
+                return true;
+
+            if (element.contentContainer == null)
+                return false;
+
+            if (element.GetVisualElementAsset() == null)
+                return false;
+
+            if (!element.IsPartOfActiveVisualTreeAsset(paneWindow.document))
+                return false;
+
+            return true;
+        }
+
         protected override bool SupportsDragBetweenElements(VisualElement element)
         {
             if (element == null)
                 return false;
 
             if (element.GetVisualTreeAsset() != null)
+                return false;
+
+            if (element.GetVisualElementAsset() == null)
+                return false;
+
+            if (!element.IsPartOfActiveVisualTreeAsset(paneWindow.document))
                 return false;
 
             return true;

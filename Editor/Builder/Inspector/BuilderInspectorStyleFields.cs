@@ -182,7 +182,7 @@ namespace Unity.UI.Builder
                 var uiField = fieldElement as ColorField;
                 uiField.RegisterValueChangedCallback(e => OnFieldValueChange(e, styleName));
             }
-            else if (IsComputedStyleFont(val) && fieldElement is ObjectField)
+            else if (IsComputedStyleFont(val, styleName) && fieldElement is ObjectField)
             {
                 var uiField = fieldElement as ObjectField;
                 uiField.objectType = typeof(Font);
@@ -668,7 +668,7 @@ namespace Unity.UI.Builder
 
                 uiField.SetValueWithoutNotify(value);
             }
-            else if (IsComputedStyleFont(val) && fieldElement is ObjectField)
+            else if (IsComputedStyleFont(val, styleName) && fieldElement is ObjectField)
             {
                 var uiField = fieldElement as ObjectField;
                 var value = GetComputedStyleFontValue(val);
@@ -794,8 +794,7 @@ namespace Unity.UI.Builder
             bool isRowOverride = false;
             foreach (var styleField in styleFields)
             {
-                var cShartStyleName = ConvertUssStyleNameToCSharpStyleName(styleField.bindingPath);
-                if (GetStyleProperty(currentRule, cShartStyleName) != null)
+                if (GetStyleProperty(currentRule, styleField.bindingPath) != null)
                 {
                     isRowOverride = true;
                     styleField.RemoveFromClassList(BuilderConstants.InspectorLocalStyleResetClassName);
@@ -876,7 +875,7 @@ namespace Unity.UI.Builder
             {
                 DispatchChangeEvent(colorField);
             }
-            else if (IsComputedStyleFont(val) && fieldElement is ObjectField objectFontField)
+            else if (IsComputedStyleFont(val, styleName) && fieldElement is ObjectField objectFontField)
             {
                 DispatchChangeEvent(objectFontField);
             }
@@ -1810,9 +1809,9 @@ namespace Unity.UI.Builder
             return val is StyleColor || val is Color;
         }
 
-        static public bool IsComputedStyleFont(object val)
+        static public bool IsComputedStyleFont(object val, string styleName)
         {
-            return val is StyleFont || val is Font;
+            return val is StyleFont || val is Font || styleName == "-unity-font";
         }
 
         static public bool IsComputedStyleBackground(object val)

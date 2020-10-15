@@ -227,6 +227,7 @@ namespace Unity.UI.Builder
 
             m_AddUSSMenu.menu.MenuItems().Clear();
 
+#if UNITY_2019_4
             if (m_PaneWindow.document.visualTreeAsset.IsEmpty())
             {
                 m_AddUSSMenu.menu.AppendAction(
@@ -235,6 +236,7 @@ namespace Unity.UI.Builder
                     action => DropdownMenuAction.Status.Disabled);
             }
             else
+#endif
             {
                 m_AddUSSMenu.menu.AppendAction(
                     BuilderConstants.ExplorerStyleSheetsPaneCreateNewUSSMenu,
@@ -275,9 +277,13 @@ namespace Unity.UI.Builder
 
         void UpdateNewSelectorFieldEnabledStateFromDocument()
         {
+#if UNITY_2019_4
             bool enabled = false;
             if (m_PaneWindow != null)
                 enabled = !m_PaneWindow.document.visualTreeAsset.IsEmpty();
+#else
+            bool enabled = true;
+#endif
             m_NewSelectorTextField.SetEnabled(enabled);
             SetUpAddUSSMenu();
         }

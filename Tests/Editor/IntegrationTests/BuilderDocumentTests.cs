@@ -87,6 +87,21 @@ namespace Unity.UI.Builder.EditorTests
             Assert.That(builder.documentRootElement.childCount, Is.EqualTo(k_MultiUSSElementCount + 1));
         }
 
+#if UNITY_2020_1_OR_NEWER
+        [Test]
+        public void LoadLegacyAllRootElementsUSSFile()
+        {
+            var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_TestLegacyAllRootElementsUSSDocumentUXMLFilePath);
+            builder.LoadDocument(asset);
+
+            // Check that we correctly recovered the global stylesheets from one of the root elements.
+            Assert.AreEqual(2, builder.document.openUSSFiles.Count);
+
+            // Check that the auto-fixing worked and we removed the redundant stylesheets on the root element.
+            Assert.AreEqual(0, builder.document.visualTreeAsset.visualElementAssets[1].stylesheets.Count);
+        }
+#endif
+
         [UnityTest]
         public IEnumerator SaveNewDocument()
         {

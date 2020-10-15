@@ -78,6 +78,9 @@ namespace Unity.UI.Builder
             if (element == null)
                 return true;
 
+            if (element.contentContainer == null)
+                return false;
+
             if (element.GetVisualElementAsset() == null)
                 return false;
 

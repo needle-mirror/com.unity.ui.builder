@@ -23,6 +23,9 @@ namespace Unity.UI.Builder
 
         public static void DeepOverwrite(this StyleSheet styleSheet, StyleSheet other)
         {
+            if (other == null)
+                return;
+
             var json = JsonUtility.ToJson(styleSheet);
             JsonUtility.FromJsonOverwrite(json, other);
 

@@ -322,8 +322,12 @@ namespace Unity.UI.Builder.EditorTests
 
             var createSelectorField = styleSheetsPane.Q<TextField>(className: BuilderNewSelectorField.s_TextFieldUssClassName);
 
+#if UNITY_2019_4
             // Everything StyleSheet is disabled now if there are no elements to contain the <Style> tag.
             Assert.That(createSelectorField.enabledInHierarchy, Is.False);
+#else
+            Assert.That(createSelectorField.enabledInHierarchy, Is.True);
+#endif
             AddElementCodeOnly("TestElement");
             Assert.That(createSelectorField.enabledInHierarchy, Is.True);
 

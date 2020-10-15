@@ -33,6 +33,10 @@
     color: rgb(1, 1, 1);
 }
 
+.unity-list-view:focus .unity-list-view__item--selected {
+    background-color: #3A72B0;
+}
+
 .unity-builder-explorer__header.unity-list-view__item--selected {
     background-color: #5e5e5e;
 }
@@ -81,8 +85,12 @@
     border-bottom-color: white;
 }
 
+.unity-builder-notification-entry__dismiss-button {
+    background-image: resource("winbtn_win_close");
+}
+
 .unity-builder-notification-entry__dismiss-button:hover {
-    color: white;
+    background-color: rgb(228, 228, 228);
 }
 
 /*****************************************************************************/
@@ -316,7 +324,7 @@
     color: rgb(0, 0, 0);
 }
 
-.unity-list-view:focus > .unity-list-view__item--selected .unity-builder-code-label--element-type {
+.unity-list-view:focus .unity-list-view__item--selected .unity-builder-code-label--element-type {
     color: rgb(255, 255, 255);
 }
 
@@ -324,7 +332,7 @@
     color: rgb(0, 51, 160);
 }
 
-.unity-list-view:focus > .unity-list-view__item--selected .unity-builder-code-label--element-name {
+.unity-list-view:focus .unity-list-view__item--selected .unity-builder-code-label--element-name {
     color: rgb(190, 211, 255);
 }
 
@@ -332,7 +340,7 @@
     color: rgb(143, 64, 0);
 }
 
-.unity-list-view:focus > .unity-list-view__item--selected .unity-builder-code-label--element-class-name {
+.unity-list-view:focus .unity-list-view__item--selected .unity-builder-code-label--element-class-name {
     color: #ffcba0;
 }
 
@@ -340,7 +348,7 @@
     color: rgb(30, 105, 0);
 }
 
-.unity-list-view:focus > .unity-list-view__item--selected .unity-builder-code-label--element-pseudo-state {
+.unity-list-view:focus .unity-list-view__item--selected .unity-builder-code-label--element-pseudo-state {
     color: rgb(60, 212, 0);
 }
 
@@ -348,6 +356,6 @@
     color: rgb(143, 100, 200);
 }
 
-.unity-list-view:focus > .unity-list-view__item--selected .unity-builder-code-label--element-attached-stylesheet {
-    color: rgb(143, 100, 200);
+.unity-list-view:focus .unity-list-view__item--selected .unity-builder-code-label--element-attached-stylesheet {
+    color: rgb(206, 168, 255);
 }

@@ -17,12 +17,14 @@ namespace Unity.UI.Builder.EditorTests
         protected const string k_TestEmptyUSSFileNameNoExt = "EmptyTestStyleSheet";
         protected const string k_TestNoUSSDocumentUXMLFileNameNoExt = "NoUSSDocument";
         protected const string k_TestMultiUSSDocumentUXMLFileNameNoExt = "MultiUSSDocument";
+        protected const string k_TestLegacyAllRootElementsUSSDocumentUXMLFileNameNoExt = "LegacyAllRootElementsUSSDocument";
         protected const string k_ParentTestUXMLFileNameNoExt = "ParentTestUXMLDocument";
         protected const string k_ChildTestUXMLFileNameNoExt = "ChildTestUXMLDocument";
 
         protected const string k_TestEmptyUSSFileName = k_TestEmptyUSSFileNameNoExt + ".uss";
         protected const string k_TestNoUSSDocumentUXMLFileName = k_TestNoUSSDocumentUXMLFileNameNoExt + ".uxml";
         protected const string k_TestMultiUSSDocumentUXMLFileName = k_TestMultiUSSDocumentUXMLFileNameNoExt + ".uxml";
+        protected const string k_TestLegacyAllRootElementsUSSDocumentUXMLFileName = k_TestLegacyAllRootElementsUSSDocumentUXMLFileNameNoExt + ".uxml";
         protected const string k_ParentTestUXMLFileName = k_ParentTestUXMLFileNameNoExt + ".uxml";
         protected const string k_ChildTestUXMLFileName = k_ChildTestUXMLFileNameNoExt + ".uxml";
 
@@ -31,6 +33,7 @@ namespace Unity.UI.Builder.EditorTests
         protected const string k_TestEmptyUSSFilePath = BuilderConstants.UIBuilderTestsTestFilesPath + "/" + k_TestEmptyUSSFileName;
         protected const string k_TestNoUSSDocumentUXMLFilePath = BuilderConstants.UIBuilderTestsTestFilesPath + "/" + k_TestNoUSSDocumentUXMLFileName;
         protected const string k_TestMultiUSSDocumentUXMLFilePath = BuilderConstants.UIBuilderTestsTestFilesPath + "/" + k_TestMultiUSSDocumentUXMLFileName;
+        protected const string k_TestLegacyAllRootElementsUSSDocumentUXMLFilePath = BuilderConstants.UIBuilderTestsTestFilesPath + "/" + k_TestLegacyAllRootElementsUSSDocumentUXMLFileName;
         protected const string k_ParentTestUXMLPath = BuilderConstants.UIBuilderTestsTestFilesPath + "/" + k_ParentTestUXMLFileName;
         protected const string k_ChildTestUXMLPath = BuilderConstants.UIBuilderTestsTestFilesPath + "/" + k_ChildTestUXMLFileName;
 
@@ -98,9 +101,11 @@ namespace Unity.UI.Builder.EditorTests
         {
             var builderWindow = this.builder;
 
+#if UNITY_2019_4
             // Need to have at least one element in the asset.
             if (builderWindow.document.visualTreeAsset.IsEmpty())
                 AddElementCodeOnly("TestElement");
+#endif
 
             yield return UIETestHelpers.Pause(1);
 

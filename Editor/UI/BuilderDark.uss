@@ -23,12 +23,16 @@
     background-color: rgb(78, 78, 78);
 }
 
+.unity-list-view:focus .unity-list-view__item--selected {
+    background-color: #2C5D87;
+}
+
 .unity-builder-explorer__header.unity-list-view__item--selected {
     background-color: #313131;
 }
 
 .unity-builder-explorer__header.unity-list-view__item--selected:hover,
-.unity-list-view:focus > .unity-builder-explorer__header.unity-list-view__item--selected {
+.unity-list-view:focus .unity-builder-explorer__header.unity-list-view__item--selected {
     background-color: #3e5f96;
 }
 
@@ -71,8 +75,12 @@
     border-bottom-color: white;
 }
 
+.unity-builder-notification-entry__dismiss-button {
+    background-image: resource("d_winbtn_win_close");
+}
+
 .unity-builder-notification-entry__dismiss-button:hover {
-    color: white;
+    background-color: rgb(105, 105, 105);
 }
 
 /*****************************************************************************/

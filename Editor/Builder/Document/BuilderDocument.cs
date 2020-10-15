@@ -339,6 +339,7 @@ namespace Unity.UI.Builder
                 return;
 
             NewDocument(documentRootElement);
+            documentRootElement.SetProperty(BuilderConstants.ElementLinkedVisualTreeAssetVEPropertyName, null);
             GoToSubdocument(targetDocument);
             paneWindow.OnEnableAfterAllSerialization();
         }

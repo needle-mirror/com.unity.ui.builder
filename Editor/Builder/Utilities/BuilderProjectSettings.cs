@@ -7,11 +7,18 @@ namespace Unity.UI.Builder
     {
         const string k_EditorExtensionModeKey = "UIBuilder.EditorExtensionModeKey";
         const string k_HideNotificationAboutMissingUITKPackage = "UIBuilder.HideNotificationAboutMissingUITKPackage";
+        const string k_DisableMouseWheelZooming = "UIBuilder.DisableMouseWheelZooming";
 
         public static bool enableEditorExtensionModeByDefault
         {
             get => GetBool(k_EditorExtensionModeKey);
             set => SetBool(k_EditorExtensionModeKey, value);
+        }
+
+        public static bool disableMouseWheelZooming
+        {
+            get => GetBool(k_DisableMouseWheelZooming);
+            set => SetBool(k_DisableMouseWheelZooming, value);
         }
 
         public static bool hideNotificationAboutMissingUITKPackage

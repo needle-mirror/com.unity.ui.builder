@@ -95,7 +95,7 @@
 1. **Standard** tab mode can be switched to the tree view representation using **Tree View** option from the `...` options menu in the top right of the Library pane. `Tested`
 1. **Project** tab contains UXML assets (`.uxml`) in the project `Asset/` folder under the **UI Documents (UXML)** header.
 1. In the **Project** tab, the UXML item context menu contains an action to **Add** template to the current document as an instance, **Open in UI Builder**, and **Open with IDE**.
-1. You can view UXML assets (`.uxml`) within the `Packages/` folder under the **UI Documents (UXML)** heading using the **Show Package Files** option from the `...` options menu in the top right of the Library pane.
+1. You can view UXML assets (`.uxml`) within the `Packages/` folder under the **UI Documents (UXML)** heading using the **Show Package Files** option from the `...` options menu in the top right of the Library pane. Note that only writable packages will be displayed. Installed packages that are read-only will not have any of their assets displayed.
 1. Can enable/disable Editor Extension Authoring via the `...` options menu in the top right of the Library pane.
 1. **Project** tab contains available project-defined custom controls with `UxmlFactory` defined under the **Custom Controls (C#)** heading. If there are no custom controls available, this heading will not be displayed. `Tested`
 1. **Standard** tab items that are only supported for Editor Extensions have an "Editor Only" tag beside them (in **Tree View** mode only).
@@ -184,7 +184,7 @@
 
 1. Can pan by holding down middle mouse button in the Viewport and moving the mouse.
 1. Can pan by holding down Ctrl + Alt + LeftClick (Command + Option + LeftClick on macOS) and moving the mouse.
-1. Can zoom in and out with the mouse wheel.
+1. Can zoom in and out with the mouse wheel, unless this is explicitly disabled via the "Disable Viewport Zooming via Mouse Wheel/Trackpad" option.
 1. Can zoom in and out by holding down Alt + RightClick and moving the mouse right and left.
 1. Zoom and pan are remembered per-document.
 1. Zoom and pan are restored after Domain Reload or Window reload. They are reset when opening/creating a new document.
@@ -199,7 +199,8 @@
 1. Updates text on any changes to hierarchy, attributes, or inline styles.
 1. Shows unsaved StyleSheet as path="&#42;unsaved in-memory StyleSheet with...".
 1. Upon saving, all unsaved StyleSheet paths are fixed.
-1. Shows `<Style>` tags for all root elements.
+1. (2019.4) Shows `<Style>` tags for all root elements.
+1. (2020.1+) Shows `<Style>` tags at the top of the document, with any previous root element `<Style>` tags removed.
 1. The `UnityEngine.UIElements` namespace is aliased to `ui:` and `UnityEditor.UIElements` namespace is aliased to `uie:`.
 1. Custom C# elements not in the `UnityEngine.UIElements` and `UnityEditor.UIElements` namespaces have no namespace alias and appear as their full type.
 1. A relative path to a `.uss` asset is used in the `src` attribute of the `<Style>` tag if the asset is in the same folder as the main asset, or a subfolder of that folder. Otherwise, an absolute path is used.

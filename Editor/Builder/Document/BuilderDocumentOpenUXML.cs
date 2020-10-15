@@ -252,6 +252,7 @@ namespace Unity.UI.Builder
             if (m_CurrentDocumentRootElement == null)
                 m_CurrentDocumentRootElement = documentRootElement;
 
+#if UNITY_2019
             foreach (var openUSS in m_OpenUSSFiles)
             {
                 var sheet = openUSS.styleSheet;
@@ -269,6 +270,7 @@ namespace Unity.UI.Builder
                     break;
                 }
             }
+#endif
 
             StyleCache.ClearStyleCache();
             UnityEngine.UIElements.StyleSheets.StyleSheetCache.ClearCaches();
@@ -325,8 +327,52 @@ namespace Unity.UI.Builder
             }
         }
 
+#if UNITY_2020_1_OR_NEWER
+        void RemoveStyleSheetsFromRootAsset(VisualElementAsset rootAsset)
+        {
+            if (rootAsset.fullTypeName == BuilderConstants.SelectedVisualTreeAssetSpecialElementTypeName)
+                return;
+
+            for (int i = 0; i < m_OpenUSSFiles.Count; ++i)
+            {
+                var localUssPath = m_OpenUSSFiles[i].assetPath;
+
+                if (string.IsNullOrEmpty(localUssPath))
+                    continue;
+
+                rootAsset.RemoveStyleSheet(m_OpenUSSFiles[i].styleSheet);
+                rootAsset.RemoveStyleSheetPath(localUssPath);
+            }
+        }
+
+        // For the near to mid term, we have this code that cleans up any
+        // existing root element stylesheets.
+        void RemoveLegacyStyleSheetsFromRootAssets()
+        {
+            foreach (var asset in visualTreeAsset.visualElementAssets)
+            {
+                if (!visualTreeAsset.IsRootElement(asset))
+                    continue; // Not a root asset.
+
+                RemoveStyleSheetsFromRootAsset(asset);
+            }
+
+            foreach (var asset in visualTreeAsset.templateAssets)
+            {
+                if (!visualTreeAsset.IsRootElement(asset))
+                    continue; // Not a root asset.
+
+                RemoveStyleSheetsFromRootAsset(asset);
+            }
+        }
+#endif
+
         public void AddStyleSheetsToAllRootElements(string newUssPath = null, int newUssIndex = 0)
         {
+#if UNITY_2020_1_OR_NEWER
+            var rootVEA = visualTreeAsset.GetRootUXMLElement();
+            AddStyleSheetsToRootAsset(rootVEA, newUssPath, newUssIndex);
+#else 
             foreach (var asset in visualTreeAsset.visualElementAssets)
             {
                 if (!visualTreeAsset.IsRootElement(asset))
@@ -342,8 +388,10 @@ namespace Unity.UI.Builder
 
                 AddStyleSheetsToRootAsset(asset, newUssPath, newUssIndex);
             }
+#endif
         }
 
+#if UNITY_2019
         void AddStyleSheetToRootIfNeeded(VisualElement element)
         {
             var rootElement = BuilderSharedStyles.GetDocumentRootLevelElement(element, m_CurrentDocumentRootElement);
@@ -356,6 +404,7 @@ namespace Unity.UI.Builder
 
             AddStyleSheetsToRootAsset(rootAsset);
         }
+#endif
 
         void RemoveStyleSheetFromLists(int ussIndex)
         {
@@ -531,6 +580,12 @@ namespace Unity.UI.Builder
             for (int i = 0; i < styleSheetsUsed.Count; ++i)
                 AddStyleSheetToDocument(styleSheetsUsed[i], null);
 
+#if UNITY_2020_1_OR_NEWER
+            // For the near to mid term, we have this code that cleans up any
+            // existing root element stylesheets.
+            RemoveLegacyStyleSheetsFromRootAssets();
+#endif
+
             m_OpenendVisualTreeAssetOldPath = AssetDatabase.GetAssetPath(m_VisualTreeAsset);
 
             hasUnsavedChanges = false;
@@ -585,10 +640,12 @@ namespace Unity.UI.Builder
         {
             hasUnsavedChanges = true;
 
+#if UNITY_2019
             if (element != null) // Add StyleSheet to this element's root element.
                 AddStyleSheetToRootIfNeeded(element);
             else // Add StyleSheet to all root elements since one might match this new selector.
                 AddStyleSheetsToAllRootElements();
+#endif
         }
 
         public void StylingChanged()
@@ -799,9 +856,11 @@ namespace Unity.UI.Builder
         {
             m_CurrentDocumentRootElement = documentRootElement;
 
+#if UNITY_2019
             // TODO: For now, don't allow stylesheets in root elements.
             foreach (var rootElement in documentRootElement.Children())
                 rootElement.styleSheets.Clear();
+#endif
 
             // Refresh styles.
             RefreshStyle(documentRootElement);

@@ -120,8 +120,8 @@
     -unity-font-style: bold;
 }
 
-.unity-builder-class-pill--not-in-document Label {
-    opacity: 0.5;
+.unity-builder-class-pill--not-in-document {
+    opacity: 0.6;
 }
 
 .unity-disabled .unity-integer-field {

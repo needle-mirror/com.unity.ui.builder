@@ -263,7 +263,10 @@ BuilderExplorerItem {
 .unity-builder-notification-entry__dismiss-button {
     background-color: initial;
     border-color: initial;
-    margin: 0;
+    margin: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 0;
 }
 
 /*****************************************************************************/
@@ -356,6 +359,10 @@ BuilderExplorerItem {
 /*****************************************************************************/
 
 .unity-builder-canvas__container {
+    flex-grow: 1;
+}
+
+.unity-builder-canvas__container-wrapper {
     flex-grow: 1;
 }
 

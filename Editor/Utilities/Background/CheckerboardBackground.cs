@@ -55,26 +55,26 @@ namespace Unity.UI.Builder
             {
                 position = new Vector3(x0, y0, Vertex.nearZ),
                 tint = color,
-                uv = new Vector2(0,0)
+                uv = new Vector2(0,0) * mesh.uvRegion.size + mesh.uvRegion.position
             });
             mesh.SetNextVertex(new Vertex()
             {
                 position = new Vector3(x1, y0, Vertex.nearZ),
                 tint = color,
-                uv =  new Vector2(1,0)
+                uv = new Vector2(1,0) * mesh.uvRegion.size + mesh.uvRegion.position
             });
             mesh.SetNextVertex(new Vertex()
             {
                 position = new Vector3(x0, y1, Vertex.nearZ),
                 tint = color,
-                uv =  new Vector2(0,1)
+                uv = new Vector2(0,1) * mesh.uvRegion.size + mesh.uvRegion.position
             });
 
             mesh.SetNextVertex(new Vertex()
             {
                 position = new Vector3(x1, y1, Vertex.nearZ),
                 tint = color,
-                uv = new Vector2(1,1)
+                uv = new Vector2(1,1) * mesh.uvRegion.size + mesh.uvRegion.position
             });
 
             mesh.SetNextIndex(0);

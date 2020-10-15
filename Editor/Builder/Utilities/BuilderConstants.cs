@@ -36,6 +36,8 @@ namespace Unity.UI.Builder
         public static readonly int DoubleClickDelay = 50;
         public static readonly int CanvasGameViewSyncInterval = 100;
         public static readonly float OpacityFadeOutFactor = 0.5f;
+        public const int MaxTextMeshVertices = 48 * 1024; // Max 48k vertices. We leave room for masking, borders, background, etc. see UIRMeshBuilder.cs
+        public const int MaxTextPrintableCharCount = (int)((2 / 3.0) * MaxTextMeshVertices / 4 /* = vertices per quad*/);
 
         // Paths
         public const string UIBuilderPackageRootPath = "Packages/" + BuilderPackageName;
@@ -75,6 +77,7 @@ namespace Unity.UI.Builder
         public const string NewlineChar = UnixNewlineChar;
         public const string OpenBracket = "(";
         public const string CloseBracket = ")";
+        public const string EllipsisText = "...";
 
         //
         // Elements
@@ -192,6 +195,9 @@ namespace Unity.UI.Builder
         // Explorer Messages
         public static readonly string ExplorerInExplorerNewClassSelectorInfoMessage = "Add new selector...";
 
+        // Code Preview Messages
+        public static readonly string CodePreviewTruncatedTextMessage = "The content is truncated because it is too long.";
+
         //
         // Library
         //
@@ -206,7 +212,7 @@ namespace Unity.UI.Builder
         // Library Menu
         public const string LibraryShowPackageFiles = "Show Package Files";
         public const string LibraryViewModeToggle = "Tree View";
-        public const string LibraryEditorExtensionsAuthoring = "Editor Extensions Authoring";
+        public const string LibraryEditorExtensionsAuthoring = "Editor Extension Authoring";
         public const string LibraryProjectTabName = "Project";
         public const string LibraryStandardControlsTabName = "Standard";
 
@@ -393,7 +399,8 @@ namespace Unity.UI.Builder
 
         public static readonly Dictionary<string, string> SpecialEnumNamesCases = new Dictionary<string, string>
         {
-            {"nowrap", "no-wrap"}
+            {"nowrap", "no-wrap"},
+            {"tabindex", "tab-index"}
         };
 
         //

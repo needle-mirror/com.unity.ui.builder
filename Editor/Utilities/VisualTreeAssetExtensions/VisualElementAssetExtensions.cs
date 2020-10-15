@@ -149,11 +149,13 @@ namespace Unity.UI.Builder
             vea.GetStyleSheetPaths().Add(styleSheetPath);
         }
 
-        public static void RemoveStyleSheet(this VisualElementAsset vea, string styleSheetPath)
+        public static void RemoveStyleSheet(this VisualElementAsset vea, StyleSheet styleSheet)
         {
-            if (!vea.GetStyleSheetPaths().Contains(styleSheetPath))
-                return;
+            vea.stylesheets.RemoveAll((s) => s == styleSheet);
+        }
 
+        public static void RemoveStyleSheetPath(this VisualElementAsset vea, string styleSheetPath)
+        {
             vea.GetStyleSheetPaths().RemoveAll((s) => s == styleSheetPath);
         }
 

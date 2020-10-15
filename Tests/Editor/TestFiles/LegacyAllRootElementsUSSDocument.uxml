@@ -1,0 +1,13 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+    <ui:Template name="NoUSSDocument" path="Packages/com.unity.ui.builder/Tests/Editor/TestFiles/NoUSSDocument.uxml" />
+    <ui:Label text="LabelWithMultipleUSS" name="multi-uss-label">
+        <Style path="Packages/com.unity.ui.builder/Tests/Editor/TestFiles/ColorsTestStyleSheet.uss" />
+        <Style path="Packages/com.unity.ui.builder/Tests/Editor/TestFiles/LayoutTestStyleSheet.uss" />
+    </ui:Label>
+    <ui:Button text="LabelWithMultipleUSS" name="multi-uss-button">
+        <Style path="Packages/com.unity.ui.builder/Tests/Editor/TestFiles/ColorsTestStyleSheet.uss" />
+        <Style path="Packages/com.unity.ui.builder/Tests/Editor/TestFiles/LayoutTestStyleSheet.uss" />
+    </ui:Button>
+    <ui:Instance name="no-uss-document1" template="NoUSSDocument" />
+    <ui:Instance name="no-uss-document2" template="NoUSSDocument" />
+</ui:UXML>

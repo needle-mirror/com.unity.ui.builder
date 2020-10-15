@@ -6,6 +6,7 @@ namespace Unity.UI.Builder
     public class BuilderSettingsProvider : SettingsProvider
     {
         const string k_EditorExtensionsModeToggleName = "editor-extensions-mode-toggle";
+        const string k_DisableMouseWheelZoomingToggleName = "disable-mouse-wheel-zooming";
 
 #if UNITY_2020_1_OR_NEWER
         [SettingsProvider]
@@ -36,6 +37,13 @@ namespace Unity.UI.Builder
             editorExtensionsModeToggle.RegisterValueChangedCallback(e =>
             {
                 BuilderProjectSettings.enableEditorExtensionModeByDefault = e.newValue;
+            });
+
+            var zoomToggle = rootElement.Q<Toggle>(k_DisableMouseWheelZoomingToggleName);
+            zoomToggle.SetValueWithoutNotify(BuilderProjectSettings.disableMouseWheelZooming);
+            zoomToggle.RegisterValueChangedCallback(e =>
+            {
+                BuilderProjectSettings.disableMouseWheelZooming = e.newValue;
             });
 
             base.OnActivate(searchContext, rootElement);
