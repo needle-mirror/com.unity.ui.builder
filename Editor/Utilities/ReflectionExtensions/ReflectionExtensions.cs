@@ -26,7 +26,7 @@ namespace Unity.UI.Builder
             if (propertyInfo == null)
                 throw new ArgumentException(s_PropertyNotFoundMessage);
 
-            return propertyInfo.GetValue(obj);
+            return propertyInfo.GetValue(obj, null);
         }
 
         public static void SetValueByReflection(this object obj, string propertyName, object value)
@@ -36,7 +36,7 @@ namespace Unity.UI.Builder
             if (propertyInfo == null)
                 throw new ArgumentException(s_PropertyNotFoundMessage);
 
-            propertyInfo?.SetValue(obj, value);
+            propertyInfo?.SetValue(obj, value, null);
         }
 
         public static bool CallBoolMethodByReflection(this object obj, string methodName)

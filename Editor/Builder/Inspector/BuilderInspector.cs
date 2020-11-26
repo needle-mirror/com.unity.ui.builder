@@ -108,7 +108,20 @@ namespace Unity.UI.Builder
 
         public VisualTreeAsset visualTreeAsset
         {
-            get { return m_PaneWindow.document.visualTreeAsset; }
+            get
+            {
+                var element = currentVisualElement;
+                if (element == null)
+                    return m_PaneWindow.document.visualTreeAsset;
+
+                // It's important to return the VTA of the element, not the
+                // currently active VTA.
+                var elementVTA = element.GetProperty(BuilderConstants.ElementLinkedBelongingVisualTreeAssetVEPropertyName) as VisualTreeAsset;
+                if (elementVTA == null)
+                    return m_PaneWindow.document.visualTreeAsset;
+
+                return elementVTA;
+            }
         }
 
         public StyleRule currentRule
@@ -126,7 +139,7 @@ namespace Unity.UI.Builder
                     var complexSelector = currentVisualElement.GetStyleComplexSelector();
                     m_CurrentRule = complexSelector?.rule;
                 }
-                else if (currentVisualElement.GetVisualElementAsset() != null)
+                else if (currentVisualElement.GetVisualElementAsset() != null && currentVisualElement.IsPartOfActiveVisualTreeAsset(document))
                 {
                     var vea = currentVisualElement.GetVisualElementAsset();
                     m_CurrentRule = visualTreeAsset.GetOrCreateInlineStyleRule(vea);
@@ -167,7 +180,7 @@ namespace Unity.UI.Builder
             m_PaneWindow = paneWindow;
 
             // Load Template
-            var template = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
+            var template = BuilderPackageUtilities.LoadAssetAtPath<VisualTreeAsset>(
                 BuilderConstants.UIBuilderPackagePath + "/Inspector/BuilderInspector.uxml");
             template.CloneTree(this);
 
@@ -185,11 +198,11 @@ namespace Unity.UI.Builder
 
             // Load styles.
             AddToClassList(s_UssClassName);
-            styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.InspectorUssPathNoExt + ".uss"));
+            styleSheets.Add(BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(BuilderConstants.InspectorUssPathNoExt + ".uss"));
             if (EditorGUIUtility.isProSkin)
-                styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.InspectorUssPathNoExt + "Dark.uss"));
+                styleSheets.Add(BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(BuilderConstants.InspectorUssPathNoExt + "Dark.uss"));
             else
-                styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.InspectorUssPathNoExt + "Light.uss"));
+                styleSheets.Add(BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(BuilderConstants.InspectorUssPathNoExt + "Light.uss"));
 
             // Matching Selectors
             m_MatchingSelectors = new BuilderInspectorMatchingSelectors(this);

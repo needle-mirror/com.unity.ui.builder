@@ -3,7 +3,7 @@
     "references": [
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
-        "Unity.UI.Builder.Editor",
+        "UnityEditor.UIBuilderModule",
         "Unity.UI.Builder.Tests"
     ],
     "includePlatforms": [

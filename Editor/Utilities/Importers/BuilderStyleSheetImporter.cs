@@ -1,9 +1,9 @@
 using UnityEditor;
 
-#if UNITY_2020_2_OR_NEWER
-using UnityEditor.UIElements.StyleSheets;
-#else
+#if UNITY_2019_4 || UNITY_2020_1
 using UnityEditor.StyleSheets;
+#else
+using UnityEditor.UIElements.StyleSheets;
 #endif
 
 namespace Unity.UI.Builder
@@ -17,7 +17,7 @@ namespace Unity.UI.Builder
 
         public override UnityEngine.Object DeclareDependencyAndLoad(string path)
         {
-            return AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
+            return BuilderPackageUtilities.LoadAssetAtPath<UnityEngine.Object>(path);
         }
     }
 }

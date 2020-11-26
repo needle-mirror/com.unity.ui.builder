@@ -22,7 +22,7 @@ namespace Unity.UI.Builder
 
         protected override VisualElement CreateDraggedElement()
         {
-            var classPillTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
+            var classPillTemplate = BuilderPackageUtilities.LoadAssetAtPath<VisualTreeAsset>(
                 BuilderConstants.UIBuilderPackagePath + "/BuilderClassPill.uxml");
             var pill = classPillTemplate.CloneTree();
             pill.AddToClassList(s_DraggableStyleClassPillClassName);
@@ -36,7 +36,7 @@ namespace Unity.UI.Builder
             return true;
         }
 
-        protected override void PerformAction(VisualElement destination, DestinationPane pane, int index = -1)
+        protected override void PerformAction(VisualElement destination, DestinationPane pane, Vector2 localMousePosition, int index = -1)
         {
             if (BuilderSharedStyles.IsDocumentElement(destination))
                 return;
@@ -70,6 +70,11 @@ namespace Unity.UI.Builder
                 return false;
 
             return true;
+        }
+
+        protected override bool SupportsPlacementIndicator()
+        {
+            return false;
         }
     }
 }

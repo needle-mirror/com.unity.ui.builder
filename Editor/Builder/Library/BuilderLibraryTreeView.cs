@@ -26,7 +26,7 @@ namespace Unity.UI.Builder
 
         public BuilderLibraryTreeView(IList<ITreeViewItem> items)
         {
-            m_TreeViewItemTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(Path.Combine(BuilderConstants.LibraryUIPath, "BuilderLibraryTreeViewItem.uxml"));
+            m_TreeViewItemTemplate = BuilderPackageUtilities.LoadAssetAtPath<VisualTreeAsset>(BuilderConstants.LibraryUIPath + "/BuilderLibraryTreeViewItem.uxml");
 
             style.flexGrow = 1;
             m_TreeView = new TreeView { name = k_TreeViewName };
@@ -38,10 +38,10 @@ namespace Unity.UI.Builder
             m_TreeView.rootItems = items;
             m_TreeView.makeItem = MakeItem;
             m_TreeView.bindItem = BindItem;
-#if UNITY_2020_1_OR_NEWER
-            m_TreeView.onItemsChosen += OnItemsChosen;
-#else
+#if UNITY_2019_4
             m_TreeView.onItemChosen += (s) => OnItemChosen(s);
+#else
+            m_TreeView.onItemsChosen += OnItemsChosen;
 #endif
             m_TreeView.Refresh();
 
@@ -170,13 +170,13 @@ namespace Unity.UI.Builder
             LinkToTreeViewItem(element, builderItem);
         }
 
-#if UNITY_2020_1_OR_NEWER
-        void OnItemsChosen(IEnumerable<ITreeViewItem> selectedItems)
-#else
+#if UNITY_2019_4
         void OnItemChosen(ITreeViewItem selectedItem)
+#else
+        void OnItemsChosen(IEnumerable<ITreeViewItem> selectedItems)
 #endif
         {
-#if UNITY_2020_1_OR_NEWER
+#if !UNITY_2019_4
             var selectedItem = selectedItems.FirstOrDefault();
 #endif
 

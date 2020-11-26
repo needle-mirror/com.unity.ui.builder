@@ -18,10 +18,10 @@ namespace Unity.UI.Builder
         public LibraryFoldout()
         {
             // Load styles.
-            styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.UtilitiesPath + "/LibraryFoldout/LibraryFoldout.uss"));
+            styleSheets.Add(BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(BuilderConstants.UtilitiesPath + "/LibraryFoldout/LibraryFoldout.uss"));
             styleSheets.Add(EditorGUIUtility.isProSkin
-                ? AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.UtilitiesPath + "/LibraryFoldout/LibraryFoldoutDark.uss")
-                : AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.UtilitiesPath + "/LibraryFoldout/LibraryFoldoutLight.uss"));
+                ? BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(BuilderConstants.UtilitiesPath + "/LibraryFoldout/LibraryFoldoutDark.uss")
+                : BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(BuilderConstants.UtilitiesPath + "/LibraryFoldout/LibraryFoldoutLight.uss"));
         }
 
         // Should be defined after Toggle text.

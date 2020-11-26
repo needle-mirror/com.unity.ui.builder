@@ -10,9 +10,6 @@ namespace Unity.UI.Builder
         BuilderDocument m_Document;
         BuilderCommandHandler m_CommandHandler;
 
-        [SerializeField]
-        GUIContent m_WindowTitleContent;
-
         public BuilderDocument document
         {
             get
@@ -98,7 +95,11 @@ namespace Unity.UI.Builder
                 if (EditorGUIUtility.pixelsPerPoint > 1)
                     windowIconPath = $"{windowIconPath}@2x";
 
+#if UI_BUILDER_PACKAGE
                 iconTex = Resources.Load<Texture2D>(windowIconPath);
+#else
+                iconTex = EditorGUIUtility.Load(windowIconPath + ".png") as Texture2D;
+#endif
             }
 
             titleContent = new GUIContent(windowTitle, iconTex);
@@ -109,10 +110,10 @@ namespace Unity.UI.Builder
             var root = rootVisualElement;
 
             // Load assets.
-            var mainSS = AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.UIBuilderPackagePath + "/Builder.uss");
+            var mainSS = BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(BuilderConstants.UIBuilderPackagePath + "/Builder.uss");
             var themeSS = EditorGUIUtility.isProSkin
-                ? AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.UIBuilderPackagePath + "/BuilderDark.uss")
-                : AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.UIBuilderPackagePath + "/BuilderLight.uss");
+                ? BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(BuilderConstants.UIBuilderPackagePath + "/BuilderDark.uss")
+                : BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(BuilderConstants.UIBuilderPackagePath + "/BuilderLight.uss");
 
             // HACK: Check for null assets.
             // See: https://fogbugz.unity3d.com/f/cases/1180330/

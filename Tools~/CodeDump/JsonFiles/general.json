@@ -1,0 +1,17 @@
+[
+    {
+        "PackagePath": "Editor/Builder",
+        "CorePath": "External/MirroredPackageSources/com.unity.ui.builder/Editor/Builder",
+        "IsDir": "true"
+    },
+    {
+        "PackagePath": "Editor/Utilities",
+        "CorePath": "External/MirroredPackageSources/com.unity.ui.builder/Editor/Utilities",
+        "IsDir": "true",
+        "IgnoreExtensions": [ ".uss", ".uxml" ]
+    },
+    {
+        "PackagePath": "CHANGELOG.md",
+        "CorePath": "External/MirroredPackageSources/com.unity.ui.builder/CHANGELOG.md"
+    }
+]

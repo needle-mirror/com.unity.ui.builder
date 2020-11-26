@@ -66,7 +66,11 @@ namespace Unity.UI.Builder.EditorTests
         /// <summary>
         /// Can reset the view and make sure the canvas fits the viewport with the **Fit Canvas** button.
         /// </summary>
+#if UNITY_2019_4 && (UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX)
+        [UnityTest, Ignore("Test broken on 2019.4 on linux.")]
+#else
         [UnityTest]
+#endif
         public IEnumerator CanResetViewAndFitCanvas()
         {
             var toolbar = base.viewport.Q<BuilderToolbar>();

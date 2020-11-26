@@ -4,5 +4,6 @@
         <ui:Toggle name="editor-extensions-mode-toggle" text="Enable Editor Extension Authoring by Default"/>
         <uib:HelpBox text="This setting affects new files, and files that you open in the UI Builder for the first time. &#10;To enable/disable Editor extension authoring for an open file, select the canvas and edit its properties in the Inspector. "/>
         <ui:Toggle style="padding-top: 20px" name="disable-mouse-wheel-zooming" text="Disable Viewport Zooming via Mouse Wheel/Trackpad" />
+        <ui:Toggle name="enable-absolute-position-placement" text="Enable Absolute Position Placement (Experimental)" />
     </ui:VisualElement>
 </ui:UXML>

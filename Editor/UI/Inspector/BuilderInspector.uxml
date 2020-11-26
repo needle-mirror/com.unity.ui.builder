@@ -1,23 +1,23 @@
 <UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:uib="Unity.UI.Builder">
     <!-- Full Inspector Templates -->
-    <Template name="CanvasInspector" path="Packages/com.unity.ui.builder/Editor/UI/Inspector/CanvasInspector.uxml" />
+    <Template name="CanvasInspector" src="CanvasInspector.uxml" />
 
     <!-- Local Styles Section Templates -->
-    <Template name="NewSelectorHelpTips" path="Packages/com.unity.ui.builder/Editor/UI/Explorer/BuilderStyleSheetsNewSelectorHelpTips.uxml" />
-    <Template name="DisplaySection" path="Packages/com.unity.ui.builder/Editor/UI/Inspector/StyleSectionsDisplay.uxml" />
-    <Template name="PositionSection" path="Packages/com.unity.ui.builder/Editor/UI/Inspector/StyleSectionsPosition.uxml" />
-    <Template name="FlexSection" path="Packages/com.unity.ui.builder/Editor/UI/Inspector/StyleSectionsFlex.uxml" />
-    <Template name="AlignSection" path="Packages/com.unity.ui.builder/Editor/UI/Inspector/StyleSectionsAlign.uxml" />
-    <Template name="SizeSection" path="Packages/com.unity.ui.builder/Editor/UI/Inspector/StyleSectionsSize.uxml" />
-    <Template name="MarginPaddingSection" path="Packages/com.unity.ui.builder/Editor/UI/Inspector/StyleSectionsMarginPadding.uxml" />
-    <Template name="TextSection" path="Packages/com.unity.ui.builder/Editor/UI/Inspector/StyleSectionsText.uxml" />
-    <Template name="BackgroundSection" path="Packages/com.unity.ui.builder/Editor/UI/Inspector/StyleSectionsBackground.uxml" />
-    <Template name="BorderSection" path="Packages/com.unity.ui.builder/Editor/UI/Inspector/StyleSectionsBorder.uxml" />
-    <Template name="CursorSection" path="Packages/com.unity.ui.builder/Editor/UI/Inspector/StyleSectionsCursor.uxml" />
+    <Template name="NewSelectorHelpTips" src="../Explorer/BuilderStyleSheetsNewSelectorHelpTips.uxml" />
+    <Template name="DisplaySection" src="StyleSectionsDisplay.uxml" />
+    <Template name="PositionSection" src="StyleSectionsPosition.uxml" />
+    <Template name="FlexSection" src="StyleSectionsFlex.uxml" />
+    <Template name="AlignSection" src="StyleSectionsAlign.uxml" />
+    <Template name="SizeSection" src="StyleSectionsSize.uxml" />
+    <Template name="MarginPaddingSection" src="StyleSectionsMarginPadding.uxml" />
+    <Template name="TextSection" src="StyleSectionsText.uxml" />
+    <Template name="BackgroundSection" src="StyleSectionsBackground.uxml" />
+    <Template name="BorderSection" src="StyleSectionsBorder.uxml" />
+    <Template name="CursorSection" src="StyleSectionsCursor.uxml" />
 
     <!-- Main ScrollView -->
     <!-- DO NOT ADD A VIEW-DATA KEY TO THE SCROLLVIEW!
-        We handle scorll position restoration in a custom way inside the BuilderInspector
+        We handle scroll position restoration in a custom way inside the BuilderInspector
         element. It relies on ScrollView not trying to restore position as well.
     -->
     <ScrollView

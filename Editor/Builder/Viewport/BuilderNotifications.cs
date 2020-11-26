@@ -19,7 +19,7 @@ namespace Unity.UI.Builder
 
         public BuilderNotifications()
         {
-            m_NotificationEntryVTA = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(BuilderConstants.UIBuilderPackagePath + "/BuilderNotificationEntry.uxml");
+            m_NotificationEntryVTA = BuilderPackageUtilities.LoadAssetAtPath<VisualTreeAsset>(BuilderConstants.UIBuilderPackagePath + "/BuilderNotificationEntry.uxml");
             CheckNotificationWorthyStates();
         }
 
@@ -45,7 +45,7 @@ namespace Unity.UI.Builder
             icon.style.backgroundImage = (Texture2D)EditorGUIUtility.IconContent("console.infoicon.sml").image;
 
             var messageLabel = newNotification.Q<Label>("message");
-#if UNITY_2020_1_OR_NEWER
+#if !UNITY_2019_4
             // Cannot use USS because no way to do version checks in USS.
             // This is not available in 2019.4.
             messageLabel.style.textOverflow = TextOverflow.Ellipsis;
@@ -65,7 +65,7 @@ namespace Unity.UI.Builder
         {
             m_PendingNotifications = 0;
 
-#if UNITY_2020_1_OR_NEWER
+#if UNITY_2020_1 || UNITY_2020_2 || UNITY_2020_3
             // Handle the missing UI Toolkit package case.
             var uitkPackageInfo = PackageInfo.FindForAssetPath("Packages/" + BuilderConstants.UIToolkitPackageName);
             if (uitkPackageInfo == null)

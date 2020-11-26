@@ -1,0 +1,22 @@
+<UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:uib="Unity.UI.Builder">
+    <Foldout
+        text="Text Shadow"
+        tooltip="text-shadow"
+        view-data-key="builder-inspector-style-section-foldout-text-shadow"
+        class="unity-sub-foldout unity-foldout-field"
+        value="false">
+
+        <!-- Offset -->
+        <VisualElement class="unity-builder-style-row unity-builder-double-field-row">
+            <Label text="Offset" class="unity-builder-double-field-label" />
+            <uib:DimensionStyleField name="text-shadow-field-offset-x" label="Horizontal" tooltip="text-shadow" class="unity-builder-double-field" />
+            <uib:DimensionStyleField name="text-shadow-field-offset-y" label="Vertical" tooltip="text-shadow" class="unity-builder-double-field" />
+        </VisualElement>
+
+        <!-- Blur Radius -->
+        <uib:DimensionStyleField name="text-shadow-field-blur-radius" label="Blur Radius" tooltip="text-shadow" class="unity-text-shadow-style-field__field" />
+
+        <!-- Color -->
+        <uie:ColorField name="text-shadow-field-color" label="Color" tooltip="text-shadow" class="unity-text-shadow-style-field__field" />
+    </Foldout>
+</UXML>

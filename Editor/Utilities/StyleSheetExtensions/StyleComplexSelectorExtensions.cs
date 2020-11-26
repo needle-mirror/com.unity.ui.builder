@@ -5,7 +5,7 @@ using System;
 using UnityEngine.UIElements;
 using UnityEngine;
 
-#if UNITY_2020_2_OR_NEWER
+#if !UNITY_2019_4 && !UNITY_2020_1
 using UnityEditor.UIElements.StyleSheets;
 #endif
 

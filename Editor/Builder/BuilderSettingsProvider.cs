@@ -3,12 +3,13 @@ using UnityEngine.UIElements;
 
 namespace Unity.UI.Builder
 {
-    public class BuilderSettingsProvider : SettingsProvider
+    internal class BuilderSettingsProvider : SettingsProvider
     {
         const string k_EditorExtensionsModeToggleName = "editor-extensions-mode-toggle";
         const string k_DisableMouseWheelZoomingToggleName = "disable-mouse-wheel-zooming";
+        const string k_EnableAbsolutePositionPlacementToggleName = "enable-absolute-position-placement";
 
-#if UNITY_2020_1_OR_NEWER
+#if !UNITY_2019_4
         [SettingsProvider]
 #endif
         public static SettingsProvider PreferenceSettingsProvider()
@@ -26,10 +27,10 @@ namespace Unity.UI.Builder
 
         public override void OnActivate(string searchContext, VisualElement rootElement)
         {
-            var builderTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(BuilderConstants.SettingsUIPath + "/BuilderSettingsView.uxml");
+            var builderTemplate = BuilderPackageUtilities.LoadAssetAtPath<VisualTreeAsset>(BuilderConstants.SettingsUIPath + "/BuilderSettingsView.uxml");
             builderTemplate.CloneTree(rootElement);
 
-            var styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.SettingsUIPath + "/BuilderSettingsView.uss");
+            var styleSheet = BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(BuilderConstants.SettingsUIPath + "/BuilderSettingsView.uss");
             rootElement.styleSheets.Add(styleSheet);
 
             var editorExtensionsModeToggle = rootElement.Q<Toggle>(k_EditorExtensionsModeToggleName);
@@ -45,6 +46,15 @@ namespace Unity.UI.Builder
             {
                 BuilderProjectSettings.disableMouseWheelZooming = e.newValue;
             });
+
+            var absolutePlacementToggle = rootElement.Q<Toggle>(k_EnableAbsolutePositionPlacementToggleName);
+            absolutePlacementToggle.SetValueWithoutNotify(BuilderProjectSettings.enableAbsolutePositionPlacement);
+            absolutePlacementToggle.RegisterValueChangedCallback(e =>
+            {
+                BuilderProjectSettings.enableAbsolutePositionPlacement = e.newValue;
+            });
+            if (!Unsupported.IsDeveloperMode())
+                absolutePlacementToggle.style.display = DisplayStyle.None;
 
             base.OnActivate(searchContext, rootElement);
         }

@@ -39,6 +39,28 @@ namespace Unity.UI.Builder
                 => AssetDeleteResult.DidNotDelete;
         }
 
+        internal class AssetPostprocessor : IBuilderOneTimeAssetPostprocessor
+        {
+            readonly Action m_OnPostprocessAllAssets;
+
+            public AssetPostprocessor(Action onPostprocessAllAssets)
+            {
+                m_OnPostprocessAllAssets = onPostprocessAllAssets;
+            }
+
+            public void OnPostProcessAsset()
+            {
+                // AssetDatabase.FindAllAssets(filter) will return outdated assets if
+                // we refresh immediately.
+
+                // Note: This used to rely on Builder.ActiveWindow.rootVisualElement.schedule
+                // when not in batch mode to do the delay call but this caused problems with
+                // tests that waited on the LibraryContent to refresh based on asset changes
+                // before the any UI Builder window was open.
+                EditorApplication.delayCall += m_OnPostprocessAllAssets.Invoke;
+            }
+        }
+
         static readonly Dictionary<Type, BuilderLibraryTreeItem> s_ControlsTypeCache = new Dictionary<Type, BuilderLibraryTreeItem>();
         static readonly BuilderLibraryProjectScanner s_ProjectAssetsScanner = new BuilderLibraryProjectScanner();
         static int s_ProjectUxmlPathsHash;
@@ -57,9 +79,14 @@ namespace Unity.UI.Builder
                 if (s_ProjectUxmlPathsHash != s_ProjectAssetsScanner.GetAllProjectUxmlFilePathsHash())
                     RegenerateLibraryContent();
             }));
+
+            BuilderAssetPostprocessor.Register(new AssetPostprocessor(() =>
+            {
+                RegenerateLibraryContent();
+            }));
         }
 
-        static void RegenerateLibraryContent()
+        public static void RegenerateLibraryContent()
         {
             standardControlsTree = GenerateControlsItemsTree();
             standardControlsTreeNoEditor = new List<ITreeViewItem>();

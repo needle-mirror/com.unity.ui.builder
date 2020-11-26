@@ -139,7 +139,7 @@ namespace Unity.UI.Builder
                 while (factoryType != null && elementType == null)
                 {
                     if (factoryType.IsGenericType && factoryType.GetGenericTypeDefinition() == typeof(UxmlFactory<,>))
-                        elementType = factoryType.GenericTypeArguments[0];
+                        elementType = factoryType.GetGenericArguments()[0];
                     else
                         factoryType = factoryType.BaseType;
                 }

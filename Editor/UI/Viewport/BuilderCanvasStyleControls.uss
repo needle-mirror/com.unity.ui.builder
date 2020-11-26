@@ -1,0 +1,498 @@
+.unity-builder-canvas-style-controls {
+    flex-direction: row;
+}
+
+.unity-builder-canvas-style-controls__button {
+    width: 18px;
+    height: 18px;
+    background-color: initial;
+    border-color: initial;
+}
+
+/*
+Note: We use the same background color for the selection indicator as Dark theme,
+therefore, we need to use the same icons as Dark theme.
+*/
+
+/*****************************************************************************/
+/* Flex Direction
+/*****************************************************************************/
+
+.unity-builder-canvas-style-controls__button.flex-direction-button.flex-column {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Flex Direction/Column");
+}
+
+.unity-builder-canvas-style-controls__button.flex-direction-button.flex-column:checked,
+.unity-builder-canvas-style-controls__button.flex-direction-button.flex-column:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Flex Direction/Column");
+}
+
+.unity-builder-canvas-style-controls__button.flex-direction-button.flex-column-reverse {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Flex Direction/Column Reverse");
+}
+
+.unity-builder-canvas-style-controls__button.flex-direction-button.flex-column-reverse:checked,
+.unity-builder-canvas-style-controls__button.flex-direction-button.flex-column-reverse:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Flex Direction/Column Reverse");
+}
+
+.unity-builder-canvas-style-controls__button.flex-direction-button.flex-row {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Flex Direction/Row");
+}
+
+.unity-builder-canvas-style-controls__button.flex-direction-button.flex-row:checked,
+.unity-builder-canvas-style-controls__button.flex-direction-button.flex-row:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Flex Direction/Row");
+}
+
+.unity-builder-canvas-style-controls__button.flex-direction-button.flex-row-reverse {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Flex Direction/Row Reverse");
+}
+
+.unity-builder-canvas-style-controls__button.flex-direction-button.flex-row-reverse:checked,
+.unity-builder-canvas-style-controls__button.flex-direction-button.flex-row-reverse:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Flex Direction/Row Reverse");
+}
+
+/*****************************************************************************/
+/* Align Items
+/*****************************************************************************/
+
+/* Special: AUTO */
+
+.unity-builder-canvas-style-controls__button.align-items-button.auto {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Align Items/Flex Column/Right");
+}
+
+.unity-builder-canvas-style-controls__button.align-items-button.auto:checked,
+.unity-builder-canvas-style-controls__button.align-items-button.auto:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Align Items/Flex Column/Right");
+}
+
+/* Flex-Column */
+
+.flex-column.unity-builder-canvas-style-controls__button.align-items-button.flex-start {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Align Items/Flex Column/Left");
+}
+
+.flex-column.unity-builder-canvas-style-controls__button.align-items-button.flex-start:checked,
+.flex-column.unity-builder-canvas-style-controls__button.align-items-button.flex-start:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Align Items/Flex Column/Left");
+}
+
+.flex-column.unity-builder-canvas-style-controls__button.align-items-button.center {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Align Items/Flex Column/Center");
+}
+
+.flex-column.unity-builder-canvas-style-controls__button.align-items-button.center:checked,
+.flex-column.unity-builder-canvas-style-controls__button.align-items-button.center:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Align Items/Flex Column/Center");
+}
+
+.flex-column.unity-builder-canvas-style-controls__button.align-items-button.flex-end {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Align Items/Flex Column/Right");
+}
+
+.flex-column.unity-builder-canvas-style-controls__button.align-items-button.flex-end:checked,
+.flex-column.unity-builder-canvas-style-controls__button.align-items-button.flex-end:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Align Items/Flex Column/Right");
+}
+
+.flex-column.unity-builder-canvas-style-controls__button.align-items-button.stretch {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Align Items/Flex Column/Stretch");
+}
+
+.flex-column.unity-builder-canvas-style-controls__button.align-items-button.stretch:checked,
+.flex-column.unity-builder-canvas-style-controls__button.align-items-button.stretch:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Align Items/Flex Column/Stretch");
+}
+
+/* Flex-Column-Reverse */
+
+.flex-column-reverse.unity-builder-canvas-style-controls__button.align-items-button.flex-start {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Align Items/Flex Column/Left Reverse");
+}
+
+.flex-column-reverse.unity-builder-canvas-style-controls__button.align-items-button.flex-start:checked,
+.flex-column-reverse.unity-builder-canvas-style-controls__button.align-items-button.flex-start:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Align Items/Flex Column/Left Reverse");
+}
+
+.flex-column-reverse.unity-builder-canvas-style-controls__button.align-items-button.center {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Align Items/Flex Column/Center Reverse");
+}
+
+.flex-column-reverse.unity-builder-canvas-style-controls__button.align-items-button.center:checked,
+.flex-column-reverse.unity-builder-canvas-style-controls__button.align-items-button.center:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Align Items/Flex Column/Center Reverse");
+}
+
+.flex-column-reverse.unity-builder-canvas-style-controls__button.align-items-button.flex-end {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Align Items/Flex Column/Right Reverse");
+}
+
+.flex-column-reverse.unity-builder-canvas-style-controls__button.align-items-button.flex-end:checked,
+.flex-column-reverse.unity-builder-canvas-style-controls__button.align-items-button.flex-end:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Align Items/Flex Column/Right Reverse");
+}
+
+.flex-column-reverse.unity-builder-canvas-style-controls__button.align-items-button.stretch {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Align Items/Flex Column/Stretch Reverse");
+}
+
+.flex-column-reverse.unity-builder-canvas-style-controls__button.align-items-button.stretch:checked,
+.flex-column-reverse.unity-builder-canvas-style-controls__button.align-items-button.stretch:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Align Items/Flex Column/Stretch Reverse");
+}
+
+/* Flex-Row */
+
+.flex-row.unity-builder-canvas-style-controls__button.align-items-button.flex-start {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Align Items/Flex Row/Upper");
+}
+
+.flex-row.unity-builder-canvas-style-controls__button.align-items-button.flex-start:checked,
+.flex-row.unity-builder-canvas-style-controls__button.align-items-button.flex-start:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Align Items/Flex Row/Upper");
+}
+
+.flex-row.unity-builder-canvas-style-controls__button.align-items-button.center {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Align Items/Flex Row/Center");
+}
+
+.flex-row.unity-builder-canvas-style-controls__button.align-items-button.center:checked,
+.flex-row.unity-builder-canvas-style-controls__button.align-items-button.center:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Align Items/Flex Row/Center");
+}
+
+.flex-row.unity-builder-canvas-style-controls__button.align-items-button.flex-end {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Align Items/Flex Row/Lower");
+}
+
+.flex-row.unity-builder-canvas-style-controls__button.align-items-button.flex-end:checked,
+.flex-row.unity-builder-canvas-style-controls__button.align-items-button.flex-end:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Align Items/Flex Row/Lower");
+}
+
+.flex-row.unity-builder-canvas-style-controls__button.align-items-button.stretch {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Align Items/Flex Row/Stretch");
+}
+
+.flex-row.unity-builder-canvas-style-controls__button.align-items-button.stretch:checked,
+.flex-row.unity-builder-canvas-style-controls__button.align-items-button.stretch:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Align Items/Flex Row/Stretch");
+}
+
+/* Flex-Row-Reverse */
+
+.flex-row-reverse.unity-builder-canvas-style-controls__button.align-items-button.flex-start {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Align Items/Flex Row/Upper Reverse");
+}
+
+.flex-row-reverse.unity-builder-canvas-style-controls__button.align-items-button.flex-start:checked,
+.flex-row-reverse.unity-builder-canvas-style-controls__button.align-items-button.flex-start:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Align Items/Flex Row/Upper Reverse");
+}
+
+.flex-row-reverse.unity-builder-canvas-style-controls__button.align-items-button.center {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Align Items/Flex Row/Center Reverse");
+}
+
+.flex-row-reverse.unity-builder-canvas-style-controls__button.align-items-button.center:checked,
+.flex-row-reverse.unity-builder-canvas-style-controls__button.align-items-button.center:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Align Items/Flex Row/Center Reverse");
+}
+
+.flex-row-reverse.unity-builder-canvas-style-controls__button.align-items-button.flex-end {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Align Items/Flex Row/Lower Reverse");
+}
+
+.flex-row-reverse.unity-builder-canvas-style-controls__button.align-items-button.flex-end:checked,
+.flex-row-reverse.unity-builder-canvas-style-controls__button.align-items-button.flex-end:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Align Items/Flex Row/Lower Reverse");
+}
+
+.flex-row-reverse.unity-builder-canvas-style-controls__button.align-items-button.stretch {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Align Items/Flex Row/Stretch Reverse");
+}
+
+.flex-row-reverse.unity-builder-canvas-style-controls__button.align-items-button.stretch:checked,
+.flex-row-reverse.unity-builder-canvas-style-controls__button.align-items-button.stretch:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Align Items/Flex Row/Stretch Reverse");
+}
+
+/*****************************************************************************/
+/* Justify Content Field                                                     */
+/*****************************************************************************/
+
+/* Flex-Column */
+
+.flex-column.unity-builder-canvas-style-controls__button.justify-content-button.flex-start {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Justify Content/Flex Column/Upper");
+}
+
+.flex-column.unity-builder-canvas-style-controls__button.justify-content-button.flex-start:checked,
+.flex-column.unity-builder-canvas-style-controls__button.justify-content-button.flex-start:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Justify Content/Flex Column/Upper");
+}
+
+.flex-column.unity-builder-canvas-style-controls__button.justify-content-button.center {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Justify Content/Flex Column/Middle");
+}
+
+.flex-column.unity-builder-canvas-style-controls__button.justify-content-button.center:checked,
+.flex-column.unity-builder-canvas-style-controls__button.justify-content-button.center:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Justify Content/Flex Column/Middle");
+}
+
+.flex-column.unity-builder-canvas-style-controls__button.justify-content-button.flex-end {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Justify Content/Flex Column/Lower");
+}
+
+.flex-column.unity-builder-canvas-style-controls__button.justify-content-button.flex-end:checked,
+.flex-column.unity-builder-canvas-style-controls__button.justify-content-button.flex-end:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Justify Content/Flex Column/Lower");
+}
+
+.flex-column.unity-builder-canvas-style-controls__button.justify-content-button.space-between {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Justify Content/Flex Column/Space Between");
+}
+
+.flex-column.unity-builder-canvas-style-controls__button.justify-content-button.space-between:checked,
+.flex-column.unity-builder-canvas-style-controls__button.justify-content-button.space-between:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Justify Content/Flex Column/Space Between");
+}
+
+.flex-column.unity-builder-canvas-style-controls__button.justify-content-button.space-around {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Justify Content/Flex Column/Space Around");
+}
+
+.flex-column.unity-builder-canvas-style-controls__button.justify-content-button.space-around:checked,
+.flex-column.unity-builder-canvas-style-controls__button.justify-content-button.space-around:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Justify Content/Flex Column/Space Around");
+}
+
+/* Flex-Column-Reverse */
+
+.flex-column-reverse.unity-builder-canvas-style-controls__button.justify-content-button.flex-start {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Justify Content/Flex Column/Upper Reverse");
+}
+
+.flex-column-reverse.unity-builder-canvas-style-controls__button.justify-content-button.flex-start:checked,
+.flex-column-reverse.unity-builder-canvas-style-controls__button.justify-content-button.flex-start:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Justify Content/Flex Column/Upper Reverse");
+}
+
+.flex-column-reverse.unity-builder-canvas-style-controls__button.justify-content-button.center {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Justify Content/Flex Column/Middle Reverse");
+}
+
+.flex-column-reverse.unity-builder-canvas-style-controls__button.justify-content-button.center:checked,
+.flex-column-reverse.unity-builder-canvas-style-controls__button.justify-content-button.center:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Justify Content/Flex Column/Middle Reverse");
+}
+
+.flex-column-reverse.unity-builder-canvas-style-controls__button.justify-content-button.flex-end {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Justify Content/Flex Column/Lower Reverse");
+}
+
+.flex-column-reverse.unity-builder-canvas-style-controls__button.justify-content-button.flex-end:checked,
+.flex-column-reverse.unity-builder-canvas-style-controls__button.justify-content-button.flex-end:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Justify Content/Flex Column/Lower Reverse");
+}
+
+.flex-column-reverse.unity-builder-canvas-style-controls__button.justify-content-button.space-between {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Justify Content/Flex Column/Space Between Reverse");
+}
+
+.flex-column-reverse.unity-builder-canvas-style-controls__button.justify-content-button.space-between:checked,
+.flex-column-reverse.unity-builder-canvas-style-controls__button.justify-content-button.space-between:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Justify Content/Flex Column/Space Between Reverse");
+}
+
+.flex-column-reverse.unity-builder-canvas-style-controls__button.justify-content-button.space-around {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Justify Content/Flex Column/Space Around Reverse");
+}
+
+.flex-column-reverse.unity-builder-canvas-style-controls__button.justify-content-button.space-around:checked,
+.flex-column-reverse.unity-builder-canvas-style-controls__button.justify-content-button.space-around:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Justify Content/Flex Column/Space Around Reverse");
+}
+
+/* Flex-Row */
+
+.flex-row.unity-builder-canvas-style-controls__button.justify-content-button.flex-start {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Justify Content/Flex Row/Left");
+}
+
+.flex-row.unity-builder-canvas-style-controls__button.justify-content-button.flex-start:checked,
+.flex-row.unity-builder-canvas-style-controls__button.justify-content-button.flex-start:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Justify Content/Flex Row/Left");
+}
+
+.flex-row.unity-builder-canvas-style-controls__button.justify-content-button.center {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Justify Content/Flex Row/Center");
+}
+
+.flex-row.unity-builder-canvas-style-controls__button.justify-content-button.center:checked,
+.flex-row.unity-builder-canvas-style-controls__button.justify-content-button.center:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Justify Content/Flex Row/Center");
+}
+
+.flex-row.unity-builder-canvas-style-controls__button.justify-content-button.flex-end {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Justify Content/Flex Row/Right");
+}
+
+.flex-row.unity-builder-canvas-style-controls__button.justify-content-button.flex-end:checked,
+.flex-row.unity-builder-canvas-style-controls__button.justify-content-button.flex-end:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Justify Content/Flex Row/Right");
+}
+
+.flex-row.unity-builder-canvas-style-controls__button.justify-content-button.space-between {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Justify Content/Flex Row/Space Between");
+}
+
+.flex-row.unity-builder-canvas-style-controls__button.justify-content-button.space-between:checked,
+.flex-row.unity-builder-canvas-style-controls__button.justify-content-button.space-between:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Justify Content/Flex Row/Space Between");
+}
+
+.flex-row.unity-builder-canvas-style-controls__button.justify-content-button.space-around {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Justify Content/Flex Row/Space Around");
+}
+
+.flex-row.unity-builder-canvas-style-controls__button.justify-content-button.space-around:checked,
+.flex-row.unity-builder-canvas-style-controls__button.justify-content-button.space-around:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Justify Content/Flex Row/Space Around");
+}
+
+/* Flex-Row-Reverse */
+
+.flex-row-reverse.unity-builder-canvas-style-controls__button.justify-content-button.flex-start {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Justify Content/Flex Row/Left Reverse");
+}
+
+.flex-row-reverse.unity-builder-canvas-style-controls__button.justify-content-button.flex-start:checked,
+.flex-row-reverse.unity-builder-canvas-style-controls__button.justify-content-button.flex-start:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Justify Content/Flex Row/Left Reverse");
+}
+
+.flex-row-reverse.unity-builder-canvas-style-controls__button.justify-content-button.center {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Justify Content/Flex Row/Center Reverse");
+}
+
+.flex-row-reverse.unity-builder-canvas-style-controls__button.justify-content-button.center:checked,
+.flex-row-reverse.unity-builder-canvas-style-controls__button.justify-content-button.center:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Justify Content/Flex Row/Center Reverse");
+}
+
+.flex-row-reverse.unity-builder-canvas-style-controls__button.justify-content-button.flex-end {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Justify Content/Flex Row/Right Reverse");
+}
+
+.flex-row-reverse.unity-builder-canvas-style-controls__button.justify-content-button.flex-end:checked,
+.flex-row-reverse.unity-builder-canvas-style-controls__button.justify-content-button.flex-end:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Justify Content/Flex Row/Right Reverse");
+}
+
+.flex-row-reverse.unity-builder-canvas-style-controls__button.justify-content-button.space-between {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Justify Content/Flex Row/Space Between Reverse");
+}
+
+.flex-row-reverse.unity-builder-canvas-style-controls__button.justify-content-button.space-between:checked,
+.flex-row-reverse.unity-builder-canvas-style-controls__button.justify-content-button.space-between:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Justify Content/Flex Row/Space Between Reverse");
+}
+
+.flex-row-reverse.unity-builder-canvas-style-controls__button.justify-content-button.space-around {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Justify Content/Flex Row/Space Around Reverse");
+}
+
+.flex-row-reverse.unity-builder-canvas-style-controls__button.justify-content-button.space-around:checked,
+.flex-row-reverse.unity-builder-canvas-style-controls__button.justify-content-button.space-around:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Justify Content/Flex Row/Space Around Reverse");
+}
+
+/*****************************************************************************/
+/* Text Align Field
+/*****************************************************************************/
+
+/* Horizontal */
+
+.unity-builder-canvas-style-controls__button.text-align-button.left {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Text Alignment/Left");
+}
+
+.unity-builder-canvas-style-controls__button.text-align-button.left:checked,
+.unity-builder-canvas-style-controls__button.text-align-button.left:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Text Alignment/Left");
+}
+
+.unity-builder-canvas-style-controls__button.text-align-button.center {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Text Alignment/Centered");
+}
+
+.unity-builder-canvas-style-controls__button.text-align-button.center:checked,
+.unity-builder-canvas-style-controls__button.text-align-button.center:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Text Alignment/Centered");
+}
+
+.unity-builder-canvas-style-controls__button.text-align-button.right {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Text Alignment/Right");
+}
+
+.unity-builder-canvas-style-controls__button.text-align-button.right:checked,
+.unity-builder-canvas-style-controls__button.text-align-button.right:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Text Alignment/Right");
+}
+
+/* Vertical */
+
+.unity-builder-canvas-style-controls__button.text-align-button.upper {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Text Alignment/Upper");
+}
+
+.unity-builder-canvas-style-controls__button.text-align-button.upper:checked,
+.unity-builder-canvas-style-controls__button.text-align-button.upper:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Text Alignment/Upper");
+}
+
+.unity-builder-canvas-style-controls__button.text-align-button.middle {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Text Alignment/Middle");
+}
+
+.unity-builder-canvas-style-controls__button.text-align-button.middle:checked,
+.unity-builder-canvas-style-controls__button.text-align-button.middle:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Text Alignment/Middle");
+}
+
+.unity-builder-canvas-style-controls__button.text-align-button.lower {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Text Alignment/Lower");
+}
+
+.unity-builder-canvas-style-controls__button.text-align-button.lower:checked,
+.unity-builder-canvas-style-controls__button.text-align-button.lower:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Text Alignment/Lower");
+}
+
+/*****************************************************************************/
+/* White Space Field
+/*****************************************************************************/
+
+.unity-builder-canvas-style-controls__button.text-wrap-button.normal {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Text White Space/Normal");
+}
+
+.unity-builder-canvas-style-controls__button.text-wrap-button.normal:checked,
+.unity-builder-canvas-style-controls__button.text-wrap-button.normal:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Text White Space/Normal");
+}
+
+.unity-builder-canvas-style-controls__button.text-wrap-button.nowrap {
+    background-image: resource("com.unity.ui.builder/Icons/Dark/Inspector/Text White Space/No Wrap");
+}
+
+.unity-builder-canvas-style-controls__button.text-wrap-button.nowrap:checked,
+.unity-builder-canvas-style-controls__button.text-wrap-button.nowrap:hover {
+    background-image: resource("com.unity.ui.builder/Icons/Selected/Inspector/Text White Space/No Wrap");
+}

@@ -19,7 +19,7 @@ namespace Unity.UI.Builder
         public BuilderExplorerItem()
         {
             // Load Template
-            var template = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
+            var template = BuilderPackageUtilities.LoadAssetAtPath<VisualTreeAsset>(
                 BuilderConstants.UIBuilderPackagePath + "/Explorer/BuilderExplorerItem.uxml");
             template.CloneTree(this);
 
@@ -87,6 +87,14 @@ namespace Unity.UI.Builder
 
             renameTextfield.RegisterCallback<KeyUpEvent>((e) =>
             {
+#if !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+                if (e.keyCode == KeyCode.Return || e.keyCode == KeyCode.KeypadEnter || e.keyCode == KeyCode.Escape)
+                {
+                    (e.currentTarget as VisualElement).Blur();
+                    return;
+                }
+#endif
+
                 e.StopImmediatePropagation();
             });
 

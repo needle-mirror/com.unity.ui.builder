@@ -11,11 +11,11 @@ namespace Unity.UI.Builder
         public const string BuilderWindowTitle = "UI Builder";
         public const string BuilderWindowIcon = IconsResourcesPath + "/Generic/UIBuilder";
         public const string BuilderPackageName = "com.unity.ui.builder";
-#if UNITY_2020_1_OR_NEWER
+#if UNITY_2019_4
+        public const string BuilderMenuEntry = "Window/UI/UI Builder";
+#else
         public const string BuilderMenuEntry = "Window/UI Toolkit/UI Builder";
         public const string UIToolkitPackageName = "com.unity.ui";
-#else
-        public const string BuilderMenuEntry = "Window/UI/UI Builder";
 #endif
         public static readonly Rect BuilderWindowDefaultRect = new Rect(50, 50, 1000, 700);
         // These sizes are copied from EditorWindow.cs. See the default values of EditorWindow.m_MinSize and EditorWindow.m_MaxSize.
@@ -38,19 +38,30 @@ namespace Unity.UI.Builder
         public static readonly float OpacityFadeOutFactor = 0.5f;
         public const int MaxTextMeshVertices = 48 * 1024; // Max 48k vertices. We leave room for masking, borders, background, etc. see UIRMeshBuilder.cs
         public const int MaxTextPrintableCharCount = (int)((2 / 3.0) * MaxTextMeshVertices / 4 /* = vertices per quad*/);
+        public static readonly float PickSelectionRepeatRectSize = 2f;
+        public static readonly float PickSelectionRepeatRectHalfSize = PickSelectionRepeatRectSize / 2;
+        public static readonly double PickSelectionRepeatMinTimeDelay = 0.5;
 
         // Paths
+#if UI_BUILDER_PACKAGE
         public const string UIBuilderPackageRootPath = "Packages/" + BuilderPackageName;
         public const string UIBuilderPackagePath = UIBuilderPackageRootPath + "/Editor/UI";
-        public const string UIBuilderPackageResourcesPath  = UIBuilderPackageRootPath + "/Editor/Resources/";
+        public const string UIBuilderPackageResourcesPath = UIBuilderPackageRootPath + "/Editor/Resources/";
         public const string UtilitiesPath = UIBuilderPackageRootPath + "/Editor/Utilities";
-        public const string LibraryUIPath = UIBuilderPackagePath + "/Library/";
-        public const string SettingsUIPath = UIBuilderPackagePath + "/Settings/";
+        public const string IconsResourcesPath = BuilderPackageName + "/Icons";
+        public const string UIBuilderTestsRootPath = UIBuilderPackageRootPath + "/Tests/Editor";
+#else
+        public const string UIBuilderPackageRootPath = "UIBuilderPackageResources";
+        public const string UIBuilderPackagePath = UIBuilderPackageRootPath + "/UI";
+        public const string UtilitiesPath = UIBuilderPackageRootPath + "/Utilities";
+        public const string IconsResourcesPath = UIBuilderPackageRootPath + "/Icons";
+        public const string UIBuilderTestsRootPath = "Assets/Editor";
+#endif
+        public const string LibraryUIPath = UIBuilderPackagePath + "/Library";
+        public const string SettingsUIPath = UIBuilderPackagePath + "/Settings";
         public const string LibraryUssPathNoExt = UIBuilderPackagePath + "/Library/BuilderLibrary";
         public const string InspectorUssPathNoExt = UIBuilderPackagePath + "/Inspector/BuilderInspector";
         public const string RuntimeThemeUSSPath = "Packages/com.unity.ui.runtime/USS/Default.uss.asset";
-        public const string IconsResourcesPath = BuilderPackageName + "/Icons";
-        public const string UIBuilderTestsRootPath = UIBuilderPackageRootPath + "/Tests/Editor";
         public const string UIBuilderTestsTestFilesPath = UIBuilderTestsRootPath + "/TestFiles";
         const string BuilderDocumentDiskJsonFileName = "UIBuilderDocument.json";
         const string BuilderDocumentDiskJsonFolderPath = "Library/UIBuilder";
@@ -138,13 +149,20 @@ namespace Unity.UI.Builder
         public static readonly string ContextMenuUnsetMessage = "Unset";
         public static readonly string ContextMenuUnsetAllMessage = "Unset All";
         public static readonly string ContextMenuViewVariableMessage = "View Variable";
+        public static readonly string ContextMenuSetVariableMessage = "Set Variable";
+#if PACKAGE_TEXT_CORE && !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+        public static readonly string FontCannotBeNoneMessage = "UI Builder: Font and FontAsset cannot both be set to none.";
+#else
         public static readonly string FontCannotBeNoneMessage = "UI Builder: Font cannot be set to none.";
+#endif
         public static readonly string InspectorClassPillDoubleClickToCreate = "Double-click to create new USS selector.";
         public static readonly string InspectorClassPillDoubleClickToSelect = "Double-click to select and edit USS selector.";
         public static readonly string InspectorLocalStylesSectionTitleForSelector = "Styles";
         public static readonly string InspectorLocalStylesSectionTitleForElement = "Inlined Styles";
         public static readonly string MultiSelectionNotSupportedMessage = "Multi-selection editing is not supported.";
         public static readonly string InspectorEditorExtensionAuthoringActivated = "You can now use Editor-only controls in this document.";
+        public static readonly string VariableNotSupportedInInlineStyleMessage = "Setting variables in inline style is not yet supported.";
+        public static readonly string VariableDescriptionsCouldNotBeLoadedMessage = "Could not load the variable descriptions file.";
 
         //
         // Explorer
@@ -349,6 +367,7 @@ namespace Unity.UI.Builder
         public static readonly string Uss = "uss";
         public static readonly string UxmlExtension = ".uxml";
         public static readonly string UssExtension = ".uss";
+        public static readonly string TssExtension = ".tss";
 
         // UXML
         public static readonly string UxmlHeader = "<ui:UXML xmlns:ui=\"UnityEngine.UIElements\" xmlns:uie=\"UnityEditor.UIElements\"";
@@ -357,10 +376,8 @@ namespace Unity.UI.Builder
         public static readonly string UxmlEngineNamespaceReplace = "ui:";
         public static readonly string UxmlEditorNamespace = "UnityEditor.UIElements.";
         public static readonly string UxmlEditorNamespaceReplace = "uie:";
-#if UNITY_2020_1_OR_NEWER
         public static readonly string UxmlTagTypeName = "UnityEngine.UIElements.UXML";
         public static readonly string UxmlInstanceTypeName = "UnityEngine.UIElements.Instance";
-#endif
 
         // USS
         public static readonly string UssSelectorNameSymbol = "#";

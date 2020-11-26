@@ -14,6 +14,7 @@
                     </VisualElement>
                     <VisualElement name="pick-overlay" class="unity-builder-viewport__pick-overlay unity-builder-viewport__canvas-layer">
                         <uib:BuilderParentTracker name="parent-tracker" />
+                        <uib:BuilderPlacementIndicator name="placement-indicator" />
                         <uib:BuilderSelectionIndicator name="selection-indicator" />
                         <uib:BuilderAnchorer name="anchorer" />
                         <uib:BuilderResizer name="resizer" />

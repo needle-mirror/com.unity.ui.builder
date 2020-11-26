@@ -89,7 +89,7 @@ namespace Unity.UI.Builder
 
         public bool PostSaveToDiskChecksAndFixes()
         {
-            m_StyleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(m_NewPath);
+            m_StyleSheet = BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(m_NewPath);
             bool needsFullRefresh = m_StyleSheet != m_Backup;
 
             // Get back selection markers from backup:
@@ -105,7 +105,7 @@ namespace Unity.UI.Builder
             if (assetPath != m_OldPath)
                 return false;
 
-            m_StyleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(assetPath);
+            m_StyleSheet = BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(assetPath);
             return true;
         }
 

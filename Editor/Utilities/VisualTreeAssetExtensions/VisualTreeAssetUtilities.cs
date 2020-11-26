@@ -15,7 +15,7 @@ namespace Unity.UI.Builder
 
             vta.hideFlags = HideFlags.DontUnloadUnusedAsset | HideFlags.DontSaveInEditor;
 
-#if UNITY_2020_1_OR_NEWER
+#if !UNITY_2019_4
             var uxmlTagElement = new VisualElementAsset(BuilderConstants.UxmlTagTypeName);
             InitializeElement(uxmlTagElement);
             uxmlTagElement.id = GenerateNewId(vta, uxmlTagElement);

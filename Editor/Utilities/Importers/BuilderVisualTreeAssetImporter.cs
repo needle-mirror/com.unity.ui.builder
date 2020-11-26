@@ -12,7 +12,7 @@ namespace Unity.UI.Builder
 
         public override UnityEngine.Object DeclareDependencyAndLoad(string path)
         {
-            return AssetDatabase.LoadAssetAtPath<UnityEngine.Object>(path);
+            return BuilderPackageUtilities.LoadAssetAtPath<UnityEngine.Object>(path);
         }
     }
 }

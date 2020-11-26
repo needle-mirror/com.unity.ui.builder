@@ -1,7 +1,8 @@
-<UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
+<UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:uib="Unity.UI.Builder">
     <VisualElement name="header-container" class="unity-builder-selection-indicator__header-container">
-        <VisualElement name="header" class="unity-builder-selection-indicator__header"> 
+        <VisualElement name="header" class="unity-builder-selection-indicator__header">
             <Label name="header-label" class="unity-builder-selection-indicator__header-label" />
+            <uib:BuilderCanvasStyleControls />
         </VisualElement>
     </VisualElement>
 </UXML>

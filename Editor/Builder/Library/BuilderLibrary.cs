@@ -57,12 +57,12 @@ namespace Unity.UI.Builder
 
             // Load styles.
             AddToClassList(k_UssClassName);
-            styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.LibraryUssPathNoExt + ".uss"));
+            styleSheets.Add(BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(BuilderConstants.LibraryUssPathNoExt + ".uss"));
             styleSheets.Add(EditorGUIUtility.isProSkin
-                ? AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.LibraryUssPathNoExt + "Dark.uss")
-                : AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.LibraryUssPathNoExt + "Light.uss"));
+                ? BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(BuilderConstants.LibraryUssPathNoExt + "Dark.uss")
+                : BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(BuilderConstants.LibraryUssPathNoExt + "Light.uss"));
 
-            var template = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(BuilderConstants.LibraryUssPathNoExt + ".uxml");
+            var template = BuilderPackageUtilities.LoadAssetAtPath<VisualTreeAsset>(BuilderConstants.LibraryUssPathNoExt + ".uxml");
             template.CloneTree(this);
 
             m_EditorExtensionMode = paneWindow.document.fileSettings.editorExtensionMode;
@@ -77,6 +77,7 @@ namespace Unity.UI.Builder
             });
 
             AddFocusable(m_HeaderButtonStrip);
+            BuilderLibraryContent.RegenerateLibraryContent();
             BuilderLibraryContent.OnLibraryContentUpdated += RebuildView;
         }
 

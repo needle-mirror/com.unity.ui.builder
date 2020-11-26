@@ -6,7 +6,7 @@
         class="unity-builder-inspector__category-foldout"
         value="true"
     >
-        <Style path="Packages/com.unity.ui.builder/Editor/UI/Inspector/CanvasInspector.uss" />
+        <Style src="CanvasInspector.uss" />
 
         <uib:BuilderStyleRow class="unity-builder-double-field-row">
             <Label text="Size" class="unity-builder-double-field-label" />
@@ -25,7 +25,7 @@
         class="unity-builder-inspector__category-foldout"
         value="true"
     >
-        <Style path="Packages/com.unity.ui.builder/Editor/UI/Inspector/CanvasInspector.uss" />
+        <Style src="CanvasInspector.uss" />
         <uib:BuilderStyleRow>
             <uib:ToggleButtonStrip name="background-mode-field" class="unity-builder-inspector_canvas-background-mode" />
         </uib:BuilderStyleRow>
@@ -67,7 +67,7 @@
             view-data-key="builder-inspector-document-settings-foldout"
             class="unity-builder-inspector__category-foldout"
             value="true">
-        <Style path="Packages/com.unity.ui.builder/Editor/UI/Inspector/CanvasInspector.uss" />
+        <Style src="CanvasInspector.uss" />
         <uib:BuilderStyleRow class="unity-builder-double-field-row">
             <Toggle name="editor-extensions-mode-toggle" label="Editor Extension Authoring"/>
         </uib:BuilderStyleRow>

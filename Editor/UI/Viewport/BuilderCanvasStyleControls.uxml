@@ -1,0 +1,9 @@
+<UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:uib="Unity.UI.Builder">
+    <Button name="flex-direction-button" tooltip="Flex Direction" class="unity-builder-canvas-style-controls__button flex-direction-button" />
+    <Button name="align-items-button" tooltip="Align Items" class="unity-builder-canvas-style-controls__button align-items-button" />
+    <Button name="justify-content-button" tooltip="Justify Content" class="unity-builder-canvas-style-controls__button justify-content-button" />
+
+    <Button name="horizontal-text-align-button" tooltip="Horizontal Text Align" class="unity-builder-canvas-style-controls__button text-align-button" />
+    <Button name="vertical-text-align-button" tooltip="Vertical Text Align" class="unity-builder-canvas-style-controls__button text-align-button" />
+    <Button name="text-wrap-button" tooltip="Text Wrap" class="unity-builder-canvas-style-controls__button text-wrap-button" />
+</UXML>

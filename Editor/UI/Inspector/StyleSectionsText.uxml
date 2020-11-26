@@ -4,6 +4,13 @@
         <uie:ObjectField label="Font" tooltip="-unity-font" />
     </uib:BuilderStyleRow>
 
+    <!-- Unity Font Definition -->
+    <VisualElement class="unity-builder-font-asset-property-container">
+        <uib:BuilderStyleRow binding-path="-unity-font-definition">
+            <uie:ObjectField label="Font Asset" tooltip="-unity-font-definition" />
+        </uib:BuilderStyleRow>
+    </VisualElement>
+
     <!-- Unity Font Style and Weight -->
     <uib:BuilderStyleRow binding-path="-unity-font-style">
         <uib:FontStyleStrip class="unity-builder-inspector_font-style-field" label="Font Style" tooltip="-unity-font-style" />
@@ -28,4 +35,27 @@
     <uib:BuilderStyleRow binding-path="white-space">
         <uib:ToggleButtonStrip class="unity-builder-inspector_white-space-field" label="Wrap" tooltip="white-space" />
     </uib:BuilderStyleRow>
+
+    <!-- New Font Asset Properties -->
+    <VisualElement class="unity-builder-font-asset-property-container">
+        <VisualElement class="unity-builder-inspector__divider" />
+
+        <!-- Help Box -->
+        <uib:HelpBox class="unity-builder-inspector__help-box" text="The following properties will only work if the Font Asset, assigned above under 'Font Asset' property, supports them." />
+
+        <!-- Outline Width -->
+        <uib:BuilderStyleRow binding-path="-unity-text-outline-width">
+            <uib:DimensionStyleField label="Outline Width" tooltip="-unity-text-outline-width" />
+        </uib:BuilderStyleRow>
+
+        <!-- Outline Color -->
+        <uib:BuilderStyleRow binding-path="-unity-text-outline-color">
+            <uie:ColorField label="Outline Color" tooltip="-unity-text-outline-color" />
+        </uib:BuilderStyleRow>
+
+        <!-- Shadow -->
+        <uib:BuilderStyleRow>
+            <uib:TextShadowStyleField tooltip="text-shadow" binding-path="text-shadow"/>
+        </uib:BuilderStyleRow>
+    </VisualElement>
 </UXML>

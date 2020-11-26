@@ -23,9 +23,9 @@ namespace Unity.UI.Builder
 
         protected MultiTypeField(string label) : base(label)
         {
-            styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(k_UssPath));
+            styleSheets.Add(BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(k_UssPath));
 
-            var template = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_UxmlPath);
+            var template = BuilderPackageUtilities.LoadAssetAtPath<VisualTreeAsset>(k_UxmlPath);
             template.CloneTree(this);
 
             m_TypeOptions = new Dictionary<string, Type>();

@@ -3,10 +3,10 @@ using UnityEngine.UIElements;
 using UnityEngine;
 using System.Reflection;
 
-#if UNITY_2020_2_OR_NEWER
-using UnityEditor.UIElements.StyleSheets;
-#else
+#if UNITY_2019_4 || UNITY_2020_1
 using UnityEditor.StyleSheets;
+#else
+using UnityEditor.UIElements.StyleSheets;
 #endif
 
 using UnityEngine.UIElements.StyleSheets;

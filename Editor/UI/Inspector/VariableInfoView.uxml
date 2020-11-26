@@ -1,0 +1,27 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    <ui:VisualElement name="top-section">
+        <ui:VisualElement name="name-value-container">
+            <ui:VisualElement name="name-container" class="unity-builder-inspector__varinfo-view__row">
+                <ui:Label text="Name:" class="unity-builder-inspector__varinfo-view__label" />
+                <ui:Label name="name-label" class="unity-builder-inspector__varinfo-view__data-label" />
+            </ui:VisualElement>
+            <ui:VisualElement name="value-container" class="unity-builder-inspector__varinfo-view__row">
+                <ui:Label text="Value:" class="unity-builder-inspector__varinfo-view__label" />
+                <ui:VisualElement name="value-preview-container">
+                    <ui:VisualElement name="preview">
+                        <ui:Image name ="thumbnail" />
+                    </ui:VisualElement>
+                    <ui:Label name="value-label" class="unity-builder-inspector__varinfo-view__data-label" />
+                </ui:VisualElement>
+            </ui:VisualElement>
+        </ui:VisualElement>
+    </ui:VisualElement>
+    <ui:VisualElement name="stylesheet-container" class="unity-builder-inspector__varinfo-view__row">
+        <ui:Label text="Stylesheet:" class="unity-builder-inspector__varinfo-view__label" />
+        <ui:Label name="stylesheet-label" class="unity-builder-inspector__varinfo-view__data-label" />
+    </ui:VisualElement>
+    <ui:VisualElement name="description-container">
+        <ui:Label text="Description:" class="unity-builder-inspector__varinfo-view__label" />
+        <ui:Label name="description-label" />
+    </ui:VisualElement>
+</ui:UXML>

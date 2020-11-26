@@ -43,7 +43,7 @@ namespace Unity.UI.Builder
 
             m_Header.hierarchy.Add(m_Label);
 
-            styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(k_UssPath));
+            styleSheets.Add(BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(k_UssPath));
         }
 
         public override string text

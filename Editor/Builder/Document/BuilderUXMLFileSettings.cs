@@ -3,7 +3,7 @@ using UnityEngine.UIElements;
 
 namespace Unity.UI.Builder
 {
-    public class BuilderUXMLFileSettings
+    internal class BuilderUXMLFileSettings
     {
         const string k_EditorExtensionModeAttributeName = "editor-extension-mode";
 
@@ -24,7 +24,7 @@ namespace Unity.UI.Builder
         {
             m_RootElementAsset = visualTreeAsset.GetRootUXMLElement();
 
-#if !UNITY_2020_1_OR_NEWER
+#if UNITY_2019_4
             m_EditorExtensionMode = true;
             return;
 #else

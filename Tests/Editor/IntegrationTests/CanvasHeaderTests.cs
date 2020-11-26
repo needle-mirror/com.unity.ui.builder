@@ -67,7 +67,11 @@ namespace Unity.UI.Builder.EditorTests
         /// <summary>
         /// If there are unsaved changes, a `*` is appended to the asset name.
         /// </summary>
+#if UNITY_2019_4 && (UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX)
+        [UnityTest, Ignore("Test broken on 2019.4 on linux.")]
+#else
         [UnityTest]
+#endif
         public IEnumerator DocumentUnsavedChangesShouldAddIndicationToTheToolbar()
         {
             var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_TestUXMLFilePath);

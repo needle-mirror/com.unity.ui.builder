@@ -135,6 +135,77 @@ namespace Unity.UI.Builder
             return styleSheet.strings[valueHandle.valueIndex];
         }
 
+#if PACKAGE_TEXT_CORE && !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+        public static BuilderTextShadow GetTextShadow(this StyleSheet styleSheet, StyleProperty styleProperty)
+        {
+            Dimension offsetX = new Dimension(0f, Dimension.Unit.Pixel);
+            Dimension offsetY = new Dimension(0f, Dimension.Unit.Pixel);
+            Dimension blurRadius = new Dimension(0f, Dimension.Unit.Pixel);
+            var color = Color.clear;
+
+            var valueCount = styleProperty.values.Length;
+            
+            if (valueCount >= 2)
+            {
+                int i = 0;
+                var valueType = styleProperty.values[i].valueType;
+                bool wasColorFound = false;
+                if (valueType == StyleValueType.Color || valueType == StyleValueType.Enum)
+                {
+                    color = styleSheet.GetColor(styleProperty.values[i++]);
+                    wasColorFound = true;
+                }
+
+                if (i + 1 < valueCount)
+                {
+                    valueType = styleProperty.values[i].valueType;
+                    var valueType2 = styleProperty.values[i+1].valueType;
+                    if (valueType == StyleValueType.Dimension && valueType2 == StyleValueType.Dimension)
+                    {
+                        var valueX = styleProperty.values[i++];
+                        var valueY = styleProperty.values[i++];
+
+                        offsetX = styleSheet.GetDimension(valueX);
+                        offsetY = styleSheet.GetDimension(valueY);
+                    }
+                }
+
+                if (i < valueCount)
+                {
+                    valueType = styleProperty.values[i].valueType;
+                    if (valueType == StyleValueType.Dimension)
+                    {
+                        var valueBlur = styleProperty.values[i++];
+                        blurRadius = styleSheet.GetDimension(valueBlur);
+                    }
+                    else if (valueType == StyleValueType.Color || valueType == StyleValueType.Enum)
+                    {
+                        if (!wasColorFound)
+                            color = styleSheet.GetColor(styleProperty.values[i]);
+                    }
+                }
+
+                if (i < valueCount)
+                {
+                    valueType = styleProperty.values[i].valueType;
+                    if (valueType == StyleValueType.Color || valueType == StyleValueType.Enum)
+                    {
+                        if (!wasColorFound)
+                            color = styleSheet.GetColor(styleProperty.values[i]);
+                    }
+                }
+            }
+
+            return new BuilderTextShadow
+            {
+                offsetX = offsetX,
+                offsetY = offsetY,
+                blurRadius = blurRadius,
+                color = color
+            };
+        }
+#endif
+
         public static Object GetAsset(this StyleSheet styleSheet, StyleValueHandle valueHandle)
         {
             switch (valueHandle.valueType)

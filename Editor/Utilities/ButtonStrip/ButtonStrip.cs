@@ -66,11 +66,11 @@ namespace Unity.UI.Builder
         {
             AddToClassList(s_UssClassName);
 
-            styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(s_UssPath));
+            styleSheets.Add(BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(s_UssPath));
             if (EditorGUIUtility.isProSkin)
-                styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(s_UssDarkPath));
+                styleSheets.Add(BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(s_UssDarkPath));
             else
-                styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(s_UssLightPath));
+                styleSheets.Add(BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(s_UssLightPath));
 
             this.choices = choices;
         }

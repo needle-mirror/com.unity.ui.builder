@@ -40,11 +40,11 @@ namespace Unity.UI.Builder
             var root = rootVisualElement;
 
             // Load styles.
-            root.styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(
+            root.styleSheets.Add(BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(
                 BuilderConstants.UtilitiesPath + "/UIExtensionsTestWindow/UIExtensionsTestWindow.uss"));
 
             // Load template.
-            var builderTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
+            var builderTemplate = BuilderPackageUtilities.LoadAssetAtPath<VisualTreeAsset>(
                 BuilderConstants.UtilitiesPath + "/UIExtensionsTestWindow/UIExtensionsTestWindow.uxml");
             builderTemplate.CloneTree(root);
 
@@ -69,8 +69,8 @@ namespace Unity.UI.Builder
 
         void AfterImport()
         {
-            m_StyleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(s_DefaultUSSPath);
-            m_VisualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(s_DefaultUXMLPath);
+            m_StyleSheet = BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(s_DefaultUSSPath);
+            m_VisualTreeAsset = BuilderPackageUtilities.LoadAssetAtPath<VisualTreeAsset>(s_DefaultUXMLPath);
 
             // Clone tree if we have an asset loaded.
             m_StyleSheetField.SetValueWithoutNotify(m_StyleSheet);

@@ -1,0 +1,18 @@
+[
+    {
+        "PackagePath": "Editor/Resources/com.unity.ui.builder/Icons",
+        "CorePath": "External/Resources/editor_resources/Assets/Editor Default Resources/UIBuilderPackageResources/Icons",
+        "IsDir": "true"
+    },
+    {
+        "PackagePath": "Editor/UI",
+        "CorePath": "External/Resources/editor_resources/Assets/Editor Default Resources/UIBuilderPackageResources/UI",
+        "IsDir": "true"
+    },
+    {
+        "PackagePath": "Editor/Utilities",
+        "CorePath": "External/Resources/editor_resources/Assets/Editor Default Resources/UIBuilderPackageResources/Utilities",
+        "IsDir": "true",
+        "IgnoreExtension": ".cs"
+    }
+]

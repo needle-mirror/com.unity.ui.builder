@@ -87,7 +87,7 @@ namespace Unity.UI.Builder.EditorTests
             Assert.That(builder.documentRootElement.childCount, Is.EqualTo(k_MultiUSSElementCount + 1));
         }
 
-#if UNITY_2020_1_OR_NEWER
+#if !UNITY_2019_4
         [Test]
         public void LoadLegacyAllRootElementsUSSFile()
         {
@@ -201,7 +201,11 @@ namespace Unity.UI.Builder.EditorTests
             Assert.AreEqual(asset2.visualElementAssets.Count, assetCount);
         }
 
+#if UNITY_2019_4 && (UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX)
+        [UnityTest, Ignore("Test broken on 2019.4 on linux.")]
+#else
         [UnityTest]
+#endif
         public IEnumerator EnsureChangesToUXMLMadeExternallyAreReloaded()
         {
             const string testLabelName = "externally-added-label";

@@ -6,6 +6,7 @@ using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
+using System.Linq;
 
 namespace Unity.UI.Builder
 {
@@ -65,12 +66,22 @@ namespace Unity.UI.Builder
 
             foreach (var attribute in attributeList)
             {
-                if (attribute == null || attribute.name == null)
+                if (attribute == null || attribute.name == null || IsAttributeIgnored(attribute))
                     continue;
 
                 var styleRow = CreateAttributeRow(attribute);
                 m_AttributesSection.Add(styleRow);
             }
+        }
+
+        static bool IsAttributeIgnored(UxmlAttributeDescription attribute)
+        {
+#if !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+            // Temporary check until we add an "obsolete" mechanism to uxml attribute description.
+            return attribute.name == "show-horizontal-scroller" || attribute.name == "show-vertical-scroller";
+#else
+            return false;
+#endif
         }
 
         BuilderStyleRow CreateAttributeRow(UxmlAttributeDescription attribute)
@@ -211,9 +222,8 @@ namespace Unity.UI.Builder
 
         object GetCustomValueAbstract(string attributeName)
         {
-            if (currentVisualElement is ScrollView)
+            if (currentVisualElement is ScrollView scrollView)
             {
-                var scrollView = currentVisualElement as ScrollView;
                 if (attributeName == "mode")
                 {
                     if (scrollView.ClassListContains(ScrollView.verticalVariantUssClassName))
@@ -232,6 +242,13 @@ namespace Unity.UI.Builder
                     return scrollView.showVertical;
                 }
             }
+#if !UNITY_2019_4 && !UNITY_2020_1
+            else if (currentVisualElement is ListView listView)
+            {
+                if (attributeName == "horizontal-scrolling")
+                    return listView.horizontalScrollingEnabled;
+            }
+#endif
 
             return null;
         }
@@ -252,7 +269,7 @@ namespace Unity.UI.Builder
             }
             else
             {
-                veValueAbstract = fieldInfo.GetValue(currentVisualElement);
+                veValueAbstract = fieldInfo.GetValue(currentVisualElement, null);
             }
             if (veValueAbstract == null)
                 return;
@@ -334,9 +351,9 @@ namespace Unity.UI.Builder
             string value;
             if (attributeValue is Enum @enum)
                 value = @enum.ToString();
-            else if (attributeValue is IList<string> list)
+            else if (attributeValue is List<string> list)
             {
-                value = string.Join(",", list);
+                value = string.Join(",", list.ToArray());
             }
             else
             {
@@ -484,7 +501,7 @@ namespace Unity.UI.Builder
                         if (attribute?.name == null)
                             continue;
 
-                        if(IsAttributeOverriden(attribute))
+                        if (IsAttributeOverriden(attribute))
                             return DropdownMenuAction.Status.Normal;
                     }
 

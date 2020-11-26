@@ -1,0 +1,7 @@
+{
+    "dependencies": {
+        "com.unity.ide.rider": "1.2.1",
+        "com.unity.ui": "file:../../../com.unity.ui",
+        "com.unity.modules.uielements": "1.0.0"
+    }
+}

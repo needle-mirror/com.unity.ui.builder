@@ -233,7 +233,7 @@ namespace Unity.UI.Builder
                 var selector = element.GetStyleComplexSelector();
                 if (selector == null)
                 {
-                    ussSnippetBuilder.Clear();
+                    ussSnippetBuilder.Length = 0;
                     break; // Mixed type selections are not supported.
                 }
 

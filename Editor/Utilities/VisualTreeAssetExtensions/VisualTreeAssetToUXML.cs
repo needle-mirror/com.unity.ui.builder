@@ -427,7 +427,7 @@ namespace Unity.UI.Builder
             if (rootAssets == null || rootAssets.Count == 0)
                 return;
 
-#if UNITY_2020_1_OR_NEWER
+#if !UNITY_2019_4
             var uxmlRootAsset = rootAssets[0];
 
             bool tempHasChildTags = false;
@@ -482,7 +482,7 @@ namespace Unity.UI.Builder
             var idToChildren = VisualTreeAssetUtilities.GenerateIdToChildren(vta);
 
             stringBuilder.Append(BuilderConstants.UxmlHeader);
-#if UNITY_2020_1_OR_NEWER
+#if !UNITY_2019_4
             AppendHeaderAttributes(vta, stringBuilder, writingToFile);
 #endif
             stringBuilder.Append(">");

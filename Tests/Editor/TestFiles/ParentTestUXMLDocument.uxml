@@ -1,5 +1,5 @@
 <ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements">
-    <ui:Template name="ChildTestUXMLDocument" path="Packages/com.unity.ui.builder/Tests/Editor/TestFiles/ChildTestUXMLDocument.uxml" />
+    <ui:Template name="ChildTestUXMLDocument" src="ChildTestUXMLDocument.uxml" />
     <ui:Instance template="ChildTestUXMLDocument" name="ChildTestUXMLDocument">
         <Style src="ColorsTestStyleSheet.uss" />
     </ui:Instance>

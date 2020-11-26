@@ -1,4 +1,4 @@
-#if UNITY_2020_1_OR_NEWER
+#if !UNITY_2019_4
 
 using System.Collections;
 using NUnit.Framework;

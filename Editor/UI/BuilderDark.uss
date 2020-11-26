@@ -36,7 +36,7 @@
     background-color: #3e5f96;
 }
 
-.unity-builder-explorer__between-element-item--dragger-hover .unity-builder-explorer__reorder-zone:hover .unity-builder-explorer__reorder-hover-bar {
+.unity-builder-explorer__between-element-item--dragger-hover > .unity-builder-explorer__reorder-hover-bar {
     background-color: rgb(64, 80, 221);
 }
 
@@ -176,6 +176,10 @@
     border-color: #E4E4E4;
 }
 
+.unity-list-view__item--selected .unity-builder-tag-pill {
+    border-color: #E4E4E4;
+}
+
 /*****************************************************************************/
 /* Builder Class Pill                                                        */
 /*****************************************************************************/
@@ -206,6 +210,14 @@
 
 .unity-builder-parent-tracker {
     border-color: rgb(141, 141, 141);
+}
+
+/*****************************************************************************/
+/* Builder Placement Indicator                                               */
+/*****************************************************************************/
+
+.unity-builder-placement-indicator__indicator {
+    background-color: rgb(255, 217, 0);
 }
 
 /*****************************************************************************/
@@ -272,6 +284,15 @@
 }
 
 /*****************************************************************************/
+/* Style Field Popup                                                         */
+/*****************************************************************************/
+
+.unity-style-field-popup {
+    background-color: rgb(56, 56, 56);
+    border-color: rgb(129, 129, 129);
+}
+
+/*****************************************************************************/
 /* Tooltip Preview                                                           */
 /*****************************************************************************/
 
@@ -286,20 +307,58 @@
 /*****************************************************************************/
 /* Variable Info Tooltip                                                     */
 /*****************************************************************************/
+
 .unity-builder-inspector__varinfo-tooltip {
     background-color: #3f3f3f;
 }
 
-.unity-builder-inspector__varinfo-source-label {
-    color: #C4C4C4;
+.unity-builder-inspector__varinfo-tooltip__warning .unity-label {
+    color: #F4BC02;
 }
 
-.unity-builder-inspector__varinfo-edit-button {
-    color: #7196cf;
+.unity-builder-inspector__varinfo-tooltip__warning Image {
+    --unity-image : resource("Icons/d_console.warnicon.sml.png");
 }
 
-.unity-builder-inspector__varinfo-edit-button:hover {
-    border-color: #7196cf;
+/*****************************************************************************/
+/* Variable Info View                                                        */
+/*****************************************************************************/
+
+.unity-builder-inspector__varinfo-view {
+    background-color: #2a2a2a;
+}
+
+.unity-builder-inspector__varinfo-view__value-preview-container #preview {
+    border-color: rgb(129, 129, 129);
+}
+
+/*****************************************************************************/
+/* Field Search Completer Popup                                              */
+/*****************************************************************************/
+
+.unity-field-search-completer-popup {
+    background-color:  #333333;
+}
+
+.unity-field-search-completer-popup .unity-list-view__item--selected {
+    color: #ffffff;
+    background-color:  #3e5f96;
+}
+
+.unity-field-search-completer-popup .unity-list-view__item--selected .unity-label {
+    color: #ffffff;
+}
+
+.unity-field-search-completer-popup .unity-builder-inspector__varinfo-view {
+    border-top-color: #404040;
+}
+
+.unity-field-search-completer-popup #previewContainer {
+    border-color: #404040;
+}
+
+.unity-field-search-completer-popup__result-label, .builder-label {
+    color: #929292;
 }
 
 /*****************************************************************************/

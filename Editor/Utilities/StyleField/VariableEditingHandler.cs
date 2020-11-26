@@ -1,8 +1,7 @@
+using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
-using UnityEngine.UIElements;
-using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Unity.UI.Builder
 {
@@ -24,6 +23,7 @@ namespace Unity.UI.Builder
         string m_StyleName;
         bool m_PopupTemporarilyDisabled = false;
         bool m_EditingTemporarilyDisabled = false;
+        VariableCompleter m_CompleterOnTarget;
 
         public bool editingEnabled { get; set; } = true;
 
@@ -38,6 +38,7 @@ namespace Unity.UI.Builder
         public VariableInfoTooltip variableInfoTooltip { get; private set; }
 
         public VariableField variableField { get; private set; }
+        public FieldSearchCompleter<VariableInfo> completer { get; private set; }
 
         public BindableElement targetField { get; private set; }
 
@@ -65,8 +66,13 @@ namespace Unity.UI.Builder
         {
             targetField = field;
 
+            if (targetField is DimensionStyleField || targetField is NumericStyleField || targetField is IntegerStyleField)
+            {
+                m_CompleterOnTarget = CreateCompleter();
+                m_CompleterOnTarget.textField = targetField.Q<TextField>();
+            }
+
             labelElement = new Label();
-            //labelElement.pickingMode = PickingMode.Position;
 
             var fieldLabel = targetField.GetValueByReflection("labelElement") as Label;
             // TODO: Will need to bring this back once we can also do the dragger at the same time.
@@ -87,12 +93,20 @@ namespace Unity.UI.Builder
             }
         }
 
+        public VariableCompleter CreateCompleter()
+        {
+            return new VariableCompleter(this);
+        }
+  
         void InitVariableField()
         {
             if (variableField != null)
                 return;
 
             variableField = new VariableField();
+
+            completer = CreateCompleter();
+            completer.alwaysVisible = true;
             variableField.AddToClassList(BuilderConstants.HiddenStyleClassName);
             targetField.Add(variableField);
 
@@ -192,6 +206,10 @@ namespace Unity.UI.Builder
             var cShartStyleName = BuilderInspectorStyleFields.ConvertUssStyleNameToCSharpStyleName(styleName);
             var property = BuilderInspectorStyleFields.GetStyleProperty(m_Inspector.currentRule, cShartStyleName);
 
+            // Disable completion on text field-based property fields when editing inline styles
+            if (m_CompleterOnTarget != null)
+                m_CompleterOnTarget.enabled = BuilderSharedStyles.IsSelectorElement(m_Inspector.currentVisualElement);
+
             if (property != null)
             {
                 if (property.IsVariable())
@@ -271,17 +289,19 @@ namespace Unity.UI.Builder
 
         static void ShowPopup(VariableEditingHandler handler)
         {
-            if (handler.m_Builder == null || handler.m_Inspector == null)
+            if (handler.m_Builder == null || handler.m_Inspector == null || handler.editingEnabled)
                 return;
 
             string varName = GetBoundVariableName(handler);
 
-            StyleSheet varStyleSheetOrigin = null;
-            StyleComplexSelector varSourceSelectorOrigin = null;
+            VariableInfo varInfo = null;
 
             if (!string.IsNullOrEmpty(varName))
             {
-                StyleVariableUtilities.FindVariableOrigin(handler.m_Inspector.currentVisualElement, varName, out varStyleSheetOrigin, out varSourceSelectorOrigin);
+                varInfo = StyleVariableUtilities.FindVariable(handler.m_Inspector.currentVisualElement, varName, handler.inspector.document.fileSettings.editorExtensionMode);
+
+                if (varInfo == null)
+                    varInfo = new VariableInfo { name = varName };
             }
 
             if (handler.variableInfoTooltip == null)
@@ -303,7 +323,7 @@ namespace Unity.UI.Builder
                 handler.targetField.RemoveFromClassList(BuilderConstants.ReadOnlyStyleClassName);
             else
                 handler.targetField.AddToClassList(BuilderConstants.ReadOnlyStyleClassName);
-            handler.variableInfoTooltip.Show(handler, varName, varStyleSheetOrigin, varSourceSelectorOrigin);
+            handler.variableInfoTooltip.Show(handler, varInfo);
             handler.m_ScheduledShowPopup = null;
         }
 

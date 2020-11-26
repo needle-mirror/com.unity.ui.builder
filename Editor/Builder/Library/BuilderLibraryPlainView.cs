@@ -20,10 +20,10 @@ namespace Unity.UI.Builder
             public LibraryPlainViewItem(BuilderLibraryTreeItem libraryTreeItem)
             {
                 m_TreeItem = libraryTreeItem;
-                var template = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(BuilderConstants.LibraryUIPath + "BuilderLibraryPlainViewItem.uxml");
+                var template = BuilderPackageUtilities.LoadAssetAtPath<VisualTreeAsset>(BuilderConstants.LibraryUIPath + "/BuilderLibraryPlainViewItem.uxml");
                 template.CloneTree(this);
 
-                var styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.LibraryUIPath + "BuilderLibraryPlainViewItem.uss");
+                var styleSheet = BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(BuilderConstants.LibraryUIPath + "/BuilderLibraryPlainViewItem.uss");
                 styleSheets.Add(styleSheet);
 
                 content = ElementAt(0);
@@ -71,7 +71,7 @@ namespace Unity.UI.Builder
 
         public BuilderLibraryPlainView(IEnumerable<ITreeViewItem> items)
         {
-            var builderTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(BuilderConstants.LibraryUIPath + "/BuilderLibraryPlainView.uxml");
+            var builderTemplate = BuilderPackageUtilities.LoadAssetAtPath<VisualTreeAsset>(BuilderConstants.LibraryUIPath + "/BuilderLibraryPlainView.uxml");
             builderTemplate.CloneTree(this);
 
             m_Items = items;

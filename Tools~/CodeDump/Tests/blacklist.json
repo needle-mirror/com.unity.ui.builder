@@ -1,0 +1,16 @@
+[
+{
+    "name": "Tools/UIElementsStyleSheetsGenerator/Assets/Resources/StyleSheets/Extensions/fonts_uielements/runtime.uss",
+},
+{
+    "name": "CoreDirectory/manifest.json",
+    "isInCore": "true"
+},
+{
+    "name": "PackageDirectory/manifest.json"
+},
+{
+    "name": ".cs.meta",
+    "endWith": "true"
+}
+]

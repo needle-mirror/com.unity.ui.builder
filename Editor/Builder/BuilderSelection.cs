@@ -234,18 +234,18 @@ namespace Unity.UI.Builder
                 var vta = m_PaneWindow.document.visualTreeAsset;
                 var rule = vta.GetOrCreateInlineStyleRule(vea);
 
-#if UNITY_2020_1_OR_NEWER
-                element.SetInlineRule(vta.inlineSheet, rule);
-
-                // Need to enforce this specific style is updated.
-                element.IncrementVersion(VersionChangeType.Opacity | VersionChangeType.Overflow);
-
-#else
+#if UNITY_2019_4
                 var stylesData = new UnityEngine.UIElements.StyleSheets.VisualElementStylesData(false);
                 element.m_Style = stylesData;
                 
                 s_StylePropertyReader.SetInlineContext(vta.inlineSheet, rule, vea.ruleIndex);
                 stylesData.ApplyProperties(s_StylePropertyReader, null);
+
+                // Need to enforce this specific style is updated.
+                element.IncrementVersion(VersionChangeType.Opacity | VersionChangeType.Overflow);
+
+#else
+                element.SetInlineRule(vta.inlineSheet, rule);
 
                 // Need to enforce this specific style is updated.
                 element.IncrementVersion(VersionChangeType.Opacity | VersionChangeType.Overflow);

@@ -47,9 +47,9 @@ namespace Unity.UI.Builder
         {
             AddToClassList(s_UssClassName);
 
-            styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(s_UssPath));
+            styleSheets.Add(BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(s_UssPath));
 
-            var template = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(s_UxmlPath);
+            var template = BuilderPackageUtilities.LoadAssetAtPath<VisualTreeAsset>(s_UxmlPath);
             template.CloneTree(this);
 
             visualInput = this.Q(s_VisualInputName);

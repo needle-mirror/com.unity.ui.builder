@@ -1,6 +1,5 @@
 using System;
 using System.Collections;
-using System.IO;
 using System.Linq;
 using NUnit.Framework;
 using UnityEditor;
@@ -8,6 +7,9 @@ using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
+#if PACKAGE_TEXT_CORE && !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+using UnityEngine.UIElements.StyleSheets;
+#endif
 
 namespace Unity.UI.Builder.EditorTests
 {
@@ -15,6 +17,10 @@ namespace Unity.UI.Builder.EditorTests
     {
         const string k_AllStylePropertiesTestFileName = "AllStylePropertiesTest.uxml";
         const string k_AllStylePropertiesTestFilePath = BuilderConstants.UIBuilderTestsTestFilesPath + "/" + k_AllStylePropertiesTestFileName;
+#if !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+        const string k_SpriteTestFilePath = BuilderConstants.UIBuilderTestsTestFilesPath + "/" + "Tools.png";
+        const string k_SpriteEditorWindowName = "SpriteEditorWindow";
+#endif
 
         void CheckStyleFieldValue<TField, TValue>(string styleName, TValue value) where TField : BaseField<TValue> 
         {
@@ -23,6 +29,20 @@ namespace Unity.UI.Builder.EditorTests
             Assert.AreEqual(value, field.value);
         }
 
+#if PACKAGE_TEXT_CORE && !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+        void CheckTextShadowFieldValue(string styleName, BuilderTextShadow value)
+        {
+            var styleRow = inspector.styleFields.m_StyleFields[styleName].First();
+            var field = styleRow.Q<TextShadowStyleField>();
+            Assert.AreEqual(value.offsetX, field.value.offsetX);
+            Assert.AreEqual(value.offsetY, field.value.offsetY);
+            Assert.AreEqual(value.blurRadius, field.value.blurRadius);
+            Assert.AreEqual(value.color.r, field.value.color.r);
+            Assert.AreEqual(value.color.g, field.value.color.g);
+            Assert.AreEqual(value.color.b, field.value.color.b);
+        }
+#endif
+        
         // Seems we are currently inconsistent between:
         //  - reading styles from inline UXML, where 255 alpha is converted to 1.0f alpha
         //  - reading styles from USS, where 255 alpha is not converted and stays 255
@@ -106,6 +126,22 @@ namespace Unity.UI.Builder.EditorTests
             CheckStyleFieldValue<StyleFieldBase, string>("border-bottom-left-radius", "7px");
             CheckStyleFieldValue<StyleFieldBase, string>("border-top-right-radius", "7px");
             CheckStyleFieldValue<StyleFieldBase, string>("border-bottom-right-radius", "7px");
+            
+#if PACKAGE_TEXT_CORE && !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+            if (elementName != "all-properties-uss")
+            {
+                CheckTextShadowFieldValue("text-shadow", 
+                    new BuilderTextShadow
+                    {
+                        offsetX = new Dimension(1f, Dimension.Unit.Pixel),
+                        offsetY = new Dimension(1f, Dimension.Unit.Pixel),
+                        blurRadius = new Dimension(1f, Dimension.Unit.Pixel),
+                        color = new Color(1, 0, 0)
+                    }); 
+                CheckStyleFieldValue<StyleFieldBase, string>("-unity-text-outline-width", "1px");
+                CheckColorFieldValue("-unity-text-outline-color", new Color(1, 0, 0));
+            }
+#endif
         }
 
         [UnityTest]
@@ -116,5 +152,76 @@ namespace Unity.UI.Builder.EditorTests
             CheckAllStylePropertiesOnElement("all-properties-inline");
             CheckAllStylePropertiesOnElement("all-properties-uss");
         }
+
+#if !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+        [UnityTest]
+        public IEnumerator CheckThatSpriteCanBeUsedAsBackgroundImage()
+        {
+            builder.documentRootElement.Clear();
+            
+            AddElementCodeOnly<Button>();
+
+            var imageStyleField = inspector.styleFields.m_StyleFields["background-image"].First() as ImageStyleField;
+            Assert.NotNull(imageStyleField);
+
+            var spriteAsset = AssetDatabase.LoadAssetAtPath<Sprite>(k_SpriteTestFilePath);
+            imageStyleField.SetTypePopupValueWithoutNotify(typeof(Sprite));
+            imageStyleField.SetValueWithoutNotify(spriteAsset);
+            
+            Assert.That(imageStyleField.value is Sprite);
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator CheckThat2DSpriteEditorOpensOnRequest()
+        {
+            builder.documentRootElement.Clear();
+            
+            AddElementCodeOnly<Button>();
+            var element = GetFirstDocumentElement();
+            yield return UIETestEvents.Mouse.SimulateClick(element);
+
+            var imageStyleField = inspector.styleFields.m_StyleFields["background-image"].First() as ImageStyleField;
+
+            var spriteAsset = AssetDatabase.LoadAssetAtPath<Sprite>(k_SpriteTestFilePath);
+            imageStyleField?.SetTypePopupValueWithoutNotify(typeof(Sprite));
+            imageStyleField?.SetValueWithoutNotify(spriteAsset);
+
+            if (BuilderExternalPackages.is2DSpriteEditorInstalled)
+            {
+                var backgroundFoldout =
+                    inspector.Query<PersistedFoldout>().Where(f => f.text.Equals("Background")).First();
+                backgroundFoldout.value = true;
+                yield return UIETestHelpers.Pause(1);
+
+                var inspectorScrollView = inspector.Q<ScrollView>();
+                var openSpriteEditorButton = imageStyleField.Q<Button>();
+                inspectorScrollView.ScrollTo(openSpriteEditorButton);
+                yield return UIETestHelpers.Pause(1);
+
+                yield return UIETestEvents.Mouse.SimulateClick(openSpriteEditorButton);
+
+                EditorWindow spriteEditorWindow = null;
+                var loopCount = 0;
+                while (spriteEditorWindow == null && loopCount < 10)
+                {
+                    yield return UIETestHelpers.Pause(30); // Let window appear
+                    spriteEditorWindow = Resources.FindObjectsOfTypeAll(typeof(EditorWindow))
+                        .Cast<EditorWindow>()
+                        .FirstOrDefault(win => win.name.Equals(k_SpriteEditorWindowName));
+                    loopCount++;
+                }
+
+                Assert.NotNull(spriteEditorWindow, "Could not find Sprite Editor Window");
+                spriteEditorWindow.Close();
+            }
+            else
+            {
+                Debug.LogWarning("You must install the 2D Sprite Editor package in order to run this test successfully.");
+            }
+
+            yield return null;
+        }
+#endif
     }
 }

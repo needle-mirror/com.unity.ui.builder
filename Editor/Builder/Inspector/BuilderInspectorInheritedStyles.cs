@@ -47,7 +47,7 @@ namespace Unity.UI.Builder
             m_AddClassButton = m_Inspector.Q<Button>("add-class-button");
             m_CreateClassButton = m_Inspector.Q<Button>("create-class-button");
 
-            m_ClassPillTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
+            m_ClassPillTemplate = BuilderPackageUtilities.LoadAssetAtPath<VisualTreeAsset>(
                 BuilderConstants.UIBuilderPackagePath + "/BuilderClassPill.uxml");
 
             m_AddClassButton.clickable.clicked += AddStyleClass;
@@ -217,7 +217,7 @@ namespace Unity.UI.Builder
 
             // Overwrite Undo Message.
             Undo.RegisterCompleteObjectUndo(
-                new Object[] { m_PaneWindow.document.visualTreeAsset, mainStyleSheet },
+                new UnityEngine.Object[] { m_PaneWindow.document.visualTreeAsset, mainStyleSheet },
                 BuilderConstants.CreateStyleClassUndoMessage);
 
             // We actually want to get the notification back and refresh ourselves.
@@ -380,7 +380,7 @@ namespace Unity.UI.Builder
 
                 for (int j = 0; j < props.Length; j++)
                 {
-                    sb.Clear();
+                    sb.Length = 0;
                     StyleSheetToUss.ToUssString(rule.matchRecord.sheet, options, props[j], sb);
                     string s = sb.ToString();
 

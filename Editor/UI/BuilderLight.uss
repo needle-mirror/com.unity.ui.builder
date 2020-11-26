@@ -137,7 +137,7 @@
 
 .unity-builder-canvas--highlighted .unity-builder-viewport__shared-styles-and-document {
     border-color: rgb(63, 146, 214);
-}`
+}
 
 .unity-builder-canvas--highlighted .unity-builder-canvas__header {
     background-color: rgb(63, 146, 214);
@@ -185,6 +185,10 @@
     color: #000000;
 }
 
+.unity-list-view__item--selected .unity-builder-tag-pill {
+    border-color: #ffffff;
+}
+
 /*****************************************************************************/
 /* Builder Class Pill                                                        */
 /*****************************************************************************/
@@ -218,11 +222,18 @@
 }
 
 /*****************************************************************************/
+/* Builder Placement Indicator                                               */
+/*****************************************************************************/
+
+.unity-builder-placement-indicator__indicator {
+    background-color: rgb(255, 217, 0);
+}
+
+/*****************************************************************************/
 /* Builder Selection Indicator                                               */
 /*****************************************************************************/
 
 .unity-builder-selection-indicator {
-
     border-color: rgb(63, 146, 214);
 }
 
@@ -282,6 +293,15 @@
 }
 
 /*****************************************************************************/
+/* Style Field Popup                                                         */
+/*****************************************************************************/
+
+.unity-style-field-popup {
+    background-color: #e4e4e4;
+    border-color: rgb(68, 68, 68);
+}
+
+/*****************************************************************************/
 /* Tooltip Preview                                                           */
 /*****************************************************************************/
 
@@ -296,20 +316,58 @@
 /*****************************************************************************/
 /* Variable Info Tooltip                                                     */
 /*****************************************************************************/
+
 .unity-builder-inspector__varinfo-tooltip {
     background-color: #e4e4e4;
 }
 
-.unity-builder-inspector__varinfo-source-label {
-    color: #101010;
+.unity-builder-inspector__varinfo-tooltip__warning .unity-label {
+    color: #333308;
 }
 
-.unity-builder-inspector__varinfo-edit-button {
-    color: #3966c5;
+.unity-builder-inspector__varinfo-tooltip__warning Image {
+    --unity-image : resource("Icons/console.warnicon.sml.png");
 }
 
-.unity-builder-inspector__varinfo-edit-button:hover {
-    border-color: #3966c5;
+/*****************************************************************************/
+/* Variable Info View                                                        */
+/*****************************************************************************/
+
+.unity-builder-inspector__varinfo-view {
+    background-color: #c4c4c4;
+}
+
+.unity-builder-inspector__varinfo-view__value-preview-container #preview {
+    border-color: rgb(68, 68, 68);
+}
+
+/*****************************************************************************/
+/* Field Search Completer Popup                                              */
+/*****************************************************************************/
+
+.unity-field-search-completer-popup {
+    background-color:  #bebebe;
+}
+
+.unity-field-search-completer-popup .unity-list-view__item--selected {
+    color: #ffffff;
+    background-color:  #3e5f96;
+}
+
+.unity-field-search-completer-popup .unity-list-view__item--selected .unity-label {
+    color: #ffffff;
+}
+
+.unity-field-search-completer-popup .unity-builder-inspector__varinfo-view {
+    border-top-color: #ababab;
+}
+
+.unity-field-search-completer-popup #previewContainer {
+    border-color: #ababab;
+}
+
+.unity-field-search-completer-popup__result-label, .builder-label {
+    color: #333333;
 }
 
 /*****************************************************************************/

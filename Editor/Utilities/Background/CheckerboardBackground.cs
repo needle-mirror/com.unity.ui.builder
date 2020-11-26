@@ -23,7 +23,6 @@ namespace Unity.UI.Builder
         Color m_OddCellColor = k_DefaultOddCellColor;
         Color m_EvenCellColor = k_DefaultEvenCellColor;
 
-        Material m_Material;
         Texture2D m_Texture;
 
         public CheckerboardBackground()

@@ -4,6 +4,56 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-preview.10] - 2020-11-26
+
+- Canvas Style Controls:
+    - Selected element blue border header will now have quick toggles for flex and text alignment styles.
+    - Selected element with children will get toggles for `flex-direction`, `align-items`, and `justify-content`.
+    - Selected element that is a TextElement will get toggles for `white-space` and `-unity-text-align`.
+- Clicking Through to Select Parent in Canvas:
+    - If you pick an element in the Canvas and then click again in the same spot, you'll select its parent element.
+    - You can click multiple times to select parent, grand-parent, etc. until the root of the Canvas after which it cycles back to the top-most element.
+- Drag and Drop In Canvas:
+    - Can now start a drag operation from inside the Canvas.
+    - Canvas-starting drags can be dropped both in the Hierarchy and back in the Canvas.
+    - Can now drag elements in-between existing elements (siblings of the same parent) in the Canvas.
+    - A yellow line will appear where the element will be created or moved to.
+    - Elements are no longer re-positioned during a drag operation (faded previews). They will move or be placed when the drag is finished.
+- USS Variable Search:
+    - On a USS selector, right-clicking on a style field will show the option to "Edit Variable".
+    - When editing a variable, a search dialog will appear.
+    - The search dialog will allow search all variables in the current theme that match the USS style property data type.
+    - If in Editor Extensions mode, additional Editor-Only variables will be displayed with an indicator that they are Editor-Only.
+    - Like before, "Edit Variable" mode can be enabled on a style property by just typing "--" without having to right-click.
+    - Details about the currently selected variable, like where it comes from, it's current value (with a preview if it's an image), will be show at the bottom of the search dialog.
+    - When editing inline-styles, details about a variable will display the same but in a read-only mode. Inline styles cannot be assigned a variable in UI Toolkit.
+- (2021.1+) 2D Sprites Support:
+    - Can switch the type of background asset in the Inspector from Texture to Sprite.
+    - When in Sprite mode, a button will appear to open the 2D Sprite Editor with the currently assigned Sprite, assuming the 2D Sprite package is installed.
+- (2021.2+ or with com.unity.ui package installed) Rich Text Support:
+    - New Font Asset style property in the Inspector now allows use of the new FontAsset asset.
+    - If the FontAsset supports it, there are new Text Outline and Text Shadow styling options available.
+    - Text elements get a new attribute: "Enable Rich Text", which decides whether Rich Text tags are parsed.
+    - The "Text" attribute on text elements now supports Rich Text tags which will style the text in the Canvas.
+- (2021.2+ or with com.unity.ui package installed) Theme StyleSheet Support:
+    - UI Builder now looks for and allows use of the new Theme StyleSheet assets (.tss).
+    - Any discovered .tss assets in the Project are listed in the Theme dropdown in the main Viewport Toolbar.
+    - Allows previewing of user-made UI Toolkit themes, in addition to the default themes.
+- Other:
+    - (2021.1+) Added support for the new ScrollView Scroller Visibility attributes, replacing the boolean Show/Hide Scroller attributes.
+- Fixes:
+    - Fixed re-importing of a child UXML asset that is instanced by a parent UXML asset causing the parent to be unusable via the Library pane.
+    - Fixed possible instability inside in-place sub-document editing mode after selecting elements belonging to a parent document.
+    - Fixed regression where the blue line between Hierarchy elements would no longer appear while dragging an element to re-parent.
+    - Fixed closing of no UI Toolkit installed warning disabling Viewport zoom.
+    - Fixed being able to drag elements onto existing elements outside the currently active sub-document.
+    - Fixed being able to drag or create elements onto empty space in the Canvas while editing a child sub-document in-place, leading to elements being added to the wrong document.
+    - Fixed unsaved changes * indicator not being reset when going inside a child sub-document while discarding changes in the parent.
+    - Fixed potentially losing assigned StyleSheets in parent document when discarding changes before going inside a sub-document.
+    - Fixed dragging on the label of the Canvas width/height fields not updating the Canvas size live.
+    - (2020.2+) Fixed ListView Horizontal Scrolling attribute value not being reflected properly in the Inspector.
+    - (2021.1+) Fixed element renaming field in the Hierarchy not responding to Enter or Esc.
+
 ## [1.0.0-preview.9] - 2020-10-15
 
 - (2020.1+) UI Builder will now add all "document level" StyleSheets as root `<Style>` tags in the UXML document, instead of adding them as `<Style>` tags under each root VisualElement.

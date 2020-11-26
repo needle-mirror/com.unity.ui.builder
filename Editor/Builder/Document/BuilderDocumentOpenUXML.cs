@@ -327,7 +327,7 @@ namespace Unity.UI.Builder
             }
         }
 
-#if UNITY_2020_1_OR_NEWER
+#if !UNITY_2019_4
         void RemoveStyleSheetsFromRootAsset(VisualElementAsset rootAsset)
         {
             if (rootAsset.fullTypeName == BuilderConstants.SelectedVisualTreeAssetSpecialElementTypeName)
@@ -369,7 +369,7 @@ namespace Unity.UI.Builder
 
         public void AddStyleSheetsToAllRootElements(string newUssPath = null, int newUssIndex = 0)
         {
-#if UNITY_2020_1_OR_NEWER
+#if !UNITY_2019_4
             var rootVEA = visualTreeAsset.GetRootUXMLElement();
             AddStyleSheetsToRootAsset(rootVEA, newUssPath, newUssIndex);
 #else 
@@ -573,6 +573,20 @@ namespace Unity.UI.Builder
 
             m_VisualTreeAssetBackup = visualTreeAsset.DeepCopy();
             m_VisualTreeAsset = visualTreeAsset;
+
+            PostLoadDocumentStyleSheetCleanup();
+
+            hasUnsavedChanges = false;
+
+            m_OpenendVisualTreeAssetOldPath = AssetDatabase.GetAssetPath(m_VisualTreeAsset);
+
+            m_Settings = BuilderDocumentSettings.CreateOrLoadSettingsObject(m_Settings, uxmlPath);
+
+            ReloadDocumentToCanvas(documentElement);
+        }
+
+        public void PostLoadDocumentStyleSheetCleanup()
+        {
             m_VisualTreeAsset.ConvertAllAssetReferencesToPaths();
 
             // Load styles.
@@ -580,19 +594,13 @@ namespace Unity.UI.Builder
             for (int i = 0; i < styleSheetsUsed.Count; ++i)
                 AddStyleSheetToDocument(styleSheetsUsed[i], null);
 
-#if UNITY_2020_1_OR_NEWER
+#if !UNITY_2019_4
             // For the near to mid term, we have this code that cleans up any
             // existing root element stylesheets.
             RemoveLegacyStyleSheetsFromRootAssets();
 #endif
 
-            m_OpenendVisualTreeAssetOldPath = AssetDatabase.GetAssetPath(m_VisualTreeAsset);
-
             hasUnsavedChanges = false;
-
-            m_Settings = BuilderDocumentSettings.CreateOrLoadSettingsObject(m_Settings, uxmlPath);
-
-            ReloadDocumentToCanvas(documentElement);
         }
 
         //
@@ -607,7 +615,7 @@ namespace Unity.UI.Builder
             var newVisualTreeAsset = m_VisualTreeAsset;
             if (assetPath == uxmlOldPath)
             {
-                newVisualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(assetPath);
+                newVisualTreeAsset = BuilderPackageUtilities.LoadAssetAtPath<VisualTreeAsset>(assetPath);
             }
             else
             {
@@ -732,11 +740,13 @@ namespace Unity.UI.Builder
 
         void RestoreAssetsFromBackup()
         {
+            foreach (var openUSSFile in m_OpenUSSFiles)
+                openUSSFile.RestoreFromBackup();
+
             if (m_VisualTreeAsset != null && m_VisualTreeAssetBackup != null)
                 m_VisualTreeAssetBackup.DeepOverwrite(m_VisualTreeAsset);
 
-            foreach (var openUSSFile in m_OpenUSSFiles)
-                openUSSFile.RestoreFromBackup();
+            hasUnsavedChanges = false;
         }
 
         void ClearBackups()
@@ -898,7 +908,7 @@ namespace Unity.UI.Builder
             var hasNewUxmlPath = !string.IsNullOrEmpty(newUxmlPath) && newUxmlPath != oldUxmlPath;
             var localUxmlPath = !string.IsNullOrEmpty(newUxmlPath) ? newUxmlPath : oldUxmlPath;
 
-            m_VisualTreeAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(localUxmlPath);
+            m_VisualTreeAsset = BuilderPackageUtilities.LoadAssetAtPath<VisualTreeAsset>(localUxmlPath);
             var newIsDifferentFromOld = m_VisualTreeAsset != oldVTAReference;
 
             // If we have a new uxmlPath, it means we're saving as and we need to reset the

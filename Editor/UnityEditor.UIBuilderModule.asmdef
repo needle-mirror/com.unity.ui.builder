@@ -1,0 +1,42 @@
+{
+    "name": "UnityEditor.UIBuilderModule",
+    "rootNamespace": "",
+    "references": [
+        "UnityEngine.TextCoreModule",
+        "Unity.TextCore"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [
+        "UI_BUILDER_PACKAGE"
+    ],
+    "versionDefines": [
+        {
+            "name": "com.unity.ui.builder",
+            "expression": "",
+            "define": "UI_BUILDER_PACKAGE"
+        },
+        {
+            "name": "com.unity.vectorgraphics",
+            "expression": "1.0.0",
+            "define": "PACKAGE_VECTOR_GRAPHICS"
+        },
+        {
+            "name": "com.unity.2d.sprite",
+            "expression": "1.0.0",
+            "define": "PACKAGE_2D_SPRITE_EDITOR"
+        },
+        {
+            "name": "com.unity.textcore",
+            "expression": "1.0.0-preview.1",
+            "define": "PACKAGE_TEXT_CORE"
+        }
+    ],
+    "noEngineReferences": false
+}

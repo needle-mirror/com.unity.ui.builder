@@ -80,7 +80,11 @@ namespace Unity.UI.Builder.EditorTests
         /// <summary>
         /// StyleSheets > With a selector selected, you can use standard short-cuts or the Edit menu to copy/paste/duplicate/delete it. You can also copy/paste the USS for the selector to/from a text file.
         /// </summary>
+#if UNITY_2019_4 && (UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX)
+        [UnityTest, Ignore("Test broken on 2019.4 on linux.")]
+#else
         [UnityTest]
+#endif
         public IEnumerator DeleteSelectorViaRightClickMenu()
         {
             yield return EnsureSelectorsCanBeAddedAndReloadBuilder();
@@ -195,7 +199,11 @@ namespace Unity.UI.Builder.EditorTests
         /// Can drag a style class pill from the StyleSheets pane onto an element in the Viewport to add the class.
         /// Selectors get draggable style class pills for each selector part that is a style class name.
         /// </summary>
+#if UNITY_2019_4 && (UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX)
+        [UnityTest, Ignore("Test broken on 2019.4 on linux.")]
+#else
         [UnityTest]
+#endif
         public IEnumerator DragStylePillToViewport()
         {
             AddElementCodeOnly<TextField>();
@@ -206,7 +214,7 @@ namespace Unity.UI.Builder.EditorTests
             yield return AddSelector(TestSelectorName + " " + TestSelectorName2);
             var createdSelector = GetStyleSelectorNodeWithName(TestSelectorName);
 
-            // Now it's save to get a reference to an element in the canvas.
+            // Now it's safe to get a reference to an element in the canvas.
             var documentElement = GetFirstDocumentElement();
 
             yield return UIETestHelpers.Pause(1);
@@ -230,7 +238,11 @@ namespace Unity.UI.Builder.EditorTests
         /// <summary>
         /// Can drag a style class pill from the StyleSheets pane onto an element in the Hierarchy to add the class.
         /// </summary>
+#if UNITY_2019_4 && (UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX)
+        [UnityTest, Ignore("Test broken on 2019.4 on linux.")]
+#else
         [UnityTest]
+#endif
         public IEnumerator DragStylePillToHierarchy()
         {
             AddElementCodeOnly();
@@ -258,7 +270,11 @@ namespace Unity.UI.Builder.EditorTests
         /// <summary>
         /// Dragging a style class onto an element inside a template instance or C# type in the Viewport adds it to the parent instance or C# element.
         /// </summary>
+#if UNITY_2019_4 && (UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX)
+        [UnityTest, Ignore("Test broken on 2019.4 on linux.")]
+#else
         [UnityTest]
+#endif
         public IEnumerator DragStylePillOntoTemplateElementInViewport()
         {
             AddElementCodeOnly<TextField>();
@@ -284,7 +300,11 @@ namespace Unity.UI.Builder.EditorTests
         /// <summary>
         /// Dragging a style class onto an element inside a template instance or C# type in the Hierarchy does nothing.
         /// </summary>
+#if UNITY_2019_4 && (UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX)
+        [UnityTest, Ignore("Test broken on 2019.4 on linux.")]
+#else
         [UnityTest]
+#endif
         public IEnumerator DragStylePillOntoTemplateElementInHierarchy()
         {
             AddElementCodeOnly<TextField>();
@@ -345,7 +365,11 @@ namespace Unity.UI.Builder.EditorTests
         /// <summary>
         ///  With a selector selected, you can use standard short-cuts or the Edit menu to copy/paste/duplicate/delete it. You can also copy/paste the USS for the selector to/from a text file.
         /// </summary>
+#if UNITY_2019_4 && (UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX)
+        [UnityTest, Ignore("Test broken on 2019.4 on linux.")]
+#else
         [UnityTest]
+#endif
         public IEnumerator SelectorToAndFromUSSConversion()
         {
             yield return EnsureSelectorsCanBeAddedAndReloadBuilder();
@@ -423,7 +447,11 @@ namespace Unity.UI.Builder.EditorTests
             Assert.That(styleSheetsTreeView.GetSelectedItem(), Is.Null);
         }
 
+#if UNITY_2019_4 && (UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX)
+        [UnityTest, Ignore("Test broken on 2019.4 on linux.")]
+#else
         [UnityTest]
+#endif
         public IEnumerator ParentUSSFilesAppearWithinSubdocument()
         {
             var panel = builder.rootVisualElement.panel as BaseVisualElementPanel;

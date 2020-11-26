@@ -1,0 +1,8 @@
+.unity-image-style-field__container {
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.unity-image-style-field__button--hidden {
+    display: none;
+}

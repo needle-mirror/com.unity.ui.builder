@@ -5,14 +5,18 @@
 
 .test-button-1 {
     --var-color: rgb(255, 0, 255);
+    --var-color-red: rgb(255, 0, 0);
     --var-int: 2;
     --var-length: 80px;
     --var-length-pers: 5%;
     --var-font-style: italic;
+    --var-font: resource("Consola");
+    --var-icon: url("var-test-img.png");
     width: var(--var-length);
     background-color: var(--var-color);
     color: var(--var-text-color);
     -unity-font-style: var(--var-font-style);
+    --var-enum-flex: flex;
 }
 
 .test-button-2 {

@@ -19,7 +19,7 @@ namespace Unity.UI.Builder
         {
             var resolvedSheets = new List<StyleSheet>();
             foreach (var sheetPath in root.stylesheetPaths)
-                resolvedSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(sheetPath));
+                resolvedSheets.Add(BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(sheetPath));
             root.stylesheets = resolvedSheets;
 
             var ve = VisualTreeAsset.Create(root, context);
@@ -61,13 +61,13 @@ namespace Unity.UI.Builder
                 else
                 {
                     var rule = vta.inlineSheet.rules[root.ruleIndex];
-#if UNITY_2020_1_OR_NEWER
-                    ve.SetInlineRule(vta.inlineSheet, rule);
-#else
+#if UNITY_2019_4
                     var stylesData = new VisualElementStylesData(false);
                     ve.SetInlineStyles(stylesData);
                     s_StylePropertyReader.SetInlineContext(vta.inlineSheet, rule, root.ruleIndex);
                     stylesData.ApplyProperties(s_StylePropertyReader, null);
+#else
+                    ve.SetInlineRule(vta.inlineSheet, rule);
 #endif
                 }
             }
@@ -156,7 +156,7 @@ namespace Unity.UI.Builder
             if (rootAssets == null || rootAssets.Count == 0)
                 return;
 
-#if UNITY_2020_1_OR_NEWER
+#if !UNITY_2019_4
             var uxmlRootAsset = rootAssets[0];
 
             vta.AssignClassListFromAssetToElement(uxmlRootAsset, target);

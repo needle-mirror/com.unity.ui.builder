@@ -102,7 +102,7 @@ namespace Unity.UI.Builder
 
         public static bool IsEmpty(this VisualTreeAsset vta)
         {
-#if UNITY_2020_1_OR_NEWER
+#if !UNITY_2019_4
             return vta.visualElementAssets.Count <= 1 && vta.templateAssets.Count <= 0; // Because of the <UXML> tag, there's always one.
 #else
             return vta.visualElementAssets.Count <= 0 && vta.templateAssets.Count <= 0;
@@ -121,7 +121,7 @@ namespace Unity.UI.Builder
 
         public static VisualElementAsset GetRootUXMLElement(this VisualTreeAsset vta)
         {
-#if UNITY_2020_1_OR_NEWER
+#if !UNITY_2019_4
             return vta.visualElementAssets[0];
 #else
             return null;
@@ -130,7 +130,7 @@ namespace Unity.UI.Builder
 
         public static int GetRootUXMLElementId(this VisualTreeAsset vta)
         {
-#if UNITY_2020_1_OR_NEWER
+#if !UNITY_2019_4
             return vta.GetRootUXMLElement().id;
 #else
             return 0;
@@ -139,7 +139,7 @@ namespace Unity.UI.Builder
 
         public static bool IsRootUXMLElement(this VisualTreeAsset vta, VisualElementAsset vea)
         {
-#if UNITY_2020_1_OR_NEWER
+#if !UNITY_2019_4
             return vea == vta.GetRootUXMLElement();
 #else
             return false;
@@ -249,7 +249,7 @@ namespace Unity.UI.Builder
 
                 foreach (var sheetPath in asset.stylesheetPaths)
                 {
-                    var sheetAsset = AssetDatabase.LoadAssetAtPath<StyleSheet>(sheetPath);
+                    var sheetAsset = BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(sheetPath);
                     if (sheetAsset == null)
                     {
                         sheetAsset = Resources.Load<StyleSheet>(sheetPath);
@@ -309,7 +309,7 @@ namespace Unity.UI.Builder
             {
                 foreach (var sheetPath in styleSheetPaths)
                 {
-                    var sheetAsset = AssetDatabase.LoadAssetAtPath<StyleSheet>(sheetPath);
+                    var sheetAsset = BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(sheetPath);
                     if (sheetAsset == null)
                     {
                         sheetAsset = Resources.Load<StyleSheet>(sheetPath);
@@ -394,10 +394,10 @@ namespace Unity.UI.Builder
             if (!vta.TemplateExists(templateName))
                 vta.RegisterTemplate(templateName, path);
 
-#if UNITY_2020_1_OR_NEWER
-            var templateAsset = new TemplateAsset(templateName, BuilderConstants.UxmlInstanceTypeName);
-#else
+#if UNITY_2019_4
             var templateAsset = new TemplateAsset(templateName);
+#else
+            var templateAsset = new TemplateAsset(templateName, BuilderConstants.UxmlInstanceTypeName);
 #endif
             VisualTreeAssetUtilities.InitializeElement(templateAsset);
 
@@ -455,6 +455,13 @@ namespace Unity.UI.Builder
             VisualTreeAssetUtilities.ReparentElementInDocument(vta, elementToReparent, newParent, index);
         }
 
+        public static StyleSheet GetOrCreateInlineStyleSheet(this VisualTreeAsset vta)
+        {
+            if (vta.inlineSheet == null)
+                vta.inlineSheet = StyleSheetUtilities.CreateInstance();
+            return vta.inlineSheet;
+        }
+
         public static StyleRule GetOrCreateInlineStyleRule(this VisualTreeAsset vta, VisualElementAsset vea)
         {
             bool wasCreated;
@@ -466,13 +473,8 @@ namespace Unity.UI.Builder
             wasCreated = vea.ruleIndex < 0;
             if (wasCreated)
             {
-                if (vta.inlineSheet == null)
-                {
-                    var newSheet = StyleSheetUtilities.CreateInstance();
-                    vta.inlineSheet = newSheet;
-                }
-
-                vea.ruleIndex = vta.inlineSheet.AddRule();
+                var inlineSheet = vta.GetOrCreateInlineStyleSheet();
+                vea.ruleIndex = inlineSheet.AddRule();
             }
 
             return vta.inlineSheet.GetRule(vea.ruleIndex);
@@ -630,7 +632,7 @@ namespace Unity.UI.Builder
             ScriptableObject.DestroyImmediate(vta);
         }
 
-#if UNITY_2020_1_OR_NEWER
+#if !UNITY_2019_4
         public static void AssignClassListFromAssetToElement(this VisualTreeAsset vta, VisualElementAsset asset, VisualElement element)
         {
             if (asset.classes != null)

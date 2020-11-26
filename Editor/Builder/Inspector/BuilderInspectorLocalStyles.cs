@@ -12,7 +12,7 @@ namespace Unity.UI.Builder
 
         PersistedFoldout m_LocalStylesSection;
 
-        readonly Dictionary<PersistedFoldout, List<BindableElement>> m_StyleCategories = new Dictionary<PersistedFoldout, List<BindableElement>>();
+        readonly Dictionary<PersistedFoldout, List<VisualElement>> m_StyleCategories = new Dictionary<PersistedFoldout, List<VisualElement>>();
 
         public VisualElement root => m_LocalStylesSection;
 
@@ -26,6 +26,11 @@ namespace Unity.UI.Builder
 
             m_LocalStylesSection = m_Inspector.Q<PersistedFoldout>("inspector-local-styles-foldout");
 
+            // We need to hide new Text Asset style property fields in any Unity version older than 2021.1.
+#if UNITY_2019_4 || UNITY_2020_1 || UNITY_2020_2 || UNITY_2020_3
+            m_LocalStylesSection.Query(className: "unity-builder-font-asset-property-container").ForEach(e => e.style.display = DisplayStyle.None);
+#endif
+
             var styleCategories = m_LocalStylesSection.Query<PersistedFoldout>(
                 className: "unity-builder-inspector__style-category-foldout").ToList();
 
@@ -34,7 +39,7 @@ namespace Unity.UI.Builder
                 styleCategory.Q<VisualElement>(null, PersistedFoldout.headerUssClassName)
                     .AddManipulator(new ContextualMenuManipulator(StyleCategoryContextualMenu));
 
-                var categoryStyleFields = new List<BindableElement>();
+                var categoryStyleFields = new List<VisualElement>();
                 var styleRows = styleCategory.Query<BuilderStyleRow>().ToList();
                 foreach (var styleRow in styleRows)
                 {
@@ -100,11 +105,11 @@ namespace Unity.UI.Builder
         {
             var foldout = (PersistedFoldout) (obj.userData as VisualElement)?.parent;
             Assert.IsNotNull(foldout);
-            List<BindableElement> styleFields;
+            List<VisualElement> styleFields;
 
             if (m_StyleCategories.TryGetValue(foldout, out styleFields))
             {
-                var tempFields = new List<BindableElement>();
+                var tempFields = new List<VisualElement>();
                 foreach (var styleField in styleFields)
                 {
                     if (!(styleField is FoldoutField))

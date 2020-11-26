@@ -44,7 +44,7 @@ namespace Unity.UI.Builder
                 directory,
                 extension);
 
-            if (string.IsNullOrWhiteSpace(newPath))
+            if (string.IsNullOrEmpty(newPath?.Trim()))
                 return null;
 
             var appPathLength = Application.dataPath.Length - 6; // - "Assets".Length
@@ -67,7 +67,7 @@ namespace Unity.UI.Builder
                 defaultName,
                 extension);
 
-            if (string.IsNullOrWhiteSpace(newPath))
+            if (string.IsNullOrEmpty(newPath?.Trim()))
                 return null;
 
             var appPathLength = Application.dataPath.Length - 6; // - "Assets".Length

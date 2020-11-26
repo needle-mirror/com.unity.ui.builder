@@ -8,6 +8,7 @@ namespace Unity.UI.Builder.EditorTests
         /// <summary>
         /// The current UI Builder package version is displayed in the **Viewport** title bar.
         /// </summary>
+#if UI_BUILDER_PACKAGE
         [Test]
         public void CurrentBuilderVersionIsDisplayedInTheTitlebar()
         {
@@ -15,5 +16,6 @@ namespace Unity.UI.Builder.EditorTests
             var builderPackageVersion = packageInfo.version;
             Assert.True(viewport.subTitle.Contains(builderPackageVersion));
         }
+#endif
     }
 }

@@ -44,7 +44,7 @@ namespace Unity.UI.Builder
         public static void AddStyleSheetToAsset(
             BuilderDocument document, string ussPath)
         {
-            var styleSheet = AssetDatabase.LoadAssetAtPath<StyleSheet>(ussPath);
+            var styleSheet = BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(ussPath);
             if (styleSheet == null)
             {
                 if (ussPath.StartsWith("Packages/"))
@@ -106,7 +106,7 @@ namespace Unity.UI.Builder
             if (veParent != null && veParent.GetVisualTreeAsset() != document.visualTreeAsset)
                 veaParent = veParent.GetVisualElementAsset();
 
-#if UNITY_2020_1_OR_NEWER
+#if !UNITY_2019_4
             if (veaParent == null)
                 veaParent = document.visualTreeAsset.GetRootUXMLElement(); // UXML Root Element
 #endif
@@ -139,7 +139,7 @@ namespace Unity.UI.Builder
             if (veParent != null && veParent.GetVisualTreeAsset() != document.visualTreeAsset)
                 veaParent = veParent.GetVisualElementAsset();
 
-#if UNITY_2020_1_OR_NEWER
+#if !UNITY_2019_4
             if (veaParent == null)
                 veaParent = document.visualTreeAsset.GetRootUXMLElement(); // UXML Root Element
 #endif
@@ -199,7 +199,7 @@ namespace Unity.UI.Builder
             if (newParent != null)
                 veaNewParent = newParent.GetVisualElementAsset();
 
-#if UNITY_2020_1_OR_NEWER
+#if !UNITY_2019_4
             if (veaNewParent == null)
                 veaNewParent = document.visualTreeAsset.GetRootUXMLElement(); // UXML Root Element
 #endif

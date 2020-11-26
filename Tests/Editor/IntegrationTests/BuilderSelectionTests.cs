@@ -79,8 +79,8 @@ namespace Unity.UI.Builder.EditorTests
             Assert.AreEqual(0, selection.selection.Count());
         }
 
-        [UnityTest]
-        public IEnumerable SelectionUndoRedo()
+        [UnityTest, Ignore("This test was broken in a recent change to the testing framework. See: UIT-1226")]
+        public IEnumerator SelectionUndoRedo()
         {
             var selectionType = BuilderSelectionType.Element;
 

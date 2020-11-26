@@ -48,7 +48,7 @@ namespace Unity.UI.Builder
             m_TooltipPreview = tooltipPreview;
             if (m_TooltipPreview != null)
             {
-                var helpTooltipTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(kHelpTooltipPath);
+                var helpTooltipTemplate = BuilderPackageUtilities.LoadAssetAtPath<VisualTreeAsset>(kHelpTooltipPath);
                 var helpTooltipContainer = helpTooltipTemplate.CloneTree();
                 m_TooltipPreview.Add(helpTooltipContainer); // We are the only ones using it so just add the contents and be done.
             }

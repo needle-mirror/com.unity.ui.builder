@@ -128,6 +128,19 @@
     display: none;
 }
 
+.unity-builder-inspector__help-box {
+    margin-right: 5px;
+    margin-left: 5px;
+}
+
+.unity-builder-inspector__divider {
+    height: 1px;
+    margin-top: 4px;
+    margin-left: 8px;
+    margin-right: 8px;
+    margin-bottom: 4px;
+}
+
 /*****************************************************************************/
 /* BuilderStyleRow                                                           */
 /*****************************************************************************/
@@ -246,6 +259,14 @@
 
 .unity-foldout-field > .unity-foldout__header > Toggle {
     flex-grow: 0;
+}
+
+#inspector-style-section-foldout-text-outline .unity-builder-style-row__content-container {
+    margin-left: 27px;
+}
+
+#inspector-style-section-foldout-text-outline .unity-builder-style-row .unity-base-field__label {
+    min-width: 90px;
 }
 
 /*****************************************************************************/

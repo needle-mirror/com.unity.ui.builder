@@ -81,16 +81,28 @@ namespace Unity.UI.Builder
 
         Texture2D LoadIcon(string resourceBasePath, string iconName)
         {
+#if UI_BUILDER_PACKAGE
             return Resources.Load<Texture2D>(EditorGUIUtility.pixelsPerPoint > 1
                 ? $"{resourceBasePath}{iconName}@2x"
                 : $"{resourceBasePath}{iconName}");
+#else
+            return EditorGUIUtility.Load(EditorGUIUtility.pixelsPerPoint > 1
+                ? $"{resourceBasePath}{iconName}@2x.png"
+                : $"{resourceBasePath}{iconName}.png") as Texture2D;
+#endif
         }
 
         Texture2D LoadLargeIcon(string resourceBasePath, string iconName)
         {
+#if UI_BUILDER_PACKAGE
             return Resources.Load<Texture2D>(EditorGUIUtility.pixelsPerPoint > 1
                 ? $"{resourceBasePath}{iconName}@8x"
                 : $"{resourceBasePath}{iconName}@4x");
+#else
+            return EditorGUIUtility.Load(EditorGUIUtility.pixelsPerPoint > 1
+                ? $"{resourceBasePath}{iconName}@8x.png"
+                : $"{resourceBasePath}{iconName}@4x.png") as Texture2D;
+#endif
         }
 
         public void SetIcon(Texture2D icon)

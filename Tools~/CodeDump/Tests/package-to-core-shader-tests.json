@@ -1,0 +1,7 @@
+[{
+    "PackagePath": "Shaders/UIE-Runtime.shader",
+    "CorePath": "Shaders/UIE-Runtime.shader",
+    "PackageShaderName": "PackageName",
+    "CoreShaderName": "CoreName",
+    "IsDir": "false"
+}]

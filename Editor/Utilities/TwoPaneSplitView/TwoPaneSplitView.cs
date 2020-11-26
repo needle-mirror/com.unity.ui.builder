@@ -130,7 +130,7 @@ namespace Unity.UI.Builder
         {
             AddToClassList(s_UssClassName);
 
-            styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(s_UssPath));
+            styleSheets.Add(BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(s_UssPath));
 
             m_Content = new VisualElement();
             m_Content.name = "unity-content-container";
@@ -401,7 +401,7 @@ namespace Unity.UI.Builder
     /// <summary>
     /// Determines the orientation of the two resizable panes.
     /// </summary>
-    public enum TwoPaneSplitViewOrientation
+    internal enum TwoPaneSplitViewOrientation
     {
         /// <summary>
         /// Split view panes layout is left/right with vertical resizable split.

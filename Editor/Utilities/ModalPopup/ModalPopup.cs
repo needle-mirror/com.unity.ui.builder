@@ -44,13 +44,13 @@ namespace Unity.UI.Builder
             AddToClassList(s_InvisibleClassName);
 
             // Load styles.
-            styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.UtilitiesPath + "/ModalPopup/ModalPopup.uss"));
+            styleSheets.Add(BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(BuilderConstants.UtilitiesPath + "/ModalPopup/ModalPopup.uss"));
             if (EditorGUIUtility.isProSkin)
-                styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.UtilitiesPath + "/ModalPopup/ModalPopupDark.uss"));
+                styleSheets.Add(BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(BuilderConstants.UtilitiesPath + "/ModalPopup/ModalPopupDark.uss"));
             else
-                styleSheets.Add(AssetDatabase.LoadAssetAtPath<StyleSheet>(BuilderConstants.UtilitiesPath + "/ModalPopup/ModalPopupLight.uss"));
+                styleSheets.Add(BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(BuilderConstants.UtilitiesPath + "/ModalPopup/ModalPopupLight.uss"));
 
-            var template = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(BuilderConstants.UtilitiesPath + "/ModalPopup/ModalPopup.uxml");
+            var template = BuilderPackageUtilities.LoadAssetAtPath<VisualTreeAsset>(BuilderConstants.UtilitiesPath + "/ModalPopup/ModalPopup.uxml");
             template.CloneTree(this);
 
             m_Title = this.Q<Label>("title");

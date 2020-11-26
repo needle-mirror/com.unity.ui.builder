@@ -57,7 +57,7 @@
 1. Can shift+click to select multiple elements.
 1. Can ctrl+click to select an additional element.
 1. Can drag element(s) onto other elements in the Hierarchy to re-parent. `Tested`
-1. Can drag element(s) between other elements to reorder, with live preview in the Canvas. `Tested`
+1. Can drag element(s) between other elements to reorder, with live preview in the Canvas of the new location as a yellow line. `Tested`
 1. Can drag element(s) onto other elements in the Viewport to re-parent. `Tested`
 1. Elements are displayed using their #name in blue. If they have no name, they are displayed using their C# type in white. `Tested`
 1. You can always show the C# type of an element, even if it has a #name, by enabling the **Type** option from the `...` options menu in the top right of the Hierarchy pane.
@@ -109,6 +109,7 @@
 1. When creating a new empty VisualElement, it has an artificial minimum size and border which is reset as soon as you parent a child element under it or change its styling. `Tested`
 1. Library pane updates if new `.uxml` files are added/deleted/moved/renamed to/from the project. `Tested`
 1. Sub-documents and their parents will all be grayed-out and disabled in the Library pane.
+1. In developer mode, an experimental option becomes available in the UI Builder's Project Settings to enable absolute position placement when dragging new elements from the Library.
 
 ## Viewport
 
@@ -126,6 +127,10 @@
 1. Can select a zoom level from the **100%** dropdown. Can also zoom via the mouse scroll wheel and Alt + RightClick + Mouse Move. `Tested`
 1. Can reset the view and make sure the canvas fits the viewport with the **Fit Canvas** button. `Tested`
 1. Can preview Light/Dark/Runtime themes inside the Canvas via the **Theme** popup field, independent from the current Editor Theme. **Default Theme** uses the current Editor Theme, while the other options force a theme to be used in the Canvas. If the runtime package is not installed, the Runtime theme will be substituted by the Light Editor theme.
+1. (2021.1+) Theme StyleSheet Support:
+    1. UI Builder looks for and allows use of the Theme StyleSheet assets (.tss).
+    1. Any discovered .tss assets in the Project are listed in the Theme dropdown in the main Viewport Toolbar.
+    1. Allows previewing of user-made UI Toolkit themes, in addition to the default themes.
 1. Pressing **Preview** toggles _Preview_ mode, where you can no longer select elements by clicking them in the Viewport. Instead, Viewport elements receive regular mouse and focus events.
 1. The `...` can be used to show/hide the UXML and USS Preview panes. This state is remembered across domain reloads.
 1. A breadcrumb toolbar will appear when currently viewing a sub-document. Can click on parent documents to return to them.
@@ -136,6 +141,10 @@
 1. The currently open UXML asset name, or `<unsaved asset>`, is displayed in the Canvas header, grayed out. `Tested`
 1. If there are unsaved changes, a `*` is appended to the asset name. `Tested`
 1. Header tooltip contains project relative path to the open UXML asset. `Tested`
+1. Canvas Style Controls:
+    1. Selected element blue border header will now have quick toggles for flex and text alignment styles.
+    1. Selected element with children will get toggles for `flex-direction`, `align-items`, and `justify-content`.
+    1. Selected element that is a TextElement will get toggles for `white-space` and `-unity-text-align`.
 
 ### Canvas
 
@@ -179,6 +188,14 @@
     1. To see Editor-Only controls and controls meant for use within the Editor, you can enable **Editor Extension Authoring** from the new Document settings Inspector by selecting the Canvas header or .uxml document in the Hierarchy.
     1. The **Editor Extension Authoring** setting is saved inside the UXML asset and therefore version controlled. This is unlike the Canvas settings which are temporary preferences.
     1. You can enable **Editor Extension Authoring** for all new documents or documents not opened by UI Builder before in the **Project Settings > UI Builder** settings.
+1. Clicking Through to Select Parent in Canvas:
+    1. If you pick an element in the Canvas and then click again in the same spot, you'll select its parent element.
+    1. You can click multiple times to select parent, grand-parent, etc. until the root of the Canvas after which it cycles back to the top-most element.
+1. Drag and Drop In Canvas:
+    1. Can now start a drag operation from inside the Canvas.
+    1. Canvas-starting drags can be dropped both in the Hierarchy and back in the Canvas.
+    1. Can now drag elements in-between existing elements (siblings of the same parent) in the Canvas.
+    1. A yellow line will appear where the element will be created or moved to.
 
 ### Viewport Surface
 
@@ -276,12 +293,24 @@
 1. Foldout style fields (like Margin and Padding) properly add the unit or keyword for each child style property.
 1. If the optional Vector Graphics package is installed, the background image style will allow assigning a vector image (scalable image) asset type.
 1. When focusing a size, margin, padding, or border style field, the selected element will have a color overlay showing its size/margin/padding/border.
+1. (2021.1+) Exposed UI Toolkit support for 2D Sprites for element background style.
+    1. Can switch the type of background asset in the Inspector from Texture to Sprite.
+    1. When in Sprite mode, a button will appear to open the 2D Sprite Editor with the currently assigned Sprite, assuming the 2D Sprite package is installed.
+1. (2021.1+) Rich Text Support:
+    1. Font Asset style property in the Inspector allows use of the new FontAsset asset.
+    1. If the FontAsset supports it, there are Text Outline and Text Shadow styling options available.
+    1. Text elements get "Enable Rich Text" attribute which decides whether Rich Text tags are parsed.
+    1. The "Text" attribute on text elements supports Rich Text tags which will style the text in the Canvas.
 
 ### Variables
 
 1. If a style is getting its value from a USS variable, its style field label in the Inspector will appear highlighted.
 1. Selectors can now use USS variables for their style values via a new per-field variable mode. This is not supported on elements via inline styles.
-1. Right-clicking on a style field and selecting "Show Variable" will:
-    1. See where the variable value is coming from (via a tooltip popup).
-    1. Activate variable mode.
-    1. Un-focusing the variable mode field will switch the field back to normal mode and hide the tooltip popup.
+1. Right-clicking on a style field in a selector's inspector and selecting "Edit Variable" will:
+    1. When editing a variable, a search dialog will appear.
+    1. The search dialog will allow search all variables in the current theme that match the USS style property data type.
+    1. If in Editor Extensions mode, additional Editor-Only variables will be displayed with an indicator that they are Editor-Only.
+    1. Like before, "Edit Variable" mode can be enabled on a style property by just typing "--" without having to right-click.
+    1. Details about the currently selected variable, like where it comes from, it's current value (with a preview if it's an image), will be show at the bottom of the search dialog.
+1. When editing inline-styles, details about a variable will display the same but in a read-only mode. Inline styles cannot be assigned a variable in UI Toolkit.
+    1. The right-click option will be called "View Variable".

@@ -78,7 +78,7 @@ namespace Unity.UI.Builder
             // Query the UI
             if (!string.IsNullOrEmpty(toolbarUxmlPath))
             {
-                var template = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(toolbarUxmlPath);
+                var template = BuilderPackageUtilities.LoadAssetAtPath<VisualTreeAsset>(toolbarUxmlPath);
                 template.CloneTree(this);
             }
 

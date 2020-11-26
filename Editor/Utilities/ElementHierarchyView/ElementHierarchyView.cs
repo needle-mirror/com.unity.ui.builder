@@ -102,23 +102,23 @@ namespace Unity.UI.Builder
             m_ExplorerDragger.builderHierarchyRoot = m_Container;
             Add(m_Container);
 
-            m_ClassPillTemplate = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(
+            m_ClassPillTemplate = BuilderPackageUtilities.LoadAssetAtPath<VisualTreeAsset>(
                 BuilderConstants.UIBuilderPackagePath + "/BuilderClassPill.uxml");
 
             // Create TreeView.
             m_TreeRootItems = new List<ITreeViewItem>();
             m_TreeView = new TreeView(m_TreeRootItems, 20, MakeItem, FillItem);
-#if UNITY_2020_1_OR_NEWER
-            m_TreeView.selectionType = SelectionType.Multiple;
+#if UNITY_2019_4
+            m_TreeView.selectionType = SelectionType.Single; // ListView/TreeView do not support selecting multiple items via code.
 #else
-            m_TreeView.selectionType = SelectionType.Single; // ListView/TreeView do not support selecting mutliple items via code.
+            m_TreeView.selectionType = SelectionType.Multiple;
 #endif
             m_TreeView.viewDataKey = "unity-builder-explorer-tree";
             m_TreeView.style.flexGrow = 1;
-#if UNITY_2020_1_OR_NEWER
-            m_TreeView.onSelectionChange += OnSelectionChange;
-#else
+#if UNITY_2019_4
             m_TreeView.onSelectionChanged += OnSelectionChange;
+#else
+            m_TreeView.onSelectionChange += OnSelectionChange;
 #endif
 
             m_TreeView.RegisterCallback<MouseDownEvent>(OnLeakedMouseClick);
@@ -438,10 +438,10 @@ namespace Unity.UI.Builder
 
             if (m_TreeView != null)
             {
-#if UNITY_2020_1_OR_NEWER
-                foreach (TreeViewItem<VisualElement> selectedItem in m_TreeView.selectedItems)
-#else
+#if UNITY_2019_4
                 foreach (TreeViewItem<VisualElement> selectedItem in m_TreeView.currentSelection)
+#else
+                foreach (TreeViewItem<VisualElement> selectedItem in m_TreeView.selectedItems)
 #endif
                 {
                     var documentElement = selectedItem.data;
@@ -463,7 +463,6 @@ namespace Unity.UI.Builder
             if (m_TreeView != null)
                 wasTreeFocused = m_TreeView.Q<ListView>().IsFocused();
 
-
             m_CurrentPanelDebug = rootVisualElement.panel;
 
             int nextId = 1;
@@ -473,12 +472,15 @@ namespace Unity.UI.Builder
                 m_TreeRootItems = GetTreeItemsFromVisualTree(rootVisualElement, ref nextId);
 
             // Clear selection which would otherwise persist via view data persistence.
-            m_TreeView?.ClearSelection();
-            m_TreeView.rootItems = m_TreeRootItems;
+            if (m_TreeView != null)
+            {
+                m_TreeView.ClearSelection();
+                m_TreeView.rootItems = m_TreeRootItems;
 
-            // Restore focus state.
-            if (wasTreeFocused)
-                m_TreeView.Q<ListView>()?.Focus();
+                // Restore focus state.
+                if (wasTreeFocused)
+                    m_TreeView.Q<ListView>()?.Focus();
+            }
 
             hierarchyHasChanged = false;
         }
@@ -508,19 +510,19 @@ namespace Unity.UI.Builder
             evt.StopPropagation();
         }
 
-#if UNITY_2020_1_OR_NEWER
-        void OnSelectionChange(IEnumerable<ITreeViewItem> items)
-#else
+#if UNITY_2019_4
         void OnSelectionChange(List<ITreeViewItem> items)
+#else
+        void OnSelectionChange(IEnumerable<ITreeViewItem> items)
 #endif
         {
             if (m_SelectElementCallback == null)
                 return;
 
-#if UNITY_2020_1_OR_NEWER
-            if (items.Count() == 0)
-#else
+#if UNITY_2019_4
             if (items.Count == 0)
+#else
+            if (items.Count() == 0)
 #endif
             {
                 m_SelectElementCallback(null);
@@ -660,11 +662,11 @@ namespace Unity.UI.Builder
                 if (item == null)
                     continue;
 
-#if UNITY_2020_1_OR_NEWER
+#if UNITY_2019_4
+                m_TreeView.SelectItem(item.id);
+#else
                 m_TreeView.AddToSelection(item.id);
                 m_TreeView.ScrollToItem(item.id);
-#else
-                m_TreeView.SelectItem(item.id);
 #endif
             }
         }

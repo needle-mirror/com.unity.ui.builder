@@ -104,7 +104,7 @@ namespace Unity.UI.Builder
                 case StyleValueType.String:
                     str = $"\"{sheet.ReadString(handle)}\"";
                     break;
-#if UNITY_2020_2_OR_NEWER
+#if !UNITY_2019_4 && !UNITY_2020_1
                 case StyleValueType.MissingAssetReference:
                     str = $"url('{sheet.ReadMissingAssetReferenceUrl(handle)}')";
                     break;
@@ -114,6 +114,10 @@ namespace Unity.UI.Builder
                     var assetPath = AssetDatabase.GetAssetPath(assetRef);
                     if (assetPath.StartsWith("Assets") || assetPath.StartsWith("Packages"))
                         assetPath = "/" + assetPath;
+#if !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+                    if (assetRef is Sprite)
+                        assetPath += "#" + assetRef.name;
+#endif
                     str = assetRef == null ? "none" : $"url('{assetPath}')";
                     break;
                 case StyleValueType.Variable:
@@ -188,7 +192,7 @@ namespace Unity.UI.Builder
 
         public static void ToUssString(StyleSheet sheet, UssExportOptions options, StyleProperty property, StringBuilder sb)
         {
-                if (property.name == "cursor" && property.values.Length > 1)
+                if (property.name == "cursor" && property.values.Length > 1 && !property.IsVariable())
                 {
                     int i;
                     string propertyValueStr;

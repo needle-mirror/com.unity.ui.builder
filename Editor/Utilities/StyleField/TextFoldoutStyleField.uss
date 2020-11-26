@@ -1,0 +1,11 @@
+.unity-sub-foldout .unity-builder-double-field-label {
+    margin-left: 32px;
+}
+
+.unity-text-shadow-style-field__field {
+    margin-left: 32px;
+}
+
+.unity-foldout {
+    flex-grow: 1;
+}

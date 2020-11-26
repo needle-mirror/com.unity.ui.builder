@@ -71,7 +71,7 @@ namespace Unity.UI.Builder
                 var fieldInfo = veType.GetProperty(camel);
                 if (fieldInfo != null)
                 {
-                    var veValueAbstract = fieldInfo.GetValue(ve);
+                    var veValueAbstract = fieldInfo.GetValue(ve, null);
                     if (veValueAbstract == null)
                         continue;
 
@@ -85,7 +85,7 @@ namespace Unity.UI.Builder
                     if (veValueStr == attributeValueStr)
                         continue;
 
-                    overriddenAttributes.Add(attribute.name, veValueAbstract.ToString());
+                    overriddenAttributes.Add(attribute.name, veValueStr);
                 }
             }
 
@@ -193,10 +193,17 @@ namespace Unity.UI.Builder
 
         public static bool IsPartOfActiveVisualTreeAsset(this VisualElement element, BuilderDocument builderDocument)
         {
+            var isSubDocument = builderDocument != null && builderDocument.activeOpenUXMLFile.isChildSubDocument;
+            var elementVTA = element.GetVisualTreeAsset();
+            var activeVTA = builderDocument == null ? elementVTA : builderDocument.activeOpenUXMLFile.visualTreeAsset;
+
             var belongsToActiveVisualTreeAsset = (VisualTreeAsset) element.GetProperty(BuilderConstants.ElementLinkedBelongingVisualTreeAssetVEPropertyName) == builderDocument?.visualTreeAsset;
             var hasAssetLink = element.GetVisualElementAsset() != null && belongsToActiveVisualTreeAsset;
-            var hasVTALink = element.GetVisualTreeAsset() != null && !(element is TemplateContainer);
-            return hasAssetLink || hasVTALink || BuilderSharedStyles.IsDocumentElement(element);
+            var hasVTALink = elementVTA != null && elementVTA == activeVTA && !(element is TemplateContainer);
+
+            var isDocumentRootElement = !isSubDocument && BuilderSharedStyles.IsDocumentElement(element);
+
+            return hasAssetLink || hasVTALink || isDocumentRootElement;
         }
 
         public static bool IsSelector(this VisualElement element)
@@ -384,10 +391,16 @@ namespace Unity.UI.Builder
             {
                 if (e.customStyle.TryGetValue(s_BuilderElementStyleProperty, out var value))
                 {
-                    if (Enum.TryParse<BuilderElementStyle>(value, true, out var elementStyle))
+                    BuilderElementStyle elementStyle;
+                    try
+                    {
+                        elementStyle = (BuilderElementStyle)Enum.Parse(typeof(BuilderElementStyle), value, true);
                         onElementStyleChanged.Invoke(elementStyle);
-                    else
+                    }
+                    catch
+                    {
                         throw new NotSupportedException($"The `{value}` value is not supported for {s_BuilderElementStyleProperty.name} property.");
+                    }
                 }
             });
         }
