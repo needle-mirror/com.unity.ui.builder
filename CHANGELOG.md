@@ -4,8 +4,15 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-preview.11] - 2020-12-04
+
+- Package documentation has been fully updated to reflect the current state of the UI Builder.
+- (2021.1+) Fixed Rich Text controls not properly hidden when the Text Core package was not installed.
+- (2021.1+) Fixed UI Builder not automatically installing the 2D Sprite Editor package when required.
+
 ## [1.0.0-preview.10] - 2020-11-26
 
+- As of 2021.1.0a8, UI Builder is now a built-in module and no longer needs this package to be installed. We will still release new versions of the package, which is able to override the built-in version in Unity when installed, that will be slightly ahead of Unity for testing and validation.
 - Canvas Style Controls:
     - Selected element blue border header will now have quick toggles for flex and text alignment styles.
     - Selected element with children will get toggles for `flex-direction`, `align-items`, and `justify-content`.

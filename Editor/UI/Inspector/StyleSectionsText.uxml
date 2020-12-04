@@ -36,6 +36,12 @@
         <uib:ToggleButtonStrip class="unity-builder-inspector_white-space-field" label="Wrap" tooltip="white-space" />
     </uib:BuilderStyleRow>
 
+    <!-- No New Font Asset Properties -->
+    <VisualElement class="unity-builder-no-font-asset-property-container">
+        <!-- Help Box -->
+        <uib:HelpBox class="unity-builder-inspector__help-box" text="Rich text properties can be made accessible by installing the latest UI Toolkit package." />
+    </VisualElement>
+
     <!-- New Font Asset Properties -->
     <VisualElement class="unity-builder-font-asset-property-container">
         <VisualElement class="unity-builder-inspector__divider" />

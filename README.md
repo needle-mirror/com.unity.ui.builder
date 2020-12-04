@@ -1,6 +1,6 @@
 # UI Builder
 
-The **UI Builder** lets you visually create and edit UI assets such as UI documents (`.uxml` files), and stylesheets (`.uss` files), that you use with Unity's **UI Toolkit** (formerly UIElements). After you install the UI Builder package, you can open the UI Builder window from the menu (**Window > UI Toolkit > UI Builder**), or from the Project window (double-click a `.uxml` asset).
+The **UI Builder** lets you visually create and edit UI assets such as UI documents (`.uxml` files), and StyleSheets (`.uss` files), that you use with Unity's **UI Toolkit** (formerly UIElements). After you setup the UI Builder package, you can open the UI Builder window from the menu (**Window > UI Toolkit > UI Builder**), or from the Project window (double-click a `.uxml` asset).
 
 > Note: In Unity 2019.x, you open the UI Builder from the **Window > UI > UI Builder** menu.
 
@@ -12,8 +12,8 @@ The **UI Builder** lets you visually create and edit UI assets such as UI docume
 
 Unity versions supported:
 - **2019.4**: 2019.4.15f1 or newer
-- **2020.1**: 2020.1.14f1 or newer
-- **2020.2**: 2020.2.0b12 or newer
+- **2020.1**: 2020.1.15f1 or newer
+- **2020.2**: 2020.2.0b13 or newer
 - **2021.1**: 2021.1.0a7 or newer
 
 To install:
@@ -29,20 +29,21 @@ To install:
 
 ![UI Builder Main Window](Documentation~/images/UIBuilderAnnotatedMainWindow.png)
 
-### ![1](Documentation~/images/Numeral_1_half.png) Explorer
-* **StyleSheet:** Create USS selectors for sharing common styling between multiple elements.
-* **Hierarchy:** Current document element tree.
-### ![2](Documentation~/images/Numeral_2_half.png) Library
-* **Unity Elements:** Built-in Unity elements.
-* **Project Elements:** Custom user elements like other `.uxml` templates in the current project.
-### ![3](Documentation~/images/Numeral_3_half.png) Viewport
+### ![1](Documentation~/images/Numeral_1_half.png) StyleSheets
+* Create USS Selectors for sharing common styling between multiple elements.
+### ![2](Documentation~/images/Numeral_2_half.png) Hierarchy
+* Current UI Document (UXML) element hierarchy.
+### ![3](Documentation~/images/Numeral_3_half.png) Library
+* **Standard tab:** Built-in Unity elements.
+* **Project tab:** Custom user elements like other `.uxml` templates in the current project.
+### ![4](Documentation~/images/Numeral_4_half.png) Viewport
 * **Toolbar:** Can Save/Load, change the Theme and activate Preview mode.
 * Currently selected element with manipulation handles.
 * Edit-time Canvas for editing and previewing current document with optional edit-time-only background image.
-### ![4](Documentation~/images/Numeral_4_half.png) Code Previews
+### ![5](Documentation~/images/Numeral_5_half.png) Code Previews
 * **UXML Preview:** Preview of the generated UXML hierarchy asset.
 * **USS Preview:** Preview of the generated USS styles asset.
-### ![5](Documentation~/images/Numeral_5_half.png) Inspector
+### ![6](Documentation~/images/Numeral_6_half.png) Inspector
 * **Attributes:** Change attributes, like element name, that are set in the UXML document.
 * **Inherited Styles:** Add/remove style classes and see which selectors match the current element.
 * **Local Styles:** Override styles on the current element, inlined in the UXML document.

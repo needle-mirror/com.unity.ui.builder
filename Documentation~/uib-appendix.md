@@ -1,4 +1,4 @@
-# Full Feature List
+# Appendix
 
 ## Global
 

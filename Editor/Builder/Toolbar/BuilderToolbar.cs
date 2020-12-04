@@ -663,8 +663,10 @@ namespace Unity.UI.Builder
         void SetViewportSubTitle()
         {
             var subTitle = string.Empty;
+#if UI_BUILDER_PACKAGE
             if (!string.IsNullOrEmpty(m_BuilderPackageVersion))
                 subTitle += $"UI Builder {m_BuilderPackageVersion}";
+#endif
 
             m_Viewport.subTitle = subTitle;
         }
