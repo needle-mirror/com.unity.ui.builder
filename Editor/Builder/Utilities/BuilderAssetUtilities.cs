@@ -135,7 +135,7 @@ namespace Unity.UI.Builder
              current open document is a sub-document opened in-place. In such a case, we don't
              want to use our parent's VisualElementAsset, as that belongs to our parent document.
              So instead, we just use no parent, indicating that we are adding this new element
-             to the root of our document.*/ 
+             to the root of our document.*/
             if (veParent != null && veParent.GetVisualTreeAsset() != document.visualTreeAsset)
                 veaParent = veParent.GetVisualElementAsset();
 
@@ -289,7 +289,8 @@ namespace Unity.UI.Builder
                     document.visualTreeAsset, BuilderConstants.ChangeSelectionUndoMessage);
 
                 var vta = ve.GetVisualTreeAsset();
-                vta.AddElement(null, BuilderConstants.SelectedVisualTreeAssetSpecialElementTypeName);
+                var vtaRoot = vta.GetRootUXMLElement();
+                vta.AddElement(vtaRoot, BuilderConstants.SelectedVisualTreeAssetSpecialElementTypeName);
             }
             else if (ve.GetVisualElementAsset() != null)
             {
@@ -355,9 +356,9 @@ namespace Unity.UI.Builder
             }
 
             var assetPath = AssetDatabase.GetAssetPath(asset);
-            if(string.IsNullOrEmpty(assetPath))
+            if (string.IsNullOrEmpty(assetPath))
                 return BuilderConstants.ToolbarUnsavedFileDisplayMessage + extension;
-           
+
             return Path.GetFileName(assetPath) + (hasUnsavedChanges ? BuilderConstants.ToolbarUnsavedFileSuffix : "");
         }
     }

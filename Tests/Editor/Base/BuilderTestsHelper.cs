@@ -77,12 +77,12 @@ namespace Unity.UI.Builder.EditorTests
 
         internal static VisualElement GetLinkedDocumentElement(VisualElement hierarchyItem)
         {
-           return (VisualElement) hierarchyItem.GetProperty(BuilderConstants.ElementLinkedDocumentVisualElementVEPropertyName);
+            return (VisualElement)hierarchyItem.GetProperty(BuilderConstants.ElementLinkedDocumentVisualElementVEPropertyName);
         }
 
         internal static BuilderExplorerItem GetLinkedExplorerItem(VisualElement hierarchyItem)
         {
-            return (BuilderExplorerItem) hierarchyItem.GetProperty(BuilderConstants.ElementLinkedExplorerItemVEPropertyName);
+            return (BuilderExplorerItem)hierarchyItem.GetProperty(BuilderConstants.ElementLinkedExplorerItemVEPropertyName);
         }
 
         internal static BuilderExplorerItem GetHeaderItem(BuilderPaneContent paneContent)

@@ -167,6 +167,55 @@ namespace Unity.UI.Builder.EditorTests
             Assert.That(explorerItems.Count, Is.EqualTo(1));
         }
 
+        [UnityTest]
+        public IEnumerator SelectorRenameWithCommandAndContextMenu()
+        {
+            yield return EnsureSelectorsCanBeAddedAndReloadBuilder();
+
+            yield return AddSelector(TestSelectorName);
+            var createdSelector = GetStyleSelectorNodeWithName(TestSelectorName);
+            yield return UIETestEvents.Mouse.SimulateClick(createdSelector);
+
+            // Rename with command.
+            yield return UIETestEvents.ExecuteCommand(builder, UIETestEvents.Command.Rename);
+            yield return UIETestEvents.KeyBoard.SimulateTyping(builder, TestSelectorName2);
+            yield return UIETestEvents.Mouse.SimulateClick(styleSheetsPane);
+
+            yield return UIETestHelpers.Pause(2);
+            Assert.That(BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, TestSelectorName).Count, Is.EqualTo(0));
+            Assert.That(BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, TestSelectorName2).Count, Is.EqualTo(1));
+
+            // Test invalid selector rename.
+            yield return UIETestEvents.ExecuteCommand(builder, UIETestEvents.Command.Rename);
+            yield return UIETestEvents.KeyBoard.SimulateTyping(builder, "invalid%%selector@$name");
+            yield return UIETestEvents.Mouse.SimulateClick(styleSheetsPane);
+
+            yield return UIETestHelpers.Pause(2);
+            Assert.That(BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, TestSelectorName2).Count, Is.EqualTo(1));
+
+            // Try renaming with contextual menu option.
+            var panel = builder.rootVisualElement.panel as BaseVisualElementPanel;
+            var menu = panel.contextualMenuManager as BuilderTestContextualMenuManager;
+            Assert.That(menu, Is.Not.Null);
+            Assert.That(menu.menuIsDisplayed, Is.False);
+
+            createdSelector = GetStyleSelectorNodeWithName(TestSelectorName2);
+            yield return UIETestEvents.Mouse.SimulateClick(createdSelector, MouseButton.RightMouse);
+            var renameClick = menu.FindMenuAction("Rename");
+            Assert.That(renameClick, Is.Not.Null);
+
+            renameClick.Execute();
+            yield return UIETestHelpers.Pause(1);
+
+            // Rename back to original selector name.
+            yield return UIETestEvents.KeyBoard.SimulateTyping(builder, TestSelectorName);
+            yield return UIETestEvents.Mouse.SimulateClick(styleSheetsPane);
+
+            yield return UIETestHelpers.Pause(2);
+            Assert.That(BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, TestSelectorName2).Count, Is.EqualTo(0));
+            Assert.That(BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, TestSelectorName).Count, Is.EqualTo(1));
+        }
+
         /// <summary>
         /// In the StyleSheets pane, you can select selectors by clicking on the row or a style class pill.
         /// </summary>
@@ -324,7 +373,7 @@ namespace Unity.UI.Builder.EditorTests
             yield return UIETestHelpers.Pause(1);
             yield return UIETestEvents.Mouse.SimulateDragAndDrop(builder,
                 createdSelector.Q<Label>().worldBound.center,
-                  textFieldLabel.worldBound.center);
+                textFieldLabel.worldBound.center);
 
             var documentElement = GetFirstDocumentElement();
             Assert.That(documentElement.classList, Is.Not.Contain(TestSelectorName.TrimStart('.')));
@@ -423,6 +472,30 @@ namespace Unity.UI.Builder.EditorTests
             Assert.True(visibilityStrip.Q<Button>("hidden").pseudoStates.HasFlag(PseudoStates.Checked));
         }
 
+        [UnityTest]
+        public IEnumerator UxmlCopyBufferCannotBePastedInStylesheetPane()
+        {
+            // Load Test UXML File
+            yield return LoadTestUXMLDocument(k_TestNoUSSDocumentUXMLFilePath);
+
+            yield return null;
+
+            var label = builder.documentRootElement.Q("no-uss-label");
+            yield return UIETestEvents.Mouse.SimulateClick(label);
+
+            yield return UIETestEvents.ExecuteCommand(builder, UIETestEvents.Command.Copy);
+            Assert.That(BuilderEditorUtility.IsUxml(BuilderEditorUtility.systemCopyBuffer));
+
+            var panel = builder.rootVisualElement.panel as BaseVisualElementPanel;
+            var menu = panel.contextualMenuManager as BuilderTestContextualMenuManager;
+
+            yield return UIETestEvents.Mouse.SimulateClick(styleSheetsPane, MouseButton.RightMouse);
+            Assert.That(menu.menuIsDisplayed, Is.True);
+
+            var pasteMenuItem = menu.FindMenuAction("Paste");
+            Assert.AreEqual(DropdownMenuAction.Status.Disabled, pasteMenuItem.status);
+        }
+
         /// <summary>
         ///  Selecting an element or a the main document (VisualTreeAsset) should deselect any selected tree items in the StyleSheets pane.
         /// </summary>
@@ -475,26 +548,26 @@ namespace Unity.UI.Builder.EditorTests
 
             subdocumentClick.Execute();
             yield return UIETestHelpers.Pause(1);
-            
+
             styleSheetsPane.elementHierarchyView.ExpandRootItems();
             var selectorFromActive = BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, "#builder-test")[0]; // this one belongs to current
 
             yield return UIETestEvents.Mouse.SimulateClick(selectorFromActive);
-            
+
             var arbitraryStyleRow = inspector.Q<PersistedFoldout>("inspector-style-section-foldout-display").Q<BuilderStyleRow>();
             var isActive = arbitraryStyleRow.enabledInHierarchy == true;
-            
+
             Assert.AreEqual(true, isActive);
 
             var selectorFromParent = BuilderTestsHelper.GetExplorerItemsWithName(styleSheetsPane, ".unity-label")[1]; // this one belongs to parent
-            
+
             Assert.AreNotEqual(selectorFromActive, selectorFromParent);
 
             yield return UIETestEvents.Mouse.SimulateClick(selectorFromParent);
 
             arbitraryStyleRow = inspector.Q<PersistedFoldout>("inspector-style-section-foldout-display").Q<BuilderStyleRow>();
             isActive = arbitraryStyleRow.enabledInHierarchy == true;
-            
+
             Assert.AreEqual(false, isActive);
         }
     }

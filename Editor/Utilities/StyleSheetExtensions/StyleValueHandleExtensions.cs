@@ -144,7 +144,7 @@ namespace Unity.UI.Builder
             var color = Color.clear;
 
             var valueCount = styleProperty.values.Length;
-            
+
             if (valueCount >= 2)
             {
                 int i = 0;
@@ -159,7 +159,7 @@ namespace Unity.UI.Builder
                 if (i + 1 < valueCount)
                 {
                     valueType = styleProperty.values[i].valueType;
-                    var valueType2 = styleProperty.values[i+1].valueType;
+                    var valueType2 = styleProperty.values[i + 1].valueType;
                     if (valueType == StyleValueType.Dimension && valueType2 == StyleValueType.Dimension)
                     {
                         var valueX = styleProperty.values[i++];
@@ -303,5 +303,4 @@ namespace Unity.UI.Builder
             styleSheet.strings[valueHandle.valueIndex] = strValue;
         }
     }
-
 }

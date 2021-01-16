@@ -708,9 +708,9 @@ namespace Unity.UI.Builder
             else if (IsComputedStyleFontAsset(val, styleName) && fieldElement is ObjectField objectField)
             {
                 var value = GetComputedStyleFontAssetValue(val);
-               objectField.SetValueWithoutNotify(useStyleProperty
-                     ? styleSheet.GetAsset(styleProperty.values[0])
-                     : value);
+                objectField.SetValueWithoutNotify(useStyleProperty
+                    ? styleSheet.GetAsset(styleProperty.values[0])
+                    : value);
             }
 #endif
             else if (IsComputedStyleBackground(val) && fieldElement is ImageStyleField imageStyleField)
@@ -1670,11 +1670,6 @@ namespace Unity.UI.Builder
             PostStyleFieldSteps(e.target as VisualElement, styleName, isNewValue);
         }
 
-        void OnFieldValueChange(ChangeEvent<object> e, string styleName)
-        {
-            OnFieldValueChangeImpl(e.target, (Object)e.newValue, (Object)e.previousValue, styleName);
-        }
-
         void OnFieldValueChange(ChangeEvent<Object> e, string styleName)
         {
             OnFieldValueChangeImpl(e.target, e.newValue, e.previousValue, styleName);
@@ -1706,7 +1701,7 @@ namespace Unity.UI.Builder
                 Builder.ShowWarning(BuilderConstants.BuiltInAssetPathsNotSupportedMessage);
 
                 // Revert the change.
-                ((BaseField<object>)target).SetValueWithoutNotify(previousValue);
+                ((BaseField<Object>)target).SetValueWithoutNotify(previousValue);
                 return;
             }
 
@@ -1739,7 +1734,7 @@ namespace Unity.UI.Builder
                 if (currentVisualElement.GetMinSizeSpecialElement() != null)
                 {
                     var newSize = Vector2.negativeInfinity;
-                    
+
                     if (newValue is Texture texture)
                         newSize = new Vector2(texture.width, texture.height);
 #if !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
@@ -1805,7 +1800,7 @@ namespace Unity.UI.Builder
             var styleProperty = GetOrCreateStylePropertyByStyleName(styleName);
 
             var isNewValue = field.OnFieldValueChange(styleProperty, styleSheet);
-            
+
             PostStyleFieldSteps(field, styleName, isNewValue);
         }
 #endif
@@ -1917,7 +1912,7 @@ namespace Unity.UI.Builder
             return val is StyleTextShadow || val is TextShadow || val is BuilderTextShadow;
         }
 #endif
-        
+
         static public bool IsComputedStyleBackground(object val)
         {
             return val is StyleBackground || val is Background;
@@ -1955,12 +1950,12 @@ namespace Unity.UI.Builder
 
             if (val is TextShadow)
                 return new BuilderTextShadow((TextShadow)val);
-            
+
             var style = (StyleTextShadow)val;
             return new BuilderTextShadow(style);
         }
 #endif
-        
+
         static public int GetComputedStyleIntValue(object val)
         {
             if (val is int)
@@ -2002,7 +1997,7 @@ namespace Unity.UI.Builder
         {
             if (val is FontAsset fontAsset)
                 return fontAsset;
-            
+
             if (val is FontDefinition fontDefinition)
                 return (FontAsset)fontDefinition.fontAsset;
 
@@ -2010,7 +2005,7 @@ namespace Unity.UI.Builder
             return (FontAsset)style.value.fontAsset;
         }
 #endif
-        
+
         static public Background GetComputedStyleBackgroundValue(object val)
         {
             if (val is Background)

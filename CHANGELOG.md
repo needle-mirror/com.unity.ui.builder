@@ -4,6 +4,22 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-preview.12] - 2021-01-16
+
+- Added support for renaming USS Selectors directly inside the StyleSheets pane via double-click or the right-click menu.
+- Added settings search support for UI Builder settings in the Project Settings window.
+- Fixed not being able to create a single-character selector.
+- Fixed exception thrown when selecting the currently open UXML asset in the Project Window.
+- Fixed non-whole pixel size and position values resulting from resizing or moving elements in the Viewport with the zoom set to 75%.
+- Fixed the InvalidCastException thrown when assigning a built-in image asset to a Texture2D in the UI Builder inspector.
+- Fixed float and double attributes not being stored correctly in UXML as CultureInvariant.
+- Fixed element highlight overlay not being reset after deleting the element.
+- Fixed clicking in empty space in Hierarchy pane not deselecting a USS Selector and vice-versa for the StyleSheets pane.
+- Fixed null reference exception when using the Align style properties on a USS Selector.
+- Fixed handling of a deleted StyleSheet that is being used by the currently open UXML UI Document.
+- Fixed being able to paste USS Selectors from the Hierarchy pane and elements from the StyleSheets pane. Paste now works based on which pane is currently active.
+- Fixed document settings (like Canvas background and zoom) being reset when editing a sub-document in-place.
+
 ## [1.0.0-preview.11] - 2020-12-04
 
 - Package documentation has been fully updated to reflect the current state of the UI Builder.

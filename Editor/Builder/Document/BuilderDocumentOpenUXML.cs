@@ -39,7 +39,7 @@ namespace Unity.UI.Builder
 
         [SerializeField]
         int m_OpenSubDocumentParentSourceTemplateAssetIndex = -1;
-        
+
         //
         // Unserialized Data
         //
@@ -74,7 +74,7 @@ namespace Unity.UI.Builder
 
                 if (m_Document == null)
                     return null;
-                
+
                 return m_Document.openUXMLFiles;
             }
         }
@@ -94,7 +94,15 @@ namespace Unity.UI.Builder
         {
             get
             {
-                m_Settings = BuilderDocumentSettings.CreateOrLoadSettingsObject(m_Settings, uxmlPath);
+                // If this uxmnl is being edited in place then use the parent document's settings
+                if (isChildSubDocument && openSubDocumentParentSourceTemplateAssetIndex != -1)
+                {
+                    m_Settings = openSubDocumentParent.settings;
+                }
+                else
+                {
+                    m_Settings = BuilderDocumentSettings.CreateOrLoadSettingsObject(m_Settings, uxmlPath);
+                }
                 return m_Settings;
             }
         }
@@ -150,9 +158,9 @@ namespace Unity.UI.Builder
         }
 
         public List<BuilderDocumentOpenUSS> openUSSFiles => m_OpenUSSFiles;
-        
+
         public bool isChildSubDocument => openSubDocumentParentIndex > -1;
-        
+
         public BuilderDocumentOpenUXML openSubDocumentParent => isChildSubDocument ? openUXMLFiles[openSubDocumentParentIndex] : null;
 
         //
@@ -372,7 +380,7 @@ namespace Unity.UI.Builder
 #if !UNITY_2019_4
             var rootVEA = visualTreeAsset.GetRootUXMLElement();
             AddStyleSheetsToRootAsset(rootVEA, newUssPath, newUssIndex);
-#else 
+#else
             foreach (var asset in visualTreeAsset.visualElementAssets)
             {
                 if (!visualTreeAsset.IsRootElement(asset))
@@ -808,6 +816,7 @@ namespace Unity.UI.Builder
                 return;
 
             documentRootElement.Clear();
+            documentRootElement.styleSheets.Clear();
             BuilderSharedStyles.ClearContainer(documentRootElement);
 
             documentRootElement.SetProperty(
@@ -876,7 +885,8 @@ namespace Unity.UI.Builder
             RefreshStyle(documentRootElement);
         }
 
-        void ReloadStyleSheetElements(VisualElement documentRootElement) {
+        void ReloadStyleSheetElements(VisualElement documentRootElement)
+        {
             // Add shared styles.
 
             BuilderSharedStyles.ClearContainer(documentRootElement);

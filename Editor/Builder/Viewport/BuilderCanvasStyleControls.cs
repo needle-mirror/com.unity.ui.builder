@@ -29,7 +29,7 @@ namespace Unity.UI.Builder
         VisualTreeAsset m_VisualTreeAsset;
         VisualElement m_Target;
 
-        public new class UxmlFactory : UxmlFactory<BuilderCanvasStyleControls, UxmlTraits> { }
+        public new class UxmlFactory : UxmlFactory<BuilderCanvasStyleControls, UxmlTraits> {}
 
         public BuilderCanvasStyleControls()
         {
@@ -137,6 +137,11 @@ namespace Unity.UI.Builder
                     case k_FlexDirectionName: FlexDirectionUpdateToggleIcon(); break;
                     case k_AlignItemsName: AlignItemsUpdateToggleIcon(); break;
                     case k_JustifyContentName: JustifyContentUpdateToggleIcon(); break;
+                    case k_TextAlignName: 
+                        HorizontalTextAlignUpdateToggleIcon();
+                        VerticalTextAlignUpdateToggleIcon();
+                        break;
+                    case k_TextWrapName: TextWrapUpdateToggleIcon(); break;
                 }
             }
         }

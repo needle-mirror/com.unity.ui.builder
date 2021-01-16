@@ -78,22 +78,22 @@ namespace Unity.UI.Builder
             {
                 UpdateTextShadowField();
                 e.StopPropagation();
-            }); 
-            m_OffsetYField.RegisterValueChangedCallback(e => 
+            });
+            m_OffsetYField.RegisterValueChangedCallback(e =>
             {
                 UpdateTextShadowField();
                 e.StopPropagation();
-            }); 
+            });
             m_BlurRadiusField.RegisterValueChangedCallback(e =>
             {
                 UpdateTextShadowField();
                 e.StopPropagation();
-            }); 
+            });
             m_ColorField.RegisterValueChangedCallback(e =>
             {
                 UpdateTextShadowField();
                 e.StopPropagation();
-            }); 
+            });
         }
 
         public override void SetValueWithoutNotify(BuilderTextShadow newValue)
@@ -101,7 +101,7 @@ namespace Unity.UI.Builder
             base.SetValueWithoutNotify(newValue);
             RefreshSubFields();
         }
-        
+
         void RefreshSubFields()
         {
             m_OffsetXField.SetValueWithoutNotify(value.offsetX.ToString());
@@ -144,7 +144,7 @@ namespace Unity.UI.Builder
             var offsetX = new Dimension {value = m_OffsetXField.length, unit = m_OffsetXField.unit};
             var offsetY = new Dimension {value = m_OffsetYField.length, unit = m_OffsetYField.unit};
             var blurRadius = new Dimension {value = m_BlurRadiusField.length, unit = m_BlurRadiusField.unit};
-            
+
             if (isNewValue)
             {
                 styleSheet.AddValue(styleProperty, offsetX);
@@ -164,8 +164,8 @@ namespace Unity.UI.Builder
         }
 #else
         public TextShadowStyleField() : this(null) {}
-        
-        public TextShadowStyleField(string label) : base(label) 
+
+        public TextShadowStyleField(string label) : base(label)
         {}
 #endif
     }

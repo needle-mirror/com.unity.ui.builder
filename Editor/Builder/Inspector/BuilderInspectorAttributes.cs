@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using UnityEditor;
@@ -235,11 +236,19 @@ namespace Unity.UI.Builder
                 }
                 else if (attributeName == "show-horizontal-scroller")
                 {
+#if UNITY_2019_4 || UNITY_2020_1 || UNITY_2020_2
                     return scrollView.showHorizontal;
+#else
+                    return scrollView.horizontalScrollerVisibility != ScrollerVisibility.Hidden;
+#endif
                 }
                 else if (attributeName == "show-vertical-scroller")
                 {
+#if UNITY_2019_4 || UNITY_2020_1 || UNITY_2020_2
                     return scrollView.showVertical;
+#else
+                    return scrollView.verticalScrollerVisibility != ScrollerVisibility.Hidden;
+#endif
                 }
             }
 #if !UNITY_2019_4 && !UNITY_2020_1
@@ -632,13 +641,13 @@ namespace Unity.UI.Builder
         void OnAttributeValueChange(ChangeEvent<float> evt)
         {
             var field = evt.target as FloatField;
-            PostAttributeValueChange(field, evt.newValue.ToString());
+            PostAttributeValueChange(field, evt.newValue.ToString(CultureInfo.InvariantCulture.NumberFormat));
         }
 
         void OnAttributeValueChange(ChangeEvent<double> evt)
         {
             var field = evt.target as DoubleField;
-            PostAttributeValueChange(field, evt.newValue.ToString());
+            PostAttributeValueChange(field, evt.newValue.ToString(CultureInfo.InvariantCulture.NumberFormat));
         }
 
         void OnAttributeValueChange(ChangeEvent<int> evt)

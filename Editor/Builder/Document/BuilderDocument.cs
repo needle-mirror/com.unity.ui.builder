@@ -6,7 +6,7 @@ using System;
 using System.IO;
 
 #if UNITY_2019_4 || UNITY_2020_1
-    using ThemeStyleSheet = UnityEngine.UIElements.StyleSheet;
+using ThemeStyleSheet = UnityEngine.UIElements.StyleSheet;
 #endif
 
 namespace Unity.UI.Builder
@@ -292,8 +292,9 @@ namespace Unity.UI.Builder
             activeOpenUXMLFile.LoadDocument(visualTreeAsset, documentElement);
             SaveToDisk();
         }
+
         //
-        // Circular Dependencies 
+        // Circular Dependencies
         //
 
         public bool WillCauseCircularDependency(VisualTreeAsset vtaCheck)
@@ -315,7 +316,6 @@ namespace Unity.UI.Builder
             }
             return true;
         }
-
 
         //
         // Sub Document

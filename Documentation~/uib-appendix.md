@@ -49,6 +49,7 @@
 1. Right-clicking on a StyleSheet and selecting "Set as Active USS" will set the current *active* StyleSheet to this StyleSheet, updating the highlight (bold) of the *active* StyleSheet. `Tested`
 1. When pasting a selector in the StyleSheets pane, it will be added to the *active* StyleSheet. `Tested`
 1. Opening a Sub-Document will display the parent USS files (as read-only) after the sub-document's own USS files in the StyleSheets pane.
+1. Can rename USS Selectors directly inside the StyleSheets pane via double-click or the right-click menu.
 
 ## Hierarchy
 

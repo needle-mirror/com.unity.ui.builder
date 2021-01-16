@@ -8,7 +8,7 @@ using UnityEngine.UIElements;
 
 namespace Unity.UI.Builder.EditorTests
 {
-    class ViewportToolbarTests  : BuilderIntegrationTest
+    class ViewportToolbarTests : BuilderIntegrationTest
     {
         /// <summary>
         /// Selecting **File > New** clears the selection, the Viewport canvas, the StyleSheets pane, the Hierarchy, and all undo/redo stack operations for the previous document. A prompt is displayed if there are unsaved changes.
@@ -27,10 +27,10 @@ namespace Unity.UI.Builder.EditorTests
             yield return AddSelector(StyleSheetsPaneTests.TestSelectorName);
 
             ForceNewDocument();
-            Assert.That( viewport.documentRootElement.childCount, Is.EqualTo(0));
+            Assert.That(viewport.documentRootElement.childCount, Is.EqualTo(0));
             Assert.That(BuilderTestsHelper.GetExplorerItems(styleSheetsPane).Count, Is.EqualTo(0));
             Assert.That(BuilderTestsHelper.GetExplorerItems(hierarchy).Count, Is.EqualTo(0));
-            Assert.True( builder.selection.isEmpty);
+            Assert.True(builder.selection.isEmpty);
         }
 
         /// <summary>
@@ -101,8 +101,8 @@ namespace Unity.UI.Builder.EditorTests
 
             yield return UIETestEvents.Mouse.SimulateClick(fitCanvasButton);
 
-            Assert.True( Mathf.Abs(canvas.worldBound.center.x - viewport.worldBound.center.x) < 1f);
-            Assert.True( Mathf.Abs(canvas.worldBound.center.y - viewport.worldBound.center.y) < 1f);
+            Assert.True(Mathf.Abs(canvas.worldBound.center.x - viewport.worldBound.center.x) < 1f);
+            Assert.True(Mathf.Abs(canvas.worldBound.center.y - viewport.worldBound.center.y) < 1f);
         }
 
         /// <summary>
@@ -124,7 +124,7 @@ namespace Unity.UI.Builder.EditorTests
             yield return UIETestEvents.Mouse.SimulateClick(viewport);
             Assert.True(builder.selection.isEmpty);
 
-            var button = (Button) GetFirstDocumentElement();
+            var button = (Button)GetFirstDocumentElement();
             yield return UIETestEvents.Mouse.SimulateClick(button);
             Assert.True(button.pseudoStates == 0);
             Assert.That(builder.selection.selection.First(), Is.EqualTo(button));
@@ -136,6 +136,5 @@ namespace Unity.UI.Builder.EditorTests
             Assert.True(builder.selection.isEmpty);
             Assert.True(button.pseudoStates.HasFlag(PseudoStates.Hover));
         }
-
     }
 }

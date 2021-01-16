@@ -46,13 +46,13 @@ namespace Unity.UI.Builder
 
         string m_2DSpriteEditorButtonTooltip = k_2DSpriteEditorButtonTooltip_NotInstalled;
 #endif
-        
+
         public ImageStyleField() : this(null) {}
 
         public ImageStyleField(string label) : base(label)
         {
             AddType(typeof(Texture2D), "Texture");
-            
+
 #if !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
             styleSheets.Add(BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(k_UssPath));
             var fieldContainer = new VisualElement {name = k_ImageStyleFieldContainerName};
@@ -64,7 +64,7 @@ namespace Unity.UI.Builder
             var fieldInput = this.Q(k_FieldInputName);
             // Move visual input over to field container
             fieldContainer.Add(fieldInput);
-            
+
             var editButton = new Button(OnEditButton)
             {
                 text = k_2DSpriteEditorButtonString,
@@ -142,7 +142,7 @@ namespace Unity.UI.Builder
             return addRequest.Result != null;
         }
 #endif
-        
+
         public void TryEnableVectorGraphicTypeSupport()
         {
             AddType(typeof(VectorImage), "Vector");

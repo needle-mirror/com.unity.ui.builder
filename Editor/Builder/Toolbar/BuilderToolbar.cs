@@ -10,7 +10,7 @@ using Toolbar = UnityEditor.UIElements.Toolbar;
 using System;
 
 #if UNITY_2019_4 || UNITY_2020_1
-    using ThemeStyleSheet = UnityEngine.UIElements.StyleSheet;
+using ThemeStyleSheet = UnityEngine.UIElements.StyleSheet;
 #endif
 
 namespace Unity.UI.Builder
@@ -135,7 +135,7 @@ namespace Unity.UI.Builder
             UnregisterCallback<DetachFromPanelEvent>(UnregisterCallbacks);
             BuilderAssetModificationProcessor.Unregister(this);
             if (m_ThemeManager != null)
-               BuilderAssetPostprocessor.Unregister(m_ThemeManager);
+                BuilderAssetPostprocessor.Unregister(m_ThemeManager);
         }
 
         public void SetToolbarBreadCrumbs()
@@ -159,7 +159,11 @@ namespace Unity.UI.Builder
             foreach (var Doc in allHierarchyDocuments)
             {
                 string docName = BreadcrumbFileName(Doc);
-                Action onBreadCrumbClick = () => document.GoToSubdocument(m_Viewport.documentRootElement, m_PaneWindow, Doc);
+                Action onBreadCrumbClick = () =>
+                {
+                    document.GoToSubdocument(m_Viewport.documentRootElement, m_PaneWindow, Doc);
+                    m_Viewport.SetViewFromDocumentSetting();
+                };
                 bool clickedOnSameDocument = document.activeOpenUXMLFile == Doc;
                 m_Breadcrumbs.PushItem(docName, clickedOnSameDocument ? null : onBreadCrumbClick);
             }
@@ -177,7 +181,7 @@ namespace Unity.UI.Builder
             return newFileName;
         }
 
-        public void OnAssetChange() { }
+        public void OnAssetChange() {}
 
         public AssetDeleteResult OnWillDeleteAsset(string assetPath, RemoveAssetOptions option)
         {
@@ -210,7 +214,10 @@ namespace Unity.UI.Builder
                     string.Format(BuilderConstants.DialogAbortActionOption, actionName.ToPascalCase()));
 
                 if (acceptAction)
+                {
+                    // Open a new, empty document
                     NewDocument(false);
+                }
 
                 return acceptAction;
             }
@@ -720,7 +727,7 @@ namespace Unity.UI.Builder
             projectSettingsWindow.SelectProviderByName(BuilderSettingsProvider.name);
         }
 
-        public void SelectionChanged() { }
+        public void SelectionChanged() {}
 
         public void HierarchyChanged(VisualElement element, BuilderHierarchyChangeType changeType)
         {

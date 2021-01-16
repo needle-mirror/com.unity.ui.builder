@@ -286,7 +286,7 @@ namespace Unity.UI.Builder
         {
             var importer = new BuilderVisualTreeAssetImporter(); // Cannot be cached because the StyleBuilder never gets reset.
             importer.ImportXmlFromString(copyBuffer, out var pasteVta);
-            
+
             /* If the current parent element is linked to a VisualTreeAsset, it could mean
             that our parent is the TemplateContainer belonging to our parent document and the
             current open document is a sub-document opened in-place. In such a case, we don't
@@ -301,7 +301,7 @@ namespace Unity.UI.Builder
 
                 if (selectionParent?.GetVisualTreeAsset() == m_PaneWindow.document.visualTreeAsset)
                     parent = null;
-                
+
                 m_Selection.ClearSelection(null);
             }
 
@@ -342,15 +342,15 @@ namespace Unity.UI.Builder
 
         public void Paste()
         {
-            var copyBuffer = BuilderEditorUtility.systemCopyBuffer;
-
-            if (string.IsNullOrEmpty(copyBuffer))
+            var focused = m_PaneWindow.rootVisualElement.focusController.focusedElement as VisualElement;
+            if (!BuilderEditorUtility.CopyBufferMatchesTarget(focused))
                 return;
 
-            var trimmedBuffer = copyBuffer.Trim();
-            if (trimmedBuffer.StartsWith("<") && trimmedBuffer.EndsWith(">"))
+            var copyBuffer = BuilderEditorUtility.systemCopyBuffer;
+
+            if (BuilderEditorUtility.IsUxml(copyBuffer))
                 PasteUXML(copyBuffer);
-            else if (trimmedBuffer.EndsWith("}"))
+            else if (BuilderEditorUtility.IsUss(copyBuffer))
                 PasteUSS(copyBuffer);
             else // Unknown string.
                 return;

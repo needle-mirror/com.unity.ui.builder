@@ -73,7 +73,7 @@ namespace Unity.UI.Builder
 
             if (!CanStopManipulation(evt))
                 return;
-            
+
             DisplayContextMenu(evt, target);
 
             target.ReleaseMouse();
@@ -127,11 +127,11 @@ namespace Unity.UI.Builder
             var linkedOpenVTA = documentElement?.GetProperty(BuilderConstants.ElementLinkedVisualTreeAssetVEPropertyName) as VisualTreeAsset;
 
             var isValidTarget = documentElement != null && !linkedOpenVTA &&
-                                (documentElement.IsPartOfActiveVisualTreeAsset(paneWindow.document) ||
-                                 documentElement.GetStyleComplexSelector() != null);
+                (documentElement.IsPartOfActiveVisualTreeAsset(paneWindow.document) ||
+                    documentElement.GetStyleComplexSelector() != null);
             var isValidCopyTarget = documentElement != null && !linkedOpenVTA &&
-                                    (documentElement.IsPartOfCurrentDocument() ||
-                                     documentElement.GetStyleComplexSelector() != null);
+                (documentElement.IsPartOfCurrentDocument() ||
+                    documentElement.GetStyleComplexSelector() != null);
             evt.StopImmediatePropagation();
 
             evt.menu.AppendAction(
@@ -152,9 +152,10 @@ namespace Unity.UI.Builder
                 {
                     m_PaneWindow.commandHandler.Paste();
                 },
-                string.IsNullOrEmpty(BuilderEditorUtility.systemCopyBuffer)
-                    ? DropdownMenuAction.Status.Disabled
-                    : DropdownMenuAction.Status.Normal);
+                BuilderEditorUtility.CopyBufferMatchesTarget(target)
+                    ? DropdownMenuAction.Status.Normal
+                    : DropdownMenuAction.Status.Disabled);
+
 
             evt.menu.AppendSeparator();
 
@@ -162,13 +163,8 @@ namespace Unity.UI.Builder
                 "Rename",
                 a =>
                 {
-                    m_Selection.Select(null, documentElement);
-                    var explorerItemElement = documentElement?.GetProperty(BuilderConstants.ElementLinkedExplorerItemVEPropertyName) as BuilderExplorerItem;
-                    if (explorerItemElement == null)
-                        return;
-
-                    explorerItemElement.ActivateRenameElementMode();
-
+                    ReselectIfNecessary(documentElement);
+                    m_PaneWindow.commandHandler.RenameSelection();
                 },
                 isValidTarget
                     ? DropdownMenuAction.Status.Normal
@@ -262,7 +258,6 @@ namespace Unity.UI.Builder
                         BuilderHierarchyUtilities.OpenAsSubDocument(paneWindow, linkedInstancedVTA, linkedVEA);
                     });
             }
-
         }
     }
 }

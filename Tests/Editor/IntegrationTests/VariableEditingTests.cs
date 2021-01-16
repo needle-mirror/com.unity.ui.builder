@@ -228,7 +228,7 @@ namespace Unity.UI.Builder.EditorTests
             yield return CheckVariableCompatibleTypes("Text/Font");
         }
 
-        public void CheckSearchResults(string [] results)
+        public void CheckSearchResults(string[] results)
         {
             var listView = currentHandler.completer.popup.listView;
 

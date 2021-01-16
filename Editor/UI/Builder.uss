@@ -94,6 +94,10 @@
     flex-direction: row;
 }
 
+.unity-builder-explorer-tree-item-selector-label-cont {
+    flex-direction: row;
+}
+
 .unity-builder-explorer-tree-item-label {
     margin-top: 3px;
     padding-top: 0;

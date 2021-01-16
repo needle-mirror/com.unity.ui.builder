@@ -304,7 +304,7 @@ namespace Unity.UI.Builder.EditorTests
             Assert.NotNull(parentRoot);
             yield return UIETestEvents.Mouse.SimulateClick(parentRoot, MouseButton.RightMouse);
             Assert.That(menu.menuIsDisplayed, Is.True);
-            
+
             var parentClick = menu.FindMenuAction(parentString);
             Assert.That(parentClick, Is.Not.Null);
             parentClick.Execute();
@@ -315,15 +315,15 @@ namespace Unity.UI.Builder.EditorTests
         protected IEnumerator OpenChildTemplateContainerAsSubDocument(BuilderTestContextualMenuManager menu, string nameOfChildSubDocument, bool inPlace = false)
         {
             hierarchy.elementHierarchyView.ExpandAllItems();
-            
+
             // Open child
             var childInHierarchy = BuilderTestsHelper.GetExplorerItemsWithName(hierarchy, nameOfChildSubDocument);
             Assert.NotZero(childInHierarchy.Count);
 
-            // Simulate right click on child TemplateContainer 
+            // Simulate right click on child TemplateContainer
             yield return UIETestEvents.Mouse.SimulateClick(childInHierarchy[0], MouseButton.RightMouse);
             Assert.That(menu.menuIsDisplayed, Is.True);
-        
+
             DropdownMenuAction subdocumentClick;
             if (inPlace)
                 subdocumentClick = menu.FindMenuAction(BuilderConstants.ExplorerHierarchyPaneOpenSubDocumentInPlace);

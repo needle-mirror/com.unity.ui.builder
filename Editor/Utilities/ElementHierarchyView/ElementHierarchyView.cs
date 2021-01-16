@@ -90,7 +90,7 @@ namespace Unity.UI.Builder
             {
                 var leafTarget = e.leafTarget as VisualElement;
                 if (leafTarget.parent is ScrollView)
-                    ClearSelection();
+                    m_PaneWindow.primarySelection.ClearSelection(null);
             });
 
             m_TreeViewHoverOverlay = highlightOverlayPainter;
@@ -205,6 +205,10 @@ namespace Unity.UI.Builder
             {
                 var selectorParts = BuilderSharedStyles.GetSelectorParts(documentElement);
 
+                var selectorLabelCont = new VisualElement();
+                selectorLabelCont.AddToClassList(BuilderConstants.ExplorerItemSelectorLabelContClassName);
+                labelCont.Add(selectorLabelCont);
+                
                 // Register right-click events for context menu actions.
                 m_ContextMenuManipulator.RegisterCallbacksOnTarget(explorerItem);
 
@@ -215,8 +219,8 @@ namespace Unity.UI.Builder
                 {
                     if (partStr.StartsWith(BuilderConstants.UssSelectorClassNameSymbol))
                     {
-                        m_ClassPillTemplate.CloneTree(labelCont);
-                        var pill = labelCont.contentContainer.ElementAt(labelCont.childCount - 1);
+                        m_ClassPillTemplate.CloneTree(selectorLabelCont);
+                        var pill = selectorLabelCont.contentContainer.ElementAt(selectorLabelCont.childCount - 1);
                         var pillLabel = pill.Q<Label>("class-name-label");
                         pill.name = "unity-builder-tree-class-pill";
                         pill.AddToClassList("unity-debugger-tree-item-pill");
@@ -234,30 +238,34 @@ namespace Unity.UI.Builder
                         var selectorPartLabel = new Label(partStr);
                         selectorPartLabel.AddToClassList(BuilderConstants.ExplorerItemLabelClassName);
                         selectorPartLabel.AddToClassList(BuilderConstants.ElementNameClassName);
-                        labelCont.Add(selectorPartLabel);
+                        selectorLabelCont.Add(selectorPartLabel);
                     }
                     else if (partStr.StartsWith(BuilderConstants.UssSelectorPseudoStateSymbol))
                     {
                         var selectorPartLabel = new Label(partStr);
                         selectorPartLabel.AddToClassList(BuilderConstants.ExplorerItemLabelClassName);
                         selectorPartLabel.AddToClassList(BuilderConstants.ElementPseudoStateClassName);
-                        labelCont.Add(selectorPartLabel);
+                        selectorLabelCont.Add(selectorPartLabel);
                     }
                     else if (partStr == BuilderConstants.SingleSpace)
                     {
                         var selectorPartLabel = new Label(BuilderConstants.TripleSpace);
                         selectorPartLabel.AddToClassList(BuilderConstants.ExplorerItemLabelClassName);
                         selectorPartLabel.AddToClassList(BuilderConstants.ElementTypeClassName);
-                        labelCont.Add(selectorPartLabel);
+                        selectorLabelCont.Add(selectorPartLabel);
                     }
                     else
                     {
                         var selectorPartLabel = new Label(partStr);
                         selectorPartLabel.AddToClassList(BuilderConstants.ExplorerItemLabelClassName);
                         selectorPartLabel.AddToClassList(BuilderConstants.ElementTypeClassName);
-                        labelCont.Add(selectorPartLabel);
+                        selectorLabelCont.Add(selectorPartLabel);
                     }
                 }
+
+                // Textfield to rename element in hierarchy.
+                var renameField = explorerItem.CreateRenamingTextField(documentElement, null, m_Selection);
+                labelCont.Add(renameField);
 
                 // Allow reparenting.
                 explorerItem.SetProperty(BuilderConstants.ExplorerItemElementLinkVEPropertyName, documentElement);
@@ -277,13 +285,13 @@ namespace Unity.UI.Builder
                 ssLabel.AddToClassList("unity-debugger-tree-item-type");
                 row.AddToClassList(BuilderConstants.ExplorerHeaderRowClassName);
                 labelCont.Add(ssLabel);
-                
+
                 // Allow reparenting.
                 explorerItem.SetProperty(BuilderConstants.ExplorerItemElementLinkVEPropertyName, documentElement);
-                
+
                 // Register right-click events for context menu actions.
                 m_ContextMenuManipulator.RegisterCallbacksOnTarget(explorerItem);
-                
+
                 return;
             }
 
@@ -492,7 +500,7 @@ namespace Unity.UI.Builder
                 foreach (var item in m_TreeView.rootItems)
                     m_TreeView.ExpandItem(item.id);
         }
-        
+
         public void ExpandAllItems()
         {
             // Auto-expand all items on load.
@@ -600,7 +608,7 @@ namespace Unity.UI.Builder
                 }
                 else if (elementStyle == BuilderElementStyle.Highlighted && !EditorGUIUtility.isProSkin)
                 {
-                        libraryIcon = BuilderLibraryContent.GetTypeDarkSkinLibraryIcon(documentElement.GetType());
+                    libraryIcon = BuilderLibraryContent.GetTypeDarkSkinLibraryIcon(documentElement.GetType());
                 }
 
                 var styleBackgroundImage = icon.style.backgroundImage;

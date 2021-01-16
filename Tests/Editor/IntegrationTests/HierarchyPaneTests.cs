@@ -36,7 +36,7 @@ namespace Unity.UI.Builder.EditorTests
             var documentElement = GetFirstDocumentElement();
             Assert.That(documentElement.name, Is.EqualTo(testElementName));
 
-            var selectedItem = (TreeViewItem<VisualElement>) hierarchyTreeView.GetSelectedItem();
+            var selectedItem = (TreeViewItem<VisualElement>)hierarchyTreeView.GetSelectedItem();
             Assert.That(documentElement, Is.EqualTo(selectedItem.data));
             Assert.That(selection.selection.First(), Is.EqualTo(documentElement));
         }
@@ -297,6 +297,30 @@ namespace Unity.UI.Builder.EditorTests
             Assert.That(hierarchyTreeView.GetSelectedItem(), Is.Null);
         }
 
+        /// <summary>
+        /// Selecting the StyleSheet pane should deselect any selected tree items in the Hierarchy.
+        /// </summary>
+        [UnityTest]
+        public IEnumerator SelectingStyleSheetPaneDeselectsHierarchyItems()
+        {
+            AddElementCodeOnly();
+            yield return EnsureSelectorsCanBeAddedAndReloadBuilder();
+
+            // Deselect
+            yield return UIETestEvents.Mouse.SimulateClick(hierarchy);
+            var hierarchyTreeView = hierarchy.Q<TreeView>();
+            Assert.That(hierarchyTreeView.GetSelectedItem(), Is.Null);
+
+            // Select hierarchy item
+            var hierarchyItem = BuilderTestsHelper.GetExplorerItemWithName(hierarchy, nameof(VisualElement));
+            yield return UIETestEvents.Mouse.SimulateClick(hierarchyItem);
+            Assert.That(hierarchyTreeView.GetSelectedItem(), Is.Not.Null);
+
+            // Select test selector
+            yield return UIETestEvents.Mouse.SimulateClick(styleSheetsPane);
+            Assert.That(hierarchyTreeView.GetSelectedItem(), Is.Null);
+        }
+
         readonly string m_ExpectedUXMLString
             = WebUtility.UrlDecode("%3Cui%3AUXML+xmlns%3Aui%3D%22UnityEngine.UIElements%22+xmlns%3Auie%3D%22UnityEditor.UIElements%22%3E%0A++++%3Cui%3AVisualElement%3E%0A++++++++%3Cui%3AVisualElement+%2F%3E%0A++++%3C%2Fui%3AVisualElement%3E%0A%3C%2Fui%3AUXML%3E%0A");
 
@@ -312,7 +336,7 @@ namespace Unity.UI.Builder.EditorTests
         {
             AddElementCodeOnly();
             AddElementCodeOnly();
-            yield return  UIETestHelpers.Pause();
+            yield return UIETestHelpers.Pause();
 
             var hierarchyItems = BuilderTestsHelper.GetExplorerItemsWithName(hierarchy, nameof(VisualElement));
             var hierarchyItem1 = hierarchyItems[0];
@@ -351,6 +375,30 @@ namespace Unity.UI.Builder.EditorTests
             explorerItems = BuilderTestsHelper.GetExplorerItems(hierarchy);
             Assert.That(explorerItems.Count, Is.EqualTo(2));
             Assert.That(BuilderTestsHelper.GetLinkedDocumentElement(explorerItems[1]).parent, Is.EqualTo(BuilderTestsHelper.GetLinkedDocumentElement(explorerItems[0])));
+        }
+
+        [UnityTest]
+        public IEnumerator UssCopyBufferCannotBePastedInHierarchyPane()
+        {
+            // Load Test UXML File
+            yield return LoadTestUXMLDocument(k_ChildTestUXMLPath);
+
+            yield return null;
+
+            var selector = BuilderTestsHelper.GetExplorerItemWithName(styleSheetsPane, ".unity-button");
+            yield return UIETestEvents.Mouse.SimulateClick(selector);
+
+            yield return UIETestEvents.ExecuteCommand(builder, UIETestEvents.Command.Copy);
+            Assert.That(BuilderEditorUtility.IsUss(BuilderEditorUtility.systemCopyBuffer));
+
+            var panel = builder.rootVisualElement.panel as BaseVisualElementPanel;
+            var menu = panel.contextualMenuManager as BuilderTestContextualMenuManager;
+
+            yield return UIETestEvents.Mouse.SimulateClick(hierarchy, MouseButton.RightMouse);
+            Assert.That(menu.menuIsDisplayed, Is.True);
+
+            var pasteMenuItem = menu.FindMenuAction("Paste");
+            Assert.AreEqual(DropdownMenuAction.Status.Disabled, pasteMenuItem.status);
         }
 
         /// <summary>
@@ -514,7 +562,7 @@ namespace Unity.UI.Builder.EditorTests
             var breadcrumbs = toolbar.Q<ToolbarBreadcrumbs>(BuilderToolbar.BreadcrumbsName);
 
             Assert.IsNotNull(breadcrumbsToolbar);
-            Assert.AreEqual((StyleEnum<DisplayStyle>) DisplayStyle.None, breadcrumbsToolbar.style.display);
+            Assert.AreEqual((StyleEnum<DisplayStyle>)DisplayStyle.None, breadcrumbsToolbar.style.display);
             Assert.AreEqual(0, breadcrumbs.childCount);
 
             // Check that child is instantiated
@@ -607,7 +655,7 @@ namespace Unity.UI.Builder.EditorTests
             var parentTestFullString = BuilderConstants.ExplorerHierarchyReturnToParentDocument + BuilderConstants.SingleSpace + BuilderConstants.OpenBracket + parentTestDocumentName + BuilderConstants.CloseBracket;
             var childTestDocumentName = "ChildTestUXMLDocument";
             var childTestFullString = BuilderConstants.ExplorerHierarchyReturnToParentDocument + BuilderConstants.SingleSpace + BuilderConstants.OpenBracket + childTestDocumentName + BuilderConstants.CloseBracket;
-            
+
             var panel = builder.rootVisualElement.panel as BaseVisualElementPanel;
             var menu = panel.contextualMenuManager as BuilderTestContextualMenuManager;
             Assert.That(menu, Is.Not.Null);
@@ -617,10 +665,10 @@ namespace Unity.UI.Builder.EditorTests
             yield return LoadTestUXMLDocument(k_ParentTestUXMLPath);
             hierarchy.elementHierarchyView.ExpandAllItems();
             Assert.AreEqual(1, builder.document.openUXMLFiles.Count);
-            
+
             // Open child in isolation
             yield return OpenChildTemplateContainerAsSubDocument(menu, nameOfChildSubDocument);
-            
+
             yield return UIETestHelpers.Pause(1);
             Assert.AreEqual(2, builder.document.openUXMLFiles.Count);
 
@@ -641,6 +689,48 @@ namespace Unity.UI.Builder.EditorTests
             // Open child in-isolation
             yield return OpenChildTemplateContainerAsSubDocument(menu, nameofGrandChildSubDocument);
             Assert.AreEqual(3, builder.document.openUXMLFiles.Count);
+        }
+
+        [UnityTest]
+        public IEnumerator HoveringHierarchyItemHighlightsViewportElement()
+        {
+            const string testButtonName = "test-button";
+            AddElementCodeOnly<Button>(testButtonName);
+
+            yield return UIETestHelpers.Pause();
+            var hierarchyCreatedItem = GetHierarchyExplorerItemByElementName(testButtonName);
+
+            // Overlay starts disabled
+            Assert.AreEqual(0, builder.highlightOverlayPainter.overlayCount);
+
+            // Put mouse on top of hierarchy element
+            yield return UIETestEvents.Mouse.SimulateMouseMove(builder, viewport.worldBound.center, hierarchyCreatedItem.worldBound.center);
+
+            // Check if overlay was activated
+            Assert.AreEqual(1, builder.highlightOverlayPainter.overlayCount);
+        }
+
+        [UnityTest]
+        public IEnumerator DeletingHierarchyItemRemovesViewportHighlight()
+        {
+            const string testButtonName = "test-button";
+            AddElementCodeOnly<Button>(testButtonName);
+
+            yield return UIETestHelpers.Pause();
+            var hierarchyCreatedItem = GetHierarchyExplorerItemByElementName(testButtonName);
+
+            // Put mouse on top of hierarchy element 
+            yield return UIETestEvents.Mouse.SimulateMouseMove(builder, viewport.worldBound.center, hierarchyCreatedItem.worldBound.center);
+
+            // Check if overlay was activated
+            Assert.AreEqual(1, builder.highlightOverlayPainter.overlayCount);
+
+            // Select and delete hierarchy element
+            yield return UIETestEvents.Mouse.SimulateClick(hierarchyCreatedItem);
+            yield return UIETestEvents.KeyBoard.SimulateKeyDown(builder, KeyCode.Delete);
+
+            // Check if overlay was deactivated
+            Assert.AreEqual(0, builder.highlightOverlayPainter.overlayCount);
         }
     }
 }

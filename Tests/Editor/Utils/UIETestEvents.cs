@@ -132,7 +132,7 @@ namespace Unity.UI.Builder.EditorTests
                 const int dragSamples = 10;
                 const int moveFramesDelay = 1;
                 var dragDistance = Vector2.Distance(positionFrom, positionTo);
-                var dragSpeed = Mathf.Max(1f, dragDistance / dragSamples) ;
+                var dragSpeed = Mathf.Max(1f, dragDistance / dragSamples);
 
                 var normalizedDirection = (positionTo - positionFrom).normalized;
                 var currentMousePosition = positionFrom;
@@ -145,13 +145,14 @@ namespace Unity.UI.Builder.EditorTests
                         type = EventType.MouseMove,
                         mousePosition = currentMousePosition,
                         delta = normalizedDirection,
-                        button = (int) button,
+                        button = (int)button,
                         modifiers = modifiers
                     };
 
                     window.rootVisualElement.SendEvent(UIETestEvents.MakeEvent(moveEvt));
                     yield return UIETestHelpers.Pause(moveFramesDelay);
-                } while (Vector2.Distance(currentMousePosition, positionTo) > 1f);
+                }
+                while (Vector2.Distance(currentMousePosition, positionTo) > 1f);
             }
         }
 
@@ -173,7 +174,7 @@ namespace Unity.UI.Builder.EditorTests
 
             public static IEnumerator SimulateTyping(VisualElement visualElement, string text)
             {
-                foreach(var character in text)
+                foreach (var character in text)
                 {
                     var evt = MakeEvent(EventType.KeyDown, character);
                     visualElement.SendEvent(evt);

@@ -12,7 +12,6 @@ namespace Unity.UI.Builder
     {
         public BuilderStyleSheetImporter()
         {
-
         }
 
         public override UnityEngine.Object DeclareDependencyAndLoad(string path)

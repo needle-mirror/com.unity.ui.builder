@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.IO;
 using System.Linq;
@@ -199,6 +200,32 @@ namespace Unity.UI.Builder.EditorTests
             Assert.AreEqual(asset.visualElementAssets.Count, assetCount);
             var asset2 = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_TestMultiUSSDocumentUXMLFilePath);
             Assert.AreEqual(asset2.visualElementAssets.Count, assetCount);
+        }
+
+#if UNITY_2019_4 && (UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX)
+        [UnityTest, Ignore("Test broken on 2019.4 on linux.")]
+#else
+        [UnityTest]
+#endif
+        public IEnumerator EnsureNewDocumentCleansUpProperly()
+        {
+            CreateTestUXMLFile();
+            CreateTestUSSFile();
+
+            yield return LoadTestUXMLDocument(k_TestUXMLFilePath);
+            yield return CodeOnlyAddUSSToDocument(k_TestUSSFilePath);
+            Assert.NotNull(builder.document.activeStyleSheet);
+
+            // Save
+            builder.document.SaveUnsavedChanges(k_TestUXMLFilePath, false);
+
+            ForceNewDocument();
+
+            var assetCount = builder.document.visualTreeAsset.visualElementAssets.Count;
+
+            yield return AddTextFieldElement();
+
+            Assert.AreEqual(assetCount + 1, builder.document.visualTreeAsset.visualElementAssets.Count);
         }
 
 #if UNITY_2019_4 && (UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX)
