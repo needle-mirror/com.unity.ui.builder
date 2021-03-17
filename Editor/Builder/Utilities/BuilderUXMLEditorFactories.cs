@@ -7,7 +7,7 @@ using UnityEngine.UIElements;
 
 namespace Unity.UI.Builder
 {
-#if !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+#if !UI_BUILDER_PACKAGE || UNITY_2021_1_OR_NEWER
     [InitializeOnLoad]
     internal class BuilderUXMLEditorFactories
     {

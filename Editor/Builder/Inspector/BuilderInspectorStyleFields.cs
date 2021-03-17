@@ -8,7 +8,7 @@ using UnityEditor.UIElements;
 using Object = UnityEngine.Object;
 using UnityEngine.Assertions;
 using UnityEditor;
-#if PACKAGE_TEXT_CORE && !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER)
 using UnityEngine.TextCore.Text;
 #endif
 using UnityEngine.UIElements.StyleSheets;
@@ -191,7 +191,7 @@ namespace Unity.UI.Builder
                 uiField.objectType = typeof(Font);
                 uiField.RegisterValueChangedCallback(e => OnFieldValueChangeFont(e, styleName));
             }
-#if PACKAGE_TEXT_CORE && !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER)
             else if (IsComputedStyleFontAsset(val, styleName) && fieldElement is ObjectField objectField)
             {
                 objectField.objectType = typeof(FontAsset);
@@ -512,7 +512,7 @@ namespace Unity.UI.Builder
 
                 uiField.SetValueWithoutNotify(value);
             }
-#if PACKAGE_TEXT_CORE && !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER)
             else if (IsComputedStyleTextShadow(val) && fieldElement is TextShadowStyleField)
             {
                 var uiField = fieldElement as TextShadowStyleField;
@@ -704,7 +704,7 @@ namespace Unity.UI.Builder
 
                 uiField.SetValueWithoutNotify(value);
             }
-#if PACKAGE_TEXT_CORE && !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER)
             else if (IsComputedStyleFontAsset(val, styleName) && fieldElement is ObjectField objectField)
             {
                 var value = GetComputedStyleFontAssetValue(val);
@@ -730,7 +730,7 @@ namespace Unity.UI.Builder
                         imageStyleField.SetValueWithoutNotify(value.texture);
                         imageStyleField.SetTypePopupValueWithoutNotify(typeof(Texture2D));
                     }
-#if !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+#if !UI_BUILDER_PACKAGE || UNITY_2021_1_OR_NEWER
                     else if (value.sprite != null)
                     {
                         imageStyleField.SetValueWithoutNotify(value.sprite);
@@ -923,7 +923,7 @@ namespace Unity.UI.Builder
             {
                 DispatchChangeEvent(objectFontField);
             }
-#if PACKAGE_TEXT_CORE && !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER)
             else if (IsComputedStyleFontAsset(val, styleName) && fieldElement is ObjectField objectFontAssetField)
             {
                 DispatchChangeEvent(objectFontAssetField);
@@ -1140,7 +1140,7 @@ namespace Unity.UI.Builder
             if (action.userData is VisualElement fieldElement)
             {
                 var styleName = fieldElement.GetProperty(BuilderConstants.InspectorStylePropertyNameVEPropertyName) as string;
-#if PACKAGE_TEXT_CORE && !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER)
                 if (styleName == "-unity-font" || styleName == "-unity-font-definition")
 #else
                 if (styleName == "-unity-font")
@@ -1737,7 +1737,7 @@ namespace Unity.UI.Builder
 
                     if (newValue is Texture texture)
                         newSize = new Vector2(texture.width, texture.height);
-#if !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+#if !UI_BUILDER_PACKAGE || UNITY_2021_1_OR_NEWER
                     else if (newValue is Sprite sprite)
                         newSize = new Vector2(sprite.rect.width, sprite.rect.height);
 #endif
@@ -1793,7 +1793,7 @@ namespace Unity.UI.Builder
             PostStyleFieldSteps(field, styleName, isNewValue);
         }
 
-#if PACKAGE_TEXT_CORE && !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER)
         void OnFieldValueChangeTextShadow(ChangeEvent<BuilderTextShadow> e, string styleName)
         {
             var field = e.target as TextShadowStyleField;
@@ -1897,7 +1897,7 @@ namespace Unity.UI.Builder
             return val is StyleFont || val is Font || styleName == "-unity-font";
         }
 
-#if PACKAGE_TEXT_CORE && !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER)
         static public bool IsComputedStyleFontAsset(object val, string styleName)
         {
             return IsComputedStyleFont(val, styleName) ||
@@ -1942,7 +1942,7 @@ namespace Unity.UI.Builder
             return style.value;
         }
 
-#if PACKAGE_TEXT_CORE && !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER)
         static public BuilderTextShadow GetComputedStyleTextShadowValue(object val)
         {
             if (val is BuilderTextShadow)
@@ -1992,7 +1992,7 @@ namespace Unity.UI.Builder
             return style.value;
         }
 
-#if PACKAGE_TEXT_CORE && !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER)
         static public FontAsset GetComputedStyleFontAssetValue(object val)
         {
             if (val is FontAsset fontAsset)

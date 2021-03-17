@@ -69,7 +69,7 @@ namespace Unity.UI.Builder.EditorTests
             yield return UIETestEvents.Mouse.SimulateClick(element);
 
             // It is important to change its Position through inspector
-            inspector.Query<PersistedFoldout>().Where(f => f.text.Equals("Position")).First()
+            inspector.Query<PersistedFoldout>().Where(f => f.text.Equals("Position")).ToList().First()
                 .Q<EnumField>().value = Position.Absolute;
 
             yield return UIETestHelpers.Pause();
@@ -176,7 +176,7 @@ namespace Unity.UI.Builder.EditorTests
             var rightHandle = builder.viewport.Q("right-handle", "unity-builder-resizer");
             Assert.That(rightHandle.pseudoStates, Is.Not.EqualTo(PseudoStates.Hover));
             inspector.Q<TemplateContainer>("size-section").Query<DimensionStyleField>()
-                .Where(t => t.label.Equals("Width")).First().value = k_ElementLength;
+                .Where(t => t.label.Equals("Width")).ToList().First().value = k_ElementLength;
 
             yield return UIETestHelpers.Pause();
             Assert.That(rightHandle.pseudoStates, Is.EqualTo(PseudoStates.Hover));
@@ -186,7 +186,7 @@ namespace Unity.UI.Builder.EditorTests
             Assert.That(bottomHandle.pseudoStates, Is.Not.EqualTo(PseudoStates.Hover));
 
             inspector.Q<TemplateContainer>("size-section").Query<DimensionStyleField>()
-                .Where(t => t.label.Equals("Height")).First().value = k_ElementLength;
+                .Where(t => t.label.Equals("Height")).ToList().First().value = k_ElementLength;
 
             yield return UIETestHelpers.Pause();
             Assert.That(bottomHandle.pseudoStates, Is.EqualTo(PseudoStates.Hover));

@@ -476,7 +476,7 @@ namespace Unity.UI.Builder
             AddToClassList(s_UssClassName);
 
             listView = new ListView();
-#if UNITY_2019_4 || UNITY_2020_1 || UNITY_2020_2
+#if UI_BUILDER_PACKAGE && !UNITY_2021_1_OR_NEWER
             listView.Q<ScrollView>().showHorizontal = false;
 #else
             listView.Q<ScrollView>().horizontalScrollerVisibility = ScrollerVisibility.Hidden;

@@ -135,7 +135,7 @@ namespace Unity.UI.Builder
             return styleSheet.strings[valueHandle.valueIndex];
         }
 
-#if PACKAGE_TEXT_CORE && !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER)
         public static BuilderTextShadow GetTextShadow(this StyleSheet styleSheet, StyleProperty styleProperty)
         {
             Dimension offsetX = new Dimension(0f, Dimension.Unit.Pixel);

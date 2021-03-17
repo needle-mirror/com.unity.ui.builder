@@ -3,7 +3,9 @@
     "rootNamespace": "",
     "references": [
         "UnityEngine.TextCoreModule",
-        "Unity.TextCore"
+        "Unity.TextCore",
+        "UnityEngine.UIElementsModule",
+        "UnityEditor.UIElementsModule"
     ],
     "includePlatforms": [
         "Editor"
@@ -34,8 +36,13 @@
         },
         {
             "name": "com.unity.textcore",
-            "expression": "1.0.0-preview.1",
+            "expression": "1.0.0-preview.2",
             "define": "PACKAGE_TEXT_CORE"
+        },
+        {
+            "name": "com.unity.ui",
+            "expression": "1.0.0-preview.14",
+            "define": "UIE_PACKAGE"
         }
     ],
     "noEngineReferences": false

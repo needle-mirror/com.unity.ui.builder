@@ -370,7 +370,7 @@ namespace Unity.UI.Builder.EditorTests
         {
             yield return EditVariable("Border/Width/Left", true);
 
-            yield return UIETestEvents.KeyBoard.SimulateTyping(builder, "unity-metrics");
+            yield return UIETestEvents.KeyBoard.SimulateTyping(builder, "unity-metrics-single");
             yield return WaitForUIUpdate();
 
             var listView = currentHandler.completer.popup.listView;

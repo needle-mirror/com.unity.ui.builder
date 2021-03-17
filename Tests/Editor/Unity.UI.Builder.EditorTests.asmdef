@@ -4,7 +4,11 @@
         "UnityEngine.TestRunner",
         "UnityEditor.TestRunner",
         "UnityEditor.UIBuilderModule",
-        "Unity.UI.Builder.Tests"
+        "Unity.UI.Builder.Tests",
+        "UnityEngine.TextCoreModule",
+        "Unity.TextCore",
+        "UnityEngine.UIElementsModule",
+        "UnityEditor.UIElementsModule"
     ],
     "includePlatforms": [
         "Editor"
@@ -19,6 +23,32 @@
     "defineConstraints": [
         "UNITY_INCLUDE_TESTS"
     ],
-    "versionDefines": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.ui.builder",
+            "expression": "",
+            "define": "UI_BUILDER_PACKAGE"
+        },
+        {
+            "name": "com.unity.vectorgraphics",
+            "expression": "1.0.0",
+            "define": "PACKAGE_VECTOR_GRAPHICS"
+        },
+        {
+            "name": "com.unity.2d.sprite",
+            "expression": "1.0.0",
+            "define": "PACKAGE_2D_SPRITE_EDITOR"
+        },
+        {
+            "name": "com.unity.textcore",
+            "expression": "1.0.0-preview.2",
+            "define": "PACKAGE_TEXT_CORE"
+        },
+        {
+            "name": "com.unity.ui",
+            "expression": "1.0.0-preview.14",
+            "define": "UIE_PACKAGE"
+        }
+    ],
     "noEngineReferences": false
 }

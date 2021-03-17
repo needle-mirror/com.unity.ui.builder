@@ -429,13 +429,13 @@ namespace Unity.UI.Builder.EditorTests
             yield return UIETestEvents.Mouse.SimulateClick(selector);
 
             // Set style
-            var displayFoldout = inspector.Query<PersistedFoldout>().Where(f => f.text.Equals("Display")).First();
+            var displayFoldout = inspector.Query<PersistedFoldout>().Where(f => f.text.Equals("Display")).ToList().First();
             displayFoldout.value = true;
 
-            var displayStrip = displayFoldout.Query<ToggleButtonStrip>().Where(t => t.label.Equals("Display")).First();
+            var displayStrip = displayFoldout.Query<ToggleButtonStrip>().Where(t => t.label.Equals("Display")).ToList().First();
             yield return UIETestEvents.Mouse.SimulateClick(displayStrip.Q<Button>("none"));
 
-            var visibilityStrip = displayFoldout.Query<ToggleButtonStrip>().Where(t => t.label.Equals("Visibility")).First();
+            var visibilityStrip = displayFoldout.Query<ToggleButtonStrip>().Where(t => t.label.Equals("Visibility")).ToList().First();
             yield return UIETestEvents.Mouse.SimulateClick(visibilityStrip.Q<Button>("hidden"));
             yield return UIETestEvents.Mouse.SimulateClick(selector);
 
@@ -464,11 +464,11 @@ namespace Unity.UI.Builder.EditorTests
             Assert.That(explorerItems.Count, Is.EqualTo(1));
 
             // Foldout out state should be persisted, so we assume it is open already.
-            displayFoldout = inspector.Query<PersistedFoldout>().Where(f => f.text.Equals("Display")).First();
-            displayStrip = displayFoldout.Query<ToggleButtonStrip>().Where(t => t.label.Equals("Display")).First();
+            displayFoldout = inspector.Query<PersistedFoldout>().Where(f => f.text.Equals("Display")).ToList().First();
+            displayStrip = displayFoldout.Query<ToggleButtonStrip>().Where(t => t.label.Equals("Display")).ToList().First();
             Assert.True(displayStrip.Q<Button>("none").pseudoStates.HasFlag(PseudoStates.Checked));
 
-            visibilityStrip = displayFoldout.Query<ToggleButtonStrip>().Where(t => t.label.Equals("Visibility")).First();
+            visibilityStrip = displayFoldout.Query<ToggleButtonStrip>().Where(t => t.label.Equals("Visibility")).ToList().First();
             Assert.True(visibilityStrip.Q<Button>("hidden").pseudoStates.HasFlag(PseudoStates.Checked));
         }
 

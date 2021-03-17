@@ -77,7 +77,7 @@ namespace Unity.UI.Builder
 
         static bool IsAttributeIgnored(UxmlAttributeDescription attribute)
         {
-#if !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+#if !UI_BUILDER_PACKAGE || UNITY_2021_1_OR_NEWER
             // Temporary check until we add an "obsolete" mechanism to uxml attribute description.
             return attribute.name == "show-horizontal-scroller" || attribute.name == "show-vertical-scroller";
 #else
@@ -236,7 +236,8 @@ namespace Unity.UI.Builder
                 }
                 else if (attributeName == "show-horizontal-scroller")
                 {
-#if UNITY_2019_4 || UNITY_2020_1 || UNITY_2020_2
+// Use old API only if version is >= 2019_4 and <= 2020_3                    
+#if UI_BUILDER_PACKAGE && !UNITY_2021_1_OR_NEWER
                     return scrollView.showHorizontal;
 #else
                     return scrollView.horizontalScrollerVisibility != ScrollerVisibility.Hidden;
@@ -244,7 +245,8 @@ namespace Unity.UI.Builder
                 }
                 else if (attributeName == "show-vertical-scroller")
                 {
-#if UNITY_2019_4 || UNITY_2020_1 || UNITY_2020_2
+// Use old API only if version is >= 2019_4 and <= 2020_3                    
+#if UI_BUILDER_PACKAGE && !UNITY_2021_1_OR_NEWER
                     return scrollView.showVertical;
 #else
                     return scrollView.verticalScrollerVisibility != ScrollerVisibility.Hidden;

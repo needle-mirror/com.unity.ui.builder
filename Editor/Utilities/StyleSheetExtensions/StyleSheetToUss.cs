@@ -114,7 +114,7 @@ namespace Unity.UI.Builder
                     var assetPath = AssetDatabase.GetAssetPath(assetRef);
                     if (assetPath.StartsWith("Assets") || assetPath.StartsWith("Packages"))
                         assetPath = "/" + assetPath;
-#if !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+#if !UI_BUILDER_PACKAGE || UNITY_2021_1_OR_NEWER
                     if (assetRef is Sprite)
                         assetPath += "#" + assetRef.name;
 #endif

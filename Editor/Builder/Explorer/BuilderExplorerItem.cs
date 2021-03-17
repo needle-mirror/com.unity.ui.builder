@@ -97,7 +97,7 @@ namespace Unity.UI.Builder
 
             renameTextfield.RegisterCallback<KeyUpEvent>((e) =>
             {
-#if !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+#if !UI_BUILDER_PACKAGE || UNITY_2021_1_OR_NEWER
                 if (e.keyCode == KeyCode.Return || e.keyCode == KeyCode.KeypadEnter || e.keyCode == KeyCode.Escape)
                 {
                     (e.currentTarget as VisualElement).Blur();

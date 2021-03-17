@@ -19,7 +19,7 @@ namespace Unity.UI.Builder.EditorTests
             var toolbar = viewport.Q<BuilderToolbar>();
 
             // Make sure File menu exists
-            var menuItem = toolbar.Query<ToolbarMenu>().Where(menu => menu.Q<TextElement>().text == "File").First();
+            var menuItem = toolbar.Query<ToolbarMenu>().Where(menu => menu.Q<TextElement>().text.Equals("File")).ToList().First();
             Assert.That(menuItem, Is.Not.Null);
 
             AddElementCodeOnly();
@@ -40,7 +40,7 @@ namespace Unity.UI.Builder.EditorTests
         public IEnumerator ZoomWithMouseScrollAndRightClick()
         {
             var toolbar = viewport.Q<BuilderToolbar>();
-            var zoomMenuItem = toolbar.Query<ToolbarMenu>().Where(menu => menu.Q<TextElement>().text == "100%").First();
+            var zoomMenuItem = toolbar.Query<ToolbarMenu>().Where(menu => menu.Q<TextElement>().text.Equals("100%")).ToList().First();
             Assert.That(zoomMenuItem, Is.Not.Null);
 
             // Zoom With Scroll Wheel

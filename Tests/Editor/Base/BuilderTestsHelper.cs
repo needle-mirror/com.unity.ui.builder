@@ -72,7 +72,7 @@ namespace Unity.UI.Builder.EditorTests
         internal static Label GetLabelWithName(VisualElement container, string name)
         {
             return container.Query<Label>()
-                .Where(item => item.text.Equals(name)).First();
+                .Where(item => item.text.Equals(name)).ToList().First();
         }
 
         internal static VisualElement GetLinkedDocumentElement(VisualElement hierarchyItem)

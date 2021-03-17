@@ -122,7 +122,7 @@ namespace Unity.UI.Builder.EditorTests
             yield return libraryTreeView.SelectAndScrollToItemWithId(testUXMLTreeViewItem.id);
             yield return UIETestHelpers.Pause();
             var testUXMLLabel = libraryTreeView.Query<Label>(null, "unity-builder-library__tree-item-label")
-                .Where(label => label.text.Equals(k_TestUXMLFileName)).First();
+                .Where(label => label.text.Equals(k_TestUXMLFileName)).ToList().First();
             Assert.That(testUXMLLabel, Is.Not.Null);
             var treeViewItem = testUXMLLabel.parent;
             var openButton = treeViewItem.Q<Button>();
@@ -270,7 +270,7 @@ namespace Unity.UI.Builder.EditorTests
             yield return libraryTreeView.SelectAndScrollToItemWithId(testUXMLTreeViewItem.id);
             yield return UIETestHelpers.Pause();
             var testUXMLLabel = libraryTreeView.Query<Label>(null, "unity-builder-library__tree-item-label")
-                .Where(label => label.text.Equals(k_TestUXMLFileName)).First();
+                .Where(label => label.text.Equals(k_TestUXMLFileName)).ToList().First();
             Assert.That(testUXMLLabel, Is.Not.Null);
 
             yield return UIETestEvents.Mouse.SimulateDoubleClick(testUXMLLabel);
@@ -326,10 +326,10 @@ namespace Unity.UI.Builder.EditorTests
             Assert.That(documentElement.childCount, Is.EqualTo(1));
 
             // Change style.
-            var displayFoldout = inspector.Query<PersistedFoldout>().Where(f => f.text.Equals("Display")).First();
+            var displayFoldout = inspector.Query<PersistedFoldout>().Where(f => f.text.Equals("Display")).ToList().First();
             displayFoldout.value = true;
 
-            var percentSlider = displayFoldout.Query<PercentSlider>().Where(t => t.label.Equals("Opacity")).First();
+            var percentSlider = displayFoldout.Query<PercentSlider>().Where(t => t.label.Equals("Opacity")).ToList().First();
             percentSlider.value = 0.5f;
 
             Assert.That(documentElement.childCount, Is.EqualTo(0));

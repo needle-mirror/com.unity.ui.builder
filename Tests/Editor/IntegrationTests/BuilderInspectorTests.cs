@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
 
-#if PACKAGE_TEXT_CORE && !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER)
 using UnityEngine.UIElements.StyleSheets;
 #endif
 
@@ -18,7 +18,7 @@ namespace Unity.UI.Builder.EditorTests
     {
         const string k_AllStylePropertiesTestFileName = "AllStylePropertiesTest.uxml";
         const string k_AllStylePropertiesTestFilePath = BuilderConstants.UIBuilderTestsTestFilesPath + "/" + k_AllStylePropertiesTestFileName;
-#if !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+#if !UI_BUILDER_PACKAGE || UNITY_2021_1_OR_NEWER
         const string k_SpriteTestFilePath = BuilderConstants.UIBuilderTestsTestFilesPath + "/" + "Tools.png";
         const string k_SpriteEditorWindowName = "SpriteEditorWindow";
 #endif
@@ -30,7 +30,7 @@ namespace Unity.UI.Builder.EditorTests
             Assert.AreEqual(value, field.value);
         }
 
-#if PACKAGE_TEXT_CORE && !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER)
         void CheckTextShadowFieldValue(string styleName, BuilderTextShadow value)
         {
             var styleRow = inspector.styleFields.m_StyleFields[styleName].First();
@@ -128,7 +128,7 @@ namespace Unity.UI.Builder.EditorTests
             CheckStyleFieldValue<StyleFieldBase, string>("border-top-right-radius", "7px");
             CheckStyleFieldValue<StyleFieldBase, string>("border-bottom-right-radius", "7px");
 
-#if PACKAGE_TEXT_CORE && !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER)
             if (elementName != "all-properties-uss")
             {
                 CheckTextShadowFieldValue("text-shadow", 
@@ -205,7 +205,7 @@ namespace Unity.UI.Builder.EditorTests
             yield return CheckStyleToggleFieldValue<ToggleButtonStrip>("-unity-background-scale-mode", "scale-to-fit");
         }
 
-#if !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+#if !UI_BUILDER_PACKAGE || UNITY_2021_1_OR_NEWER
         [UnityTest]
         public IEnumerator CheckThatSpriteCanBeUsedAsBackgroundImage()
         {
@@ -242,7 +242,7 @@ namespace Unity.UI.Builder.EditorTests
             if (BuilderExternalPackages.is2DSpriteEditorInstalled)
             {
                 var backgroundFoldout =
-                    inspector.Query<PersistedFoldout>().Where(f => f.text.Equals("Background")).First();
+                    inspector.Query<PersistedFoldout>().Where(f => f.text.Equals("Background")).ToList().First();
                 backgroundFoldout.value = true;
                 yield return UIETestHelpers.Pause(1);
 

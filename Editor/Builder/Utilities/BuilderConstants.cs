@@ -150,7 +150,7 @@ namespace Unity.UI.Builder
         public static readonly string ContextMenuUnsetAllMessage = "Unset All";
         public static readonly string ContextMenuViewVariableMessage = "View Variable";
         public static readonly string ContextMenuSetVariableMessage = "Set Variable";
-#if PACKAGE_TEXT_CORE && !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER)
         public static readonly string FontCannotBeNoneMessage = "UI Builder: Font and FontAsset cannot both be set to none.";
 #else
         public static readonly string FontCannotBeNoneMessage = "UI Builder: Font cannot be set to none.";

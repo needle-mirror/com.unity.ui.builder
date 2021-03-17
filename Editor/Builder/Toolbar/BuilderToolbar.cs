@@ -526,7 +526,11 @@ namespace Unity.UI.Builder
             // Find the runtime stylesheet.
             var runtimeStyleSheet = BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(BuilderConstants.RuntimeThemeUSSPath);
             if (runtimeStyleSheet == null)
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+                runtimeStyleSheet = UIElementsEditorUtility.GetCommonLightStyleSheet();
+#else
                 runtimeStyleSheet = UIElementsEditorUtility.s_DefaultCommonLightStyleSheet;
+#endif
 
             // Remove any null stylesheet. This may occur if an used theme has been deleted.
             // This should be handle by ui toolkit
@@ -558,8 +562,13 @@ namespace Unity.UI.Builder
             {
                 element.styleSheets.Remove(m_LastCustomTheme);
             }
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+            element.styleSheets.Remove(UIElementsEditorUtility.GetCommonDarkStyleSheet());
+            element.styleSheets.Remove(UIElementsEditorUtility.GetCommonLightStyleSheet());
+#else
             element.styleSheets.Remove(UIElementsEditorUtility.s_DefaultCommonDarkStyleSheet);
             element.styleSheets.Remove(UIElementsEditorUtility.s_DefaultCommonLightStyleSheet);
+#endif
             element.styleSheets.Remove(runtimeStyleSheet);
             m_Viewport.canvas.defaultBackgroundElement.style.display = DisplayStyle.Flex;
 
@@ -569,10 +578,18 @@ namespace Unity.UI.Builder
             switch (theme)
             {
                 case BuilderDocument.CanvasTheme.Dark:
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+                    themeStyleSheet = UIElementsEditorUtility.GetCommonDarkStyleSheet();
+#else
                     themeStyleSheet = UIElementsEditorUtility.s_DefaultCommonDarkStyleSheet;
+#endif
                     break;
                 case BuilderDocument.CanvasTheme.Light:
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+                    themeStyleSheet = UIElementsEditorUtility.GetCommonLightStyleSheet();
+#else
                     themeStyleSheet = UIElementsEditorUtility.s_DefaultCommonLightStyleSheet;
+#endif
                     break;
                 case BuilderDocument.CanvasTheme.Runtime:
                     themeStyleSheet = runtimeStyleSheet;

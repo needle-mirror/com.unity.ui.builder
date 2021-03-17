@@ -73,7 +73,9 @@ namespace Unity.UI.Builder
 
             while (current != null)
             {
-#if !UNITY_2019_4
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+                var customStyles = current.computedStyle.customProperties;
+#elif !UNITY_2019_4
                 var customStyles = current.computedStyle.m_CustomProperties;
 #else
                 var customStyles = current.specifiedStyle.m_CustomProperties;
@@ -150,7 +152,9 @@ namespace Unity.UI.Builder
 
             while (current != null)
             {
-#if !UNITY_2019_4
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+                var customStyles = current.computedStyle.customProperties;
+#elif !UNITY_2019_4
                 var customStyles = current.computedStyle.m_CustomProperties;
 #else
                 var customStyles = current.specifiedStyle.m_CustomProperties;

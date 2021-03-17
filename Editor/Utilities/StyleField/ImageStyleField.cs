@@ -1,5 +1,5 @@
 using JetBrains.Annotations;
-#if !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+#if !UI_BUILDER_PACKAGE || UNITY_2021_1_OR_NEWER
 using System;
 using System.Threading;
 using UnityEditor.PackageManager;
@@ -17,7 +17,7 @@ namespace Unity.UI.Builder
         [UsedImplicitly]
         public new class UxmlFactory : UxmlFactory<ImageStyleField, UxmlTraits> {}
 
-#if !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+#if !UI_BUILDER_PACKAGE || UNITY_2021_1_OR_NEWER
         const double k_TimeoutMilliseconds = 10000;
         const int k_TimeDeltaMilliseconds = 10;
 
@@ -53,7 +53,7 @@ namespace Unity.UI.Builder
         {
             AddType(typeof(Texture2D), "Texture");
 
-#if !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+#if !UI_BUILDER_PACKAGE || UNITY_2021_1_OR_NEWER
             styleSheets.Add(BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(k_UssPath));
             var fieldContainer = new VisualElement {name = k_ImageStyleFieldContainerName};
             fieldContainer.AddToClassList(k_ImageStyleFieldContainerClassName);
@@ -86,7 +86,7 @@ namespace Unity.UI.Builder
 #endif
         }
 
-#if !UNITY_2019_4 && !UNITY_2020_1 && !UNITY_2020_2 && !UNITY_2020_3
+#if !UI_BUILDER_PACKAGE || UNITY_2021_1_OR_NEWER
         private void OnEnterEditButton(PointerEnterEvent evt)
         {
             m_2DSpriteEditorButtonTooltip = BuilderExternalPackages.is2DSpriteEditorInstalled

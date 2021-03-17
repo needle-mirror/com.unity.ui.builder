@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.IO;
+using System.Linq;
 using NUnit.Framework;
 using UnityEditor;
 using UnityEditor.VersionControl;
@@ -106,10 +107,10 @@ namespace Unity.UI.Builder.EditorTests
             // Keep in mind the amount of time that will be spent by your test. Try to keep it as low as possible.
             // In the code sample below, instead of simulating user interaction, we will just set controls values directly.
             // However, there are no strict rules when you should skip user interaction simulation, use your judgment.
-            var displayFoldout = inspector.Query<PersistedFoldout>().Where(f => f.text.Equals("Display")).First();
+            var displayFoldout = inspector.Query<PersistedFoldout>().Where(f => f.text.Equals("Display")).ToList().First();
             displayFoldout.value = true;
 
-            var percentSlider = displayFoldout.Query<PercentSlider>().Where(t => t.label.Equals("Opacity")).First();
+            var percentSlider = displayFoldout.Query<PercentSlider>().Where(t => t.label.Equals("Opacity")).ToList().First();
             percentSlider.value = 0.5f;
 
             yield return UIETestHelpers.Pause();

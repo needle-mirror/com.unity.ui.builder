@@ -4,6 +4,12 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-preview.13] - 2021-03-17
+
+- Fixed compiler issues on 2020LTS and other possible editor-package combinations.
+- Fixed assembly build order when UI Toolkit package is present.
+- (2020.2+) Fixed Rich Text controls availability when Text Core package is installed.
+
 ## [1.0.0-preview.12] - 2021-01-16
 
 - Added support for renaming USS Selectors directly inside the StyleSheets pane via double-click or the right-click menu.
