@@ -14,7 +14,8 @@ Unity versions supported:
 - **2019.4**: 2019.4.17f1 or newer
 - **2020.1**: 2020.1.17f1 or newer
 - **2020.2**: 2020.2.1f1 or newer
-- **2021.1**: 2021.1.0b1 or newer
+- **2020.3**: 2020.3.1f1 or newer
+- **2021.1**: 2021.1.0f1 or newer
 
 To install:
 * **2021+**: Nothing to do. UI Builder comes built-in in Unity 2021.1+.

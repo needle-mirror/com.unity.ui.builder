@@ -4,6 +4,10 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-preview.14] - 2021-03-30
+
+- Fixed compiler issues on 2021.1f1 with the UI Builder package when UI Toolkit pacakge is NOT installed.
+
 ## [1.0.0-preview.13] - 2021-03-17
 
 - Fixed compiler issues on 2020LTS and other possible editor-package combinations.
