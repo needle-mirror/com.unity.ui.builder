@@ -2,7 +2,7 @@
     <ui:VisualElement>
         <Style src="VariableTestStyleSheet.uss" />
         <ui:Button name="button-0" text="Button 0" class="test-button-0" />
-        <ui:Button name="button-1" text="Button 1" class="test-button-1 test-button-0" />
+        <ui:Button name="button-1" text="Button 1" class="test-button-0" />
         <ui:Button name="button-2" text="Button 2" class="test-button-2 test-button-0" />
         <ui:Button name="button-3" text="Button 3" class="test-button-3" />
     </ui:VisualElement>

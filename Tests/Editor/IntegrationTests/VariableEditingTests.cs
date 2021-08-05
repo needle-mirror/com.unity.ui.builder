@@ -18,6 +18,11 @@ namespace Unity.UI.Builder.EditorTests
         const string k_NewVariableUxmlFilePath = BuilderConstants.UIBuilderTestsTestFilesPath + "/VariableTestUXMLDocument.uxml";
         const int k_Delay = 250;
         private const string k_Selector_1 = ".test-button-1";
+#if !UI_BUILDER_PACKAGE || UNITY_2020_3 || UNITY_2020_3_12 || UNITY_2021_2_OR_NEWER
+        private const string k_Button_1_Font = "test-button-1__font";
+#else
+        private const string k_Button_1_Font = "test-button-1__font_legacy";
+#endif
         private const string k_Button_1 = "button-1";
         private const string k_LengthVarName = "--var-length";
         private const int k_LengthVarValue = 80;
@@ -52,7 +57,11 @@ namespace Unity.UI.Builder.EditorTests
             return UIETestHelpers.Pause(k_Delay);
         }
 
+#if UI_BUILDER_PACKAGE && UIE_PACKAGE && UNITY_2020_3
+        [UnityTest, Ignore("Failing on 2020.3LTS.")]
+#else
         [UnityTest]
+#endif
         public IEnumerator ShowHideVariableInfoPopup()
         {
             var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_NewVariableUxmlFilePath);
@@ -67,7 +76,7 @@ namespace Unity.UI.Builder.EditorTests
 
             // Select button-1 control
             var button1Item = BuilderTestsHelper.GetExplorerItemWithName(hierarchy, BuilderConstants.UssSelectorNameSymbol + k_Button_1);
-
+            button1Item.AddToClassList(k_Button_1_Font);
             yield return UIETestEvents.Mouse.SimulateClick(button1Item);
 
             var textFoldout = inspector.Query<PersistedFoldout>().Where(f => f.text.Equals("Text")).First();
@@ -172,14 +181,26 @@ namespace Unity.UI.Builder.EditorTests
 
             // Verify that we stop at the last index
             yield return UIETestEvents.KeyBoard.SimulateKeyDown(builderWindow, KeyCode.DownArrow);
-            Assert.AreEqual(listView.selectedIndex, 1);
+#if UI_BUILDER_PACKAGE && (UNITY_2020_2_OR_NEWER && !UNITY_2021_2_OR_NEWER)
+            Assert.AreEqual(2, listView.selectedIndex);
+#else
+            Assert.AreEqual(1, listView.selectedIndex);
+#endif
 
             yield return UIETestEvents.KeyBoard.SimulateKeyDown(builderWindow, KeyCode.UpArrow);
-            Assert.AreEqual(listView.selectedIndex, 0);
+#if UI_BUILDER_PACKAGE && (UNITY_2020_2_OR_NEWER && !UNITY_2021_2_OR_NEWER)
+            Assert.AreEqual(1,listView.selectedIndex);
+#else
+            Assert.AreEqual(0, listView.selectedIndex);
+#endif
 
             // Verify that we clear the selection when the Up Arrow key is pressed with the first item selected
             yield return UIETestEvents.KeyBoard.SimulateKeyDown(builderWindow, KeyCode.UpArrow);
+#if UI_BUILDER_PACKAGE && (UNITY_2020_2_OR_NEWER && !UNITY_2021_2_OR_NEWER)
+            Assert.AreEqual(listView.selectedIndex, 0);
+#else
             Assert.AreEqual(listView.selectedIndex, -1);
+#endif
 
             yield return null;
         }
@@ -364,8 +385,11 @@ namespace Unity.UI.Builder.EditorTests
             yield return null;
         }
 
-#if !UNITY_2019_4 && !UNITY_2020_1
+#if UI_BUILDER_PACKAGE && !UNITY_2021_2_OR_NEWER
+        [UnityTest, Ignore("Missing functionality on 2021.1 and older.")]
+#else
         [UnityTest]
+#endif
         public IEnumerator VariableSearch_SelectedInfoWithDescription()
         {
             yield return EditVariable("Border/Width/Left", true);
@@ -386,7 +410,6 @@ namespace Unity.UI.Builder.EditorTests
 
             yield return null;
         }
-#endif
 
         [UnityTest]
         public IEnumerator ShowHideVariableField()

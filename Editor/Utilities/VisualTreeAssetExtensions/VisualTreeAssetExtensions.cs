@@ -15,23 +15,12 @@ namespace Unity.UI.Builder
             typeof(VisualTreeAsset).GetField("m_Usings", BindingFlags.Instance | BindingFlags.NonPublic);
 
         static readonly IComparer<VisualTreeAsset.UsingEntry> s_UsingEntryPathComparer = new UsingEntryPathComparer();
-        static readonly IComparer<VisualTreeAsset.UsingEntry> s_UsingEntryAssetComparer = new UsingEntryAssetComparer();
 
         class UsingEntryPathComparer : IComparer<VisualTreeAsset.UsingEntry>
         {
             public int Compare(VisualTreeAsset.UsingEntry x, VisualTreeAsset.UsingEntry y)
             {
                 return Comparer<string>.Default.Compare(x.path, y.path);
-            }
-        }
-
-        class UsingEntryAssetComparer : IComparer<VisualTreeAsset.UsingEntry>
-        {
-            public int Compare(VisualTreeAsset.UsingEntry x, VisualTreeAsset.UsingEntry y)
-            {
-                var xAsset = x.asset as VisualTreeAsset;
-                var yAsset = y.asset as VisualTreeAsset;
-                return xAsset == yAsset ? 0 : -1;
             }
         }
 
@@ -117,6 +106,7 @@ namespace Unity.UI.Builder
 
             return vta.templateAssets.Count == 0 && vta.visualElementAssets.Count <= 1;
         }
+
 #endif
 
         public static VisualElementAsset GetRootUXMLElement(this VisualTreeAsset vta)
@@ -237,40 +227,8 @@ namespace Unity.UI.Builder
             return foundList;
         }
 
-        public static void ConvertAllAssetReferencesToPaths(this VisualTreeAsset vta)
+        public static void UpdateUsingEntries(this VisualTreeAsset vta)
         {
-            var sheets = new HashSet<StyleSheet>();
-            foreach (var asset in vta.visualElementAssets)
-            {
-                sheets.Clear();
-
-                foreach (var styleSheet in asset.stylesheets)
-                    sheets.Add(styleSheet);
-
-                foreach (var sheetPath in asset.stylesheetPaths)
-                {
-                    var sheetAsset = BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(sheetPath);
-                    if (sheetAsset == null)
-                    {
-                        sheetAsset = Resources.Load<StyleSheet>(sheetPath);
-                        if (sheetAsset == null)
-                            continue;
-                    }
-
-                    sheets.Add(sheetAsset);
-                }
-
-                asset.stylesheetPaths.Clear();
-                foreach (var sheet in sheets)
-                {
-                    var path = AssetDatabase.GetAssetPath(sheet);
-                    if (string.IsNullOrEmpty(path))
-                        continue;
-
-                    asset.stylesheetPaths.Add(path);
-                }
-            }
-
             var fieldInfo = UsingsListFieldInfo;
             if (fieldInfo != null)
             {
@@ -372,16 +330,56 @@ namespace Unity.UI.Builder
 
         public static bool TemplateExists(this VisualTreeAsset windowVTA, VisualTreeAsset draggingInVTA)
         {
-            var fieldInfo = UsingsListFieldInfo;
-            if (fieldInfo != null && draggingInVTA != null)
+            var checkedTemplates = new HashSet<VisualTreeAsset>();
+            return TemplateExists(windowVTA, draggingInVTA, checkedTemplates);
+        }
+
+        internal static bool IsUsingTemplate(List<VisualTreeAsset.UsingEntry> usings, string path, VisualTreeAsset template)
+        {
+            foreach (var usingEntry in usings)
             {
-                var usings = fieldInfo.GetValue(draggingInVTA) as List<VisualTreeAsset.UsingEntry>;
+                if ((!string.IsNullOrEmpty(path) && usingEntry.path == path) || usingEntry.asset == template)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        internal static bool TemplateExists(this VisualTreeAsset parentTemplate, VisualTreeAsset templateToCheck, HashSet<VisualTreeAsset> checkedTemplates)
+        {
+            var fieldInfo = UsingsListFieldInfo;
+            if (fieldInfo != null && templateToCheck != null)
+            {
+                var usings = fieldInfo.GetValue(templateToCheck) as List<VisualTreeAsset.UsingEntry>;
                 if (usings != null && usings.Count > 0)
                 {
-                    var lookingFor = new VisualTreeAsset.UsingEntry(null, windowVTA);
-                    int index = usings.BinarySearch(lookingFor, s_UsingEntryAssetComparer);
-                    if (index >= 0)
+                    checkedTemplates.Add(templateToCheck);
+
+                    var assetPath = AssetDatabase.GetAssetPath(parentTemplate);
+                    var isUsingTemplate = IsUsingTemplate(usings, assetPath, parentTemplate);
+
+                    if (isUsingTemplate)
+                    {
                         return true;
+                    }
+
+#if !UNITY_2019_4
+                    var templates = templateToCheck.templateDependencies;
+                    foreach (var template in templates)
+                    {
+                        if (checkedTemplates.Contains(template))
+                        {
+                            continue;
+                        }
+
+                        if (TemplateExists(parentTemplate, template, checkedTemplates))
+                        {
+                            return true;
+                        }
+                    }
+#endif
                 }
             }
             return false;
@@ -392,7 +390,17 @@ namespace Unity.UI.Builder
         {
             var templateName = vta.GetTemplateNameFromPath(path);
             if (!vta.TemplateExists(templateName))
-                vta.RegisterTemplate(templateName, path);
+            {
+                var resolvedAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(path);
+                if (resolvedAsset)
+                {
+                    vta.RegisterTemplate(templateName, resolvedAsset);
+                }
+                else
+                {
+                    vta.RegisterTemplate(templateName, path);
+                }
+            }
 
 #if UNITY_2019_4
             var templateAsset = new TemplateAsset(templateName);
@@ -421,7 +429,7 @@ namespace Unity.UI.Builder
             var vea = new VisualElementAsset(fullTypeName);
             VisualTreeAssetUtilities.InitializeElement(vea);
 
-            visualElement.SetProperty(BuilderConstants.ElementLinkedVisualElementAssetVEPropertyName, vea);
+            visualElement.SetVisualElementAsset(vea);
             visualElement.SetProperty(BuilderConstants.ElementLinkedBelongingVisualTreeAssetVEPropertyName, vta);
 
             var overriddenAttributes = visualElement.GetOverriddenAttributes();
@@ -521,27 +529,36 @@ namespace Unity.UI.Builder
                 parent = vta.GetRootUXMLElement();
 
             var nextOrderInDocument = (vta.visualElementAssets.Count + vta.templateAssets.Count) * BuilderConstants.VisualTreeAssetOrderIncrement;
+            var assetsList = new List<VisualElementAsset>();
+
+            assetsList.AddRange(other.visualElementAssets);
+            assetsList.AddRange(other.templateAssets);
+            assetsList = assetsList.OrderBy(x => x.orderInDocument).ToList();
+
+            foreach (var asset in assetsList)
+            {
+                if (other.IsRootUXMLElement(asset))
+                {
+                    continue;
+                }
+
+                ReinitElementWithNewParentAsset(
+                    vta, parent, other, otherIdToChildren, asset, ref nextOrderInDocument);
+            }
 
             foreach (var vea in other.visualElementAssets)
             {
                 if (other.IsRootUXMLElement(vea))
                     continue;
 
-                ReinitElementWithNewParentAsset(
-                    vta, parent, other, otherIdToChildren, vea, ref nextOrderInDocument);
-
                 vta.visualElementAssets.Add(vea);
             }
 
             foreach (var vea in other.templateAssets)
             {
-                ReinitElementWithNewParentAsset(
-                    vta, parent, other, otherIdToChildren, vea, ref nextOrderInDocument);
-
                 if (!vta.TemplateExists(vea.templateAlias))
                 {
-                    var path = other.GetPathFromTemplateName(vea.templateAlias);
-                    vta.RegisterTemplate(vea.templateAlias, path);
+                    vta.RegisterTemplate(vea.templateAlias, other.ResolveTemplate(vea.templateAlias));
                 }
 
                 vta.templateAssets.Add(vea);
@@ -644,15 +661,12 @@ namespace Unity.UI.Builder
 
         public static void AssignStyleSheetFromAssetToElement(this VisualTreeAsset vta, VisualElementAsset asset, VisualElement element)
         {
-            if (asset.hasStylesheetPaths)
-                for (int i = 0; i < asset.stylesheetPaths.Count; i++)
-                    element.AddStyleSheetPath(asset.stylesheetPaths[i]);
-
             if (asset.hasStylesheets)
                 for (int i = 0; i < asset.stylesheets.Count; ++i)
                     if (asset.stylesheets[i] != null)
                         element.styleSheets.Add(asset.stylesheets[i]);
         }
+
 #endif
     }
 }

@@ -17,11 +17,6 @@ namespace Unity.UI.Builder
         static VisualElement CloneSetupRecursively(VisualTreeAsset vta, VisualElementAsset root,
             Dictionary<int, List<VisualElementAsset>> idToChildren, CreationContext context)
         {
-            var resolvedSheets = new List<StyleSheet>();
-            foreach (var sheetPath in root.stylesheetPaths)
-                resolvedSheets.Add(BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(sheetPath));
-            root.stylesheets = resolvedSheets;
-
             var ve = VisualTreeAsset.Create(root, context);
 
             // Linking the new element with its VisualElementAsset.
@@ -66,7 +61,10 @@ namespace Unity.UI.Builder
                     ve.SetInlineStyles(stylesData);
                     s_StylePropertyReader.SetInlineContext(vta.inlineSheet, rule, root.ruleIndex);
                     stylesData.ApplyProperties(s_StylePropertyReader, null);
-#else
+#elif !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+                    ve.UpdateInlineRule(vta.inlineSheet, rule);
+#else // UNITY_2020_3
+
                     ve.SetInlineRule(vta.inlineSheet, rule);
 #endif
                 }

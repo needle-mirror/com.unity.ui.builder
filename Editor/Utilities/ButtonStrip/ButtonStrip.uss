@@ -11,6 +11,18 @@
     padding-top: 2px;
 }
 
+.unity-button-strip__button:active {
+    background-color: var(--unity-colors-button-background-pressed);
+}
+
+.unity-button-strip__button:checked {
+    background-color: var(--unity-colors-button-background-pressed);
+}
+
+.unity-button-strip__button:checked:hover {
+    background-color: var(--unity-colors-button-background-hover_pressed);
+}
+
 .unity-button-strip__button--left {
     padding-left: 4px;
     margin-right: 0;
@@ -22,18 +34,20 @@
 
 .unity-button-strip__button--mid {
     border-radius: 0;
-    margin-left: 1px;
+    margin-left: 0;
     margin-right: 0;
-    border-left-width: 0;
+    border-left-width: 1px;
     border-right-width: 0;
+    border-left-color: var(--unity-colors-button-border_accent);
 }
 
 .unity-button-strip__button--right {
     padding-right: 4px;
-    margin-left: 1px;
+    margin-left: 0;
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
-    border-left-width: 0;
+    border-left-width: 1px;
+    border-left-color: var(--unity-colors-button-border_accent);
 }
 
 .unity-button-strip__button-icon {

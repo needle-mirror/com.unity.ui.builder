@@ -51,7 +51,7 @@ namespace Unity.UI.Builder
 
         protected void AddType(Type type, string displayName)
         {
-            if(m_TypeOptions.ContainsKey(displayName))
+            if (m_TypeOptions.ContainsKey(displayName))
                 throw new ArgumentException($"Item with the name: {displayName} already exists.", nameof(displayName));
 
             m_TypeOptions.Add(displayName, type);

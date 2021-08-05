@@ -1,13 +1,14 @@
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
 using UnityEngine.UIElements;
-using System.Linq;
 
 namespace Unity.UI.Builder
 {
@@ -39,8 +40,18 @@ namespace Unity.UI.Builder
             m_AttributesSection.text = currentVisualElement.typeName;
 
             if (m_Selection.selectionType != BuilderSelectionType.Element &&
-                m_Selection.selectionType != BuilderSelectionType.ElementInTemplateInstance)
+                m_Selection.selectionType != BuilderSelectionType.ElementInTemplateInstance &&
+                m_Selection.selectionType != BuilderSelectionType.ElementInControlInstance)
                 return;
+
+            if (m_Selection.selectionType == BuilderSelectionType.ElementInTemplateInstance && string.IsNullOrEmpty(currentVisualElement.name))
+            {
+                var helpBox = new HelpBox();
+                helpBox.AddToClassList(BuilderConstants.InspectorClassHelpBox);
+                helpBox.text = BuilderConstants.NoNameElementAttributes;
+
+                m_AttributesSection.Add(helpBox);
+            }
 
             GenerateAttributeFields();
 
@@ -59,6 +70,13 @@ namespace Unity.UI.Builder
         public void Disable()
         {
             m_AttributesSection.contentContainer.SetEnabled(false);
+        }
+
+        public void DisableNameRow()
+        {
+            var nameField = m_AttributesSection.Query<BindableElement>().Where(e => e.bindingPath == "name").First();
+            var styleRow = nameField.GetProperty(BuilderConstants.InspectorLinkedStyleRowVEPropertyName) as VisualElement;
+            styleRow.SetEnabled(false);
         }
 
         void GenerateAttributeFields()
@@ -153,8 +171,8 @@ namespace Unity.UI.Builder
                 fieldElement = uiField;
             }
             else if (attributeType.IsGenericType &&
-                !attributeType.GetGenericArguments()[0].IsEnum &&
-                attributeType.GetGenericArguments()[0] is Type)
+                     !attributeType.GetGenericArguments()[0].IsEnum &&
+                     attributeType.GetGenericArguments()[0] is Type)
             {
                 var uiField = new TextField(fieldLabel);
                 uiField.isDelayed = true;
@@ -225,6 +243,7 @@ namespace Unity.UI.Builder
         {
             if (currentVisualElement is ScrollView scrollView)
             {
+#if UNITY_2019_4 || UNITY_2020_1 || UNITY_2020_2
                 if (attributeName == "mode")
                 {
                     if (scrollView.ClassListContains(ScrollView.verticalVariantUssClassName))
@@ -234,9 +253,11 @@ namespace Unity.UI.Builder
                     else if (scrollView.ClassListContains(ScrollView.verticalHorizontalVariantUssClassName))
                         return ScrollViewMode.VerticalAndHorizontal;
                 }
-                else if (attributeName == "show-horizontal-scroller")
+                else
+#endif
+                if (attributeName == "show-horizontal-scroller")
                 {
-// Use old API only if version is >= 2019_4 and <= 2020_3                    
+// Use old API only if version is >= 2019_4 and <= 2020_3
 #if UI_BUILDER_PACKAGE && !UNITY_2021_1_OR_NEWER
                     return scrollView.showHorizontal;
 #else
@@ -245,7 +266,7 @@ namespace Unity.UI.Builder
                 }
                 else if (attributeName == "show-vertical-scroller")
                 {
-// Use old API only if version is >= 2019_4 and <= 2020_3                    
+// Use old API only if version is >= 2019_4 and <= 2020_3
 #if UI_BUILDER_PACKAGE && !UNITY_2021_1_OR_NEWER
                     return scrollView.showVertical;
 #else
@@ -320,18 +341,18 @@ namespace Unity.UI.Builder
                 (fieldElement as ColorField).SetValueWithoutNotify((Color)veValueAbstract);
             }
             else if (attributeType.IsGenericType &&
-                !attributeType.GetGenericArguments()[0].IsEnum &&
-                attributeType.GetGenericArguments()[0] is Type &&
-                fieldElement is TextField textField &&
-                veValueAbstract is Type veTypeValue)
+                     !attributeType.GetGenericArguments()[0].IsEnum &&
+                     attributeType.GetGenericArguments()[0] is Type &&
+                     fieldElement is TextField textField &&
+                     veValueAbstract is Type veTypeValue)
             {
                 var fullTypeName = veTypeValue.AssemblyQualifiedName;
                 var fullTypeNameSplit = fullTypeName.Split(',');
                 textField.SetValueWithoutNotify($"{fullTypeNameSplit[0]},{fullTypeNameSplit[1]}");
             }
             else if (attributeType.IsGenericType &&
-                attributeType.GetGenericArguments()[0].IsEnum &&
-                fieldElement is EnumField)
+                     attributeType.GetGenericArguments()[0].IsEnum &&
+                     fieldElement is EnumField)
             {
                 var propInfo = attributeType.GetProperty("defaultValue");
                 var enumValue = propInfo.GetValue(attribute, null) as Enum;
@@ -339,8 +360,29 @@ namespace Unity.UI.Builder
                 // Create and initialize the EnumField.
                 var uiField = fieldElement as EnumField;
 
+                string enumAttributeValueStr;
+                if (m_Selection.selectionType == BuilderSelectionType.ElementInTemplateInstance)
+                {
+                    // Special case for template children and usageHints that is not set in the visual element when set in the builder
+                    var parentTemplate = BuilderAssetUtilities.GetVisualElementRootTemplate(currentVisualElement);
+                    var parentTemplateAsset = parentTemplate.GetVisualElementAsset() as TemplateAsset;
+                    var fieldAttributeOverride = parentTemplateAsset.attributeOverrides.FirstOrDefault(x => x.m_AttributeName == attribute.name && x.m_ElementName == currentVisualElement.name);
+
+                    if (fieldAttributeOverride.m_ElementName == currentVisualElement.name)
+                    {
+                        enumAttributeValueStr = fieldAttributeOverride.m_Value;
+                    }
+                    else
+                    {
+                        enumAttributeValueStr = veValueAbstract.ToString();
+                    }
+                }
+                else
+                {
+                    enumAttributeValueStr = vea?.GetAttributeValue(attribute.name);
+                }
+
                 // Set the value from the UXML attribute.
-                var enumAttributeValueStr = vea?.GetAttributeValue(attribute.name);
                 if (!string.IsNullOrEmpty(enumAttributeValueStr))
                 {
                     var parsedValue = Enum.Parse(enumValue.GetType(), enumAttributeValueStr, true) as Enum;
@@ -390,7 +432,13 @@ namespace Unity.UI.Builder
                     return true;
             }
             else if (vea != null && vea.HasAttribute(attribute.name))
+            {
                 return true;
+            }
+            else if (BuilderAssetUtilities.HasAttributeOverrideInRootTemplate(currentVisualElement, attribute.name))
+            {
+                return true;
+            }
 
             return false;
         }
@@ -446,9 +494,9 @@ namespace Unity.UI.Builder
                 f.SetValueWithoutNotify(a.defaultValue);
             }
             else if (attributeType.IsGenericType &&
-                !attributeType.GetGenericArguments()[0].IsEnum &&
-                attributeType.GetGenericArguments()[0] is Type &&
-                fieldElement is TextField)
+                     !attributeType.GetGenericArguments()[0].IsEnum &&
+                     attributeType.GetGenericArguments()[0] is Type &&
+                     fieldElement is TextField)
             {
                 var a = attribute as TypedUxmlAttributeDescription<Type>;
                 var f = fieldElement as TextField;
@@ -458,8 +506,8 @@ namespace Unity.UI.Builder
                     f.SetValueWithoutNotify(a.defaultValue.ToString());
             }
             else if (attributeType.IsGenericType &&
-                attributeType.GetGenericArguments()[0].IsEnum &&
-                fieldElement is EnumField)
+                     attributeType.GetGenericArguments()[0].IsEnum &&
+                     fieldElement is EnumField)
             {
                 var propInfo = attributeType.GetProperty("defaultValue");
                 var enumValue = propInfo.GetValue(attribute, null) as Enum;
@@ -495,9 +543,12 @@ namespace Unity.UI.Builder
 
                     var attributeName = fieldElement.bindingPath;
                     var vea = currentVisualElement.GetVisualElementAsset();
-                    return vea.HasAttribute(attributeName)
-                        ? DropdownMenuAction.Status.Normal
-                        : DropdownMenuAction.Status.Disabled;
+                    var isAttributeOverrideAttribute = m_Selection.selectionType == BuilderSelectionType.ElementInTemplateInstance
+                        && BuilderAssetUtilities.HasAttributeOverrideInRootTemplate(currentVisualElement, attributeName);
+
+                    return (vea != null && vea.HasAttribute(attributeName)) || isAttributeOverrideAttribute
+                    ? DropdownMenuAction.Status.Normal
+                    : DropdownMenuAction.Status.Disabled;
                 },
                 evt.target);
 
@@ -512,6 +563,12 @@ namespace Unity.UI.Builder
                         if (attribute?.name == null)
                             continue;
 
+                        if (m_Selection.selectionType == BuilderSelectionType.ElementInTemplateInstance
+                            && attribute.name == "name")
+                        {
+                            continue;
+                        }
+
                         if (IsAttributeOverriden(attribute))
                             return DropdownMenuAction.Status.Normal;
                     }
@@ -523,33 +580,58 @@ namespace Unity.UI.Builder
 
         void UnsetAllAttributes(DropdownMenuAction action)
         {
-            var attributeList = currentVisualElement.GetAttributeDescriptions();
-
             // Undo/Redo
             Undo.RegisterCompleteObjectUndo(m_Inspector.visualTreeAsset, BuilderConstants.ChangeAttributeValueUndoMessage);
 
-            foreach (var attribute in attributeList)
+            if (m_Selection.selectionType == BuilderSelectionType.ElementInTemplateInstance)
             {
-                if (attribute?.name == null)
-                    continue;
+                var parentTemplate = BuilderAssetUtilities.GetVisualElementRootTemplate(currentVisualElement);
+                var parentTemplateAsset = parentTemplate.GetVisualElementAsset() as TemplateAsset;
+                var attributeOverrides = new List<TemplateAsset.AttributeOverride>(parentTemplateAsset.attributeOverrides);
 
-                // Unset value in asset.
+                foreach (var attributeOverride in attributeOverrides)
+                {
+                    if (attributeOverride.m_ElementName == currentVisualElement.name)
+                    {
+                        parentTemplateAsset.RemoveAttributeOverride(attributeOverride.m_ElementName, attributeOverride.m_AttributeName);
+                    }
+                }
+
+                var builder = Builder.ActiveWindow;
+                var hierarchyView = builder.hierarchy.elementHierarchyView;
+                var selectionId = hierarchyView.GetSelectedItemId();
+
+                builder.OnEnableAfterAllSerialization();
+
+                hierarchyView.SelectItemById(selectionId);
+            }
+            else
+            {
+                var attributeList = currentVisualElement.GetAttributeDescriptions();
                 var vea = currentVisualElement.GetVisualElementAsset();
-                vea.RemoveAttribute(attribute.name);
+
+                foreach (var attribute in attributeList)
+                {
+                    if (attribute?.name == null)
+                        continue;
+
+                    // Unset value in asset.
+                    vea.RemoveAttribute(attribute.name);
+                }
+
+                var fields = m_AttributesSection.Query<BindableElement>().Where(e => !string.IsNullOrEmpty(e.bindingPath)).ToList();
+                foreach (var fieldElement in fields)
+                {
+                    // Reset UI value.
+                    ResetAttributeFieldToDefault(fieldElement);
+                }
+
+                // Call Init();
+                CallInitOnElement();
+
+                // Notify of changes.
+                m_Selection.NotifyOfHierarchyChange(m_Inspector);
             }
-
-            var fields = m_AttributesSection.Query<BindableElement>().Where(e => !string.IsNullOrEmpty(e.bindingPath)).ToList();
-            foreach (var fieldElement in fields)
-            {
-                // Reset UI value.
-                ResetAttributeFieldToDefault(fieldElement);
-            }
-
-            // Call Init();
-            CallInitOnElement();
-
-            // Notify of changes.
-            m_Selection.NotifyOfHierarchyChange(m_Inspector);
         }
 
         void UnsetAttributeProperty(DropdownMenuAction action)
@@ -557,22 +639,44 @@ namespace Unity.UI.Builder
             var fieldElement = action.userData as BindableElement;
             var attributeName = fieldElement.bindingPath;
 
-
             // Undo/Redo
             Undo.RegisterCompleteObjectUndo(m_Inspector.visualTreeAsset, BuilderConstants.ChangeAttributeValueUndoMessage);
 
             // Unset value in asset.
             var vea = currentVisualElement.GetVisualElementAsset();
-            vea.RemoveAttribute(attributeName);
 
-            // Reset UI value.
-            ResetAttributeFieldToDefault(fieldElement);
 
-            // Call Init();
-            CallInitOnElement();
+            if (m_Selection.selectionType == BuilderSelectionType.ElementInTemplateInstance)
+            {
+                var templateContainer = BuilderAssetUtilities.GetVisualElementRootTemplate(currentVisualElement);
+                var templateAsset = templateContainer.GetVisualElementAsset() as TemplateAsset;
 
-            // Notify of changes.
-            m_Selection.NotifyOfHierarchyChange(m_Inspector);
+                if (templateAsset != null)
+                {
+                    var builder = Builder.ActiveWindow;
+                    var hierarchyView = builder.hierarchy.elementHierarchyView;
+                    var selectionId = hierarchyView.GetSelectedItemId();
+
+                    templateAsset.RemoveAttributeOverride(currentVisualElement.name, attributeName);
+
+                    builder.OnEnableAfterAllSerialization();
+
+                    hierarchyView.SelectItemById(selectionId);
+                }
+            }
+            else
+            {
+                vea.RemoveAttribute(attributeName);
+
+                // Reset UI value.
+                ResetAttributeFieldToDefault(fieldElement);
+
+                // Call Init();
+                CallInitOnElement();
+
+                // Notify of changes.
+                m_Selection.NotifyOfHierarchyChange(m_Inspector);
+            }
         }
 
         void OnAttributeValueChange(ChangeEvent<string> evt)
@@ -689,7 +793,41 @@ namespace Unity.UI.Builder
 
             // Set value in asset.
             var vea = currentVisualElement.GetVisualElementAsset();
-            vea.SetAttributeValue(field.bindingPath, value);
+            var vta = currentVisualElement.GetVisualTreeAsset();
+
+            if (m_Selection.selectionType == BuilderSelectionType.ElementInTemplateInstance)
+            {
+                TemplateContainer templateContainerParent = BuilderAssetUtilities.GetVisualElementRootTemplate(currentVisualElement);
+
+                if (templateContainerParent != null)
+                {
+                    var templateAsset = templateContainerParent.GetVisualElementAsset() as TemplateAsset;
+                    var currentVisualElementName = currentVisualElement.name;
+
+                    if (!string.IsNullOrEmpty(currentVisualElementName))
+                    {
+                        templateAsset.SetAttributeOverride(currentVisualElementName, field.bindingPath, value);
+
+                        var document = Builder.ActiveWindow.document;
+                        var rootElement = Builder.ActiveWindow.viewport.documentRootElement;
+
+                        var elementsToChange = templateContainerParent.Query<VisualElement>(currentVisualElementName);
+                        elementsToChange.ForEach(x =>
+                        {
+                            var templateVea = x.GetProperty(VisualTreeAsset.LinkedVEAInTemplatePropertyName) as VisualElementAsset;
+                            var attributeOverrides = BuilderAssetUtilities.GetAccumulatedAttributeOverrides(currentVisualElement);
+                            CallInitOnTemplateChild(x, templateVea, attributeOverrides);
+                        });
+                    }
+                }
+            }
+            else
+            {
+                vea.SetAttributeValue(field.bindingPath, value);
+
+                // Call Init();
+                CallInitOnElement();
+            }
 
             // Mark field as overridden.
             var styleRow = field.GetProperty(BuilderConstants.InspectorLinkedStyleRowVEPropertyName) as BuilderStyleRow;
@@ -705,15 +843,12 @@ namespace Unity.UI.Builder
                     styleField.AddToClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
                 }
                 else if (!string.IsNullOrEmpty(styleField.bindingPath) &&
-                    field.bindingPath != styleField.bindingPath &&
-                    !styleField.ClassListContains(BuilderConstants.InspectorLocalStyleOverrideClassName))
+                         field.bindingPath != styleField.bindingPath &&
+                         !styleField.ClassListContains(BuilderConstants.InspectorLocalStyleOverrideClassName))
                 {
                     styleField.AddToClassList(BuilderConstants.InspectorLocalStyleResetClassName);
                 }
             }
-
-            // Call Init();
-            CallInitOnElement();
 
             // Notify of changes.
             m_Selection.NotifyOfHierarchyChange(m_Inspector);
@@ -723,25 +858,59 @@ namespace Unity.UI.Builder
         {
             var fullTypeName = currentVisualElement.GetType().ToString();
 
-            if (VisualElementFactoryRegistry.TryGetValue(fullTypeName, out var factoryList))
+            List<IUxmlFactory> factoryList;
+
+            if (!VisualElementFactoryRegistry.TryGetValue(fullTypeName, out factoryList))
             {
-                var traits = factoryList[0].GetTraits();
-
-                if (traits == null)
+                // We fallback on the BindableElement factory if we don't find any so
+                // we can update the modified attributes. This fixes the TemplateContainer
+                // factory not found.
+                if (!VisualElementFactoryRegistry.TryGetValue(BuilderConstants.UxmlBindableElementTypeName, out factoryList))
+                {
                     return;
-
-                var context = new CreationContext();
-                var vea = currentVisualElement.GetVisualElementAsset();
-
-                try
-                {
-                    traits.Init(currentVisualElement, vea, context);
-                }
-                catch
-                {
-                    // HACK: This throws in 2019.3.0a4 because usageHints property throws when set after the element has already been added to the panel.
                 }
             }
+
+            var traits = factoryList[0].GetTraits();
+
+            if (traits == null)
+                return;
+
+            var context = new CreationContext();
+            var vea = currentVisualElement.GetVisualElementAsset();
+
+            try
+            {
+                traits.Init(currentVisualElement, vea, context);
+            }
+            catch
+            {
+                // HACK: This throws in 2019.3.0a4 because usageHints property throws when set after the element has already been added to the panel.
+            }
+        }
+
+        void CallInitOnTemplateChild(VisualElement visualElement, VisualElementAsset vea, List<TemplateAsset.AttributeOverride> attributeOverrides)
+        {
+            List<IUxmlFactory> factoryList;
+
+            var fullTypeName = currentVisualElement.GetType().ToString();
+            if (!VisualElementFactoryRegistry.TryGetValue(fullTypeName, out factoryList))
+            {
+                if (!VisualElementFactoryRegistry.TryGetValue(BuilderConstants.UxmlBindableElementTypeName, out factoryList))
+                {
+                    return;
+                }
+            }
+
+            var traits = factoryList[0].GetTraits();
+
+            if (traits == null)
+                return;
+
+            var context = new CreationContext(null, attributeOverrides, null, null);
+
+            traits.Init(visualElement, vea, context);
         }
     }
 }
+#endif

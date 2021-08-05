@@ -10,13 +10,20 @@
     --var-length: 80px;
     --var-length-pers: 5%;
     --var-font-style: italic;
-    --var-font: resource("Consola");
     --var-icon: url("var-test-img.png");
     width: var(--var-length);
     background-color: var(--var-color);
     color: var(--var-text-color);
     -unity-font-style: var(--var-font-style);
     --var-enum-flex: flex;
+}
+
+.test-button-1-font {
+    --var-font: resource("Fonts/RobotoMono/RobotoMono-Regular.ttf");
+}
+
+.test-button-1__font_legacy {
+    --var-font: resource("Consola");
 }
 
 .test-button-2 {
@@ -27,4 +34,3 @@
     --var-enum: none;
     display: var(--var-enum);
 }
-

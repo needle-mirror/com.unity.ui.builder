@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
@@ -69,6 +70,18 @@ namespace Unity.UI.Builder
             document.RemoveStyleSheetFromDocument(ussIndex);
         }
 
+        public static void RemoveStyleSheetsFromAsset(
+            BuilderDocument document, int[] indexes)
+        {
+            Undo.RegisterCompleteObjectUndo(
+                document.visualTreeAsset, "Remove StyleSheets from UXML");
+
+            foreach (var index in indexes)
+            {
+                document.RemoveStyleSheetFromDocument(index);
+            }
+        }
+
         public static void ReorderStyleSheetsInAsset(
             BuilderDocument document, VisualElement styleSheetsContainerElement)
         {
@@ -122,10 +135,13 @@ namespace Unity.UI.Builder
         public static VisualElementAsset AddElementToAsset(
             BuilderDocument document, VisualElement ve,
             Func<VisualTreeAsset, VisualElementAsset, VisualElement, VisualElementAsset> makeVisualElementAsset,
-            int index = -1)
+            int index = -1, bool registerUndo = true)
         {
-            Undo.RegisterCompleteObjectUndo(
-                document.visualTreeAsset, BuilderConstants.CreateUIElementUndoMessage);
+            if (registerUndo)
+            {
+                Undo.RegisterCompleteObjectUndo(
+                    document.visualTreeAsset, BuilderConstants.CreateUIElementUndoMessage);
+            }
 
             var veParent = ve.parent;
             VisualElementAsset veaParent = null;
@@ -145,7 +161,7 @@ namespace Unity.UI.Builder
 #endif
 
             var vea = makeVisualElementAsset(document.visualTreeAsset, veaParent, ve);
-            ve.SetProperty(BuilderConstants.ElementLinkedVisualElementAssetVEPropertyName, vea);
+            ve.SetVisualElementAsset(vea);
             ve.SetProperty(BuilderConstants.ElementLinkedBelongingVisualTreeAssetVEPropertyName, document.visualTreeAsset);
 
             if (index >= 0)
@@ -207,23 +223,71 @@ namespace Unity.UI.Builder
             document.visualTreeAsset.ReparentElement(veaToReparent, veaNewParent, index);
         }
 
-        public static void DeleteElementFromAsset(BuilderDocument document, VisualElement ve)
+        public static void ApplyAttributeOverridesToTreeAsset(List<TemplateAsset.AttributeOverride> attributeOverrides, VisualTreeAsset visualTreeAsset)
+        {
+            foreach (var attributeOverride in attributeOverrides)
+            {
+                var overwrittenElements = visualTreeAsset.FindElementsByName(attributeOverride.m_ElementName);
+
+                foreach (var overwrittenElement in overwrittenElements)
+                {
+                    overwrittenElement.SetAttributeValue(attributeOverride.m_AttributeName, attributeOverride.m_Value);
+                }
+            }
+        }
+
+        public static void CopyAttributeOverridesToChildTemplateAssets(List<TemplateAsset.AttributeOverride> attributeOverrides, VisualTreeAsset visualTreeAsset)
+        {
+            foreach (var templateAsset in visualTreeAsset.templateAssets)
+            {
+                foreach (var attributeOverride in attributeOverrides)
+                {
+                    templateAsset.SetAttributeOverride(attributeOverride.m_ElementName, attributeOverride.m_AttributeName, attributeOverride.m_Value);
+                }
+            }
+        }
+
+        public static void AddStyleSheetsFromTreeAsset(VisualElementAsset visualElementAsset, VisualTreeAsset visualTreeAsset)
+        {
+#if !UNITY_2019_4
+            foreach (var styleSheet in visualTreeAsset.stylesheets)
+            {
+                var styleSheetPath = AssetDatabase.GetAssetPath(styleSheet);
+
+                visualElementAsset.AddStyleSheet(styleSheet);
+                visualElementAsset.AddStyleSheetPath(styleSheetPath);
+            }
+#endif
+        }
+
+        public static void DeleteElementFromAsset(BuilderDocument document, VisualElement ve, bool registerUndo = true)
         {
             var vea = ve.GetVisualElementAsset();
             if (vea == null)
                 return;
 
-            Undo.RegisterCompleteObjectUndo(
-                document.visualTreeAsset, BuilderConstants.DeleteUIElementUndoMessage);
+            if (registerUndo)
+            {
+                Undo.RegisterCompleteObjectUndo(
+                    document.visualTreeAsset, BuilderConstants.DeleteUIElementUndoMessage);
+            }
+
+            foreach (var child in ve.Children())
+            {
+                DeleteElementFromAsset(document, child, false);
+            }
 
             document.visualTreeAsset.RemoveElement(vea);
         }
 
         public static void TransferAssetToAsset(
-            BuilderDocument document, VisualElementAsset parent, VisualTreeAsset otherVta)
+            BuilderDocument document, VisualElementAsset parent, VisualTreeAsset otherVta, bool registerUndo = true)
         {
-            Undo.RegisterCompleteObjectUndo(
-                document.visualTreeAsset, BuilderConstants.CreateUIElementUndoMessage);
+            if (registerUndo)
+            {
+                Undo.RegisterCompleteObjectUndo(
+                    document.visualTreeAsset, BuilderConstants.CreateUIElementUndoMessage);
+            }
 
             document.visualTreeAsset.Swallow(parent, otherVta);
         }
@@ -360,6 +424,115 @@ namespace Unity.UI.Builder
                 return BuilderConstants.ToolbarUnsavedFileDisplayMessage + extension;
 
             return Path.GetFileName(assetPath) + (hasUnsavedChanges ? BuilderConstants.ToolbarUnsavedFileSuffix : "");
+        }
+
+        public static TemplateContainer GetVisualElementRootTemplate(VisualElement visualElement)
+        {
+            TemplateContainer templateContainerParent = null;
+            var parent = visualElement.parent;
+
+            while (parent != null)
+            {
+                if (parent is TemplateContainer && parent.GetVisualElementAsset() != null)
+                {
+                    templateContainerParent = parent as TemplateContainer;
+                    break;
+                }
+
+                parent = parent.parent;
+            }
+
+            return templateContainerParent;
+        }
+
+        public static bool HasAttributeOverrideInRootTemplate(VisualElement visualElement, string attributeName)
+        {
+            var templateContainer = GetVisualElementRootTemplate(visualElement);
+            var templateAsset = templateContainer?.GetVisualElementAsset() as TemplateAsset;
+
+            return templateAsset?.attributeOverrides.Count(x => x.m_ElementName == visualElement.name && x.m_AttributeName == attributeName) > 0;
+        }
+
+        public static List<TemplateAsset.AttributeOverride> GetAccumulatedAttributeOverrides(VisualElement visualElement)
+        {
+            VisualElement parent = visualElement.parent;
+            List<TemplateAsset.AttributeOverride> attributeOverrides = new List<TemplateAsset.AttributeOverride>();
+
+            while (parent != null)
+            {
+                if (parent is TemplateContainer)
+                {
+                    TemplateAsset templateAsset;
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+                    if (parent.HasProperty(VisualTreeAsset.LinkedVEAInTemplatePropertyName))
+                    {
+                        templateAsset = parent.GetProperty(VisualTreeAsset.LinkedVEAInTemplatePropertyName) as TemplateAsset;
+                    }
+                    else
+#endif
+                    {
+                        templateAsset = parent.GetVisualElementAsset() as TemplateAsset;
+                    }
+
+                    if (templateAsset != null)
+                    {
+                        attributeOverrides.AddRange(templateAsset.attributeOverrides);
+                    }
+
+                    // We reached the root template
+                    if (parent.GetVisualElementAsset() != null)
+                    {
+                        break;
+                    }
+                }
+
+                parent = parent.parent;
+            }
+
+            // Parent attribute overrides have higher priority
+            attributeOverrides.Reverse();
+
+            return attributeOverrides;
+        }
+
+#if UI_BUILDER_PACKAGE && !UNITY_2021_1_OR_NEWER
+        internal static bool WriteTextFileToDisk(string path, string content, out string message)
+        {
+
+            if (AssetDatabase.IsOpenForEdit(path, out message) || AssetDatabase.MakeEditable(path))
+            {
+                try
+                {
+                    File.WriteAllText(path, content);
+                    return true;
+                }
+                catch (Exception e)
+                {
+                    message = e.Message;
+                }
+            }
+            if (string.IsNullOrEmpty(message))
+            {
+                message = "Failed to write file " + path + " to disk.\nVerify that the file is not read-only or locked.";
+            }
+            return false;
+        }
+#endif
+
+        static public bool WriteTextFileToDisk(string path, string content)
+        {
+#if UI_BUILDER_PACKAGE && !UNITY_2021_1_OR_NEWER
+            bool success = WriteTextFileToDisk(path, content, out string message);
+#else
+            bool success = FileUtil.WriteTextFileToDisk(path, content, out string message);
+#endif
+
+            if (!success)
+            {
+                Debug.LogError(message);
+                EditorUtility.DisplayDialog("Save - " + path, message, "Ok");
+            }
+            return success;
         }
     }
 }

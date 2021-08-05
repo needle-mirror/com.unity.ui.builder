@@ -34,8 +34,8 @@ namespace Unity.UI.Builder
                 // containe the <Style> tag. This will problem will go away once
                 // we support the root <Style> tag but...one problem at a time.
                 !document.visualTreeAsset.IsEmpty()
-                    ? DropdownMenuAction.Status.Normal
-                    : DropdownMenuAction.Status.Disabled);
+                ? DropdownMenuAction.Status.Normal
+                : DropdownMenuAction.Status.Disabled);
 #else
                 DropdownMenuAction.Status.Normal);
 #endif
@@ -51,8 +51,8 @@ namespace Unity.UI.Builder
                 // containe the <Style> tag. This will problem will go away once
                 // we support the root <Style> tag but...one problem at a time.
                 !document.visualTreeAsset.IsEmpty()
-                    ? DropdownMenuAction.Status.Normal
-                    : DropdownMenuAction.Status.Disabled);
+                ? DropdownMenuAction.Status.Normal
+                : DropdownMenuAction.Status.Disabled);
 #else
                 DropdownMenuAction.Status.Normal);
 #endif
@@ -61,11 +61,11 @@ namespace Unity.UI.Builder
                 BuilderConstants.ExplorerStyleSheetsPaneRemoveUSSMenu,
                 a =>
                 {
-                    BuilderStyleSheetsUtilities.RemoveUSSFromAsset(paneWindow, selectedStyleSheetIndex);
+                    BuilderStyleSheetsUtilities.RemoveUSSFromAsset(paneWindow, selection, documentElement);
                 },
                 isStyleSheet && !styleSheetBelongsToParent
-                    ? DropdownMenuAction.Status.Normal
-                    : DropdownMenuAction.Status.Disabled);
+                ? DropdownMenuAction.Status.Normal
+                : DropdownMenuAction.Status.Disabled);
 
             evt.menu.AppendSeparator();
 
@@ -77,8 +77,8 @@ namespace Unity.UI.Builder
                     BuilderStyleSheetsUtilities.SetActiveUSS(selection, paneWindow, selectedStyleSheet);
                 },
                 isStyleSheet && !styleSheetBelongsToParent
-                    ? DropdownMenuAction.Status.Normal
-                    : DropdownMenuAction.Status.Disabled);
+                ? DropdownMenuAction.Status.Normal
+                : DropdownMenuAction.Status.Disabled);
         }
     }
 }

@@ -72,6 +72,7 @@ namespace Unity.UI.Builder.EditorTests
                 return;
 
             BuilderProjectSettings.Reset();
+            BuilderProjectSettings.hideNotificationAboutMissingUITKPackage = true;
             ForceNewDocument();
             var createSelectorField = styleSheetsPane.Q<TextField>();
             createSelectorField.visualInput.Blur();
@@ -185,7 +186,11 @@ namespace Unity.UI.Builder.EditorTests
 
         protected BuilderLibraryTreeItem FindLibraryItemWithData(string data)
         {
+#if UI_BUILDER_PACKAGE && !UNITY_2021_2_OR_NEWER
             var libraryTreeView = library.Q<TreeView>();
+#else
+            var libraryTreeView = library.Q<InternalTreeView>();
+#endif
             foreach (var item in libraryTreeView.items)
             {
                 if (item is BuilderLibraryTreeItem libraryTreeItem)
@@ -202,7 +207,11 @@ namespace Unity.UI.Builder.EditorTests
         {
             var builderLibraryTreeItem = FindLibraryItemWithData(elementLabel);
             Assert.IsNotNull(builderLibraryTreeItem);
+#if UI_BUILDER_PACKAGE && !UNITY_2021_2_OR_NEWER
             var libraryTreeView = library.Q<TreeView>();
+#else
+            var libraryTreeView = library.Q<InternalTreeView>();
+#endif
             yield return libraryTreeView.SelectAndScrollToItemWithId(builderLibraryTreeItem.id);
         }
 
@@ -359,6 +368,21 @@ namespace Unity.UI.Builder.EditorTests
         {
             var firstDocumentElement = viewport.documentRootElement[0];
             return BuilderTestsHelper.GetLinkedExplorerItem(firstDocumentElement);
+        }
+
+        public void CheckStyleSheetPathsIsNotPopulated()
+        {
+            var vta = builder.document.visualTreeAsset;
+
+            Assert.Greater(vta.visualElementAssets.Count, 0);
+#if !UI_BUILDER_PACKAGE || UNITY_2020_2_OR_NEWER
+            Assert.Greater(vta.stylesheets.Count(), 0);
+#endif
+
+            foreach (var asset in vta.visualElementAssets)
+            {
+                Assert.AreEqual(0, asset.stylesheetPaths.Count());
+            }
         }
     }
 }

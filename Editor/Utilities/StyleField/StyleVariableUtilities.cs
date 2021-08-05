@@ -73,7 +73,7 @@ namespace Unity.UI.Builder
 
             while (current != null)
             {
-#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+#if !UI_BUILDER_PACKAGE || ((!UIE_PACKAGE && UNITY_2021_2_OR_NEWER) || (UIE_PACKAGE && UNITY_2020_3_OR_NEWER))
                 var customStyles = current.computedStyle.customProperties;
 #elif !UNITY_2019_4
                 var customStyles = current.computedStyle.m_CustomProperties;
@@ -95,14 +95,16 @@ namespace Unity.UI.Builder
                         var propValue = varPair.Value.value;
 #endif
 
-                        if (!editorExtensionMode && propValue.sheet.isUnityStyleSheet)
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+                        if (!editorExtensionMode && propValue.sheet.IsUnityEditorStyleSheet())
                             continue;
+#endif
                         if ((compatibleTypes == null || compatibleTypes.Contains(propValue.handle.valueType)) && !varName.StartsWith("--unity-theme") && !names.Contains(varName))
                         {
                             names.Add(varName);
                             string descr = null;
-#if !UNITY_2019_4 && !UNITY_2020_1
-                            if (propValue.sheet.isUnityStyleSheet)
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+                            if (propValue.sheet.IsUnityEditorStyleSheet())
                             {
                                 editorVariableDescriptions.TryGetValue(varName, out descr);
                             }
@@ -152,7 +154,7 @@ namespace Unity.UI.Builder
 
             while (current != null)
             {
-#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+#if !UI_BUILDER_PACKAGE || ((!UIE_PACKAGE && UNITY_2021_2_OR_NEWER) || (UIE_PACKAGE && UNITY_2020_3_OR_NEWER))
                 var customStyles = current.computedStyle.customProperties;
 #elif !UNITY_2019_4
                 var customStyles = current.computedStyle.m_CustomProperties;
@@ -170,13 +172,15 @@ namespace Unity.UI.Builder
                         var propValue = varPair.Value.value;
 #endif
 
-                        if (!editorExtensionMode && propValue.sheet.isUnityStyleSheet)
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+                        if (!editorExtensionMode && propValue.sheet.isDefaultStyleSheet)
                             continue;
+#endif
                         if (varName == variableName)
                         {
                             string descr = null;
-#if !UNITY_2019_4 && !UNITY_2020_1
-                            if (propValue.sheet.isUnityStyleSheet)
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+                            if (propValue.sheet.isDefaultStyleSheet)
                             {
                                 editorVariableDescriptions.TryGetValue(varName, out descr);
                             }

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace Unity.UI.Builder
 {
@@ -61,7 +62,7 @@ namespace Unity.UI.Builder
         public const string SettingsUIPath = UIBuilderPackagePath + "/Settings";
         public const string LibraryUssPathNoExt = UIBuilderPackagePath + "/Library/BuilderLibrary";
         public const string InspectorUssPathNoExt = UIBuilderPackagePath + "/Inspector/BuilderInspector";
-        public const string RuntimeThemeUSSPath = "Packages/com.unity.ui.runtime/USS/Default.uss.asset";
+        
         public const string UIBuilderTestsTestFilesPath = UIBuilderTestsRootPath + "/TestFiles";
         const string BuilderDocumentDiskJsonFileName = "UIBuilderDocument.json";
         const string BuilderDocumentDiskJsonFolderPath = "Library/UIBuilder";
@@ -75,6 +76,13 @@ namespace Unity.UI.Builder
         public static readonly string ElementClassNameClassName = "unity-builder-code-label--element-class-name";
         public static readonly string ElementAttachedStyleSheetClassName = "unity-builder-code-label--element-attached-stylesheet";
         public static readonly string ElementPseudoStateClassName = "unity-builder-code-label--element-pseudo-state";
+        public static readonly string CodeClassName = "unity-builder-code-label--code";
+#if !UI_BUILDER_PACKAGE || UNITY_2020_3_12 || UNITY_2021_2_OR_NEWER
+        public static readonly string CodeFontClassName = "unity-builder-code-label--code-font";
+#else
+        public static readonly string CodeFontClassName = "unity-builder-code-label--code-font_legacy";
+#endif
+
         public static readonly string TagPillClassName = "unity-builder-tag-pill";
         public static readonly string StyleSelectorBelongsParent = "unity-selector-parent-subdocument";
 
@@ -137,6 +145,8 @@ namespace Unity.UI.Builder
         public static readonly string InspectorLocalStyleVariableEditingClassName = "unity-builder-inspector__style--variable-editing";
         public static readonly string InspectorEmptyFoldoutLabelClassName = "unity-builder-inspector__empty-foldout-label";
         public static readonly string InspectorClassPillNotInDocumentClassName = "unity-builder-class-pill--not-in-document";
+        public static readonly string InspectorClassHelpBox = "unity-builder-inspector__help-box";
+        public static readonly string InspectorContainerClassName = "unity-builder-inspector__container";
 
         // Inspector Links VE Property Names
         public static readonly string InspectorLinkedStyleRowVEPropertyName = "__unity-ui-builder-style-row";
@@ -150,11 +160,7 @@ namespace Unity.UI.Builder
         public static readonly string ContextMenuUnsetAllMessage = "Unset All";
         public static readonly string ContextMenuViewVariableMessage = "View Variable";
         public static readonly string ContextMenuSetVariableMessage = "Set Variable";
-#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER)
-        public static readonly string FontCannotBeNoneMessage = "UI Builder: Font and FontAsset cannot both be set to none.";
-#else
         public static readonly string FontCannotBeNoneMessage = "UI Builder: Font cannot be set to none.";
-#endif
         public static readonly string InspectorClassPillDoubleClickToCreate = "Double-click to create new USS selector.";
         public static readonly string InspectorClassPillDoubleClickToSelect = "Double-click to select and edit USS selector.";
         public static readonly string InspectorLocalStylesSectionTitleForSelector = "Styles";
@@ -163,6 +169,7 @@ namespace Unity.UI.Builder
         public static readonly string InspectorEditorExtensionAuthoringActivated = "You can now use Editor-only controls in this document.";
         public static readonly string VariableNotSupportedInInlineStyleMessage = "Setting variables in inline style is not yet supported.";
         public static readonly string VariableDescriptionsCouldNotBeLoadedMessage = "Could not load the variable descriptions file.";
+        public static readonly string NoNameElementAttributes = "A name is required in order to edit attributes.";
 
         //
         // Explorer
@@ -206,10 +213,14 @@ namespace Unity.UI.Builder
         public static readonly string ExplorerStyleSheetsPaneAddToExistingUSSMenu = "Add to Existing USS";
 
         // Hierarchy Pane Menu
-        public static readonly string ExplorerHierarchyPaneOpenSubDocument = "Open as Sub-Document";
-        public static readonly string ExplorerHierarchyPaneOpenSubDocumentInPlace = "Open as Sub-Document In-Place";
+        public static readonly string ExplorerHierarchyPaneOpenSubDocument = "Open Instance in Isolation";
+        public static readonly string ExplorerHierarchyPaneOpenSubDocumentInPlace = "Open Instance in Context";
         public static readonly string ExplorerHierarchyReturnToParentDocument = "Return to Parent Document";
         public static readonly string ExplorerHierarchyOpenInBuilder = "Open in UI Builder";
+        public static readonly string ExplorerHierarchySelectTemplate = "Show in Project";
+        public static readonly string ExplorerHierarchyUnpackTemplate = "Unpack Instance";
+        public static readonly string ExplorerHierarchyUnpackCompletely = "Unpack Instance Completely";
+        public static readonly string ExplorerHierarchyCreateTemplate = "Create Template";
 
         // Explorer Messages
         public static readonly string ExplorerInExplorerNewClassSelectorInfoMessage = "Add new selector...";
@@ -264,6 +275,9 @@ namespace Unity.UI.Builder
         public static readonly string SpecialVisualElementInitialMinSizeName = "__unity-builder-canvas__special-visual-element-initial-size";
         public static readonly string SpecialVisualElementInitialMinSizeClassName = "unity-builder-canvas__special-visual-element-initial-size";
 
+        // Canvas Messages
+        public static readonly string CannotManipulateResizedOrScaledItemMessage = "The selected item is rotated or scaled.\nTransforming it from the viewport is not properly supported yet.";
+
         //
         // Toolbar
         //
@@ -306,16 +320,17 @@ namespace Unity.UI.Builder
         public static readonly string DialogDiscardOption = "Discard";
         public static readonly string DialogAbortActionOption = "Abort {0}";
         public static readonly string DialogSaveActionOption = "Save";
-        public static readonly string DialogDontSaveActionOption = "Don't Save";
+        public static readonly string DialogDontSaveActionOption = "Discard";
 
         // Save Dialog Messages
         public static readonly string SaveDialogChooseUxmlPathDialogTitle = "Choose UXML File Location";
         public static readonly string SaveDialogChooseUssPathDialogTitle = "Choose USS File Location";
-        public static readonly string SaveDialogSaveChangesPromptTitle = "UI Builder: Document has unsaved changes.";
+        public static readonly string SaveDialogSaveChangesPromptTitle = "UI Builder - Unsaved Changes Detected";
         public static readonly string SaveDialogSaveChangesPromptMessage = "Do you want to save changes you made?";
-        public static readonly string SaveDialogExternalChangesPromptTitle = "UI Builder: Document has been modified in an external editor.";
+        public static readonly string SaveDialogExternalChangesPromptTitle = "UI Builder - Document has been modified in an external editor";
         public static readonly string SaveDialogExternalChangesPromptMessage = "Unsaved changes in the UI Builder will be lost.\nPlease avoid changing files externally while they are open in the Builder.";
         public static readonly string SaveDialogInvalidPathMessage = "Can only save in the 'Assets/' or 'Packages/' folders.";
+        public static readonly string SaveDialogReplaceWithNewTemplateMessage = "Changes to your template affect this file. In order to replace this template, we need to save your current file.";
 
         // Error Dialog Messages
         public static readonly string ErrorDialogNotice = "UI Builder: Notice";
@@ -324,17 +339,19 @@ namespace Unity.UI.Builder
             "If you {0} the file, the UI Builder document will close, " +
             "and you will lose any unsaved changes. Would you like to {0} the file anyway?";
         public static readonly string InvalidUXMLOrUSSAssetNameSuffix = "[UNSUPPORTED_IN_UI_BUILDER]";
-        public static readonly string InvalidUSSDialogTitle = "UI Builder: Unable to parse USS file.";
+        public static readonly string InvalidUSSDialogTitle = "UI Builder - Unable to parse USS file.";
         public static readonly string InvalidUSSDialogMessage = "UI Builder Failed to open {0}.uss asset. This may be due to invalid USS syntax or USS syntax the UI Builder does not yet support (ie. Variables). Check console for details.";
-        public static readonly string InvalidUXMLDialogTitle = "UI Builder: Unable to parse UXML file.";
+        public static readonly string InvalidUXMLDialogTitle = "UI Builder - Unable to parse UXML file.";
         public static readonly string InvalidUXMLDialogMessage = "UI Builder Failed to open {0}.uxml asset. This may be due to invalid UXML syntax or UXML syntax the UI Builder does not yet support. Check console for details.";
+        public static readonly string InvalidCreateTemplatePathTitle = "UI Builder - Invalid Path";
+        public static readonly string InvalidCreateTemplatePathMessage = "The currently open document cannot be replaced.";
 
         // StyleSheets Dialogs
-        public static readonly string ExtractInlineStylesNoUSSDialogTitle = "UI Builder: No USS in current document.";
+        public static readonly string ExtractInlineStylesNoUSSDialogTitle = "UI Builder - No USS in current document";
         public static readonly string ExtractInlineStylesNoUSSDialogMessage = "There is no StyleSheet (USS) added to this UXML document. Where would you like to add this new USS rule?";
         public static readonly string ExtractInlineStylesNoUSSDialogNewUSSOption = "Add to New USS";
         public static readonly string ExtractInlineStylesNoUSSDialogExistingUSSOption = "Add to Existing USS";
-        public static readonly string DeleteLastElementDialogTitle = "UI Builder: Deleting last element.";
+        public static readonly string DeleteLastElementDialogTitle = "UI Builder - Deleting last element";
         public static readonly string DeleteLastElementDialogMessage = "You are about to delete the last element. Since USS files are attached to root elements, with no elements in the document, no USS files can be attached. Any existing USS files attached will be removed. You can always undo this operation and get everything back. Continue?";
         public static readonly string InvalidWouldCauseCircularDependencyMessage = "Invalid operation.";
         public static readonly string InvalidWouldCauseCircularDependencyMessageDescription = "Can not add as TemplateContainer, as would create a circular dependency.";
@@ -379,6 +396,7 @@ namespace Unity.UI.Builder
         public static readonly string UxmlEditorNamespaceReplace = "uie:";
         public static readonly string UxmlTagTypeName = "UnityEngine.UIElements.UXML";
         public static readonly string UxmlInstanceTypeName = "UnityEngine.UIElements.Instance";
+        public static readonly string UxmlBindableElementTypeName = "UnityEngine.UIElements.BindableElement";
 
         // USS
         public static readonly string UssSelectorNameSymbol = "#";

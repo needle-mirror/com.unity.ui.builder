@@ -1,10 +1,11 @@
 using UnityEngine.UIElements;
 using System.Collections.Generic;
 using UnityEditor;
-using UnityEditor.UIElements;
 using UnityEngine;
 using System;
-
+#if UNITY_2021_1_OR_NEWER
+using UnityEngine.Pool;
+#endif
 namespace Unity.UI.Builder
 {
     internal class BuilderInspector : BuilderPaneContent, IBuilderSelectionNotifier
@@ -57,7 +58,9 @@ namespace Unity.UI.Builder
 
         // Sections
         BuilderInspectorCanvas m_CanvasSection;
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
         BuilderInspectorAttributes m_AttributesSection;
+#endif
         BuilderInspectorInheritedStyles m_InheritedStyleSection;
         BuilderInspectorLocalStyles m_LocalStylesSection;
         BuilderInspectorSelector m_SelectorSection;
@@ -235,9 +238,11 @@ namespace Unity.UI.Builder
             m_SelectorSection = new BuilderInspectorSelector(this);
             m_Sections.Add(m_SelectorSection.root);
 
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
             // Attributes Section
             m_AttributesSection = new BuilderInspectorAttributes(this);
             m_Sections.Add(m_AttributesSection.root);
+#endif
 
             // Inherited Styles Section
             m_InheritedStyleSection = new BuilderInspectorInheritedStyles(this, m_MatchingSelectors);
@@ -280,7 +285,9 @@ namespace Unity.UI.Builder
         void EnableFields()
         {
             m_SelectorSection.Enable();
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
             m_AttributesSection.Enable();
+#endif
             m_InheritedStyleSection.Enable();
             m_LocalStylesSection.Enable();
         }
@@ -288,7 +295,9 @@ namespace Unity.UI.Builder
         void DisableFields()
         {
             m_SelectorSection.Disable();
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
             m_AttributesSection.Disable();
+#endif
             m_InheritedStyleSection.Disable();
             m_LocalStylesSection.Disable();
         }
@@ -301,8 +310,10 @@ namespace Unity.UI.Builder
                 EnableSection(m_StyleSheetSection.root);
             if (section.HasFlag(Section.StyleSelector))
                 EnableSection(m_SelectorSection.root);
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
             if (section.HasFlag(Section.ElementAttributes))
                 EnableSection(m_AttributesSection.root);
+#endif
             if (section.HasFlag(Section.ElementInheritedStyles))
                 EnableSection(m_InheritedStyleSection.root);
             if (section.HasFlag(Section.LocalStyles))
@@ -435,6 +446,7 @@ namespace Unity.UI.Builder
                         Section.LocalStyles);
                     break;
                 case BuilderSelectionType.ElementInTemplateInstance:
+                case BuilderSelectionType.ElementInControlInstance:
                 case BuilderSelectionType.ElementInParentDocument:
                 case BuilderSelectionType.Element:
                     EnableSections(
@@ -448,16 +460,28 @@ namespace Unity.UI.Builder
                     return;
             }
             bool selectionInTemplateInstance = m_Selection.selectionType == BuilderSelectionType.ElementInTemplateInstance;
+            bool selectionInControlInstance = m_Selection.selectionType == BuilderSelectionType.ElementInControlInstance;
             bool selectionInParentSelector = m_Selection.selectionType == BuilderSelectionType.ParentStyleSelector;
             bool selectionInParentDocument = m_Selection.selectionType == BuilderSelectionType.ElementInParentDocument;
-            if (selectionInTemplateInstance || selectionInParentSelector || selectionInParentDocument)
+
+            if (selectionInTemplateInstance || selectionInParentSelector || selectionInParentDocument || selectionInControlInstance)
+            {
                 DisableFields();
+            }
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+            if (selectionInTemplateInstance && !string.IsNullOrEmpty(currentVisualElement.name))
+            {
+                m_AttributesSection.Enable();
+            }
+#endif
 
             // Bind the style selector controls.
             m_SelectorSection.Refresh();
 
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
             // Recreate Attribute Fields
             m_AttributesSection.Refresh();
+#endif
 
             // Reset current style rule.
             currentRule = null;
@@ -470,6 +494,13 @@ namespace Unity.UI.Builder
             m_LocalStylesSection.Refresh();
 
             m_CanvasSection.Refresh();
+
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+            if (selectionInTemplateInstance)
+            {
+                m_AttributesSection.DisableNameRow();
+            }
+#endif
         }
 
         public void OnAfterBuilderDeserialize()
@@ -479,7 +510,9 @@ namespace Unity.UI.Builder
 
         public void HierarchyChanged(VisualElement element, BuilderHierarchyChangeType changeType)
         {
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
             m_AttributesSection.Refresh();
+#endif
         }
 
         public void SelectionChanged()
@@ -528,8 +561,25 @@ namespace Unity.UI.Builder
                     if (fieldList == null)
                         continue;
 
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+                    // Transitions are composed of dynamic elements which can add/remove themselves in the fieldList
+                    // when the style is refreshed, so we take a copy of the list to ensure we do not iterate and
+                    // mutate the list at the same time.
+                    var tempFieldList = ListPool<VisualElement>.Get();
+                    try
+                    {
+                        tempFieldList.AddRange(fieldList);
+                        foreach (var field in tempFieldList)
+                            m_StyleFields.RefreshStyleField(styleName, field);
+                    }
+                    finally
+                    {
+                        ListPool<VisualElement>.Release(tempFieldList);
+                    }
+#else
                     foreach (var field in fieldList)
                         m_StyleFields.RefreshStyleField(styleName, field);
+#endif
                 }
 
                 m_LocalStylesSection.UpdateStyleCategoryFoldoutOverrides();

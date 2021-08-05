@@ -15,6 +15,13 @@ namespace Unity.UI.Builder.EditorTests
 #endif
         }
 
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+        public static ITreeViewItem GetSelectedItem(this InternalTreeView treeView)
+        {
+            return treeView.selectedItems.FirstOrDefault();
+        }
+#endif
+
         public static IEnumerator SelectAndScrollToItemWithId(this TreeView treeView, int id)
         {
 #if UNITY_2019_4
@@ -28,5 +35,14 @@ namespace Unity.UI.Builder.EditorTests
             yield return UIETestHelpers.Pause(1);
         }
 
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+        public static IEnumerator SelectAndScrollToItemWithId(this InternalTreeView treeView, int id)
+        {
+            treeView.SetSelection(id);
+            yield return UIETestHelpers.Pause(1);
+            treeView.ScrollToItem(id);
+            yield return UIETestHelpers.Pause(1);
+        }
+#endif
     }
 }

@@ -6,7 +6,9 @@ namespace Unity.UI.Builder
     {
         public string name { get; set; }
         public StylePropertyValue value { get; set; }
-        public bool isEditorVar => value.sheet ? value.sheet.isUnityStyleSheet : false;
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+        public bool isEditorVar => value.sheet ? value.sheet.IsUnityEditorStyleSheet() : false;
+#endif
         public string description { get; set; }
     }
 }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine.UIElements;
@@ -40,6 +41,7 @@ namespace Unity.UI.Builder
             properties.Add(newProperty);
             rule.properties = properties.ToArray();
 
+            styleSheet.UpdateContentHash();
             StyleSheetCache.ClearCaches();
 
             return newProperty;
@@ -57,6 +59,7 @@ namespace Unity.UI.Builder
             var properties = rule.properties.ToList();
             properties.Remove(property);
             rule.properties = properties.ToArray();
+            styleSheet.UpdateContentHash();
         }
 
         public static void RemoveProperty(this StyleSheet styleSheet, StyleRule rule,
@@ -68,5 +71,16 @@ namespace Unity.UI.Builder
 
             styleSheet.RemoveProperty(rule, property, undoMessage);
         }
+
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+        public static IEnumerable<string> GetAllSetStyleProperties(this StyleRule styleRule)
+        {
+            foreach (var property in styleRule.properties)
+            {
+                if (StylePropertyUtil.s_NameToId.ContainsKey(property.name))
+                    yield return property.name;
+            }
+        }
+#endif
     }
 }

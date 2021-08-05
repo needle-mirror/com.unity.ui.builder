@@ -7,7 +7,7 @@
     <!-- Flex -->
     <uib:BuilderStyleRow class="unity-builder-double-field-row">
         <Label class="unity-builder-double-field-label" />
-        
+
         <!-- Flex Shrink -->
         <uib:NumericStyleField label="Shrink" tooltip="flex-shrink" binding-path="flex-shrink" class="unity-builder-double-field" />
 

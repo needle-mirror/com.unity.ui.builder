@@ -165,7 +165,11 @@ namespace Unity.UI.Builder
         {
             if (m_Popup != null)
             {
+#if UI_BUILDER_PACKAGE && !UNITY_2021_2_OR_NEWER
                 m_Popup.listView.itemHeight = m_ItemHeight;
+#else
+                m_Popup.listView.fixedItemHeight = m_ItemHeight;
+#endif
                 m_Popup.listView.makeItem = m_MakeItem;
                 m_Popup.listView.bindItem = m_BindItem;
                 m_Popup.anchoredControl = textField;
@@ -446,7 +450,18 @@ namespace Unity.UI.Builder
                 }
                 else
                 {
-                    popup.listView.OnKeyDown(e);
+                    using (var evt = KeyDownEvent.GetPooled(e.character, e.keyCode, e.modifiers))
+                    {
+#if UI_BUILDER_PACKAGE && UNITY_2019_4
+                        var scrollView = popup.listView.Q<ScrollView>();
+                        evt.target = scrollView.contentContainer;
+#elif UI_BUILDER_PACKAGE && !UNITY_2021_2_OR_NEWER
+                        evt.target = popup.listView.m_ScrollView.contentContainer;
+#else
+                        evt.target = popup.listView.scrollView.contentContainer;
+#endif
+                        popup.listView.SendEvent(evt);
+                    }
                 }
 
                 e.StopImmediatePropagation();
@@ -476,10 +491,10 @@ namespace Unity.UI.Builder
             AddToClassList(s_UssClassName);
 
             listView = new ListView();
-#if UI_BUILDER_PACKAGE && !UNITY_2021_1_OR_NEWER
-            listView.Q<ScrollView>().showHorizontal = false;
-#else
+#if !UI_BUILDER_PACKAGE || ((!UIE_PACKAGE && UNITY_2021_2_OR_NEWER) || (UIE_PACKAGE && UNITY_2020_3_OR_NEWER))
             listView.Q<ScrollView>().horizontalScrollerVisibility = ScrollerVisibility.Hidden;
+#else
+            listView.Q<ScrollView>().showHorizontal = false;
 #endif
 #if !UNITY_2019_4
             listView.onItemsChosen += (obj) =>
@@ -520,14 +535,22 @@ namespace Unity.UI.Builder
             const int minListViewHeight = 160;
 
             base.AdjustGeometry();
+#if UI_BUILDER_PACKAGE && !UNITY_2021_2_OR_NEWER
             listView.style.minHeight = Math.Min(minListViewHeight, listView.itemHeight * (listView.itemsSource != null ? listView.itemsSource.Count : 0));
+#else
+            listView.style.minHeight = Math.Min(minListViewHeight, listView.fixedItemHeight * (listView.itemsSource != null ? listView.itemsSource.Count : 0));
+#endif
         }
 
         public void Refresh()
         {
+#if UI_BUILDER_PACKAGE && !UNITY_2021_2_OR_NEWER
             listView.Refresh();
-#if !UNITY_2019_4
+#else
+            listView.Rebuild();
+#endif
 
+#if !UNITY_2019_4
             listView.ClearSelection();
 #else
             listView.selectedIndex = -1;

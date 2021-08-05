@@ -53,7 +53,9 @@ namespace Unity.UI.Builder
                 var res = results[i];
 
                 e.Q<Label>(s_ItemNameLabelName).text = res.name;
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
                 e.Q<Label>(s_ItemEditorOnlyLabelName).EnableInClassList(BuilderConstants.HiddenStyleClassName, !res.isEditorVar);
+#endif
             };
 
             m_DetailsView = new VariableInfoView();
@@ -91,7 +93,11 @@ namespace Unity.UI.Builder
             var valType = val == null ? typeof(object) : val.GetType();
 
             if (BuilderInspectorStyleFields.IsComputedStyleFloat(val) || BuilderInspectorStyleFields.IsComputedStyleInt(val)
-                || BuilderInspectorStyleFields.IsComputedStyleLength(val))
+                || BuilderInspectorStyleFields.IsComputedStyleLength(val)
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+                || BuilderInspectorStyleFields.IsComputedStyleList<TimeValue>(val)
+#endif
+            )
             {
                 return new[] { StyleValueType.Float, StyleValueType.Dimension };
             }
@@ -107,11 +113,19 @@ namespace Unity.UI.Builder
             {
                 return new[] { StyleValueType.ScalableImage, StyleValueType.AssetReference, StyleValueType.ResourcePath };
             }
-            else if (BuilderInspectorStyleFields.IsComputedStyleCursor(val))
+            else if (BuilderInspectorStyleFields.IsComputedStyleCursor(val)
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+            || BuilderInspectorStyleFields.IsComputedStyleList<StylePropertyName>(val)
+#endif
+            )
             {
                 return new[] { StyleValueType.Enum, StyleValueType.ScalableImage, StyleValueType.AssetReference, StyleValueType.ResourcePath };
             }
-            else if (BuilderInspectorStyleFields.IsComputedStyleEnum(val, valType))
+            else if (BuilderInspectorStyleFields.IsComputedStyleEnum(val, valType)
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+            || BuilderInspectorStyleFields.IsComputedStyleList<EasingFunction>(val)
+#endif
+            )
             {
                 return new[] { StyleValueType.Enum };
             }

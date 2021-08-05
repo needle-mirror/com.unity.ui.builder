@@ -179,7 +179,7 @@ namespace Unity.UI.Builder
 
         void DisableDelayOnActiveLabelMouseDragger(IntegerField field)
         {
-            // Use the Move event instead of the Down event because the Down event is intercepted (with Event.StopImmediatePropagation) 
+            // Use the Move event instead of the Down event because the Down event is intercepted (with Event.StopImmediatePropagation)
             // by the FieldMouseDragger manipulator attached to the label
             field.labelElement.RegisterCallback<PointerMoveEvent>(e => {
                 if (e.pressedButtons != 0)
@@ -465,7 +465,7 @@ namespace Unity.UI.Builder
 
         void OnBackgroundModeChange(ChangeEvent<string> evt)
         {
-            var enumValue = (BuilderCanvasBackgroundMode) Enum.Parse(typeof(BuilderCanvasBackgroundMode), evt.newValue);
+            var enumValue = (BuilderCanvasBackgroundMode)Enum.Parse(typeof(BuilderCanvasBackgroundMode), evt.newValue);
             settings.CanvasBackgroundMode = enumValue;
             PostSettingsChange();
             ApplyBackgroundOptions();

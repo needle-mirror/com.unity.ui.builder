@@ -225,7 +225,12 @@ namespace Unity.UI.Builder.EditorTests
             yield return EnsureSelectorsCanBeAddedAndReloadBuilder();
 
             yield return AddSelector(TestSelectorName);
+
+#if UI_BUILDER_PACKAGE && !UNITY_2021_2_OR_NEWER
             var stylesTreeView = styleSheetsPane.Q<TreeView>();
+#else
+            var stylesTreeView = styleSheetsPane.Q<InternalTreeView>();
+#endif
 
             selection.ClearSelection(null);
             Assert.That(stylesTreeView.GetSelectedItem(), Is.Null);
@@ -239,9 +244,11 @@ namespace Unity.UI.Builder.EditorTests
             yield return UIETestEvents.Mouse.SimulateClick(styleSheetsPane);
             Assert.That(stylesTreeView.GetSelectedItem(), Is.Null);
 
+#if !UNITY_2019_4
             // Select by clicking on the style class pill
             yield return UIETestEvents.Mouse.SimulateClick(createdSelector.Q<Label>());
             Assert.That(stylesTreeView.GetSelectedItem(), Is.Not.Null);
+#endif
         }
 
         /// <summary>
@@ -365,7 +372,11 @@ namespace Unity.UI.Builder.EditorTests
             var createdSelector = GetStyleSelectorNodeWithName(TestSelectorName);
 
             yield return UIETestHelpers.Pause(1);
+#if UI_BUILDER_PACKAGE && !UNITY_2021_2_OR_NEWER
             var hierarchyTreeView = hierarchy.Q<TreeView>();
+#else
+            var hierarchyTreeView = hierarchy.Q<InternalTreeView>();
+#endif
             hierarchyTreeView.ExpandItem(hierarchyTreeView.items.ToList()[1].id);
 
             var textFieldLabel = BuilderTestsHelper.GetExplorerItemWithName(hierarchy, nameof(Label)).Q<Label>();
@@ -504,7 +515,11 @@ namespace Unity.UI.Builder.EditorTests
         {
             yield return EnsureSelectorsCanBeAddedAndReloadBuilder();
 
+#if UI_BUILDER_PACKAGE && !UNITY_2021_2_OR_NEWER
             var styleSheetsTreeView = styleSheetsPane.Q<TreeView>();
+#else
+            var styleSheetsTreeView = styleSheetsPane.Q<InternalTreeView>();
+#endif
             Assert.That(styleSheetsTreeView.GetSelectedItem(), Is.Null);
 
             // Create and new selector and select

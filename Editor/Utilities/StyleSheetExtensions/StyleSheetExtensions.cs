@@ -4,11 +4,22 @@ using System;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
+using UnityEditor.UIElements;
 
 namespace Unity.UI.Builder
 {
     internal static class StyleSheetExtensions
     {
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+        public static bool IsUnityEditorStyleSheet(this StyleSheet styleSheet)
+        {
+            if ((UIElementsEditorUtility.IsCommonDarkStyleSheetLoaded() && styleSheet == UIElementsEditorUtility.GetCommonDarkStyleSheet())
+                || (UIElementsEditorUtility.IsCommonLightStyleSheetLoaded() && styleSheet == UIElementsEditorUtility.GetCommonLightStyleSheet()))
+                return true;
+            return false;
+        }
+#endif
+
         public static StyleSheet DeepCopy(this StyleSheet styleSheet)
         {
             if (styleSheet == null)
@@ -165,24 +176,12 @@ namespace Unity.UI.Builder
                 undoMessage = "New UI Style Selector";
             Undo.RegisterCompleteObjectUndo(styleSheet, undoMessage);
 
-            // Remove extra whitespace.
-            var selectorSplit = complexSelectorStr.Split(' ');
-            complexSelectorStr = String.Join(" ", selectorSplit);
-
-            // Create rule.
-            var rule = new StyleRule { line = -1 };
-            rule.properties = new StyleProperty[0];
-
-            // Create selector.
-            var complexSelector = new StyleComplexSelector();
-            complexSelector.rule = rule;
-            var initResult = StyleComplexSelectorExtensions.InitializeSelector(complexSelector, complexSelectorStr);
-            if (!initResult)
+            if (!SelectorUtility.TryCreateSelector(complexSelectorStr, out var complexSelector))
                 return null;
 
             // Add rule to StyleSheet.
             var rulesList = styleSheet.rules.ToList();
-            rulesList.Add(rule);
+            rulesList.Add(complexSelector.rule);
             styleSheet.rules = rulesList.ToArray();
             complexSelector.ruleIndex = styleSheet.rules.Length - 1;
 
@@ -190,6 +189,7 @@ namespace Unity.UI.Builder
             var complexSelectorsList = styleSheet.complexSelectors.ToList();
             complexSelectorsList.Add(complexSelector);
             styleSheet.complexSelectors = complexSelectorsList.ToArray();
+            styleSheet.UpdateContentHash();
 
             return complexSelector;
         }
@@ -267,6 +267,9 @@ namespace Unity.UI.Builder
             {
                 Swallow(toStyleSheet, fromStyleSheet, fromSelector);
             }
+#if !UNITY_2019_4
+            toStyleSheet.contentHash = fromStyleSheet.contentHash;
+#endif
         }
 
         public static void ClearUndo(this StyleSheet styleSheet)
@@ -283,6 +286,21 @@ namespace Unity.UI.Builder
                 return;
 
             ScriptableObject.DestroyImmediate(styleSheet);
+        }
+
+        public static void UpdateContentHash(this StyleSheet styleSheet)
+        {
+#if !UNITY_2019_4
+            // Set the contentHash to 0 if the style sheet is empty
+            if (styleSheet.rules == null || styleSheet.rules.Length == 0)
+                styleSheet.contentHash = 0;
+            else
+                // Use a random value instead of computing the real contentHash.
+                // This is faster (for large content) and safe enough to avoid conflicts with other style sheets
+                // since contentHash is used internally as a optimized way to compare style sheets.
+                // However, note that the real contentHash will still be computed on import.
+                styleSheet.contentHash = UnityEngine.Random.Range(1, int.MaxValue);
+#endif
         }
     }
 }

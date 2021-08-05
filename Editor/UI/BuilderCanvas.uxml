@@ -26,12 +26,12 @@
         <VisualElement class="unity-builder-canvas__side__inner" picking-mode="ignore" />
         <VisualElement class="unity-builder-canvas__cursor-setter" />
     </VisualElement>
-	 <VisualElement name="top-handle" class="unity-builder-canvas__handle unity-builder-canvas__side unity-builder-canvas__side--horizontal unity-builder-canvas__side--top">
+     <VisualElement name="top-handle" class="unity-builder-canvas__handle unity-builder-canvas__side unity-builder-canvas__side--horizontal unity-builder-canvas__side--top">
         <VisualElement class="unity-builder-canvas__side__inner" picking-mode="ignore" />
         <VisualElement class="unity-builder-canvas__cursor-setter" />
     </VisualElement>
 
-	<VisualElement name="top-left-handle" class="unity-builder-canvas__handle unity-builder-canvas__corner unity-builder-canvas__corner--top-left">
+    <VisualElement name="top-left-handle" class="unity-builder-canvas__handle unity-builder-canvas__corner unity-builder-canvas__corner--top-left">
         <VisualElement class="unity-builder-canvas__corner__inner" picking-mode="ignore" />
         <VisualElement class="unity-builder-canvas__cursor-setter" />
     </VisualElement>

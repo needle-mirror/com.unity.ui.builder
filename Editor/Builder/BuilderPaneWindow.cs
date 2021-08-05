@@ -138,6 +138,13 @@ namespace Unity.UI.Builder
             document.RegisterWindow(this);
         }
 
+        public void SetHasUnsavedChanges(bool unsaved)
+        {
+#if !UNITY_2019_4
+            hasUnsavedChanges = unsaved;
+#endif
+        }
+
         void CreateUIInternal()
         {
             CreateUI();

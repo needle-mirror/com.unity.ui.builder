@@ -4,9 +4,28 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-preview.15] - 2021-08-05
+
+- Fixed many issues that span across various editor versions (2019.4 through latest 2021.2 beta)
+- Added suport for the UI Toolkit 1.0.0-preview.15 package
+- The following compatibility matrix can be used to find out if/when you can use this package:
+```
+ Editor version | Builder version        | UI Toolkit version
+----------------+------------------------+-----------------------------
+ 2019.4/LTS     | pkg (1.0.0-preview.15) | built-in (editor only)
+ 2020.3/LTS     | pkg (1.0.0-preview.15) | built-in (editor only)
+ 2020.3/LTS     | pkg (1.0.0-preview.15) | pkg (1.0.0-preview.15)
+ 2021.1         | pkg (1.0.0-preview.15) | built-in
+ 2021.1         | pkg (1.0.0-preview.15) | pkg (1.0.0-preview.15)
+ 2021.2 beta+   | pkg (1.0.0-preview.15) | built-in (editor & runtime)
+ 2022.1 alpha+  | pkg (1.0.0-preview.15) | built-in (editor & runtime)
+```
+
+Note that this UI Builder package (com.unity.ui.builder 1.0.0-preview.15) is only compatible with the UI Toolkit package of the same version number (com.unity.ui 1.0.0-preview.15).  Any other combination is not supported. 
+
 ## [1.0.0-preview.14] - 2021-03-30
 
-- Fixed compiler issues on 2021.1f1 with the UI Builder package when UI Toolkit pacakge is NOT installed.
+- Fixed compiler issues on 2021.1f1 with the UI Builder package when UI Toolkit package is NOT installed.
 
 ## [1.0.0-preview.13] - 2021-03-17
 

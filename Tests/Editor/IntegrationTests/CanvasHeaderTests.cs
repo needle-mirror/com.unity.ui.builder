@@ -27,6 +27,8 @@ namespace Unity.UI.Builder.EditorTests
         [UnityTest]
         public IEnumerator ClickOnCanvasHeaderDisplaysDocumentSettings()
         {
+            viewport.FitCanvas();
+
             var documentSettings = inspector.Q(BuilderInspectorCanvas.ContainerName);
             Assert.That(documentSettings, Style.Display(DisplayStyle.None));
 

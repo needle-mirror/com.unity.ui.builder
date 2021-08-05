@@ -13,6 +13,14 @@ namespace Unity.UI.Builder
         static readonly string s_CodeName = "unity-builder-code__code";
         static readonly string s_CodeClassName = "unity-builder-code__code";
         static readonly string s_CodeLineNumbersClassName = "unity-builder-code__code-line-numbers";
+#if !UI_BUILDER_PACKAGE || UNITY_2020_3_12 || UNITY_2021_2_OR_NEWER
+        static readonly string s_CodeLineNumbersFontClassName = "unity-builder-code__code-line-numbers-font";
+        static readonly string s_CodeInputFontClassName = "unity-base-text-field .unity-builder-code__input-font";
+#else
+        static readonly string s_CodeLineNumbersFontClassName = "unity-builder-code__code-line-numbers-font_legacy";
+        static readonly string s_CodeInputFontClassName = "unity-base-text-field .unity-builder-code__input-font_legacy";
+#endif
+
         static readonly string s_CodeTextClassName = "unity-builder-code__code-text";
         static readonly string s_CodeInputClassName = "unity-builder-code__input";
         static readonly string s_CodeCodeOuterContainerClassName = "unity-builder-code__code_outer_container";
@@ -48,7 +56,9 @@ namespace Unity.UI.Builder
             m_LineNumbers.RemoveFromClassList(TextField.ussClassName);
             m_LineNumbers.AddToClassList(s_CodeClassName);
             m_LineNumbers.AddToClassList(s_CodeLineNumbersClassName);
+            m_LineNumbers.AddToClassList(s_CodeLineNumbersFontClassName);
             m_LineNumbers.AddToClassList(s_CodeInputClassName);
+            m_LineNumbers.AddToClassList(s_CodeInputFontClassName);
 
             m_Code = new TextField(TextField.kMaxLengthNone, true, false, char.MinValue);
             m_Code.isReadOnly = true;
@@ -58,6 +68,7 @@ namespace Unity.UI.Builder
             m_Code.AddToClassList(s_CodeTextClassName);
             var codeInput = m_Code.Q(className: TextField.inputUssClassName);
             codeInput.AddToClassList(s_CodeInputClassName);
+            codeInput.AddToClassList(s_CodeInputFontClassName);
 
             m_CodeOuterContainer = new VisualElement();
             m_CodeOuterContainer.AddToClassList(s_CodeCodeOuterContainerClassName);

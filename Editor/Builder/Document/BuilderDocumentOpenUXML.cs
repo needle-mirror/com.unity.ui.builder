@@ -5,6 +5,7 @@ using UnityEditor;
 using System;
 using System.IO;
 using System.Linq;
+using UnityEditor.UIElements;
 
 namespace Unity.UI.Builder
 {
@@ -373,6 +374,7 @@ namespace Unity.UI.Builder
                 RemoveStyleSheetsFromRootAsset(asset);
             }
         }
+
 #endif
 
         public void AddStyleSheetsToAllRootElements(string newUssPath = null, int newUssIndex = 0)
@@ -412,6 +414,7 @@ namespace Unity.UI.Builder
 
             AddStyleSheetsToRootAsset(rootAsset);
         }
+
 #endif
 
         void RemoveStyleSheetFromLists(int ussIndex)
@@ -509,12 +512,99 @@ namespace Unity.UI.Builder
                 // Reset asset name.
                 m_VisualTreeAsset.name = Path.GetFileNameWithoutExtension(newUxmlPath);
                 m_OpenendVisualTreeAssetOldPath = newUxmlPath;
-
-                if (documentRootElement != null)
-                    ReloadDocumentToCanvas(documentRootElement);
             }
 
+            if (documentRootElement != null)
+                ReloadDocumentToCanvas(documentRootElement);
+
             hasUnsavedChanges = false;
+
+            return true;
+        }
+
+        private void SetInlineStyleRecursively(VisualElement ve)
+        {
+#if !UNITY_2019_4
+            if (ve == null)
+            {
+                return;
+            }
+
+            var inlineSheet = m_VisualTreeAsset.inlineSheet;
+            var vea = ve.GetVisualElementAsset();
+
+            if (vea != null && vea.ruleIndex != -1)
+            {
+                var rule = inlineSheet.rules[vea.ruleIndex];
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+                ve.UpdateInlineRule(inlineSheet, rule);
+#else
+                ve.SetInlineRule(inlineSheet, rule);
+#endif
+            }
+
+            var children = ve.Children();
+
+            foreach (var child in children)
+            {
+                SetInlineStyleRecursively(child);
+            }
+#endif
+        }
+
+        internal bool SaveNewTemplateFileFromHierarchy(string newTemplatePath, string uxml)
+        {
+            var isReplacingFile = File.Exists(newTemplatePath);
+            bool isReplacingFileInHierarchy = false;
+
+            if (isReplacingFile)
+            {
+                var replacedVTA = EditorGUIUtility.Load(newTemplatePath) as VisualTreeAsset;
+                isReplacingFileInHierarchy = replacedVTA.TemplateExists(m_VisualTreeAsset);
+
+                if (isReplacingFileInHierarchy && hasUnsavedChanges)
+                {
+                    // If we are replacing an element in the hierarchy and there is unsaved changes,
+                    // we need to save to make sure we don't lose any elements
+                    var saveUnsavedChanges = BuilderDialogsUtility.DisplayDialog(
+                        BuilderConstants.SaveDialogSaveChangesPromptTitle,
+                        BuilderConstants.SaveDialogReplaceWithNewTemplateMessage,
+                        BuilderConstants.DialogSaveActionOption,
+                        BuilderConstants.DialogCancelOption);
+
+                    if (saveUnsavedChanges)
+                    {
+                        var wasDocumentSaved = SaveUnsavedChanges();
+
+                        if (!wasDocumentSaved)
+                        {
+                            // Save failed
+                            Debug.LogError("Saving the current template failed. New template will not be created.");
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        // Save cancelled
+                        return false;
+                    }
+                }
+            }
+
+            if (isReplacingFileInHierarchy)
+            {
+                // This is necessary to make sure we don't show the external changes popup
+                // since we are creating a new template
+                m_DocumentBeingSavedExplicitly = true;
+            }
+
+            File.WriteAllText(newTemplatePath, uxml);
+            AssetDatabase.Refresh();
+
+            if (isReplacingFileInHierarchy)
+            {
+                m_DocumentBeingSavedExplicitly = false;
+            }
 
             return true;
         }
@@ -595,7 +685,9 @@ namespace Unity.UI.Builder
 
         public void PostLoadDocumentStyleSheetCleanup()
         {
-            m_VisualTreeAsset.ConvertAllAssetReferencesToPaths();
+            m_VisualTreeAsset.UpdateUsingEntries();
+
+            m_OpenUSSFiles.Clear();
 
             // Load styles.
             var styleSheetsUsed = m_VisualTreeAsset.GetAllReferencedStyleSheets();
@@ -609,6 +701,23 @@ namespace Unity.UI.Builder
 #endif
 
             hasUnsavedChanges = false;
+        }
+
+        private void LoadVisualTreeAsset(VisualTreeAsset newVisualTreeAsset)
+        {
+            var builderWindow = Builder.ActiveWindow;
+            if (builderWindow == null)
+                builderWindow = Builder.ShowWindow();
+
+            // LoadDocument() will call Clear() which will try to restore from Backup().
+            // If we don't clear the Backups here, they will overwrite the newly post-processed
+            // and re-imported asset we detected here.
+            ClearBackups();
+
+            if (string.IsNullOrEmpty(uxmlPath))
+                builderWindow.toolbar.ReloadDocument();
+            else
+                builderWindow.toolbar.LoadDocument(newVisualTreeAsset, false, true);
         }
 
         //
@@ -636,16 +745,8 @@ namespace Unity.UI.Builder
                     return;
             }
 
-            var builderWindow = Builder.ActiveWindow;
-            if (builderWindow == null)
-                builderWindow = Builder.ShowWindow();
-
-            // LoadDocument() will call Clear() which will try to restore from Backup().
-            // If we don't clear the Backups here, they will overwrite the newly post-processed
-            // and re-imported asset we detected here.
-            ClearBackups();
-
-            builderWindow.toolbar.LoadDocument(newVisualTreeAsset, true);
+            // LoadVisualTreeAsset needs to be delayed to ensure that this is called later, while in a correct state.
+            EditorApplication.delayCall += () => LoadVisualTreeAsset(newVisualTreeAsset);
         }
 
         //
@@ -707,8 +808,10 @@ namespace Unity.UI.Builder
 
             for (int i = 0; i < styleSheetsUsed.Count; ++i)
             {
-                if (m_OpenUSSFiles[i].styleSheet == styleSheetsUsed[i])
+                if (m_OpenUSSFiles[i].styleSheet == styleSheetsUsed[i] && m_OpenUSSFiles[i].backupStyleSheet != null)
+                {
                     continue;
+                }
 
                 m_OpenUSSFiles[i].Set(styleSheetsUsed[i], null);
             }
@@ -739,14 +842,14 @@ namespace Unity.UI.Builder
         {
             // Very important we convert asset references to paths here after a restore.
             if (m_VisualTreeAsset != null)
-                m_VisualTreeAsset.ConvertAllAssetReferencesToPaths();
+                m_VisualTreeAsset.UpdateUsingEntries();
         }
 
         //
         // Private Utilities
         //
 
-        void RestoreAssetsFromBackup()
+        public void RestoreAssetsFromBackup()
         {
             foreach (var openUSSFile in m_OpenUSSFiles)
                 openUSSFile.RestoreFromBackup();
@@ -787,7 +890,7 @@ namespace Unity.UI.Builder
             if (!Directory.Exists(uxmlFolder))
                 Directory.CreateDirectory(uxmlFolder);
 
-            File.WriteAllText(uxmlPath, uxmlText);
+            BuilderAssetUtilities.WriteTextFileToDisk(uxmlPath, uxmlText);
         }
 
         VisualElement ReloadChildToCanvas(BuilderDocumentOpenUXML childOpenUXML, VisualElement rootElement)
@@ -816,7 +919,6 @@ namespace Unity.UI.Builder
                 return;
 
             documentRootElement.Clear();
-            documentRootElement.styleSheets.Clear();
             BuilderSharedStyles.ClearContainer(documentRootElement);
 
             documentRootElement.SetProperty(
@@ -937,7 +1039,13 @@ namespace Unity.UI.Builder
             {
                 // To get all the selection markers into the new assets.
                 m_VisualTreeAssetBackup.DeepOverwrite(m_VisualTreeAsset);
-                m_VisualTreeAsset.ConvertAllAssetReferencesToPaths();
+                m_VisualTreeAsset.UpdateUsingEntries();
+
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+                // Update hash. Otherwise we end up with the old overwritten contentHash
+                var hash = UXMLImporterImpl.GenerateHash(localUxmlPath);
+                m_VisualTreeAsset.contentHash = hash.GetHashCode();
+#endif
             }
             return needsFullRefresh;
         }

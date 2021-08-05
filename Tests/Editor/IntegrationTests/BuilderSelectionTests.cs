@@ -45,7 +45,11 @@ namespace Unity.UI.Builder.EditorTests
         }
 
         [TestCase(BuilderSelectionType.Element)]
+#if UI_BUILDER_PACKAGE && !UNITY_2021_2_OR_NEWER
+        [TestCase(BuilderSelectionType.ElementInTemplateInstance), Ignore("Missing functionality on 2021.1 and older.")]
+#else
         [TestCase(BuilderSelectionType.ElementInTemplateInstance)]
+#endif
         [TestCase(BuilderSelectionType.StyleSelector)]
         [TestCase(BuilderSelectionType.StyleSheet)]
         [TestCase(BuilderSelectionType.VisualTreeAsset)]

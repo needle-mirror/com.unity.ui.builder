@@ -1,6 +1,4 @@
-using System;
 using UnityEngine.UIElements;
-using UnityEditor;
 using UnityEngine;
 
 namespace Unity.UI.Builder
@@ -90,8 +88,8 @@ namespace Unity.UI.Builder
             {
                 renameTextfield.SetValueWithoutNotify(
                     string.IsNullOrEmpty(documentElement.name)
-                        ? documentElement.typeName
-                        : documentElement.name);
+                    ? documentElement.typeName
+                    : documentElement.name);
             }
             renameTextfield.AddToClassList(BuilderConstants.HiddenStyleClassName);
 

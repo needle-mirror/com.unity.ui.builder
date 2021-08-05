@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
 
-#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER)
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER || (UIE_PACKAGE && PACKAGE_TEXT_CORE && UNITY_2020_2_OR_NEWER)
 using UnityEngine.UIElements.StyleSheets;
 #endif
 
@@ -30,7 +30,7 @@ namespace Unity.UI.Builder.EditorTests
             Assert.AreEqual(value, field.value);
         }
 
-#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER)
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER || (UIE_PACKAGE && PACKAGE_TEXT_CORE && UNITY_2020_2_OR_NEWER)
         void CheckTextShadowFieldValue(string styleName, BuilderTextShadow value)
         {
             var styleRow = inspector.styleFields.m_StyleFields[styleName].First();
@@ -101,7 +101,9 @@ namespace Unity.UI.Builder.EditorTests
             CheckStyleFieldValue<StyleFieldBase, string>("padding-top", "15px");
             CheckStyleFieldValue<StyleFieldBase, string>("padding-bottom", "15px");
 
+#if !UI_BUILDER_PACKAGE || !UNITY_2020_3_12
             CheckStyleFieldValue<FontStyleStrip, string>("-unity-font-style", "italic");
+#endif
             CheckStyleFieldValue<StyleFieldBase, string>("font-size", "32px");
             CheckColorFieldValue("color", new Color(1, 0, 0));
             CheckStyleFieldValue<TextAlignStrip, string>("-unity-text-align", "upper-center");
@@ -128,7 +130,7 @@ namespace Unity.UI.Builder.EditorTests
             CheckStyleFieldValue<StyleFieldBase, string>("border-top-right-radius", "7px");
             CheckStyleFieldValue<StyleFieldBase, string>("border-bottom-right-radius", "7px");
 
-#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER)
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER || (UIE_PACKAGE && PACKAGE_TEXT_CORE && UNITY_2020_2_OR_NEWER)
             if (elementName != "all-properties-uss")
             {
                 CheckTextShadowFieldValue("text-shadow", 

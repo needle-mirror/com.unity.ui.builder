@@ -28,6 +28,7 @@ namespace Unity.UI.Builder
             var newValue = new StyleValueHandle(index, type);
             newValues.Add(newValue);
             property.values = newValues.ToArray();
+            styleSheet.UpdateContentHash();
 
             return newValue;
         }
@@ -196,5 +197,39 @@ namespace Unity.UI.Builder
 
             Array.Clear(property.values, 0, property.values.Length);
         }
+
+#if !UI_BUILDER_PACKAGE || ((UNITY_2021_1_OR_NEWER && UIE_PACKAGE) || UNITY_2021_2_OR_NEWER)
+        internal static StylePropertyManipulator GetStylePropertyManipulator(
+            this StyleSheet styleSheet,
+            VisualElement element,
+            StyleRule rule,
+            string propertyName,
+            bool editorExtensionMode)
+        {
+            if (string.IsNullOrEmpty(propertyName))
+                return null;
+
+            var manipulator = StylePropertyManipulator.GetPooled();
+            manipulator.element = element;
+            manipulator.styleSheet = styleSheet;
+            manipulator.propertyName = propertyName;
+            manipulator.styleRule = rule;
+            manipulator.editorExtensionMode = editorExtensionMode;
+
+            var property = manipulator.styleProperty;
+            if (null == property)
+                return manipulator;
+
+            for (var i = 0; i < property.values.Length; ++i)
+            {
+                var index = i;
+                var valueInfo = StylePropertyManipulator.ResolveValueOrVariable(styleSheet, element, rule, property, ref i, editorExtensionMode);
+                valueInfo.offset = index;
+                manipulator.stylePropertyParts.Add(valueInfo);
+            }
+
+            return manipulator;
+        }
+#endif
     }
 }

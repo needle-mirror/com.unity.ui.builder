@@ -1,9 +1,11 @@
 using System;
-using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Text;
 using UnityEditor;
+#if !UNITY_2019_4
+using UnityEditor.UIElements.StyleSheets;
+#endif
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -70,20 +72,20 @@ namespace Unity.UI.Builder
                     str = sheet.ReadKeyword(handle).ToString().ToLower();
                     break;
                 case StyleValueType.Float:
+                {
+                    var num = sheet.ReadFloat(handle);
+                    if (num == 0)
                     {
-                        var num = sheet.ReadFloat(handle);
-                        if (num == 0)
-                        {
-                            str = "0";
-                        }
-                        else
-                        {
-                            str = num.ToString(CultureInfo.InvariantCulture.NumberFormat);
-                            if (IsLength(propertyName))
-                                str += "px";
-                        }
+                        str = "0";
                     }
-                    break;
+                    else
+                    {
+                        str = num.ToString(CultureInfo.InvariantCulture.NumberFormat);
+                        if (IsLength(propertyName))
+                            str += "px";
+                    }
+                }
+                break;
                 case StyleValueType.Dimension:
                     var dim = sheet.ReadDimension(handle);
                     if (dim.value == 0)
@@ -111,12 +113,16 @@ namespace Unity.UI.Builder
 #endif
                 case StyleValueType.AssetReference:
                     var assetRef = sheet.ReadAssetReference(handle);
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+                    var assetPath = URIHelpers.MakeAssetUri(assetRef);
+#else
                     var assetPath = AssetDatabase.GetAssetPath(assetRef);
                     if (assetPath.StartsWith("Assets") || assetPath.StartsWith("Packages"))
                         assetPath = "/" + assetPath;
 #if !UI_BUILDER_PACKAGE || UNITY_2021_1_OR_NEWER
                     if (assetRef is Sprite)
                         assetPath += "#" + assetRef.name;
+#endif
 #endif
                     str = assetRef == null ? "none" : $"url('{assetPath}')";
                     break;
@@ -147,18 +153,26 @@ namespace Unity.UI.Builder
                         sb.Append(")");
 
                         break;
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+                    case StyleValueType.CommaSeparator:
+#else
                     case StyleValueType.FunctionSeparator:
+#endif
                         sb.Append(",");
                         break;
                     default:
-                        {
-                            var propertyValueStr = ValueHandleToUssString(sheet, options, propertyName, propertyValue);
-                            sb.Append(propertyValueStr);
-                            break;
-                        }
+                    {
+                        var propertyValueStr = ValueHandleToUssString(sheet, options, propertyName, propertyValue);
+                        sb.Append(propertyValueStr);
+                        break;
+                    }
                 }
 
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+                if (valueIndex < values.Length && values[valueIndex].valueType != StyleValueType.CommaSeparator && valueCount != 1)
+#else
                 if (valueIndex < values.Length && values[valueIndex].valueType != StyleValueType.FunctionSeparator && valueCount != 1)
+#endif
                 {
                     sb.Append(" ");
                 }
@@ -298,8 +312,9 @@ namespace Unity.UI.Builder
                     if (complexSelector.selectors.Length > 0 &&
                         complexSelector.selectors[0].parts.Length > 0 &&
                         (complexSelector.selectors[0].parts[0].value == BuilderConstants.SelectedStyleSheetSelectorName
-                            || complexSelector.selectors[0].parts[0].value.StartsWith(BuilderConstants.StyleSelectorElementName)
-                        ))
+                         || complexSelector.selectors[0].parts[0].value.StartsWith(BuilderConstants.StyleSelectorElementName)
+                        )
+                    )
                         continue;
 
                     if (isFirst)

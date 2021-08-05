@@ -30,7 +30,7 @@ namespace Unity.UI.Builder
         }
 
         public static string name => $"Project/{BuilderConstants.BuilderWindowTitle}";
-        
+
         private bool HasSearchInterestHandler(string searchContext)
         {
             if (m_HelpVisualTree == null)

@@ -3,20 +3,20 @@
 /*****************************************************************************/
 
 .unity-foldout {
-    margin-top: 0px;
+    margin-top: 0;
 }
 
 .unity-foldout > .unity-foldout__header > Toggle {
     flex-grow: 1;
-    margin-top: 0px;
+    margin-top: 0;
 }
 
 .unity-builder-inspector__category-foldout > .unity-foldout__content {
-    margin-left: 0px;
+    margin-left: 0;
 }
 
 .unity-builder-inspector__style-row-container .unity-foldout__content {
-    margin-left: 0px;
+    margin-left: 0;
 }
 
 /* These selectors need to match widths:
@@ -27,9 +27,10 @@
 .unity-builder-inspector .unity-base-field__label {
     min-width: 105px;
     overflow: hidden;
+    justify-content: center;
 }
 
-.unity-builder-inspector__variable-field-label {
+.unity-builder-inspector .unity-builder-inspector__variable-field-label {
     margin-right: 2px;
     border-width: 1px;
     border-color: rgba(0, 0, 0, 0);
@@ -47,7 +48,7 @@
 }
 
 .unity-builder-inspector__scroll-view .unity-scroll-view__content-container {
-    padding: 0px;
+    padding: 0;
 }
 
 .unity-builder-inspector__category-foldout > .unity-foldout__header > .unity-builder-inspector-blue-override-box {
@@ -156,6 +157,23 @@
 }
 
 /*****************************************************************************/
+/* BuilderContainer                                                   */
+/*****************************************************************************/
+
+.unity-builder-inspector__container {
+    margin: 0;
+    padding: 0;
+}
+
+/*****************************************************************************/
+/* BuilderStyleStretch                                                           */
+/*****************************************************************************/
+
+.unity-builder-style-stretch {
+    flex-grow: 1;
+    flex-shrink: 1;
+}
+/*****************************************************************************/
 /* BuilderDoubleFieldRow                                                     */
 /*****************************************************************************/
 
@@ -171,6 +189,23 @@
     flex-direction: column;
     flex-grow: 1;
     flex-shrink: 1;
+    flex-basis: 0;
+}
+
+.unity-builder-double-field--row > .unity-label {
+    min-width: 10px;
+    -unity-text-align: middle-left;
+    margin-right: 3px;
+    margin-left: 2px;
+}
+
+.unity-builder-double-field--row > .unity-builder-inspector__container {
+    margin: 0;
+    padding: 0;
+}
+
+.unity-builder-double-field--row {
+    flex-direction: row;
 }
 
 /* These selectors need to match widths:

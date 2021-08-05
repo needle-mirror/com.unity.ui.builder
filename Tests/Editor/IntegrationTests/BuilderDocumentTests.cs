@@ -228,8 +228,8 @@ namespace Unity.UI.Builder.EditorTests
             Assert.AreEqual(assetCount + 1, builder.document.visualTreeAsset.visualElementAssets.Count);
         }
 
-#if UNITY_2019_4 && (UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX)
-        [UnityTest, Ignore("Test broken on 2019.4 on linux.")]
+#if (UNITY_2019_4 && (UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX) || UNITY_2020_2)
+        [UnityTest, Ignore("Test broken on 2019.4 on linux and on 2020.2.")]
 #else
         [UnityTest]
 #endif
@@ -374,6 +374,45 @@ namespace Unity.UI.Builder.EditorTests
             builder.document.SaveUnsavedChanges(k_NewUxmlFilePath);
             Assert.That(builder.document.settings.CanvasBackgroundMode, Is.EqualTo(BuilderCanvasBackgroundMode.Color));
             Assert.That(builder.document.settings.CanvasBackgroundColor, Is.EqualTo(Color.green));
+        }
+
+        [UnityTest]
+        public IEnumerator EnsureStyleSheetPathsIsNotPopulatedAfterAddedUSS()
+        {
+            yield return EnsureSelectorsCanBeAddedAndReloadBuilder();
+
+            CheckStyleSheetPathsIsNotPopulated();
+
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator EnsureStyleSheetPathsIsNotPopulatedAfterLoadedDocument()
+        {
+            var asset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(k_TestMultiUSSDocumentUXMLFilePath);
+            builder.LoadDocument(asset);
+
+            yield return UIETestHelpers.Pause(1);
+
+            CheckStyleSheetPathsIsNotPopulated();
+
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator EnsureStyleSheetPathsIsNotPopulatedAfterSavedDocument()
+        {
+            yield return EnsureSelectorsCanBeAddedAndReloadBuilder();
+
+            yield return UIETestHelpers.Pause(1);
+
+            builder.document.SaveUnsavedChanges(k_NewUxmlFilePath, true);
+
+            yield return UIETestHelpers.Pause(1);
+
+            CheckStyleSheetPathsIsNotPopulated();
+
+            yield return null;
         }
     }
 }

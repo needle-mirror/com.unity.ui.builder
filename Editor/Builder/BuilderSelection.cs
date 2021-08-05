@@ -16,6 +16,7 @@ namespace Unity.UI.Builder
         StyleSelector,
         ParentStyleSelector,
         ElementInTemplateInstance,
+        ElementInControlInstance,
         VisualTreeAsset,
         ElementInParentDocument
     }
@@ -78,10 +79,21 @@ namespace Unity.UI.Builder
                 if (BuilderSharedStyles.IsStyleSheetElement(selectedElement))
                     return BuilderSelectionType.StyleSheet;
                 if (selectedElement.GetVisualElementAsset() == null)
-                    return BuilderSelectionType.ElementInTemplateInstance;
+                {
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+                    if (selectedElement.HasProperty(VisualTreeAsset.LinkedVEAInTemplatePropertyName))
+                    {
+                        return BuilderSelectionType.ElementInTemplateInstance;
+                    }
+                    else
+#endif
+                    {
+                        return BuilderSelectionType.ElementInControlInstance;
+                    }
+                }
                 if (selectedElement.IsPartOfActiveVisualTreeAsset(m_PaneWindow.document))
                     return BuilderSelectionType.Element;
-                
+
                 return BuilderSelectionType.ElementInParentDocument;
             }
         }
@@ -99,7 +111,7 @@ namespace Unity.UI.Builder
         }
 
         public bool isEmpty { get { return m_Selection.Count == 0; } }
-        
+
         MethodInfo m_LiveReloadTriggerMethod;
 
         public BuilderSelection(VisualElement root, BuilderPaneWindow paneWindow)
@@ -237,7 +249,7 @@ namespace Unity.UI.Builder
 #if UNITY_2019_4
                 var stylesData = new UnityEngine.UIElements.StyleSheets.VisualElementStylesData(false);
                 element.m_Style = stylesData;
-                
+
                 s_StylePropertyReader.SetInlineContext(vta.inlineSheet, rule, vea.ruleIndex);
                 stylesData.ApplyProperties(s_StylePropertyReader, null);
 
@@ -245,7 +257,11 @@ namespace Unity.UI.Builder
                 element.IncrementVersion(VersionChangeType.Opacity | VersionChangeType.Overflow);
 
 #else
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+                element.UpdateInlineRule(vta.inlineSheet, rule);
+#else // UNITY_2020_3
                 element.SetInlineRule(vta.inlineSheet, rule);
+#endif
 
                 // Need to enforce this specific style is updated.
                 element.IncrementVersion(VersionChangeType.Opacity | VersionChangeType.Overflow);
@@ -364,7 +380,7 @@ namespace Unity.UI.Builder
             get { return m_PaneWindow.document.hasUnsavedChanges; }
             private set { m_PaneWindow.document.hasUnsavedChanges = value; }
         }
-        
+
         public void ResetUnsavedChanges()
         {
             hasUnsavedChanges = false;

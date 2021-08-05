@@ -74,6 +74,7 @@ namespace Unity.UI.Builder
         public static void SetSelectorString(this StyleSheet styleSheet, StyleComplexSelector complexSelector, string newComplexSelectorStr)
         {
             InitializeSelector(complexSelector, newComplexSelectorStr);
+            styleSheet?.UpdateContentHash();
         }
 
         public static StyleProperty FindProperty(this StyleSheet styleSheet, StyleComplexSelector selector, string propertyName)

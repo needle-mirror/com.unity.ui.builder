@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 using UnityEngine.UIElements;
-#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER)
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER || (UIE_PACKAGE && PACKAGE_TEXT_CORE && UNITY_2020_2_OR_NEWER)
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -11,7 +11,7 @@ namespace Unity.UI.Builder
 {
     internal struct BuilderTextShadow
     {
-#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER) 
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER || (UIE_PACKAGE && PACKAGE_TEXT_CORE && UNITY_2020_2_OR_NEWER)
         public Dimension offsetX;
         public Dimension offsetY;
         public Dimension blurRadius;
@@ -33,6 +33,7 @@ namespace Unity.UI.Builder
             blurRadius = new Dimension(textShadow.blurRadius, Dimension.Unit.Pixel);
             color = textShadow.color;
         }
+
 #endif
     }
 
@@ -42,7 +43,7 @@ namespace Unity.UI.Builder
         [UsedImplicitly]
         public new class UxmlFactory : UxmlFactory<TextShadowStyleField, UxmlTraits> {}
 
-#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER)
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER || (UIE_PACKAGE && PACKAGE_TEXT_CORE && UNITY_2020_2_OR_NEWER)
         static readonly string s_FieldClassName = "unity-text-shadow-style-field";
         static readonly string s_UxmlPath = BuilderConstants.UtilitiesPath + "/StyleField/TextShadowStyleField.uxml";
         static readonly string s_UssPath = BuilderConstants.UtilitiesPath + "/StyleField/TextFoldoutStyleField.uss";
@@ -162,6 +163,7 @@ namespace Unity.UI.Builder
 
             return isNewValue;
         }
+
 #else
         public TextShadowStyleField() : this(null) {}
 

@@ -1,4 +1,4 @@
-﻿using System.Linq;
+using System.Linq;
 using UnityEditor;
 using UnityEditor.Callbacks;
 using UnityEngine;
@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 
 namespace Unity.UI.Builder
 {
-    class Builder : BuilderPaneWindow, IBuilderViewportWindow
+    class Builder : BuilderPaneWindow, IBuilderViewportWindow, IHasCustomMenu
     {
         BuilderSelection m_Selection;
 
@@ -16,6 +16,7 @@ namespace Unity.UI.Builder
         BuilderInspector m_Inspector;
         BuilderUxmlPreview m_UxmlPreview;
         BuilderUssPreview m_UssPreview;
+        BuilderHierarchy m_Hierarchy;
 
         HighlightOverlayPainter m_HighlightOverlayPainter;
 
@@ -24,6 +25,7 @@ namespace Unity.UI.Builder
         public BuilderToolbar toolbar => m_Toolbar;
         public VisualElement documentRootElement => m_Viewport.documentRootElement;
         public BuilderCanvas canvas => m_Viewport.canvas;
+        public BuilderHierarchy hierarchy => m_Hierarchy;
 
         public bool codePreviewVisible
         {
@@ -54,7 +56,7 @@ namespace Unity.UI.Builder
         [MenuItem(BuilderConstants.BuilderMenuEntry)]
         public static Builder ShowWindow()
         {
-            return GetWindowWithRectAndInit<Builder>(BuilderConstants.BuilderWindowDefaultRect);
+            return GetWindow<Builder>();
         }
 
         public static Builder ActiveWindow
@@ -86,6 +88,9 @@ namespace Unity.UI.Builder
         {
             var root = rootVisualElement;
             titleContent = GetLocalizedTitleContent();
+#if !UNITY_2019_4
+            saveChangesMessage = BuilderConstants.SaveDialogSaveChangesPromptMessage;
+#endif
 
             // Load assets.
             var builderTemplate = BuilderPackageUtilities.LoadAssetAtPath<VisualTreeAsset>(BuilderConstants.UIBuilderPackagePath + "/Builder.uxml");
@@ -115,10 +120,12 @@ namespace Unity.UI.Builder
             // Create the rest of the panes.
             var classDragger = new BuilderClassDragger(this, root, selection, m_Viewport, m_Viewport.parentTracker);
             var styleSheetsDragger = new BuilderStyleSheetsDragger(this, root, selection);
-            var hierarchyDragger = new BuilderHierarchyDragger(this, root, selection, m_Viewport, m_Viewport.parentTracker);
             var styleSheetsPane = new BuilderStyleSheets(this, m_Viewport, selection, classDragger, styleSheetsDragger, m_HighlightOverlayPainter, styleSheetsPaneTooltipPreview);
-            var hierarchy = new BuilderHierarchy(this, m_Viewport, selection, classDragger, hierarchyDragger, contextMenuManipulator, m_HighlightOverlayPainter);
-            var libraryDragger = new BuilderLibraryDragger(this, root, selection, m_Viewport, m_Viewport.parentTracker, hierarchy.container, libraryTooltipPreview);
+            var hierarchyDragger = new BuilderHierarchyDragger(this, root, selection, m_Viewport, m_Viewport.parentTracker) { builderStylesheetRoot = styleSheetsPane.container };
+
+            m_Hierarchy = new BuilderHierarchy(this, m_Viewport, selection, classDragger, hierarchyDragger, contextMenuManipulator, m_HighlightOverlayPainter);
+
+            var libraryDragger = new BuilderLibraryDragger(this, root, selection, m_Viewport, m_Viewport.parentTracker, hierarchy.container, libraryTooltipPreview) { builderStylesheetRoot = styleSheetsPane.container };
             m_Viewport.viewportDragger.builderHierarchyRoot = hierarchy.container;
             m_Library = new BuilderLibrary(this, m_Viewport, selection, libraryDragger, libraryTooltipPreview);
             m_Inspector = new BuilderInspector(this, selection, m_HighlightOverlayPainter);
@@ -149,7 +156,8 @@ namespace Unity.UI.Builder
                 m_Viewport.parentTracker,
                 m_Viewport.resizer,
                 m_Viewport.mover,
-                m_Viewport.anchorer
+                m_Viewport.anchorer,
+                m_Viewport.selectionIndicator
             });
 
             // Command Handler
@@ -200,10 +208,52 @@ namespace Unity.UI.Builder
             return m_Toolbar.NewDocument(checkForUnsavedChanges, unloadAllSubdocuments);
         }
 
+#if !UNITY_2019_4
+        public override void SaveChanges()
+        {
+            m_Toolbar.SaveDocument(false);
+
+            if (!document.hasUnsavedChanges)
+                base.SaveChanges();
+        }
+#endif
+
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+        public override void DiscardChanges()
+        {
+            // Restore UXML and USS assets from backup
+            document.RestoreAssetsFromBackup();
+
+            // If the asset is not saved yet then reset to blank document
+            if (string.IsNullOrEmpty(document.uxmlFileName))
+            {
+                document.NewDocument(m_Viewport.documentRootElement);
+            }
+
+            base.DiscardChanges();
+        }
+#endif
+
         protected override void OnEnable()
         {
             base.OnEnable();
+            minSize = new Vector2(200, 200);
             SetTitleContent(BuilderConstants.BuilderWindowTitle, BuilderConstants.BuilderWindowIcon);
+#if !UI_BUILDER_PACKAGE || ((UNITY_2021_1_OR_NEWER && UIE_PACKAGE) || UNITY_2021_2_OR_NEWER)
+            if (rootVisualElement.panel != null)
+                SetStyleUpdaterTraversal();
+            // Sometimes, the panel is not already set
+            else
+                rootVisualElement.RegisterCallback<AttachToPanelEvent>(e => SetStyleUpdaterTraversal());
+        }
+
+        void SetStyleUpdaterTraversal()
+        {
+            var updater = rootVisualElement.panel as BaseVisualElementPanel;
+            var styleUpdater = updater.GetUpdater(VisualTreeUpdatePhase.Styles) as VisualTreeStyleUpdater;
+
+            styleUpdater.traversal = new BuilderVisualTreeStyleUpdaterTraversal(m_Viewport.documentRootElement);
+#endif
         }
 
         [OnOpenAsset(0)]
@@ -213,18 +263,36 @@ namespace Unity.UI.Builder
             if (asset == null)
                 return false;
 
-            // Already open uxml document will be opened by the default editor.
             var builderWindow = ActiveWindow;
-            if (builderWindow != null)
+
+            if (builderWindow == null)
             {
-                if (builderWindow.document.visualTreeAsset == asset)
-                    return false;
+                builderWindow = ShowWindow();
+            }
+            else
+            {
+                builderWindow.Focus();
             }
 
-            var builder = ShowWindow();
-            builder.LoadDocument(asset);
+            if (builderWindow.document.visualTreeAsset != asset)
+            {
+                builderWindow.LoadDocument(asset);
+            }
 
             return true;
+        }
+
+        public void AddItemsToMenu(GenericMenu menu)
+        {
+            menu.AddItem(new GUIContent("Reset UI Builder Layout"), false, () =>
+            {
+                ClearPersistentViewData();
+                m_Parent.Reload(this);
+
+                var window = GetWindow<Builder>();
+                window.RepaintImmediately();
+                window.m_Viewport.FitCanvas();
+            });
         }
     }
 }

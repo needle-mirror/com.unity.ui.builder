@@ -1,13 +1,9 @@
-using System;
-using System.Collections.Generic;
+#if UI_BUILDER_PACKAGE && !UIE_PACKAGE && !UNITY_2021_2_OR_NEWER
 using UnityEditor;
-using UnityEditor.UIElements.Debugger;
-using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace Unity.UI.Builder
 {
-#if !UI_BUILDER_PACKAGE || UNITY_2021_1_OR_NEWER
     [InitializeOnLoad]
     internal class BuilderUXMLEditorFactories
     {
@@ -65,5 +61,5 @@ namespace Unity.UI.Builder
             }
         }
     }
-#endif
 }
+#endif

@@ -11,6 +11,8 @@ namespace Unity.UI.Builder
 {
     internal class ElementHierarchyView : VisualElement
     {
+        public const string k_PillName = "unity-builder-tree-class-pill";
+
         public bool hierarchyHasChanged { get; set; }
         public bool hasUnsavedChanges { get; set; }
         public BuilderExplorer.BuilderElementInfoVisibilityState elementInfoVisibilityState { get; set; }
@@ -36,7 +38,11 @@ namespace Unity.UI.Builder
 
         IList<ITreeViewItem> m_TreeRootItems;
 
+#if UI_BUILDER_PACKAGE && !UNITY_2021_2_OR_NEWER
         TreeView m_TreeView;
+#else
+        InternalTreeView m_TreeView;
+#endif
         HighlightOverlayPainter m_TreeViewHoverOverlay;
 
         VisualElement m_Container;
@@ -107,7 +113,12 @@ namespace Unity.UI.Builder
 
             // Create TreeView.
             m_TreeRootItems = new List<ITreeViewItem>();
+#if UI_BUILDER_PACKAGE && !UNITY_2021_2_OR_NEWER
             m_TreeView = new TreeView(m_TreeRootItems, 20, MakeItem, FillItem);
+#else
+            m_TreeView = new InternalTreeView(m_TreeRootItems, 20, MakeItem, FillItem);
+#endif
+
 #if UNITY_2019_4
             m_TreeView.selectionType = SelectionType.Single; // ListView/TreeView do not support selecting multiple items via code.
 #else
@@ -125,6 +136,38 @@ namespace Unity.UI.Builder
             m_Container.Add(m_TreeView);
 
             m_ContextMenuManipulator.RegisterCallbacksOnTarget(m_Container);
+        }
+
+        public void CopyTreeViewItemStates(VisualElementAsset sourceVEA, VisualElementAsset targetVEA)
+        {
+            ITreeViewItem templateTreeItem = null;
+            ITreeViewItem unpackedElementTreeItem = null;
+
+            foreach (TreeViewItem<VisualElement> item in treeItems)
+            {
+                if (item == null || item.data == null)
+                {
+                    continue;
+                }
+
+                var elementAsset = item.data.GetVisualElementAsset();
+
+                if (elementAsset == sourceVEA)
+                {
+                    templateTreeItem = item;
+                }
+                else if (elementAsset == targetVEA)
+                {
+                    unpackedElementTreeItem = item;
+                }
+            }
+
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+            if (templateTreeItem != null && unpackedElementTreeItem != null)
+            {
+                m_TreeView.CopyExpandedStates(templateTreeItem, unpackedElementTreeItem);
+            }
+#endif
         }
 
         void FillItem(VisualElement element, ITreeViewItem item)
@@ -208,7 +251,7 @@ namespace Unity.UI.Builder
                 var selectorLabelCont = new VisualElement();
                 selectorLabelCont.AddToClassList(BuilderConstants.ExplorerItemSelectorLabelContClassName);
                 labelCont.Add(selectorLabelCont);
-                
+
                 // Register right-click events for context menu actions.
                 m_ContextMenuManipulator.RegisterCallbacksOnTarget(explorerItem);
 
@@ -222,16 +265,24 @@ namespace Unity.UI.Builder
                         m_ClassPillTemplate.CloneTree(selectorLabelCont);
                         var pill = selectorLabelCont.contentContainer.ElementAt(selectorLabelCont.childCount - 1);
                         var pillLabel = pill.Q<Label>("class-name-label");
-                        pill.name = "unity-builder-tree-class-pill";
+                        pill.name = k_PillName;
                         pill.AddToClassList("unity-debugger-tree-item-pill");
                         pill.SetProperty(BuilderConstants.ExplorerStyleClassPillClassNameVEPropertyName, partStr);
                         pill.userData = documentElement;
 
                         // Add ellipsis if the class name is too long.
                         var partStrShortened = BuilderNameUtilities.CapStringLengthAndAddEllipsis(partStr, BuilderConstants.ClassNameInPillMaxLength);
+
+                        if (partStrShortened != partStr)
+                        {
+                            pillLabel.tooltip = partStr;
+                        }
+
                         pillLabel.text = partStrShortened;
 
+                        // We want class dragger first because it has priority on the pill label when drag starts.
                         m_ClassDragger.RegisterCallbacksOnTarget(pill);
+                        m_ExplorerDragger.RegisterCallbacksOnTarget(pill);
                     }
                     else if (partStr.StartsWith(BuilderConstants.UssSelectorNameSymbol))
                     {
@@ -501,11 +552,25 @@ namespace Unity.UI.Builder
                     m_TreeView.ExpandItem(item.id);
         }
 
+        public void ExpandItem(VisualElement element)
+        {
+            var item = FindElement(m_TreeRootItems, element);
+
+            if (item != null)
+            {
+                m_TreeView.ExpandItem(item.id);
+            }
+        }
+
         public void ExpandAllItems()
         {
             // Auto-expand all items on load.
             if (m_TreeRootItems != null)
+#if UI_BUILDER_PACKAGE && !UNITY_2021_2_OR_NEWER
                 foreach (var item in TreeView.GetAllItems(m_TreeView.rootItems))
+#else
+                foreach (var item in InternalTreeView.GetAllItems(m_TreeView.rootItems))
+#endif
                     m_TreeView.ExpandItem(item.id);
         }
 
@@ -655,6 +720,24 @@ namespace Unity.UI.Builder
                 hl.RemoveFromHierarchy();
 
             m_SearchResultsHightlights.Clear();
+        }
+
+        public int GetSelectedItemId()
+        {
+#if UNITY_2019_4
+            return m_TreeView.currentSelection.ElementAt(0).id;
+#else
+            return m_TreeView.selectedItem.id;
+#endif
+        }
+
+        public void SelectItemById(int id)
+        {
+#if UNITY_2019_4
+            m_TreeView.SelectItem(id);
+#else
+            m_TreeView.SetSelection(id);
+#endif
         }
 
         public void SelectElements(IEnumerable<VisualElement> elements)

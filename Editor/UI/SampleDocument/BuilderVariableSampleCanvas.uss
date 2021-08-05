@@ -23,4 +23,3 @@
     --var-enum: none;
     display: var(--var-enum);
 }
-

@@ -1,6 +1,12 @@
 <UXML xmlns="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xmlns:uib="Unity.UI.Builder">
-    <uib:TwoPaneSplitView fixed-pane-index="0" fixed-pane-initial-dimension="200" orientation="Horizontal">
-        <VisualElement name="red" class="red" />
-        <VisualElement name="green" class="green" />
+    <uib:TwoPaneSplitView fixed-pane-index="1" fixed-pane-initial-dimension="400" orientation="Horizontal" style="min-width:400px;">
+        <uib:TwoPaneSplitView fixed-pane-index="0" fixed-pane-initial-dimension="200" orientation="Vertical" style="min-height:400px; min-width:200px;">
+            <VisualElement name="red" class="red min-height" />
+            <VisualElement name="aqua" class="aqua min-height" />
+        </uib:TwoPaneSplitView>
+        <uib:TwoPaneSplitView fixed-pane-index="0" fixed-pane-initial-dimension="200" orientation="Horizontal" style="min-width:400px;">
+            <VisualElement name="green" class="green min-width" />
+            <VisualElement name="blue" class="blue min-width" />
+        </uib:TwoPaneSplitView>
     </uib:TwoPaneSplitView>
 </UXML>

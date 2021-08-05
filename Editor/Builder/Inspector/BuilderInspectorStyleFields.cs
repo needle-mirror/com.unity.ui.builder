@@ -8,14 +8,18 @@ using UnityEditor.UIElements;
 using Object = UnityEngine.Object;
 using UnityEngine.Assertions;
 using UnityEditor;
-#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER)
+#if UNITY_2021_1_OR_NEWER
+using UnityEngine.Pool;
+#endif
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER || (UIE_PACKAGE && PACKAGE_TEXT_CORE && UNITY_2020_2_OR_NEWER)
 using UnityEngine.TextCore.Text;
 #endif
+
 using UnityEngine.UIElements.StyleSheets;
 
 namespace Unity.UI.Builder
 {
-    internal class BuilderInspectorStyleFields
+    internal partial class BuilderInspectorStyleFields
     {
         BuilderInspector m_Inspector;
         BuilderSelection m_Selection;
@@ -48,6 +52,15 @@ namespace Unity.UI.Builder
         {
             List<VisualElement> fieldList;
             m_StyleFields.TryGetValue(styleName, out fieldList);
+            return fieldList;
+        }
+
+        public List<VisualElement> GetOrCreateFieldListForStyleName(string styleName)
+        {
+            if (!m_StyleFields.TryGetValue(styleName, out var fieldList))
+            {
+                m_StyleFields[styleName] = fieldList = new List<VisualElement>();
+            }
             return fieldList;
         }
 
@@ -191,7 +204,7 @@ namespace Unity.UI.Builder
                 uiField.objectType = typeof(Font);
                 uiField.RegisterValueChangedCallback(e => OnFieldValueChangeFont(e, styleName));
             }
-#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER)
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER || (UIE_PACKAGE && PACKAGE_TEXT_CORE && UNITY_2020_2_OR_NEWER)
             else if (IsComputedStyleFontAsset(val, styleName) && fieldElement is ObjectField objectField)
             {
                 objectField.objectType = typeof(FontAsset);
@@ -512,7 +525,7 @@ namespace Unity.UI.Builder
 
                 uiField.SetValueWithoutNotify(value);
             }
-#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER)
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER || (UIE_PACKAGE && PACKAGE_TEXT_CORE && UNITY_2020_2_OR_NEWER)
             else if (IsComputedStyleTextShadow(val) && fieldElement is TextShadowStyleField)
             {
                 var uiField = fieldElement as TextShadowStyleField;
@@ -704,7 +717,7 @@ namespace Unity.UI.Builder
 
                 uiField.SetValueWithoutNotify(value);
             }
-#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER)
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER || (UIE_PACKAGE && PACKAGE_TEXT_CORE && UNITY_2020_2_OR_NEWER)
             else if (IsComputedStyleFontAsset(val, styleName) && fieldElement is ObjectField objectField)
             {
                 var value = GetComputedStyleFontAssetValue(val);
@@ -731,6 +744,11 @@ namespace Unity.UI.Builder
                         imageStyleField.SetTypePopupValueWithoutNotify(typeof(Texture2D));
                     }
 #if !UI_BUILDER_PACKAGE || UNITY_2021_1_OR_NEWER
+                    else if (value.renderTexture != null)
+                    {
+                        imageStyleField.SetValueWithoutNotify(value.renderTexture);
+                        imageStyleField.SetTypePopupValueWithoutNotify(typeof(RenderTexture));
+                    }
                     else if (value.sprite != null)
                     {
                         imageStyleField.SetValueWithoutNotify(value.sprite);
@@ -820,6 +838,11 @@ namespace Unity.UI.Builder
                 return;
             }
 
+            UpdateOverrideStyles(fieldElement, styleProperty);
+        }
+
+        void UpdateOverrideStyles(VisualElement fieldElement, StyleProperty styleProperty)
+        {
             // Add override style to field if it is overwritten.
             var styleRow = fieldElement.GetProperty(BuilderConstants.InspectorLinkedStyleRowVEPropertyName) as BuilderStyleRow;
             Assert.IsNotNull(styleRow);
@@ -923,7 +946,7 @@ namespace Unity.UI.Builder
             {
                 DispatchChangeEvent(objectFontField);
             }
-#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER)
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER || (UIE_PACKAGE && PACKAGE_TEXT_CORE && UNITY_2020_2_OR_NEWER)
             else if (IsComputedStyleFontAsset(val, styleName) && fieldElement is ObjectField objectFontAssetField)
             {
                 DispatchChangeEvent(objectFontAssetField);
@@ -955,6 +978,7 @@ namespace Unity.UI.Builder
                 }
             }
         }
+
         public void RefreshStyleField(FoldoutField foldoutElement)
         {
             if (foldoutElement is FoldoutNumberField foldoutNumberField)
@@ -1021,6 +1045,28 @@ namespace Unity.UI.Builder
             foldoutElement.header.EnableInClassList(BuilderConstants.InspectorLocalStyleOverrideClassName, isDirty);
         }
 
+        void SetVariableEditor(BindableElement element, int displayIndex)
+        {
+            var handler = StyleVariableUtilities.GetOrCreateVarHandler(element);
+            if (handler != null)
+            {
+                handler.index = displayIndex;
+                handler.editingEnabled = BuilderSharedStyles.IsSelectorElement(currentVisualElement);
+                handler.RefreshField();
+            }
+        }
+
+#if !UI_BUILDER_PACKAGE || ((UNITY_2021_1_OR_NEWER && UIE_PACKAGE) || UNITY_2021_2_OR_NEWER)
+        internal StylePropertyManipulator GetStylePropertyManipulator(string stylePropertyName)
+        {
+            return styleSheet.GetStylePropertyManipulator(
+                currentVisualElement,
+                currentRule,
+                stylePropertyName,
+                m_Inspector.document.fileSettings.editorExtensionMode);
+        }
+#endif
+
         void BuildStyleFieldContextualMenu(ContextualMenuPopulateEvent evt)
         {
             evt.menu.AppendAction(
@@ -1049,10 +1095,26 @@ namespace Unity.UI.Builder
                 evt.target);
         }
 
-        bool OnFieldVariableChangeImplInBatch(string newValue, string styleName)
+        bool OnFieldVariableChangeImplInBatch(string newValue, string styleName, int index)
         {
             StyleSheet styleSheet = m_Inspector.styleSheet;
             StyleRule currentRule = m_Inspector.currentRule;
+
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+            using (var manipulator = styleSheet.GetStylePropertyManipulator(currentVisualElement, currentRule, styleName, m_Inspector.document.fileSettings.editorExtensionMode))
+            {
+                var isNewValue = null == manipulator.styleProperty;
+
+                {
+                    if (isNewValue)
+                        manipulator.AddVariable(newValue);
+                    else
+                        manipulator.SetVariableAtIndex(index, newValue);
+                }
+
+            	return isNewValue;
+            }
+#else
             var styleProperty = styleSheet.FindProperty(currentRule, styleName);
             if (styleProperty == null)
                 styleProperty = styleSheet.AddProperty(currentRule, styleName);
@@ -1075,13 +1137,15 @@ namespace Unity.UI.Builder
                 styleSheet.SetValue(styleProperty.values[2], newValue);
 
             return isNewValue;
+#endif
         }
 
-        public void OnFieldVariableChange(string newValue, VisualElement target, string styleName)
+        public void OnFieldVariableChange(string newValue, VisualElement target, string styleName, int index)
         {
             if (newValue.Length <= BuilderConstants.UssVariablePrefix.Length)
                 return;
-            bool isNewValue = OnFieldVariableChangeImplInBatch(newValue, styleName);
+
+            bool isNewValue = OnFieldVariableChangeImplInBatch(newValue, styleName, index);
             PostStyleFieldSteps(target, styleName, isNewValue, true);
         }
 
@@ -1127,7 +1191,7 @@ namespace Unity.UI.Builder
         {
             var fieldElement = action.userData as VisualElement;
             var listToUnset = fieldElement?.userData;
-            if (listToUnset != null && listToUnset is List<VisualElement> bindableElements)
+            if (listToUnset != null && listToUnset is List<BindableElement> bindableElements)
             {
                 return CanUnsetStyleProperties(bindableElements, normalStatusCondition);
             }
@@ -1140,7 +1204,7 @@ namespace Unity.UI.Builder
             if (action.userData is VisualElement fieldElement)
             {
                 var styleName = fieldElement.GetProperty(BuilderConstants.InspectorStylePropertyNameVEPropertyName) as string;
-#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER)
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER || (UIE_PACKAGE && PACKAGE_TEXT_CORE && UNITY_2020_2_OR_NEWER)
                 if (styleName == "-unity-font" || styleName == "-unity-font-definition")
 #else
                 if (styleName == "-unity-font")
@@ -1199,7 +1263,7 @@ namespace Unity.UI.Builder
         void SetStyleProperty(DropdownMenuAction action)
         {
             var listToUnset = (action.userData as VisualElement)?.userData;
-            if (listToUnset != null && listToUnset is List<VisualElement> bindableElements)
+            if (listToUnset != null && listToUnset is List<BindableElement> bindableElements)
             {
                 SetStyleProperties(bindableElements);
                 NotifyStyleChanges();
@@ -1245,7 +1309,7 @@ namespace Unity.UI.Builder
         public void UnsetStylePropertyForElement(VisualElement fieldElement)
         {
             var listToUnset = fieldElement?.userData;
-            if (listToUnset != null && listToUnset is List<VisualElement> bindableElements)
+            if (listToUnset != null && listToUnset is List<BindableElement> bindableElements)
             {
                 UnsetStyleProperties(bindableElements);
                 return;
@@ -1338,8 +1402,8 @@ namespace Unity.UI.Builder
                         styleField.AddToClassList(BuilderConstants.InspectorLocalStyleOverrideClassName);
                     }
                     else if (!string.IsNullOrEmpty(styleField.bindingPath) &&
-                        bindableElement.bindingPath != styleField.bindingPath &&
-                        !styleField.ClassListContains(BuilderConstants.InspectorLocalStyleOverrideClassName))
+                             bindableElement.bindingPath != styleField.bindingPath &&
+                             !styleField.ClassListContains(BuilderConstants.InspectorLocalStyleOverrideClassName))
                     {
                         styleField.AddToClassList(BuilderConstants.InspectorLocalStyleResetClassName);
                     }
@@ -1444,7 +1508,7 @@ namespace Unity.UI.Builder
 
             if (isVar && BuilderSharedStyles.IsSelectorElement(currentVisualElement))
             {
-                OnFieldVariableChange(StyleSheetUtilities.GetCleanVariableName(e.newValue), dimensionStyleField, styleName);
+                OnFieldVariableChange(StyleSheetUtilities.GetCleanVariableName(e.newValue), dimensionStyleField, styleName, 0);
             }
             else if (dimensionStyleField.isKeyword)
             {
@@ -1555,7 +1619,7 @@ namespace Unity.UI.Builder
 
             if (isVar && BuilderSharedStyles.IsSelectorElement(currentVisualElement))
             {
-                OnFieldVariableChange(StyleSheetUtilities.GetCleanVariableName(e.newValue), numericStyleField, styleName);
+                OnFieldVariableChange(StyleSheetUtilities.GetCleanVariableName(e.newValue), numericStyleField, styleName, 0);
             }
             else if (numericStyleField.isKeyword)
             {
@@ -1580,7 +1644,7 @@ namespace Unity.UI.Builder
 
             if (isVar && BuilderSharedStyles.IsSelectorElement(currentVisualElement))
             {
-                OnFieldVariableChange(StyleSheetUtilities.GetCleanVariableName(e.newValue), styleField, styleName);
+                OnFieldVariableChange(StyleSheetUtilities.GetCleanVariableName(e.newValue), styleField, styleName, 0);
             }
             else if (styleField.isKeyword)
             {
@@ -1746,12 +1810,12 @@ namespace Unity.UI.Builder
                     {
                         var widthFieldsForName = GetFieldListForStyleName("width");
                         Assert.AreEqual(1, widthFieldsForName.Count);
-                        var widthField = (DimensionStyleField) widthFieldsForName[0];
+                        var widthField = (DimensionStyleField)widthFieldsForName[0];
                         widthField.value = $"{newSize.x}px";
 
                         var heightFieldsForName = GetFieldListForStyleName("height");
                         Assert.AreEqual(1, heightFieldsForName.Count);
-                        var heightField = (DimensionStyleField) heightFieldsForName[0];
+                        var heightField = (DimensionStyleField)heightFieldsForName[0];
                         heightField.value = $"{newSize.y}px";
                     }
                 }
@@ -1768,7 +1832,11 @@ namespace Unity.UI.Builder
         void OnFieldValueChangeFont(ChangeEvent<Object> e, string styleName)
         {
             var field = e.target as ObjectField;
-            if (e.newValue == null)
+            if (e.newValue == null && field.objectType == typeof(Font)
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER || (UIE_PACKAGE && PACKAGE_TEXT_CORE && UNITY_2020_2_OR_NEWER)
+                                   && GetStyleProperty(currentRule, "-unity-font-definition") == null
+#endif
+                )
             {
                 Debug.Log(BuilderConstants.FontCannotBeNoneMessage);
                 field.SetValueWithoutNotify(e.previousValue);
@@ -1793,7 +1861,7 @@ namespace Unity.UI.Builder
             PostStyleFieldSteps(field, styleName, isNewValue);
         }
 
-#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER)
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER || (UIE_PACKAGE && PACKAGE_TEXT_CORE && UNITY_2020_2_OR_NEWER)
         void OnFieldValueChangeTextShadow(ChangeEvent<BuilderTextShadow> e, string styleName)
         {
             var field = e.target as TextShadowStyleField;
@@ -1897,20 +1965,28 @@ namespace Unity.UI.Builder
             return val is StyleFont || val is Font || styleName == "-unity-font";
         }
 
-#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER)
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+        public static bool IsComputedStyleList<T>(object val)
+        {
+            return val is StyleList<T> || val is List<T>;
+        }
+#endif
+
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER || (UIE_PACKAGE && PACKAGE_TEXT_CORE && UNITY_2020_2_OR_NEWER)
         static public bool IsComputedStyleFontAsset(object val, string styleName)
         {
             return IsComputedStyleFont(val, styleName) ||
-                   val is StyleFontDefinition || 
-                   val is FontDefinition || 
-                   val is FontAsset || 
-                   styleName == "-unity-font-definition";
+                val is StyleFontDefinition ||
+                val is FontDefinition ||
+                val is FontAsset ||
+                styleName == "-unity-font-definition";
         }
 
         static public bool IsComputedStyleTextShadow(object val)
         {
             return val is StyleTextShadow || val is TextShadow || val is BuilderTextShadow;
         }
+
 #endif
 
         static public bool IsComputedStyleBackground(object val)
@@ -1942,7 +2018,7 @@ namespace Unity.UI.Builder
             return style.value;
         }
 
-#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER)
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER || (UIE_PACKAGE && PACKAGE_TEXT_CORE && UNITY_2020_2_OR_NEWER)
         static public BuilderTextShadow GetComputedStyleTextShadowValue(object val)
         {
             if (val is BuilderTextShadow)
@@ -1985,14 +2061,22 @@ namespace Unity.UI.Builder
 
         static public Font GetComputedStyleFontValue(object val)
         {
+            // Since StyleFont has two implicit constructors, it can't implicitly cast null into a StyleFont.
+            if (val == null)
+                return null;
+
             if (val is Font font)
                 return font;
+
+            // Since StyleFont has two implicit constructors, it can't implicitly cast null into a StyleFont.
+            if (val == null)
+                return null;
 
             var style = (StyleFont)val;
             return style.value;
         }
 
-#if !UI_BUILDER_PACKAGE || (PACKAGE_TEXT_CORE && UIE_PACKAGE && UNITY_2020_2_OR_NEWER)
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER || (UIE_PACKAGE && PACKAGE_TEXT_CORE && UNITY_2020_2_OR_NEWER)
         static public FontAsset GetComputedStyleFontAssetValue(object val)
         {
             if (val is FontAsset fontAsset)

@@ -104,6 +104,7 @@ namespace Unity.UI.Builder
                 m_ContentOffset = value;
                 if (m_PaneWindow.document)
                     m_PaneWindow.document.viewportContentOffset = value;
+
                 UpdateSurface();
             }
         }
@@ -153,8 +154,20 @@ namespace Unity.UI.Builder
             m_Canvas.SetSelection(selection);
             m_SharedStylesAndDocumentElement = this.Q("shared-styles-and-document");
             m_SharedStylesAndDocumentElement.pseudoStates |= PseudoStates.Root; // To apply variables of the active theme that are defined in the :root selector
+
             m_StyleSelectorElementContainer = this.Q(BuilderConstants.StyleSelectorElementContainerName);
             m_DocumentRootElement = this.Q("document");
+            m_DocumentRootElement.StretchToParentSize();
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+            // Load stylesheets specific to the document element.
+            var documentSheet = BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(BuilderConstants.UIBuilderPackagePath + "/Viewport/BuilderDocument.uss");
+            var documentThemeSheet = EditorGUIUtility.isProSkin
+                ? BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(BuilderConstants.UIBuilderPackagePath + "/Viewport/BuilderDocumentDark.uss")
+                : BuilderPackageUtilities.LoadAssetAtPath<StyleSheet>(BuilderConstants.UIBuilderPackagePath + "/Viewport/BuilderDocumentLight.uss");
+
+            m_DocumentRootElement.styleSheets.Add(documentSheet);
+            m_DocumentRootElement.styleSheets.Add(documentThemeSheet);
+#endif
             m_Canvas.documentRootElement = m_DocumentRootElement;
             m_EditorLayer = this.Q("__unity-editor-layer");
             m_EditorLayer.AddToClassList(BuilderConstants.HiddenStyleClassName);
@@ -182,7 +195,6 @@ namespace Unity.UI.Builder
             m_PickOverlay.RegisterCallback<MouseLeaveEvent>(OnMouseLeave);
             m_BuilderViewportDragger.RegisterCallbacksOnTarget(m_PickOverlay);
             m_Viewport.RegisterCallback<MouseDownEvent>(OnMissPick);
-            m_Viewport.RegisterCallback<GeometryChangedEvent>(OnGeometryChanged);
 
             m_Canvas.header.AddManipulator(new Clickable(OnCanvasHeaderClick));
             m_ContextMenuManipulator?.RegisterCallbacksOnTarget(m_Viewport);
@@ -256,29 +268,6 @@ namespace Unity.UI.Builder
         void OnCanvasHeaderClick(EventBase obj)
         {
             m_Selection.Select(null, documentRootElement);
-        }
-
-        void OnGeometryChanged(GeometryChangedEvent evt)
-        {
-            // We use the GeometryChangedEvent to detect that the viewport is visible and has been
-            // initialized properly (i.e.: m_Viewport.resolvedStyle has valid values).
-            // But since GeometryChangedEvent is called also for resizing, added some logic to make sure
-            // we only center the canvas on opening the window.
-
-            bool viewportNowVisible = evt.oldRect != Rect.zero;
-
-            if (string.IsNullOrEmpty(m_PaneWindow.document.uxmlFileName) &&
-                !m_PaneWindow.document.hasUnsavedChanges && viewportNowVisible)
-            {
-                CenterCanvas();
-            }
-
-            // Now that the UI Builder is being rendered, the canvas has been centered (if needed)
-            // and we can unregister.
-            if (viewportNowVisible)
-            {
-                m_Viewport.UnregisterCallback<GeometryChangedEvent>(OnGeometryChanged);
-            }
         }
 
         void CenterCanvas()
@@ -493,6 +482,7 @@ namespace Unity.UI.Builder
             {
                 case BuilderSelectionType.Element:
                 case BuilderSelectionType.ElementInTemplateInstance:
+                case BuilderSelectionType.ElementInControlInstance:
                     m_BuilderSelectionIndicator.Activate(m_Selection, m_PaneWindow.document.visualTreeAsset, selectedElement);
                     break;
                 case BuilderSelectionType.VisualTreeAsset:

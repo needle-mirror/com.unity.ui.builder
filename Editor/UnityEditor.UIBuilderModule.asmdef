@@ -5,7 +5,8 @@
         "UnityEngine.TextCoreModule",
         "Unity.TextCore",
         "UnityEngine.UIElementsModule",
-        "UnityEditor.UIElementsModule"
+        "UnityEditor.UIElementsModule",
+        "UnityEngine.TextCoreTextEngineModule"
     ],
     "includePlatforms": [
         "Editor"
@@ -36,12 +37,12 @@
         },
         {
             "name": "com.unity.textcore",
-            "expression": "1.0.0-preview.2",
+            "expression": "",
             "define": "PACKAGE_TEXT_CORE"
         },
         {
             "name": "com.unity.ui",
-            "expression": "1.0.0-preview.14",
+            "expression": "",
             "define": "UIE_PACKAGE"
         }
     ],

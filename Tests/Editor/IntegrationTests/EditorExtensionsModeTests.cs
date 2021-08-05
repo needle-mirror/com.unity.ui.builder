@@ -60,7 +60,11 @@ namespace Unity.UI.Builder.EditorTests
 
             // Should be false by default
             Assert.That(builder.document.fileSettings.editorExtensionMode, Is.EqualTo(false));
+#if UI_BUILDER_PACKAGE && !UNITY_2021_2_OR_NEWER
             var controlsTreeView = library.Q<TreeView>();
+#else
+            var controlsTreeView = library.Q<InternalTreeView>();
+#endif
 
             var hasEditorOnly = false;
             foreach (var item in controlsTreeView.items)
@@ -77,7 +81,11 @@ namespace Unity.UI.Builder.EditorTests
             extensionsModeToggle.value = true;
             yield return UIETestHelpers.Pause();
 
+#if UI_BUILDER_PACKAGE && !UNITY_2021_2_OR_NEWER
             controlsTreeView = library.Q<TreeView>();
+#else
+            controlsTreeView = library.Q<InternalTreeView>();
+#endif
             foreach (var item in controlsTreeView.items)
             {
                 var libraryTreeItem = (BuilderLibraryTreeItem)item;

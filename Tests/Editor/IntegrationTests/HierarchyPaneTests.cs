@@ -28,7 +28,11 @@ namespace Unity.UI.Builder.EditorTests
             var hierarchyCreatedItem = GetHierarchyExplorerItemByElementName(testElementName);
             Assert.That(hierarchyCreatedItem, Is.Not.Null);
 
+#if UI_BUILDER_PACKAGE && !UNITY_2021_2_OR_NEWER
             var hierarchyTreeView = hierarchy.Q<TreeView>();
+#else
+            var hierarchyTreeView = hierarchy.Q<InternalTreeView>();
+#endif
             Assert.That(hierarchyTreeView.GetSelectedItem(), Is.Null);
             Assert.That(selection.isEmpty, Is.True);
 
@@ -274,7 +278,11 @@ namespace Unity.UI.Builder.EditorTests
 
             // Deselect
             yield return UIETestEvents.Mouse.SimulateClick(hierarchy);
+#if UI_BUILDER_PACKAGE && !UNITY_2021_2_OR_NEWER
             var hierarchyTreeView = hierarchy.Q<TreeView>();
+#else
+            var hierarchyTreeView = hierarchy.Q<InternalTreeView>();
+#endif
             Assert.That(hierarchyTreeView.GetSelectedItem(), Is.Null);
 
             // Select hierarchy item
@@ -308,7 +316,11 @@ namespace Unity.UI.Builder.EditorTests
 
             // Deselect
             yield return UIETestEvents.Mouse.SimulateClick(hierarchy);
+#if UI_BUILDER_PACKAGE && !UNITY_2021_2_OR_NEWER
             var hierarchyTreeView = hierarchy.Q<TreeView>();
+#else
+            var hierarchyTreeView = hierarchy.Q<InternalTreeView>();
+#endif
             Assert.That(hierarchyTreeView.GetSelectedItem(), Is.Null);
 
             // Select hierarchy item
@@ -369,7 +381,11 @@ namespace Unity.UI.Builder.EditorTests
             BuilderEditorUtility.systemCopyBuffer = newlineFixedExpectedUXML;
             yield return UIETestEvents.ExecuteCommand(builder, UIETestEvents.Command.Paste);
             // var newItem = BuilderTestsHelper.GetExplorerItemWithName(HierarchyPane, nameof(VisualElement));
+#if UI_BUILDER_PACKAGE && !UNITY_2021_2_OR_NEWER
             var hierarchyTreeView = hierarchy.Q<TreeView>();
+#else
+            var hierarchyTreeView = hierarchy.Q<InternalTreeView>();
+#endif
             hierarchyTreeView.ExpandItem(hierarchyTreeView.items.ToList()[1].id);
 
             explorerItems = BuilderTestsHelper.GetExplorerItems(hierarchy);

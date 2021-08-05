@@ -5,6 +5,9 @@ using UnityEngine.UIElements;
 using UnityEngine;
 using System.IO;
 using System.Linq;
+#if !UNITY_2019_4
+using UnityEditor.UIElements.StyleSheets;
+#endif
 
 namespace Unity.UI.Builder
 {
@@ -142,8 +145,9 @@ namespace Unity.UI.Builder
                             int index = usings.BinarySearch(lookingFor, VisualTreeAsset.UsingEntry.comparer);
                             if (index >= 0)
                             {
-                                string path = usings[index].path;
-                                path = GetProcessedPathForSrcAttribute(vtaPath, path);
+                                var usingEntry = usings[index];
+
+                                var path = GetProcessedPathForSrcAttribute(usingEntry.asset, vtaPath, usingEntry.path);
                                 AppendElementAttribute("src", path, stringBuilder);
                             }
                         }
@@ -175,8 +179,13 @@ namespace Unity.UI.Builder
             }
         }
 
-        public static string GetProcessedPathForSrcAttribute(string vtaPath, string assetPath)
+        public static string GetProcessedPathForSrcAttribute(Object asset, string vtaPath, string assetPath)
         {
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+            if (asset)
+                return URIHelpers.MakeAssetUri(asset);
+#endif
+
             if (string.IsNullOrEmpty(assetPath))
                 return assetPath;
 
@@ -203,7 +212,7 @@ namespace Unity.UI.Builder
 
         static void ProcessStyleSheetPath(
             string vtaPath,
-            string path, StringBuilder stringBuilder, int depth,
+            StyleSheet styleSheet, string styleSheetPath, StringBuilder stringBuilder, int depth,
             ref bool newLineAdded, ref bool hasChildTags)
         {
             if (!newLineAdded)
@@ -216,8 +225,8 @@ namespace Unity.UI.Builder
             Indent(stringBuilder, depth + 1);
             stringBuilder.Append("<Style");
             {
-                path = GetProcessedPathForSrcAttribute(vtaPath, path);
-                AppendElementAttribute("src", path, stringBuilder);
+                styleSheetPath = GetProcessedPathForSrcAttribute(styleSheet, vtaPath, styleSheetPath);
+                AppendElementAttribute("src", styleSheetPath, stringBuilder);
             }
             stringBuilder.Append(" />");
             stringBuilder.Append(BuilderConstants.newlineCharFromEditorSettings);
@@ -284,37 +293,26 @@ namespace Unity.UI.Builder
             bool hasChildTags = false;
 
             // Add special children.
-            // TODO: What's the difference between these two ifdef options?
-#if false
-            var styleSheets = root.stylesheets;
-            if (styleSheets != null && styleSheets.Count > 0)
-            {
-                bool newLineAdded = false;
-
-                foreach (var styleSheet in styleSheets)
-                {
-                    var path = AssetDatabase.GetAssetPath(styleSheet);
-                    ProcessStyleSheetPath(
-                        vtaPath,
-                        path, stringBuilder, depth,
-                        ref newLineAdded, ref hasChildTags);
-                }
-            }
-#else
+            var styleSheets = root.GetStyleSheets();
             var styleSheetPaths = root.GetStyleSheetPaths();
+
             if (styleSheetPaths != null && styleSheetPaths.Count > 0)
             {
+                Assert.IsNotNull(styleSheets);
+                Assert.AreEqual(styleSheetPaths.Count, styleSheets.Count);
+
                 bool newLineAdded = false;
 
-                foreach (var path in styleSheetPaths)
+                for (var i = 0; i < styleSheetPaths.Count; ++i)
                 {
+                    var styleSheet = styleSheets[i];
+                    var styleSheetPath = styleSheetPaths[i];
                     ProcessStyleSheetPath(
                         vtaPath,
-                        path, stringBuilder, depth,
+                        styleSheet, styleSheetPath, stringBuilder, depth,
                         ref newLineAdded, ref hasChildTags);
                 }
             }
-#endif
 
             var templateAsset = root as TemplateAsset;
             if (templateAsset != null && templateAsset.attributeOverrides != null && templateAsset.attributeOverrides.Count > 0)
@@ -397,13 +395,18 @@ namespace Unity.UI.Builder
 
             var idToChildren = VisualTreeAssetUtilities.GenerateIdToChildren(vta);
 
+            var usedTemplates = new HashSet<string>();
+
             foreach (var vea in veas)
             {
                 // Templates
-                var usedTemplates = new HashSet<string>();
                 GatherUsedTemplates(vta, vea, idToChildren, usedTemplates);
-                AppendTemplateRegistrations(vta, vtaPath, stringBuilder, usedTemplates);
+            }
 
+            AppendTemplateRegistrations(vta, vtaPath, stringBuilder, usedTemplates);
+
+            foreach (var vea in veas)
+            {
                 GenerateUXMLRecursive(vta, vtaPath, vea, idToChildren, stringBuilder, 1, true);
             }
 
@@ -431,16 +434,23 @@ namespace Unity.UI.Builder
             var uxmlRootAsset = rootAssets[0];
 
             bool tempHasChildTags = false;
+            var styleSheets = uxmlRootAsset.GetStyleSheets();
             var styleSheetPaths = uxmlRootAsset.GetStyleSheetPaths();
+
             if (styleSheetPaths != null && styleSheetPaths.Count > 0)
             {
+                Assert.IsNotNull(styleSheets);
+                Assert.AreEqual(styleSheetPaths.Count, styleSheets.Count);
+
                 bool newLineAdded = true;
 
-                foreach (var path in styleSheetPaths)
+                for (var i = 0; i < styleSheetPaths.Count; ++i)
                 {
+                    var styleSheet = styleSheets[i];
+                    var styleSheetPath = styleSheetPaths[i];
                     ProcessStyleSheetPath(
                         vtaPath,
-                        path, stringBuilder, 0,
+                        styleSheet, styleSheetPath, stringBuilder, 0,
                         ref newLineAdded, ref tempHasChildTags);
                 }
             }

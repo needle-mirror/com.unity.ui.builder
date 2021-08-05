@@ -1,11 +1,25 @@
 .red {
-    background-color: #f00;
+    background-color: red;
 }
 
 .green {
-    background-color: #0f0;
+    background-color: green;
 }
 
 .blue {
-    background-color: #00f;
+    background-color: blue;
+}
+
+.aqua {
+    background-color: aqua;
+}
+
+.min-width
+{
+    min-width: 200px;
+}
+
+.min-height
+{
+    min-height: 200px;
 }

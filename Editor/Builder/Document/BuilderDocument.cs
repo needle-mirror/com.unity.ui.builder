@@ -2,6 +2,9 @@ using UnityEngine;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
 using UnityEditor;
+#if !UNITY_2019_4
+using UnityEditor.UIElements.StyleSheets;
+#endif
 using System;
 using System.IO;
 
@@ -22,7 +25,7 @@ namespace Unity.UI.Builder
             Default,
             Dark,
             Light,
-            Runtime,
+            Runtime, // obsolete but leave it for compatibility
             Custom
         }
 
@@ -141,6 +144,14 @@ namespace Unity.UI.Builder
         {
             m_CurrentCanvasTheme = canvasTheme;
             m_CurrentCanvasThemeStyleSheet = themeSheet;
+
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+            if (themeSheet)
+            {
+                themeSheet.isDefaultStyleSheet = true;
+            }
+#endif
+
             RefreshStyle(documentElement);
         }
 
@@ -278,6 +289,8 @@ namespace Unity.UI.Builder
             return result;
         }
 
+        public void RestoreAssetsFromBackup() => activeOpenUXMLFile.RestoreAssetsFromBackup();
+
         public bool CheckForUnsavedChanges(bool assetModifiedExternally = false)
             => activeOpenUXMLFile.CheckForUnsavedChanges(assetModifiedExternally);
 
@@ -286,6 +299,9 @@ namespace Unity.UI.Builder
             activeOpenUXMLFile.NewDocument(documentRootElement);
             SaveToDisk();
         }
+
+        internal bool SaveNewTemplateFileFromHierarchy(string newTemplatePath, string uxml)
+            => activeOpenUXMLFile.SaveNewTemplateFileFromHierarchy(newTemplatePath, uxml);
 
         public void LoadDocument(VisualTreeAsset visualTreeAsset, VisualElement documentElement)
         {
@@ -299,10 +315,17 @@ namespace Unity.UI.Builder
 
         public bool WillCauseCircularDependency(VisualTreeAsset vtaCheck)
         {
+            if (string.IsNullOrEmpty(activeOpenUXMLFile.uxmlPath))
+            {
+                // Active document is a new file, so it won't cause a circular dependency
+                return false;
+            }
+
             // Perform check on current active document
             var activeVTA = activeOpenUXMLFile.visualTreeAsset;
+
             if (activeVTA.TemplateExists(vtaCheck))
-                return false;
+                return true;
 
             // Crawl up hierarchy if there are open subdocuments
             int parentInd = activeOpenUXMLFile.openSubDocumentParentIndex;
@@ -311,10 +334,10 @@ namespace Unity.UI.Builder
                 var parentuxml = openUXMLFiles[parentInd];
                 var parentvta = parentuxml.visualTreeAsset;
                 if (parentvta.TemplateExists(vtaCheck))
-                    return false;
+                    return true;
                 parentInd = parentuxml.openSubDocumentParentIndex;
             }
-            return true;
+            return false;
         }
 
         //

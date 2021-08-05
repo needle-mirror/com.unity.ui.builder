@@ -80,7 +80,11 @@ namespace Unity.UI.Builder.EditorTests
 
         ITreeViewItem GetTestAssetsUXMLFileNode(string nodeName = k_TestUXMLFileName)
         {
+#if UI_BUILDER_PACKAGE && !UNITY_2021_2_OR_NEWER
             var libraryTreeView = library.Q<TreeView>();
+#else
+            var libraryTreeView = library.Q<InternalTreeView>();
+#endif
             var projectNode = (BuilderLibraryTreeItem)libraryTreeView.items
                 .First(item => ((BuilderLibraryTreeItem)item).name.Equals(BuilderConstants.LibraryAssetsSectionHeaderName));
             libraryTreeView.ExpandItem(projectNode.id);
@@ -118,7 +122,11 @@ namespace Unity.UI.Builder.EditorTests
         public IEnumerator UxmlAssetsOpenButtonTest()
         {
             var testUXMLTreeViewItem = GetTestAssetsUXMLFileNode();
+#if UI_BUILDER_PACKAGE && !UNITY_2021_2_OR_NEWER
             var libraryTreeView = library.Q<TreeView>();
+#else
+            var libraryTreeView = library.Q<InternalTreeView>();
+#endif
             yield return libraryTreeView.SelectAndScrollToItemWithId(testUXMLTreeViewItem.id);
             yield return UIETestHelpers.Pause();
             var testUXMLLabel = libraryTreeView.Query<Label>(null, "unity-builder-library__tree-item-label")
@@ -266,7 +274,11 @@ namespace Unity.UI.Builder.EditorTests
         public IEnumerator CreateTemplateInstancesFromUXML()
         {
             var testUXMLTreeViewItem = GetTestAssetsUXMLFileNode();
+#if UI_BUILDER_PACKAGE && !UNITY_2021_2_OR_NEWER
             var libraryTreeView = library.Q<TreeView>();
+#else
+            var libraryTreeView = library.Q<InternalTreeView>();
+#endif
             yield return libraryTreeView.SelectAndScrollToItemWithId(testUXMLTreeViewItem.id);
             yield return UIETestHelpers.Pause();
             var testUXMLLabel = libraryTreeView.Query<Label>(null, "unity-builder-library__tree-item-label")
@@ -353,7 +365,11 @@ namespace Unity.UI.Builder.EditorTests
         /// <summary>
         /// Library pane updates if new `.uxml` files are added/deleted/moved/renamed to/from the project.
         /// </summary>
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
         [UnityTest]
+#else
+        [UnityTest, Ignore("Infinite loop when run with 2021.1 or older")]
+#endif
         public IEnumerator LibraryUpdatesWhenUXMLFilesAreAddedDeletedMoved()
         {
             // Switch to the project mode

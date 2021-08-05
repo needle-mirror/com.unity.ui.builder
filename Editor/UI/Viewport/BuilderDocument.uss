@@ -1,0 +1,6 @@
+.unity-builder-canvas__special-visual-element-initial-size {
+    min-width: 100px;
+    min-height: 100px;
+    border-width: 1px;
+    flex-grow: 1;
+}

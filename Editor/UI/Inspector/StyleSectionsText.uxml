@@ -36,19 +36,16 @@
         <uib:ToggleButtonStrip class="unity-builder-inspector_white-space-field" label="Wrap" tooltip="white-space" />
     </uib:BuilderStyleRow>
 
-    <!-- No New Font Asset Properties -->
+    <VisualElement class="unity-builder-inspector__divider" />
+
+    <!-- No Rich Text Properties -->
     <VisualElement class="unity-builder-no-font-asset-property-container">
         <!-- Help Box -->
-        <uib:HelpBox class="unity-builder-inspector__help-box" text="Rich text properties can be made accessible by installing the latest UI Toolkit package." />
+        <uib:HelpBox class="unity-builder-inspector__help-box" text="Rich text properties can be made accessible by installing the latest UI Toolkit package or by installing Unity 2021.2 or later." />
     </VisualElement>
 
-    <!-- New Font Asset Properties -->
+    <!-- Rich Text Properties -->
     <VisualElement class="unity-builder-font-asset-property-container">
-        <VisualElement class="unity-builder-inspector__divider" />
-
-        <!-- Help Box -->
-        <uib:HelpBox class="unity-builder-inspector__help-box" text="The following properties will only work if the Font Asset, assigned above under 'Font Asset' property, supports them." />
-
         <!-- Outline Width -->
         <uib:BuilderStyleRow binding-path="-unity-text-outline-width">
             <uib:DimensionStyleField label="Outline Width" tooltip="-unity-text-outline-width" />
@@ -62,6 +59,21 @@
         <!-- Shadow -->
         <uib:BuilderStyleRow>
             <uib:TextShadowStyleField tooltip="text-shadow" binding-path="text-shadow"/>
+        </uib:BuilderStyleRow>
+
+        <!-- Letter Spacing -->
+        <uib:BuilderStyleRow binding-path="letter-spacing">
+            <uib:DimensionStyleField label="Letter Spacing" tooltip="letter-spacing" />
+        </uib:BuilderStyleRow>
+
+        <!-- Word Spacing -->
+        <uib:BuilderStyleRow binding-path="word-spacing">
+            <uib:DimensionStyleField label="Word Spacing" tooltip="word-spacing" />
+        </uib:BuilderStyleRow>
+
+        <!-- Paragraph Spacing -->
+        <uib:BuilderStyleRow binding-path="-unity-paragraph-spacing">
+            <uib:DimensionStyleField label="Paragraph Spacing" tooltip="-unity-paragraph-spacing" />
         </uib:BuilderStyleRow>
     </VisualElement>
 </UXML>

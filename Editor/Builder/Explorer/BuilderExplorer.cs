@@ -92,7 +92,9 @@ namespace Unity.UI.Builder
             Add(m_ElementHierarchyView);
 
             // Enable horizontal scrolling.
-#if UNITY_2020_2_OR_NEWER
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+            m_ElementHierarchyView.Q<InternalTreeView>().horizontalScrollingEnabled = true;
+#elif UNITY_2020_2_OR_NEWER
             m_ElementHierarchyView.Q<TreeView>().horizontalScrollingEnabled = true;
 #endif
 
