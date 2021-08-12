@@ -1,4 +1,8 @@
-#if UI_BUILDER_PACKAGE && !UIE_PACKAGE && !UNITY_2021_2_OR_NEWER
+// For most cases, except on 2021.1, we don't need to explicitly register UxmlFactories.  The only case where this is
+// not true (2021.1) is when UI Builder was included directly in the editor (assembly overrides) but UI Toolkit wasn't
+// (it was only available as a package and the code that replaced the manual registration of UxmlFactories was not
+// available via that workflow).
+#if UI_BUILDER_PACKAGE && !UIE_PACKAGE && UNITY_2021_1
 using UnityEditor;
 using UnityEngine.UIElements;
 

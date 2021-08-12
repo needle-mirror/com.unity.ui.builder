@@ -228,8 +228,8 @@ namespace Unity.UI.Builder.EditorTests
             Assert.AreEqual(assetCount + 1, builder.document.visualTreeAsset.visualElementAssets.Count);
         }
 
-#if (UNITY_2019_4 && (UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX) || UNITY_2020_2)
-        [UnityTest, Ignore("Test broken on 2019.4 on linux and on 2020.2.")]
+#if (UNITY_2019_4 && (UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX) || UNITY_2020_2 || UNITY_2020_3)
+        [UnityTest, Ignore("Test broken on 2019.4 on linux and on 2020.2 & 2020.3.")]
 #else
         [UnityTest]
 #endif

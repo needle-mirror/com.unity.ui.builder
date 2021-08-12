@@ -11,10 +11,10 @@ The **UI Builder** lets you visually create and edit UI assets such as UI docume
 ## Installation
 
 Unity versions supported:
-- **2019.4**: 2019.4.27f1 or newer
-- **2020.3**: 2020.3.12f1 or newer
+- **2019.4**: 2019.4.29f1 or newer
+- **2020.3**: 2020.3.15f2 or newer
 - **2021.1**: 2021.1.16f1 or newer
-- **2021.2**: 2021.2.0b5 or newer
+- **2021.2**: 2021.2.0b7 or newer
 - **2022.1**: 2022.1.0a2 or newer
 
 To install:

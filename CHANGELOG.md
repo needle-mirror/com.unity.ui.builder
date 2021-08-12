@@ -4,10 +4,15 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-preview.16] - 2021-08-12
+
+- Fixed 1357146: [UI Builder] GUID errors with UI Builder preview-15
+- Fixed 1357148: [UI Builder] System.ArgumentException: A factory for the type Unity.UI.Builder.BuilderPane+UxmlFactory
+
 ## [1.0.0-preview.15] - 2021-08-05
 
 - Fixed many issues that span across various editor versions (2019.4 through latest 2021.2 beta)
-- Added suport for the UI Toolkit 1.0.0-preview.15 package
+- Added support for the UI Toolkit 1.0.0-preview.15 package
 - The following compatibility matrix can be used to find out if/when you can use this package:
 ```
  Editor version | Builder version        | UI Toolkit version
