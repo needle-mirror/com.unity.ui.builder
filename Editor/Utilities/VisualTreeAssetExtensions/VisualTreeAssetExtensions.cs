@@ -391,6 +391,7 @@ namespace Unity.UI.Builder
             var templateName = vta.GetTemplateNameFromPath(path);
             if (!vta.TemplateExists(templateName))
             {
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
                 var resolvedAsset = AssetDatabase.LoadAssetAtPath<VisualTreeAsset>(path);
                 if (resolvedAsset)
                 {
@@ -400,6 +401,9 @@ namespace Unity.UI.Builder
                 {
                     vta.RegisterTemplate(templateName, path);
                 }
+#else
+                vta.RegisterTemplate(templateName, path);
+#endif
             }
 
 #if UNITY_2019_4

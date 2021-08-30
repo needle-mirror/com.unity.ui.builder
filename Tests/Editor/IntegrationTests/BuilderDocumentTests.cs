@@ -1,8 +1,9 @@
+using NUnit.Framework;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using NUnit.Framework;
 using UnityEditor;
 using UnityEditor.UIElements;
 using UnityEngine;
@@ -44,7 +45,7 @@ namespace Unity.UI.Builder.EditorTests
 
             yield return base.TearDown();
             DeleteTestUXMLFile();
-            DeleteTestUSSFile();
+            DeleteTestUSSFiles();
         }
 
         void CheckNoUSSDocument()
@@ -163,6 +164,125 @@ namespace Unity.UI.Builder.EditorTests
             yield return UIETestHelpers.Pause(1);
 
             yield return CheckMultiUSSDocument();
+        }
+
+#if UNITY_2019_4 && (UNITY_EDITOR_LINUX || UNITY_STANDALONE_LINUX)
+        [UnityTest, Ignore("Test broken on 2019.4 on linux.")]
+#else
+        [UnityTest]
+#endif
+        public IEnumerator EnsureOnlyModifiedFilesAreSavedToDisk()
+        {
+            Dictionary<string, DateTime> beforeLastWriteTimes;
+            
+            Dictionary<string, DateTime> GetLastWriteTimes()
+            {
+                Dictionary<string, DateTime> ret = new Dictionary<string, DateTime>();
+
+                foreach (var file in new string[] { k_TestUXMLFilePath, k_TestUSSFilePath, k_TestUSSFilePath_2 })
+                {
+                    ret[file] = (new FileInfo(file)).LastWriteTime;
+                }
+                return ret;
+            };
+
+            void SnapShotLastWriteTimes()
+            {
+                beforeLastWriteTimes = GetLastWriteTimes();
+            }
+
+            List<string> GetLastModifiedFiles()
+            {
+                List<string> files = new List<string>();
+                var afterLastWriteTimes = GetLastWriteTimes();
+
+                foreach (var times in beforeLastWriteTimes)
+                {
+                    if (times.Value != afterLastWriteTimes[times.Key])
+                    {
+                        files.Add(times.Key);
+                    }
+                }
+
+                beforeLastWriteTimes = afterLastWriteTimes;
+                return files;
+            }
+
+            void CheckModifiedFiles(string [] files)
+            {
+                var lastModifiedFiles = GetLastModifiedFiles();
+
+                Assert.AreEqual(files.Length, lastModifiedFiles.Count);
+
+                foreach (var file in files)
+                {
+                    Assert.Contains(file, lastModifiedFiles);
+                }
+            }
+
+            CreateTestUXMLFile();
+            CreateTestUSSFile(k_TestUSSFilePath, ".selector1 {}");
+            CreateTestUSSFile(k_TestUSSFilePath_2, ".selector2 {}");
+
+            yield return LoadTestUXMLDocument(k_TestUXMLFilePath);
+            yield return CodeOnlyAddUSSToDocument(k_TestUSSFilePath);
+            yield return CodeOnlyAddUSSToDocument(k_TestUSSFilePath_2);
+
+            toolbar.SaveDocument(false);
+
+            SnapShotLastWriteTimes();
+
+            // 1. Verify that resaving without any change will not save any file to disk
+            toolbar.SaveDocument(false);
+
+            CheckModifiedFiles(new string[] {});
+
+            // 2. Modify the uxml document adding a visual element and verify that only
+            // k_TestUXMLFilePath was actually saved to disk
+            yield return AddVisualElement();
+
+            toolbar.SaveDocument(false);
+
+            CheckModifiedFiles(new string[] { k_TestUXMLFilePath });
+
+            // 3. Modify .selector1 in k_TestUSSFilePath and verify that only k_TestUSSFilePath 
+            // was saved to disk
+            var selector = BuilderTestsHelper.GetExplorerItemWithName(styleSheetsPane, ".selector1");
+            yield return UIETestEvents.Mouse.SimulateClick(selector);
+
+            yield return EditInspectorStyleField("color", Color.red);
+
+            toolbar.SaveDocument(false);
+
+            CheckModifiedFiles(new string[] { k_TestUSSFilePath });
+
+            // 4. Modify .selector1 in k_TestUSSFilePath and .selector2 in k_TestUSSFilePath_2
+            // and verify that only k_TestUSSFilePath and k_TestUSSFilePath_2 were saved to disk
+            yield return EditInspectorStyleField("color", Color.green);
+
+            selector = BuilderTestsHelper.GetExplorerItemWithName(styleSheetsPane, ".selector2");
+            yield return UIETestEvents.Mouse.SimulateClick(selector);
+
+            yield return EditInspectorStyleField("color", Color.blue);
+
+            toolbar.SaveDocument(false);
+
+            CheckModifiedFiles(new string[] { k_TestUSSFilePath, k_TestUSSFilePath_2 });
+
+            // 5. Modify the uxml document, .selector1 in k_TestUSSFilePath and .selector2 in k_TestUSSFilePath_2
+            // and verify that all files were saved to disk
+            yield return EditInspectorStyleField("color", Color.yellow);
+
+            selector = BuilderTestsHelper.GetExplorerItemWithName(styleSheetsPane, ".selector1");
+            yield return UIETestEvents.Mouse.SimulateClick(selector);
+
+            yield return EditInspectorStyleField("color", Color.gray);
+            
+            yield return AddVisualElement();
+
+            toolbar.SaveDocument(false);
+
+            CheckModifiedFiles(new string[] { k_TestUXMLFilePath, k_TestUSSFilePath, k_TestUSSFilePath_2 });
         }
 
         [Test]

@@ -13,6 +13,7 @@ namespace Unity.UI.Builder.EditorTests
     abstract class BuilderIntegrationTest
     {
         protected const string k_TestUSSFileName = "MyTestVisualTreeAsset.uss";
+        protected const string k_TestUSSFileName_2 = "MyTestVisualTreeAsset_2.uss";
         protected const string k_TestUXMLFileName = "MyTestVisualTreeAsset.uxml";
         protected const string k_TestEmptyUSSFileNameNoExt = "EmptyTestStyleSheet";
         protected const string k_TestNoUSSDocumentUXMLFileNameNoExt = "NoUSSDocument";
@@ -29,6 +30,7 @@ namespace Unity.UI.Builder.EditorTests
         protected const string k_ChildTestUXMLFileName = k_ChildTestUXMLFileNameNoExt + ".uxml";
 
         protected const string k_TestUSSFilePath = "Assets/" + k_TestUSSFileName;
+        protected const string k_TestUSSFilePath_2 = "Assets/" + k_TestUSSFileName_2;
         protected const string k_TestUXMLFilePath = "Assets/" + k_TestUXMLFileName;
         protected const string k_TestEmptyUSSFilePath = BuilderConstants.UIBuilderTestsTestFilesPath + "/" + k_TestEmptyUSSFileName;
         protected const string k_TestNoUSSDocumentUXMLFilePath = BuilderConstants.UIBuilderTestsTestFilesPath + "/" + k_TestNoUSSDocumentUXMLFileName;
@@ -254,17 +256,22 @@ namespace Unity.UI.Builder.EditorTests
 
         protected void CreateTestUSSFile()
         {
+            CreateTestUSSFile(k_TestUSSFilePath);
+        }
+
+        protected void CreateTestUSSFile(string file, string content = "")
+        {
             // We have tests that _wait_ for the AssetModificationProcessor to kick in with
             // the new asset being created here. If we, for some reason, leak the asset
             // from a previous run and we don't _re_create it, those some tests may way
             // forever. It is very important to delete the file if it's already there
             // and re-create it.
-            AssetDatabase.DeleteAsset(k_TestUSSFilePath);
+            AssetDatabase.DeleteAsset(file);
             AssetDatabase.Refresh();
 
-            File.WriteAllText(k_TestUSSFilePath, string.Empty);
+            File.WriteAllText(file, content);
             AssetDatabase.Refresh();
-            AssetDatabase.ImportAsset(k_TestUSSFilePath, ImportAssetOptions.ForceUpdate);
+            AssetDatabase.ImportAsset(file, ImportAssetOptions.ForceUpdate);
         }
 
         protected void CreateTestUXMLFile()
@@ -282,9 +289,10 @@ namespace Unity.UI.Builder.EditorTests
             AssetDatabase.ImportAsset(k_TestUXMLFilePath, ImportAssetOptions.ForceUpdate);
         }
 
-        protected void DeleteTestUSSFile()
+        protected void DeleteTestUSSFiles()
         {
             AssetDatabase.DeleteAsset(k_TestUSSFilePath);
+            AssetDatabase.DeleteAsset(k_TestUSSFilePath_2);
         }
 
         protected void DeleteTestUXMLFile()
@@ -383,6 +391,40 @@ namespace Unity.UI.Builder.EditorTests
             {
                 Assert.AreEqual(0, asset.stylesheetPaths.Count());
             }
+        }
+
+        public VisualElement FindInspectorStyleField(string propName)
+        {
+            var field = inspector.styleFields.m_StyleFields[propName].First();
+
+            var curParent = field.parent;
+
+            while (curParent != inspector)
+            {
+                if (curParent is Foldout foldout)
+                {
+                    foldout.value = true;
+                }
+                else if (curParent is PersistedFoldout persistedFoldout)
+                {
+                    persistedFoldout.value = true;
+                }
+                curParent = curParent.parent;
+            }
+            return field;
+        }
+
+        public T FindInspectorStyleField<T>(string name) where T : VisualElement
+        {
+            return FindInspectorStyleField(name) as T;
+        }
+
+        public IEnumerator EditInspectorStyleField<T>(string name, T value)
+        {
+            var fieldField = FindInspectorStyleField<BaseField<T>>(name);
+
+            fieldField.value = value;
+            yield return null;
         }
     }
 }

@@ -596,7 +596,7 @@ namespace Unity.UI.Builder
 
         public void ChangeCanvasTheme(BuilderDocument.CanvasTheme theme, ThemeStyleSheet themeStyleSheet = null)
         {
-#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+#if !UI_BUILDER_PACKAGE || ((UNITY_2021_1_OR_NEWER && UIE_PACKAGE) || UNITY_2021_2_OR_NEWER)
             ApplyCanvasTheme(m_Viewport.documentRootElement, theme, themeStyleSheet);
 #else
             ApplyCanvasTheme(m_Viewport.sharedStylesAndDocumentElement, theme, themeStyleSheet);

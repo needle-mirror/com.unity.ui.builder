@@ -296,5 +296,26 @@ namespace Unity.UI.Builder.EditorTests
             backgroundImageField.SetTypePopupValueWithoutNotify(typeof(Texture2D));
             backgroundImageField.value = img;
         }
+
+        [UnityTest]
+        public IEnumerator InspectorShowsAttributesWhenElementIsSelected()
+        {
+            yield return LoadTestUXMLDocument(k_AllStylePropertiesTestFilePath);
+
+            var element = builder.documentRootElement.Q("all-properties-inline");
+            Assert.NotNull(element);
+
+            selection.Select(null, element);
+
+            yield return UIETestHelpers.Pause();
+
+            PersistedFoldout attributesSection = inspector.Q<PersistedFoldout>("inspector-attributes-foldout");
+            Assert.NotNull(attributesSection);
+
+            // Pick the first input from the list (usually for the name of the element),
+            // any will do since we just want to make sure the section contains something
+            var input = attributesSection.Q("unity-text-input");
+            Assert.NotNull(input);
+        }
     }
 }

@@ -1,4 +1,3 @@
-#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -793,6 +792,7 @@ namespace Unity.UI.Builder
 
             // Set value in asset.
             var vea = currentVisualElement.GetVisualElementAsset();
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
             var vta = currentVisualElement.GetVisualTreeAsset();
 
             if (m_Selection.selectionType == BuilderSelectionType.ElementInTemplateInstance)
@@ -828,6 +828,11 @@ namespace Unity.UI.Builder
                 // Call Init();
                 CallInitOnElement();
             }
+#else
+            vea.SetAttributeValue(field.bindingPath, value);
+            // Call Init();
+            CallInitOnElement();
+#endif
 
             // Mark field as overridden.
             var styleRow = field.GetProperty(BuilderConstants.InspectorLinkedStyleRowVEPropertyName) as BuilderStyleRow;
@@ -913,4 +918,3 @@ namespace Unity.UI.Builder
         }
     }
 }
-#endif

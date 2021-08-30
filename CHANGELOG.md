@@ -4,10 +4,20 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-preview.17] - 2021-08-30
+
+- Fixed: The UI Builder's Attributes section was empty for editor versions 21.1 and earlier
+         (this was an oversight and unfortunately got through 1.0.0-preview.15)
+- Fixed: The package.json was not allowing latest package installs on 2019.4 from the Package Manager
+- Fixed: The 'src' attribute was missing in Template UXML tag for 21.1 and earlier
+- Fixed: The active theme was not applied to the document when a USS is added to the document (case 1358872)
+- Fixed: Ensure that only modified files are saved to disk
+- Fixed: No longer display '*' characters next to filename in the Hierarchy and StyleSheet panes (case 1355591).
+
 ## [1.0.0-preview.16] - 2021-08-12
 
-- Fixed 1357146: [UI Builder] GUID errors with UI Builder preview-15
-- Fixed 1357148: [UI Builder] System.ArgumentException: A factory for the type Unity.UI.Builder.BuilderPane+UxmlFactory
+- Fixed GUID errors with UI Builder preview-15
+- Fixed System.ArgumentException: A factory for the type Unity.UI.Builder.BuilderPane+UxmlFactory
 
 ## [1.0.0-preview.15] - 2021-08-05
 
