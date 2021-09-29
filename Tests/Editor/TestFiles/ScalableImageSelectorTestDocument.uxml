@@ -1,0 +1,4 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" editor-extension-mode="False">
+    <Style src="project://database/Assets/Editor/TestFiles/MatchingSelectorsTestStyleSheet.uss?fileID=7433441132597879392&amp;guid=15bb0406f71fe42bbbe8f3df40c3b551&amp;type=3#MatchingSelectorsTestStyleSheet" />
+    <ui:VisualElement name="TestElement" class="scalable-image" />
+</ui:UXML>

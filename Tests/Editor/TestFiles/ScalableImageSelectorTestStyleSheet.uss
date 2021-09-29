@@ -1,0 +1,3 @@
+.scalable-image {
+    background-image: url('project://database/Assets/Editor/TestFiles/scalable_image_test.png?fileID=2800000&guid=066a123ce5b734f86bb8f9feee794677&type=3#scalable_image_test');
+}

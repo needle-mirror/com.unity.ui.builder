@@ -4,6 +4,11 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [1.0.0-preview.18] - 2021-09-29
+
+- Backported fix for: [UI Builder] Text Shadow Color resets to clear after reopening the project
+- Backported fix for: ArgumentException: Unhandled type ScalaleImage" error is thrown when Dropdown Element's VisualElement is selected
+
 ## [1.0.0-preview.17] - 2021-08-30
 
 - Fixed: The UI Builder's Attributes section was empty for editor versions 21.1 and earlier

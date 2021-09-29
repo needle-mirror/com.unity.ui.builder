@@ -18,6 +18,8 @@ namespace Unity.UI.Builder.EditorTests
     {
         const string k_AllStylePropertiesTestFileName = "AllStylePropertiesTest.uxml";
         const string k_AllStylePropertiesTestFilePath = BuilderConstants.UIBuilderTestsTestFilesPath + "/" + k_AllStylePropertiesTestFileName;
+        const string k_ScalableImageSelectorTestFileName = "ScalableImageSelectorTestDocument.uxml";
+        const string k_ScalableImageSelectorTestFilePath = BuilderConstants.UIBuilderTestsTestFilesPath + "/" + k_ScalableImageSelectorTestFileName;
 #if !UI_BUILDER_PACKAGE || UNITY_2021_1_OR_NEWER
         const string k_SpriteTestFilePath = BuilderConstants.UIBuilderTestsTestFilesPath + "/" + "Tools.png";
         const string k_SpriteEditorWindowName = "SpriteEditorWindow";
@@ -41,6 +43,27 @@ namespace Unity.UI.Builder.EditorTests
             Assert.AreEqual(value.color.r, field.value.color.r);
             Assert.AreEqual(value.color.g, field.value.color.g);
             Assert.AreEqual(value.color.b, field.value.color.b);
+        }
+
+        [UnityTest]
+        public IEnumerator TextShadowFieldValueIsReadAppropriately()
+        {
+            yield return LoadTestUXMLDocument(k_AllStylePropertiesTestFilePath);
+            var element = builder.documentRootElement.Q("all-properties-inline");
+            Assert.NotNull(element);
+            selection.Select(null, element);
+            BuilderTextShadow newValue = new BuilderTextShadow
+            {
+                offsetX = new Dimension(0, Dimension.Unit.Pixel),   // This would cause problems before issue #1351667 was fixed
+                offsetY = new Dimension(1f, Dimension.Unit.Pixel),
+                blurRadius = new Dimension(0, Dimension.Unit.Pixel),    // This would cause problems before issue #1351667 was fixed
+                color = Color.red
+            };
+            var styleRow = inspector.styleFields.m_StyleFields["text-shadow"].First();
+            var field = styleRow.Q<TextShadowStyleField>();
+            field.value = newValue;
+            yield return UIETestHelpers.Pause();
+            CheckTextShadowFieldValue("text-shadow", newValue);
         }
 #endif
 
@@ -147,6 +170,23 @@ namespace Unity.UI.Builder.EditorTests
 #endif
         }
 
+#if UI_BUILDER_PACKAGE && !UNITY_2021_2_OR_NEWER
+        [UnityTest, Ignore("Test broken on older editors")]
+#else
+        [UnityTest]
+#endif
+        public IEnumerator CheckThatScalableImageSelectorIsDisplayed()
+        {
+            yield return LoadTestUXMLDocument(k_ScalableImageSelectorTestFilePath);
+            var testElement = builder.documentRootElement.Q<VisualElement>("TestElement");
+            selection.Select(null, testElement);
+            var matchingSelectorsContainer = inspector.Q("matching-selectors-container");
+            var selectors = matchingSelectorsContainer.contentContainer.Query<PersistedFoldout>();
+            Assert.That(selectors.ToList().Count, Is.GreaterThan(0));
+            var selector = selectors.First();
+            Assert.That(selector.text, Is.EqualTo(".scalable-image"));
+        }
+ 
         [UnityTest]
         public IEnumerator CheckAllStylePropertiesForOverrides()
         {

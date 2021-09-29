@@ -113,26 +113,36 @@ namespace Unity.UI.Builder
 #endif
                 case StyleValueType.AssetReference:
                     var assetRef = sheet.ReadAssetReference(handle);
-#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
-                    var assetPath = URIHelpers.MakeAssetUri(assetRef);
-#else
-                    var assetPath = AssetDatabase.GetAssetPath(assetRef);
-                    if (assetPath.StartsWith("Assets") || assetPath.StartsWith("Packages"))
-                        assetPath = "/" + assetPath;
-#if !UI_BUILDER_PACKAGE || UNITY_2021_1_OR_NEWER
-                    if (assetRef is Sprite)
-                        assetPath += "#" + assetRef.name;
-#endif
-#endif
-                    str = assetRef == null ? "none" : $"url('{assetPath}')";
+                    str = GetPathValueFromAssetRef(assetRef);
                     break;
                 case StyleValueType.Variable:
                     str = sheet.ReadVariable(handle);
+                    break;
+                case StyleValueType.ScalableImage:
+                    var image = sheet.ReadScalableImage(handle);
+                    var normalImage = image.normalImage;
+                    str = GetPathValueFromAssetRef(normalImage);
                     break;
                 default:
                     throw new ArgumentException("Unhandled type " + handle.valueType);
             }
             return str;
+        }
+
+        private static string GetPathValueFromAssetRef(UnityEngine.Object assetRef)
+        {
+#if !UI_BUILDER_PACKAGE || UNITY_2021_2_OR_NEWER
+            var assetPath = URIHelpers.MakeAssetUri(assetRef);
+#else
+            var assetPath = AssetDatabase.GetAssetPath(assetRef);
+            if (assetPath.StartsWith("Assets") || assetPath.StartsWith("Packages"))
+                assetPath = "/" + assetPath;
+#if !UI_BUILDER_PACKAGE || UNITY_2021_1_OR_NEWER
+            if (assetRef is Sprite)
+                assetPath += "#" + assetRef.name;
+#endif
+#endif
+            return assetRef == null ? "none" : $"url('{assetPath}')";;
         }
 
         public static void ValueHandlesToUssString(StringBuilder sb, StyleSheet sheet, UssExportOptions options, string propertyName, StyleValueHandle[] values, ref int valueIndex, int valueCount = -1)
